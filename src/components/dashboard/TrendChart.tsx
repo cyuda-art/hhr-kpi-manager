@@ -59,7 +59,7 @@ export const TrendChart = ({ actualValue, targetValue, unit }: Props) => {
           />
           <Tooltip 
             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            formatter={(value: number) => [`${value.toLocaleString()}${unit}`, '']}
+            formatter={(value: any) => [`${Number(value).toLocaleString()}${unit}`, '']}
           />
           <ReferenceLine y={targetValue} stroke="#cbd5e1" strokeDasharray="3 3" label={{ position: 'top', value: '目標', fill: '#94a3b8', fontSize: 12 }} />
           <Line 
