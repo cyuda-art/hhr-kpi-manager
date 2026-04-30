@@ -80,7 +80,7 @@ export const KpiTree = () => {
         .filter((node) => kpiData[node.id]) // 削除されたノードを除外
         .map((node) => ({
           ...node,
-          data: kpiData[node.id],
+          data: kpiData[node.id] as any,
         }));
 
       // 追加された新規ノードの検知
@@ -101,7 +101,7 @@ export const KpiTree = () => {
             id,
             type: 'kpiNode',
             position: { x, y },
-            data: kpiData[id],
+            data: kpiData[id] as any,
           });
         }
       });
