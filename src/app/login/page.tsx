@@ -42,7 +42,8 @@ export default function LoginPage() {
       await loginWithGoogle();
       router.push('/');
     } catch (err: any) {
-      setError('Googleログインに失敗しました');
+      console.error("Google Login Error:", err);
+      setError(`Googleログインに失敗しました: ${err.message || err.toString()}`);
     }
   };
 
