@@ -274,46 +274,89 @@ export const useKpiStore = create<KpiStore>()(
       return { kpiData: draft };
     });
   },
-  updateKpiNode: (id, data) => {
-    set((state) => {
-      const draft = { ...state.kpiData };
-      if (draft[id]) {
-        const oldActual = draft[id].actualValue;
-        draft[id] = calculateComputed({ ...draft[id], ...data });
-        
-        // 実績値が更新された場合、汎用シミュレーション（親ノードへの波及）を実行
-        if (data.actualValue !== undefined && oldActual > 0) {
-          const ratio = data.actualValue / oldActual;
+    updateKpiNode: (id, data) => {
+      set((state) => {
+        const draft = { ...state.kpiData };
+        if (draft[id]) {
+          const oldActual = draft[id].actualValue;
+          const oldTarget = draft[id].targetValue;
           
-          if (ratio !== 1) {
-            // 親を辿って数値を更新する関数
-            const propagateToParent = (childId: string, changeRatio: number) => {
-              const node = draft[childId];
-              if (!node || !node.parentId) return;
+          draft[id] = calculateComputed({ ...draft[id], ...data });
+          
+          // 実績値が更新された場合、汎用シミュレーション（親ノードへの波及）を実行
+          if (data.actualValue !== undefined && oldActual > 0 && data.actualValue !== oldActual) {
+            const ratio = data.actualValue / oldActual;
+            
+            if (ratio !== 1) {
+              // 親を辿って数値を更新する関数
+              const propagateToParent = (childId: string, changeRatio: number) => {
+                const node = draft[childId];
+                if (!node || !node.parentId) return;
+                
+                const parent = draft[node.parentId];
+                if (parent) {
+                  // 親の新しい実績値を、子の変化率と同じだけ動かす
+                  const newParentActual = parent.actualValue * changeRatio;
+                  draft[parent.id] = calculateComputed({ 
+                    ...parent, 
+                    actualValue: newParentActual,
+                    isSimulated: true // シミュレーションによって動いたことをマーク
+                  });
+                  // さらに上の親へ波及
+                  propagateToParent(parent.id, changeRatio);
+                }
+              };
               
+              propagateToParent(id, ratio);
+            }
+          }
+
+          // 目標値が更新された場合、ツリー全体（親方向・子方向）へ目標値を連動波及させる
+          if (data.targetValue !== undefined && oldTarget > 0 && data.targetValue !== oldTarget) {
+            const ratio = data.targetValue / oldTarget;
+            const visited = new Set<string>();
+            visited.add(id);
+
+            // 上方向（親）への波及
+            const propagateUp = (currentId: string) => {
+              const node = draft[currentId];
+              if (!node || !node.parentId) return;
               const parent = draft[node.parentId];
-              if (parent) {
-                // 親の新しい実績値を、子の変化率と同じだけ動かす
-                const newParentActual = parent.actualValue * changeRatio;
-                draft[parent.id] = calculateComputed({ 
-                  ...parent, 
-                  actualValue: newParentActual,
-                  isSimulated: true // シミュレーションによって動いたことをマーク
+              if (parent && !visited.has(parent.id)) {
+                visited.add(parent.id);
+                draft[parent.id] = calculateComputed({
+                  ...parent,
+                  targetValue: parent.targetValue * ratio,
+                  isSimulated: true
                 });
-                // さらに上の親へ波及
-                propagateToParent(parent.id, changeRatio);
+                propagateUp(parent.id);
               }
             };
-            
-            propagateToParent(id, ratio);
+
+            // 下方向（子）への波及
+            const propagateDown = (currentId: string) => {
+              Object.values(draft).forEach(child => {
+                if (child.parentId === currentId && !visited.has(child.id)) {
+                  visited.add(child.id);
+                  draft[child.id] = calculateComputed({
+                    ...child,
+                    targetValue: child.targetValue * ratio,
+                    isSimulated: true
+                  });
+                  propagateDown(child.id);
+                }
+              });
+            };
+
+            propagateUp(id);
+            propagateDown(id);
           }
+          
+          syncToDB(draft, state.actions, state.currentProjectId);
         }
-        
-        syncToDB(draft, state.actions, state.currentProjectId);
-      }
-      return { kpiData: draft };
-    });
-  },
+        return { kpiData: draft };
+      });
+    },
   setKpiDataBulk: (nodes) => {
     set((state) => {
       const newData: Record<string, KpiNodeWithComputedAndInit> = {};
