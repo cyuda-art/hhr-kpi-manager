@@ -14,10 +14,10 @@ export default function Dashboard() {
         <DashboardSummary />
       </div>
 
-      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-all duration-300">
+      <div className={`min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-all duration-300 ${isTreeExpanded ? 'flex-1' : 'flex-none'}`}>
         <button 
           onClick={() => setIsTreeExpanded(!isTreeExpanded)}
-          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200 dark:border-slate-800"
+          className={`w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${isTreeExpanded ? 'border-b border-slate-200 dark:border-slate-800' : ''}`}
         >
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wider">
