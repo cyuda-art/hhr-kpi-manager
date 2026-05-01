@@ -77,17 +77,14 @@ export const DetailDrawer = ({ isOpen, onClose, kpi }: Props) => {
             <TrendChart actualValue={kpi.actualValue} targetValue={kpi.targetValue} unit={kpi.unit} />
           </div>
 
-          {/* Insights (モックテキスト) */}
+          {/* Insights (モックテキストの削除と誘導) */}
           <div>
             <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
               <div className="w-1.5 h-4 bg-amber-500 rounded-full"></div>
-              AI インサイト
+              アクション＆インサイト
             </h3>
-            <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-sm text-amber-800 space-y-2">
-              <p>過去3ヶ月にわたり、目標に対して平均90%台の進捗で推移しています。</p>
-              {kpi.achievementRate < 100 && (
-                <p className="font-semibold text-rose-600">⚠️ 現在のペースでは月末の目標に未達となる見込みです。土日祝の集客施策（OTA露出強化等）をアクションプランに追加することを推奨します。</p>
-              )}
+            <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg text-sm text-slate-600 space-y-2">
+              <p>この指標のより詳細なAI分析、および改善アクションプランの作成・管理は、<strong>KPIツリー画面の右側「AIチャット」および「アクション＆インサイト」パネル</strong>から実行できます。</p>
             </div>
           </div>
 
