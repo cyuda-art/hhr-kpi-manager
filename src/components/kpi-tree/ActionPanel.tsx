@@ -17,7 +17,7 @@ export const ActionPanel = () => {
   const [editActualValue, setEditActualValue] = useState('');
 
   // AIインサイト用状態
-  const [aiInsight, setAiInsight] = useState<{issue: string, actionIdea: string, kpiIdea: string} | null>(null);
+  const [aiInsight, setAiInsight] = useState<{issue: string, actionIdea: string, kpiIdea: string, kpiIdeaTarget?: number, kpiIdeaUnit?: string} | null>(null);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState('');
 
@@ -101,7 +101,7 @@ export const ActionPanel = () => {
     });
   };
 
-  const handleAddKpi = (name: string, isAi = false) => {
+  const handleAddKpi = (name: string, isAi = false, targetValue = 0, unit = '件') => {
     if (!selectedKpi) return;
     const newId = `kpi_custom_${Math.random().toString(36).substr(2, 9)}`;
     addKpiNode({
@@ -110,9 +110,9 @@ export const ActionPanel = () => {
       businessUnit: selectedKpi.businessUnit,
       type: 'KPI',
       parentId: selectedKpi.id,
-      targetValue: 0,
+      targetValue: targetValue,
       actualValue: 0,
-      unit: '件',
+      unit: unit,
       previousValue: 0,
       description: isAi ? 'AIによって提案された下位KPI' : '追加された下位KPI'
     });
@@ -174,6 +174,8 @@ export const ActionPanel = () => {
         issue: data.issue || '課題が分析できませんでした',
         actionIdea: data.actionIdea || '具体的な改善案がありません',
         kpiIdea: data.kpiIdea || '推奨KPIなし',
+        kpiIdeaTarget: Number(data.kpiIdeaTarget) || 0,
+        kpiIdeaUnit: data.kpiIdeaUnit || '件',
       });
     } catch (err: any) {
       console.error(err);
@@ -388,10 +390,12 @@ export const ActionPanel = () => {
             <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-indigo-100 dark:border-indigo-800/30 flex justify-between items-center gap-2">
               <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">📊 推奨下位KPI</p>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.kpiIdea}>{aiInsight.kpiIdea}</p>
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.kpiIdea}>
+                  {aiInsight.kpiIdea} (目標: {aiInsight.kpiIdeaTarget?.toLocaleString()}{aiInsight.kpiIdeaUnit})
+                </p>
               </div>
               <button 
-                onClick={() => handleAddKpi(aiInsight.kpiIdea, true)}
+                onClick={() => handleAddKpi(aiInsight.kpiIdea, true, aiInsight.kpiIdeaTarget, aiInsight.kpiIdeaUnit)}
                 className="flex-shrink-0 text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded font-bold hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
               >
                 ツリーに追加

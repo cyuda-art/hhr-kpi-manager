@@ -25,8 +25,12 @@ export async function POST(req: NextRequest) {
 {
   "issue": "課題の要約（簡潔に）",
   "actionIdea": "具体的なアクションプラン（短く、行動に移せる形で）",
-  "kpiIdea": "次に監視すべき下位KPIの名前（短く）"
+  "kpiIdea": "次に監視すべき下位KPIの名前（短く）",
+  "kpiIdeaTarget": 1000,
+  "kpiIdeaUnit": "件"
 }
+
+※ kpiIdeaTarget は数値のみを返してください。kpiIdeaUnit は単位（例：件、円、%、回など）を返してください。目標値は親KPIの数値を考慮して現実的な数値を提案してください。
 
 [KPIデータ]
 名称: ${kpiData.name}
