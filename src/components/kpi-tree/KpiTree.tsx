@@ -100,6 +100,14 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(true);
+
+  useEffect(() => {
+    const handleResizeMobile = () => setIsMobile(window.innerWidth < 1024);
+    handleResizeMobile();
+    window.addEventListener('resize', handleResizeMobile);
+    return () => window.removeEventListener('resize', handleResizeMobile);
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -243,8 +251,8 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
   }, [kpiData, setNodes, setEdges, collapsedNodes]);
 
   return (
-    <div className={isDashboard ? "w-full h-full flex flex-col lg:flex-row gap-4" : "h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-4 lg:gap-6"}>
-      <div className="w-full h-[50vh] lg:h-full lg:flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors relative">
+    <div className={`w-full min-w-0 flex flex-col lg:flex-row gap-4 ${isDashboard ? "h-[500px] lg:h-full" : "h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)]"}`}>
+      <div className="w-full flex-1 min-w-0 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors relative">
         <div className="absolute top-4 left-4 z-10 flex gap-2">
           <button
             onClick={handleAutoLayout}
@@ -291,8 +299,8 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
       {/* 右側のインサイト・アクションパネル */}
       <div 
         ref={panelRef}
-        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? (isActionPanelCollapsed ? 48 : actionPanelWidth) : '100%' }}
-        className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300 ease-in-out relative flex flex-col h-[50vh] lg:h-auto lg:shrink-0 ${isResizingPanel ? 'select-none' : ''}`}
+        style={{ width: isMobile ? '100%' : (isActionPanelCollapsed ? 48 : actionPanelWidth) }}
+        className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300 ease-in-out relative flex flex-col shrink-0 min-h-0 ${isMobile ? 'h-[40vh]' : 'h-full'} ${isResizingPanel ? 'select-none' : ''}`}
       >
         <div 
           className="hidden lg:block absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"

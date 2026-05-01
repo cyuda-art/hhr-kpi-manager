@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
@@ -18,6 +18,14 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { sidebarWidth, isSidebarCollapsed } = useLayoutStore();
   const pathname = usePathname();
   const router = useRouter();
+  const [isMobile, setIsMobile] = useState(true); // 初期値true(SSRエラー回避用)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize(); // マウント時に判定
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = initializeAuth();
@@ -77,14 +85,14 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors w-full overflow-hidden">
       <Sidebar />
       <div 
-        className="flex-1 flex flex-col transition-all duration-300 ease-in-out w-full md:w-auto md:ml-0"
-        style={{ marginLeft: typeof window !== 'undefined' && window.innerWidth >= 768 ? (isSidebarCollapsed ? 80 : sidebarWidth) : 0 }}
+        className="flex-1 flex flex-col transition-all duration-300 ease-in-out min-w-0"
+        style={{ marginLeft: isMobile ? 0 : (isSidebarCollapsed ? 80 : sidebarWidth) }}
       >
         <Header />
-        <main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 md:p-8 transition-colors max-w-full overflow-x-hidden">
+        <main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 md:p-8 transition-colors max-w-full overflow-x-hidden relative">
           {children}
         </main>
       </div>
