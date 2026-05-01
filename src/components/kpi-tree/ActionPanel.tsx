@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
-import { CheckCircle2, Circle, Plus, Sparkles, Trash2, Network } from 'lucide-react';
+import { CheckCircle2, Circle, Plus, Sparkles, Trash2, Network, Loader2 } from 'lucide-react';
 import { Action } from '@/types';
 
 export const ActionPanel = () => {
@@ -11,6 +11,11 @@ export const ActionPanel = () => {
 
   // 下位KPI手動追加用
   const [newKpiName, setNewKpiName] = useState('');
+
+  // AIインサイト用状態
+  const [aiInsight, setAiInsight] = useState<{issue: string, actionIdea: string, kpiIdea: string} | null>(null);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
   const filteredActions = selectedNodeId 
@@ -62,31 +67,46 @@ export const ActionPanel = () => {
     if (!isAi) setNewKpiName('');
   };
 
-  // モックのAIインサイト生成
-  const getAiInsights = () => {
-    if (!selectedKpi) return null;
-    if (selectedKpi.name.includes('来館') || selectedKpi.name.includes('来店') || selectedKpi.name.includes('客室')) {
-      return {
-        issue: '集客ペースが想定を下回っています。',
-        actionIdea: '週末限定の割引クーポンのLINE配信',
-        kpiIdea: 'LINE登録者数'
-      };
-    } else if (selectedKpi.name.includes('単価') || selectedKpi.name.includes('ADR')) {
-      return {
-        issue: '1人あたりの消費単価が伸び悩んでいます。',
-        actionIdea: 'セットメニューのレコメンド強化研修',
-        kpiIdea: 'セット付帯率'
-      };
-    } else {
-      return {
-        issue: '目標達成に向けて効率化の余地があります。',
-        actionIdea: '業務フローの見直しによるコスト削減',
-        kpiIdea: '時間あたり処理件数'
-      };
+  // 選択されたKPIが変わったらAIインサイトをリセット
+  useEffect(() => {
+    setAiInsight(null);
+    setAiError('');
+  }, [selectedNodeId]);
+
+  const generateAiInsights = async () => {
+    if (!selectedKpi) return;
+    setIsGeneratingAi(true);
+    setAiError('');
+    setAiInsight(null);
+
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ kpiData: selectedKpi }),
+      });
+
+      if (!response.ok) {
+        throw new Error('APIリクエストに失敗しました');
+      }
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      setAiInsight({
+        issue: data.issue || '課題が分析できませんでした',
+        actionIdea: data.actionIdea || '具体的な改善案がありません',
+        kpiIdea: data.kpiIdea || '推奨KPIなし',
+      });
+    } catch (err: any) {
+      console.error(err);
+      setAiError('AIインサイトの生成に失敗しました。APIキーが設定されているか確認してください。');
+    } finally {
+      setIsGeneratingAi(false);
     }
   };
-
-  const aiInsight = getAiInsights();
 
   return (
     <div className="flex flex-col h-full">
@@ -115,19 +135,45 @@ export const ActionPanel = () => {
         )}
       </div>
 
+      {selectedKpi && !aiInsight && !isGeneratingAi && (
+        <button 
+          onClick={generateAiInsights}
+          className="mb-6 w-full py-3 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 border border-indigo-200 dark:border-indigo-800/50 rounded-xl flex items-center justify-center gap-2 text-indigo-700 dark:text-indigo-400 text-sm font-bold transition-all shadow-sm group"
+        >
+          <Sparkles size={16} className="group-hover:animate-pulse" />
+          AIに改善案を分析させる
+        </button>
+      )}
+
+      {selectedKpi && isGeneratingAi && (
+        <div className="mb-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-3">
+          <Loader2 size={24} className="text-indigo-500 animate-spin" />
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 animate-pulse">KPIデータを分析中...</p>
+        </div>
+      )}
+
+      {selectedKpi && aiError && (
+        <div className="mb-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 p-4 rounded-xl text-rose-600 dark:text-rose-400 text-xs font-medium">
+          {aiError}
+        </div>
+      )}
+
       {selectedKpi && aiInsight && (
         <div className="mb-6 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/50 p-4 rounded-xl">
-          <h5 className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5 mb-2">
-            <Sparkles size={14} />
-            AI インサイト・提案
-          </h5>
+          <div className="flex justify-between items-center mb-2">
+            <h5 className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+              <Sparkles size={14} />
+              AI インサイト・提案
+            </h5>
+            <button onClick={generateAiInsights} className="text-[10px] text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 underline">再分析</button>
+          </div>
           <p className="text-xs text-indigo-900 dark:text-indigo-200 mb-3">{aiInsight.issue}</p>
           
           <div className="space-y-2">
             <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-indigo-100 dark:border-indigo-800/30 flex justify-between items-center gap-2">
               <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">💡 推奨アクション</p>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{aiInsight.actionIdea}</p>
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.actionIdea}>{aiInsight.actionIdea}</p>
               </div>
               <button 
                 onClick={() => handleAddSuggestedAction(aiInsight.actionIdea)}
@@ -139,8 +185,8 @@ export const ActionPanel = () => {
 
             <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-indigo-100 dark:border-indigo-800/30 flex justify-between items-center gap-2">
               <div className="min-w-0">
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">📊 推奨される下位KPI</p>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{aiInsight.kpiIdea}</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">📊 推奨下位KPI</p>
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.kpiIdea}>{aiInsight.kpiIdea}</p>
               </div>
               <button 
                 onClick={() => handleAddKpi(aiInsight.kpiIdea, true)}
