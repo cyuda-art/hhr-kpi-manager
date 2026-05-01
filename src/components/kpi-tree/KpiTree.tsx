@@ -82,7 +82,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
   return { nodes, edges };
 };
 
-export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
+export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
   const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap } = useLayoutStore();
   
@@ -253,27 +253,29 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
   }, [selectedNodeId, rfInstance, nodes]);
 
   return (
-    <div className={`w-full min-w-0 flex flex-col lg:flex-row gap-4 ${isDashboard ? "h-[500px] lg:h-full" : "h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)]"}`}>
-      <div className="w-full flex-1 min-w-0 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors relative">
-        <div className="absolute top-4 left-4 z-10 flex gap-2">
-          <button
-            onClick={handleAutoLayout}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-xs font-bold"
-          >
-            <Wand2 size={14} />
-            自動整列 (Auto Layout)
-          </button>
-          <button
-            onClick={toggleMiniMap}
-            className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-            title="ミニマップの表示/非表示"
-          >
-            <Map size={16} />
-          </button>
-        </div>
+    <div className={`w-full min-w-0 flex flex-col lg:flex-row gap-4 ${previewMode ? "h-screen w-screen m-0 p-0 fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950" : isDashboard ? "h-[500px] lg:h-full" : "h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)]"}`}>
+      <div className={`w-full flex-1 min-w-0 min-h-0 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-colors relative ${previewMode ? 'border-0 rounded-none' : 'border border-slate-200 dark:border-slate-800 rounded-2xl'}`}>
+        {!previewMode && (
+          <div className="absolute top-4 left-4 z-10 flex gap-2">
+            <button
+              onClick={handleAutoLayout}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-xs font-bold"
+            >
+              <Wand2 size={14} />
+              自動整列 (Auto Layout)
+            </button>
+            <button
+              onClick={toggleMiniMap}
+              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              title="ミニマップの表示/非表示"
+            >
+              <Map size={16} />
+            </button>
+          </div>
+        )}
 
         {/* 初期セットアップウィザード */}
-        {Object.keys(kpiData).length <= 1 && (
+        {!previewMode && Object.keys(kpiData).length <= 1 && (
           <AiSetupWizard />
         )}
 
@@ -305,38 +307,40 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
         </ReactFlow>
       </div>
 
-      {/* 右側のインサイト・アクションパネル */}
-      <div 
-        ref={panelRef}
-        style={{ width: isMobile ? '100%' : (isActionPanelCollapsed ? 48 : actionPanelWidth) }}
-        className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300 ease-in-out relative flex flex-col shrink-0 min-h-0 ${isMobile ? 'h-[40vh]' : 'h-full'} ${isResizingPanel ? 'select-none' : ''}`}
-      >
+      {/* 右側のインサイト・アクションパネル (プレビューモードでは非表示) */}
+      {!previewMode && (
         <div 
-          className="hidden lg:block absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"
-          onMouseDown={() => setIsResizingPanel(true)}
-          onDoubleClick={() => setActionPanelWidth(320)}
-        />
-        
-        <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between">
-          {!isActionPanelCollapsed && (
-            <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2 truncate">
-              <span className="w-2 h-4 bg-indigo-500 rounded-full flex-shrink-0"></span>
-              アクション ＆ インサイト
-            </h2>
-          )}
-          <button 
-            onClick={toggleActionPanel}
-            className={`p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors ${isActionPanelCollapsed ? 'mx-auto' : ''}`}
-            title={isActionPanelCollapsed ? "パネルを展開" : "パネルを折りたたむ"}
-          >
-            {isActionPanelCollapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
-          </button>
+          ref={panelRef}
+          style={{ width: isMobile ? '100%' : (isActionPanelCollapsed ? 48 : actionPanelWidth) }}
+          className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300 ease-in-out relative flex flex-col shrink-0 min-h-0 ${isMobile ? 'h-[40vh]' : 'h-full'} ${isResizingPanel ? 'select-none' : ''}`}
+        >
+          <div 
+            className="hidden lg:block absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"
+            onMouseDown={() => setIsResizingPanel(true)}
+            onDoubleClick={() => setActionPanelWidth(320)}
+          />
+          
+          <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between">
+            {!isActionPanelCollapsed && (
+              <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2 truncate">
+                <span className="w-2 h-4 bg-indigo-500 rounded-full flex-shrink-0"></span>
+                アクション ＆ インサイト
+              </h2>
+            )}
+            <button 
+              onClick={toggleActionPanel}
+              className={`p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors ${isActionPanelCollapsed ? 'mx-auto' : ''}`}
+              title={isActionPanelCollapsed ? "パネルを展開" : "パネルを折りたたむ"}
+            >
+              {isActionPanelCollapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+            </button>
+          </div>
+          
+          <div className={`flex-1 overflow-y-auto transition-opacity duration-300 ${isActionPanelCollapsed ? 'opacity-0 invisible w-0' : 'opacity-100 p-4'}`}>
+            {!isActionPanelCollapsed && <ActionPanel />}
+          </div>
         </div>
-        
-        <div className={`flex-1 overflow-y-auto transition-opacity duration-300 ${isActionPanelCollapsed ? 'opacity-0 invisible w-0' : 'opacity-100 p-4'}`}>
-          {!isActionPanelCollapsed && <ActionPanel />}
-        </div>
-      </div>
+      )}
     </div>
   );
 };
