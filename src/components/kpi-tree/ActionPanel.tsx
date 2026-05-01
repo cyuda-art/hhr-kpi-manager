@@ -1,16 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
-import { CheckCircle2, Circle, Plus, Sparkles, Trash2, Network, Loader2, MessageSquare, Send, ListChecks } from 'lucide-react';
+import { CheckCircle2, Circle, Plus, Sparkles, Trash2, Network, Loader2, MessageSquare, Send, ListChecks, Edit2 } from 'lucide-react';
 import { Action } from '@/types';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, actions, addAction, toggleActionStatus, addKpiNode, removeKpiNode } = useKpiStore();
+  const { kpiData, selectedNodeId, actions, addAction, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode } = useKpiStore();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskOwner, setNewTaskOwner] = useState('');
   const [newTaskDate, setNewTaskDate] = useState('');
 
-  // 下位KPI手動追加用
   const [newKpiName, setNewKpiName] = useState('');
+
+  // 編集モード用
+  const [isEditingValue, setIsEditingValue] = useState(false);
+  const [editTargetValue, setEditTargetValue] = useState('');
+  const [editActualValue, setEditActualValue] = useState('');
 
   // AIインサイト用状態
   const [aiInsight, setAiInsight] = useState<{issue: string, actionIdea: string, kpiIdea: string} | null>(null);
@@ -115,11 +119,25 @@ export const ActionPanel = () => {
     if (!isAi) setNewKpiName('');
   };
 
-  // 選択されたKPIが変わったらAIインサイトをリセット
+  // 選択されたKPIが変わったらAIインサイトと編集モードをリセット
   useEffect(() => {
     setAiInsight(null);
     setAiError('');
-  }, [selectedNodeId]);
+    setIsEditingValue(false);
+    if (selectedKpi) {
+      setEditTargetValue(selectedKpi.targetValue.toString());
+      setEditActualValue(selectedKpi.actualValue.toString());
+    }
+  }, [selectedNodeId, kpiData]); // kpiDataも依存配列に入れて、外部で更新された際にもフォームに反映する
+
+  const handleSaveValues = () => {
+    if (!selectedNodeId) return;
+    updateKpiNode(selectedNodeId, {
+      targetValue: Number(editTargetValue) || 0,
+      actualValue: Number(editActualValue) || 0,
+    });
+    setIsEditingValue(false);
+  };
 
   const generateAiInsights = async () => {
     if (!selectedKpi) return;
@@ -179,10 +197,57 @@ export const ActionPanel = () => {
             </button>
             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
             <h4 className="font-bold text-slate-800 dark:text-slate-200">{selectedKpi.name}</h4>
-            <div className="flex gap-2 mt-1">
+            <div className="flex gap-2 mt-2">
               <span className={`text-xs font-bold ${selectedKpi.status === 'danger' ? 'text-rose-500 dark:text-rose-400' : selectedKpi.status === 'warning' ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'}`}>
                 達成率: {selectedKpi.achievementRate.toFixed(1)}%
               </span>
+            </div>
+
+            {/* 数値編集UI */}
+            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/50">
+              {isEditingValue ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-slate-500 w-12">目標値</span>
+                    <input 
+                      type="number" 
+                      value={editTargetValue} 
+                      onChange={(e) => setEditTargetValue(e.target.value)}
+                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-slate-500 w-12">実績値</span>
+                    <input 
+                      type="number" 
+                      value={editActualValue} 
+                      onChange={(e) => setEditActualValue(e.target.value)}
+                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button onClick={() => setIsEditingValue(false)} className="text-[10px] px-2 py-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">キャンセル</button>
+                    <button onClick={handleSaveValues} className="text-[10px] px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 font-bold">保存して反映</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between group/edit cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 -mx-1.5 rounded transition-colors" onClick={() => setIsEditingValue(true)}>
+                  <div className="flex flex-col gap-1">
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      目標: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedKpi.targetValue.toLocaleString()}</span> {selectedKpi.unit}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      実績: <span className="font-bold text-slate-800 dark:text-slate-200">{selectedKpi.actualValue.toLocaleString()}</span> {selectedKpi.unit}
+                    </div>
+                  </div>
+                  <div className="text-indigo-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold">
+                    <Edit2 size={12} />
+                    編集
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ) : (

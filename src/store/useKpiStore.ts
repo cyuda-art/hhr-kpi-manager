@@ -278,7 +278,37 @@ export const useKpiStore = create<KpiStore>()(
     set((state) => {
       const draft = { ...state.kpiData };
       if (draft[id]) {
+        const oldActual = draft[id].actualValue;
         draft[id] = calculateComputed({ ...draft[id], ...data });
+        
+        // 実績値が更新された場合、汎用シミュレーション（親ノードへの波及）を実行
+        if (data.actualValue !== undefined && oldActual > 0) {
+          const ratio = data.actualValue / oldActual;
+          
+          if (ratio !== 1) {
+            // 親を辿って数値を更新する関数
+            const propagateToParent = (childId: string, changeRatio: number) => {
+              const node = draft[childId];
+              if (!node || !node.parentId) return;
+              
+              const parent = draft[node.parentId];
+              if (parent) {
+                // 親の新しい実績値を、子の変化率と同じだけ動かす
+                const newParentActual = parent.actualValue * changeRatio;
+                draft[parent.id] = calculateComputed({ 
+                  ...parent, 
+                  actualValue: newParentActual,
+                  isSimulated: true // シミュレーションによって動いたことをマーク
+                });
+                // さらに上の親へ波及
+                propagateToParent(parent.id, changeRatio);
+              }
+            };
+            
+            propagateToParent(id, ratio);
+          }
+        }
+        
         syncToDB(draft, state.actions, state.currentProjectId);
       }
       return { kpiData: draft };
