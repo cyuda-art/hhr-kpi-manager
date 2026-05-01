@@ -78,52 +78,45 @@ export default function OnboardingPage() {
     if (!currentProjectId) return;
     setIsGenerating(true);
 
-    // AI（LLM）によるツリー生成をシミュレート
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // 簡易的なツリー構造を生成（本来はここでOpenAI API等を呼び出してJSONをパースする）
-    let nodes: any[] = [];
-    
-    if (answers.industry.includes('SaaS') || answers.industry.includes('IT')) {
-      nodes = [
-        { id: 'kgi_mrr', name: 'MRR (月次収益)', type: 'KGI', parentId: null, targetValue: 10000000, actualValue: 8000000, unit: '円', businessUnit: 'company' },
-        { id: 'kpi_new_mrr', name: '新規MRR', type: 'KPI', parentId: 'kgi_mrr', targetValue: 3000000, actualValue: 2000000, unit: '円', businessUnit: 'sales' },
-        { id: 'kpi_churn', name: '解約MRR', type: 'KPI', parentId: 'kgi_mrr', targetValue: 500000, actualValue: 800000, unit: '円', businessUnit: 'cs' },
-        { id: 'kpi_leads', name: '商談獲得数', type: 'KPI', parentId: 'kpi_new_mrr', targetValue: 100, actualValue: 80, unit: '件', businessUnit: 'marketing' },
-        { id: 'kpi_cvr', name: '成約率', type: 'KPI', parentId: 'kpi_new_mrr', targetValue: 30, actualValue: 25, unit: '%', businessUnit: 'sales' },
-      ];
-    } else {
-      // デフォルト（汎用）
-      nodes = [
-        { id: 'kgi_sales', name: '月間売上', type: 'KGI', parentId: null, targetValue: 50000000, actualValue: 40000000, unit: '円', businessUnit: 'company' },
-        { id: 'kpi_customers', name: '顧客数', type: 'KPI', parentId: 'kgi_sales', targetValue: 5000, actualValue: 4200, unit: '人', businessUnit: 'sales' },
-        { id: 'kpi_arpu', name: '客単価', type: 'KPI', parentId: 'kgi_sales', targetValue: 10000, actualValue: 9500, unit: '円', businessUnit: 'sales' },
-      ];
-    }
-
-    // kpiDataフォーマットに変換
-    const kpiData: Record<string, any> = {};
-    nodes.forEach(node => {
-      kpiData[node.id] = {
-        ...node,
-        achievementRate: (node.actualValue / node.targetValue) * 100,
-        status: (node.actualValue / node.targetValue) * 100 >= 100 ? 'good' : 'warning',
-        initialActualValue: node.actualValue,
-        isSimulated: false
-      };
-    });
-
-    // Firestoreに保存
     try {
+      // サーバーAPI（Gemini）を呼び出してツリーを生成
+      const response = await fetch('/api/generate-tree', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(answers),
+      });
+
+      if (!response.ok) {
+        throw new Error('API Error');
+      }
+
+      const data = await response.json();
+      const nodes: any[] = data.nodes;
+
+      // kpiDataフォーマットに変換
+      const kpiData: Record<string, any> = {};
+      nodes.forEach(node => {
+        kpiData[node.id] = {
+          ...node,
+          achievementRate: (node.actualValue / node.targetValue) * 100,
+          status: (node.actualValue / node.targetValue) * 100 >= 100 ? 'good' : 'warning',
+          initialActualValue: node.actualValue,
+          isSimulated: false
+        };
+      });
+
+      // Firestoreに保存
       await setDoc(doc(db, 'projects', currentProjectId, 'kpiData', 'main'), {
         kpiData,
         actions: []
       });
+      
       // 保存完了後、ダッシュボードへ遷移
       router.push('/');
     } catch (error) {
       console.error("Failed to save generated tree", error);
       setIsGenerating(false);
+      alert('ツリーの生成に失敗しました。もう一度お試しください。');
     }
   };
 
