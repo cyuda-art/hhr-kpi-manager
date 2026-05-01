@@ -2,19 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Database, FolderKanban, Activity, ChevronRight, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
+import { LayoutDashboard, Database, FolderKanban, Activity, ChevronRight, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings, Network } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { useEffect, useRef, useState } from 'react';
+import { useKpiStore } from '@/store/useKpiStore';
+import { useEffect, useRef, useState, useMemo } from 'react';
 
 export const Sidebar = () => {
   const pathname = usePathname();
   const { currentProjectId, projects } = useProjectStore();
   const { organizations, currentOrgId } = useOrgStore();
   const { sidebarWidth, isSidebarCollapsed, setSidebarWidth, toggleSidebar, isMobileMenuOpen, toggleMobileMenu } = useLayoutStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId } = useKpiStore();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
+  const [explorerCollapsed, setExplorerCollapsed] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -44,6 +47,60 @@ export const Sidebar = () => {
     { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
     { id: 'data-entry', label: 'データ入力', icon: Database, path: '/data-entry' },
   ];
+
+  const rootNodes = useMemo(() => {
+    return Object.values(kpiData).filter(node => !node.parentId);
+  }, [kpiData]);
+
+  const toggleExplorerNode = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExplorerCollapsed(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const renderExplorerNode = (node: any, depth: number = 0) => {
+    const children = Object.values(kpiData).filter(n => n.parentId === node.id);
+    const hasChildren = children.length > 0;
+    const isCollapsed = explorerCollapsed.has(node.id);
+    const isSelected = selectedNodeId === node.id;
+    const isWarning = node.targetValue > 0 && (node.actualValue / node.targetValue) < 0.5;
+
+    return (
+      <div key={node.id} className="w-full">
+        <button
+          onClick={() => setSelectedNodeId(node.id)}
+          className={`w-full flex items-center gap-1.5 py-1.5 pr-2 rounded-md transition-colors text-left ${
+            isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'hover:bg-slate-800/50 text-slate-400 hover:text-slate-200'
+          }`}
+          style={{ paddingLeft: `${depth * 12 + 8}px` }}
+        >
+          <div 
+            className="w-4 h-4 flex items-center justify-center flex-shrink-0 cursor-pointer"
+            onClick={(e) => hasChildren && toggleExplorerNode(node.id, e)}
+          >
+            {hasChildren && (
+              isCollapsed ? <ChevronRight size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />
+            )}
+          </div>
+          <div className="flex flex-col overflow-hidden">
+            <span className={`text-xs truncate ${isSelected ? 'font-bold text-indigo-300' : 'font-medium'}`}>
+              {node.name}
+            </span>
+          </div>
+          {isWarning && <div className="w-1.5 h-1.5 rounded-full bg-red-500 ml-auto flex-shrink-0"></div>}
+        </button>
+        {hasChildren && !isCollapsed && (
+          <div className="flex flex-col">
+            {children.map(child => renderExplorerNode(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -106,7 +163,7 @@ export const Sidebar = () => {
           </div>
         </div>
 
-        <nav className="space-y-1">
+        <nav className="space-y-1 mb-8">
           {menuItems.map((item) => {
             const isActive = pathname === item.path;
             return (
@@ -124,6 +181,24 @@ export const Sidebar = () => {
             );
           })}
         </nav>
+
+        {!isSidebarCollapsed && rootNodes.length > 0 && (
+          <div className="mt-6 mb-4">
+            <div className="px-2 mb-2 flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Network size={14} />
+              <span>KPI エクスプローラー</span>
+            </div>
+            <div className="flex flex-col space-y-0.5 overflow-x-hidden">
+              {rootNodes.map(node => renderExplorerNode(node, 0))}
+            </div>
+          </div>
+        )}
+
+        {isSidebarCollapsed && rootNodes.length > 0 && (
+          <div className="mt-6 flex justify-center text-slate-500" title="KPI エクスプローラー">
+            <Network size={20} />
+          </div>
+        )}
       </div>
 
       <div className="p-4 border-t border-slate-800 space-y-2">
