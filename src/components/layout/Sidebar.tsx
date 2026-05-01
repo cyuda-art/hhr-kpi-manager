@@ -4,15 +4,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Network, Settings, Building2, Utensils, ShoppingBag, ChefHat, Bath, Database, FolderKanban } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useOrgStore } from '@/store/useOrgStore';
 
 export const Sidebar = () => {
   const pathname = usePathname();
   const { currentProjectId, projects } = useProjectStore();
+  const { organizations, currentOrgId } = useOrgStore();
+  
   const currentProject = projects.find(p => p.id === currentProjectId);
+  const currentOrg = organizations.find(org => org.id === currentOrgId);
 
   const menuItems = [
     { name: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
-    { name: 'KPIツリー', icon: Network, path: '/tree' },
+    // KPIツリーはダッシュボードに統合されたため削除、代わりにレポートなどのメニューを想定
     { name: 'データ入力', icon: Database, path: '/data-entry' },
   ];
 
@@ -34,16 +38,27 @@ export const Sidebar = () => {
           <h1 className="text-lg font-black text-white tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">HHR-KPI</h1>
         </div>
         
-        {currentProject && (
-          <div className="bg-slate-800/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50 dark:border-slate-800/50 flex items-center gap-3 transition-colors shadow-inner">
-            <div className="p-1.5 bg-indigo-500/20 rounded-md">
-              <FolderKanban size={16} className="text-indigo-400 flex-shrink-0" />
-            </div>
-            <span className="text-sm font-medium text-slate-200 truncate" title={currentProject.name}>
-              {currentProject.name}
+        <div className="space-y-3">
+          {/* 組織情報 */}
+          <div className="flex items-center gap-2 px-1">
+            <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
+              {currentOrg?.name || '組織未設定'}
             </span>
           </div>
-        )}
+
+          {/* プロジェクト情報 */}
+          {currentProject && (
+            <div className="bg-slate-800/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50 dark:border-slate-800/50 flex items-center gap-3 transition-colors shadow-inner group cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-900">
+              <div className="p-1.5 bg-indigo-500/20 rounded-md group-hover:bg-indigo-500/30 transition-colors">
+                <FolderKanban size={16} className="text-indigo-400 flex-shrink-0" />
+              </div>
+              <span className="text-sm font-medium text-slate-200 truncate" title={currentProject.name}>
+                {currentProject.name}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
       <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
         <div className="mb-8">
@@ -81,12 +96,12 @@ export const Sidebar = () => {
       <div className="p-4 border-t border-slate-800 space-y-2">
         <Link href="/projects" className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-slate-800 hover:text-white transition-colors text-left text-sm text-slate-400">
           <FolderKanban size={18} />
-          <span>プロジェクトを切り替え</span>
+          <span>プロジェクト切替</span>
         </Link>
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-slate-800 hover:text-white transition-colors text-left">
-          <Settings size={20} />
-          <span>設定</span>
-        </button>
+        <Link href="/settings" className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-slate-800 hover:text-white transition-colors text-left text-sm text-slate-400">
+          <Settings size={18} />
+          <span>組織設定</span>
+        </Link>
       </div>
     </aside>
   );
