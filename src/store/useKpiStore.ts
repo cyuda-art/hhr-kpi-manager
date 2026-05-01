@@ -1,27 +1,10 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { KpiNodeData, KpiNodeWithComputed, Status, Action } from '@/types';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
-const mockKpiData: KpiNodeData[] = [
-  { id: 'kgi_profit', name: '全社営業利益', businessUnit: 'company', type: 'KGI', parentId: null, targetValue: 50000000, actualValue: 45000000, unit: '円', previousValue: 40000000, description: '全社の営業利益' },
-  { id: 'kgi_sales_total', name: '全社売上', businessUnit: 'company', type: 'KGI', parentId: 'kgi_profit', targetValue: 300000000, actualValue: 280000000, unit: '円', previousValue: 270000000, description: '全事業の売上合算' },
-  { id: 'kgi_sales_hotel', name: '宿泊売上', businessUnit: 'hotel', type: 'KGI', parentId: 'kgi_sales_total', targetValue: 120000000, actualValue: 115000000, unit: '円', previousValue: 110000000, description: '宿泊事業の売上' },
-  { id: 'kgi_sales_spa', name: '温浴売上', businessUnit: 'spa', type: 'KGI', parentId: 'kgi_sales_total', targetValue: 60000000, actualValue: 62400000, unit: '円', previousValue: 58000000, description: '温浴事業の売上' },
-  { id: 'kgi_sales_restaurant', name: '飲食売上', businessUnit: 'restaurant', type: 'KGI', parentId: 'kgi_sales_total', targetValue: 80000000, actualValue: 69840000, unit: '円', previousValue: 75000000, description: '飲食事業の売上' },
-  { id: 'kgi_sales_shop', name: '物販売上', businessUnit: 'shop', type: 'KGI', parentId: 'kgi_sales_total', targetValue: 25000000, actualValue: 20000000, unit: '円', previousValue: 22000000, description: '物販事業の売上' },
-  { id: 'kgi_sales_kitchen', name: 'CK外販売上', businessUnit: 'kitchen', type: 'KGI', parentId: 'kgi_sales_total', targetValue: 15000000, actualValue: 13000000, unit: '円', previousValue: 12000000, description: 'セントラルキッチンの外販' },
-
-  { id: 'kpi_hotel_occ', name: '客室稼働率', businessUnit: 'hotel', type: 'KPI', parentId: 'kgi_sales_hotel', targetValue: 85, actualValue: 82, unit: '%', previousValue: 80, description: '客室の稼働率' },
-  { id: 'kpi_hotel_adr', name: 'ADR', businessUnit: 'hotel', type: 'KPI', parentId: 'kgi_sales_hotel', targetValue: 15000, actualValue: 14800, unit: '円', previousValue: 14500, description: '平均客室単価' },
-  
-  { id: 'kpi_spa_visitors', name: '来館者数', businessUnit: 'spa', type: 'KPI', parentId: 'kgi_sales_spa', targetValue: 30000, actualValue: 32000, unit: '人', previousValue: 29000, description: '温浴施設の月間来館者数' },
-  { id: 'kpi_spa_arpu', name: '客単価', businessUnit: 'spa', type: 'KPI', parentId: 'kgi_sales_spa', targetValue: 2000, actualValue: 1950, unit: '円', previousValue: 1980, description: '1人あたりの温浴利用単価' },
-
-  { id: 'kpi_restaurant_visitors', name: '来店数', businessUnit: 'restaurant', type: 'KPI', parentId: 'kgi_sales_restaurant', targetValue: 20000, actualValue: 18000, unit: '人', previousValue: 19500, description: '飲食店の月間来店数' },
-  { id: 'kpi_restaurant_arpu', name: '客単価', businessUnit: 'restaurant', type: 'KPI', parentId: 'kgi_sales_restaurant', targetValue: 4000, actualValue: 3880, unit: '円', previousValue: 3900, description: '1人あたりの飲食単価' },
-  { id: 'kpi_restaurant_cost', name: '原価率', businessUnit: 'restaurant', type: 'KPI', parentId: 'kgi_sales_restaurant', targetValue: 30, actualValue: 33, unit: '%', previousValue: 31, description: '材料費の割合' },
-];
+const mockKpiData: KpiNodeData[] = [];
 
 export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
   initialActualValue: number;
@@ -79,10 +62,24 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
   } as KpiNodeWithComputedAndInit;
 };
 
-const initialData = mockKpiData.reduce((acc, node) => {
-  acc[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
-  return acc;
-}, {} as Record<string, KpiNodeWithComputedAndInit>);
+const initialData: Record<string, KpiNodeWithComputedAndInit> = {
+  kgi_profit: {
+    id: 'kgi_profit',
+    name: '全社営業利益',
+    businessUnit: 'company',
+    type: 'KGI',
+    parentId: null,
+    targetValue: 50000000,
+    actualValue: 45000000,
+    initialActualValue: 45000000,
+    unit: '円',
+    previousValue: 40000000,
+    description: '全社の営業利益',
+    achievementRate: 90,
+    status: 'warning',
+    isSimulated: false
+  }
+};
 
 // 限界利益率などの仮説パラメータ
 const MARGINAL_PROFIT_RATIO = 0.4;
@@ -90,18 +87,17 @@ const MARGINAL_PROFIT_RATIO = 0.4;
 const CROSS_SELL_SPA_TO_REST = 0.25; 
 const CROSS_SELL_SPA_TO_SHOP = 0.10;
 
-export const useKpiStore = create<KpiStore>((set, get) => ({
-  kpiData: initialData,
-  selectedNodeId: null,
-  collapsedNodes: [],
-  actions: [
-    { id: 'a1', kpiId: 'kpi_restaurant_cost', title: '仕入先の見直しと相見積もり', owner: '田中', dueDate: '2026-05-15', status: 'in_progress' },
-    { id: 'a2', kpiId: 'kpi_hotel_occ', title: '平日限定プランのOTA露出強化', owner: '佐藤', dueDate: '2026-05-10', status: 'todo' },
-  ],
-  isDbInitialized: false,
-  currentProjectId: null,
+export const useKpiStore = create<KpiStore>()(
+  persist(
+    (set, get) => ({
+      kpiData: initialData,
+      selectedNodeId: null,
+      collapsedNodes: [],
+      actions: [],
+      isDbInitialized: false,
+      currentProjectId: null,
 
-  initializeDB: async (projectId: string) => {
+      initializeDB: async (projectId: string) => {
     // 既に同じプロジェクトで初期化済みならリターン
     if (get().isDbInitialized && get().currentProjectId === projectId) return;
     
@@ -308,4 +304,10 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
       return { kpiData: draft };
     });
   },
-}));
+    }),
+    {
+      name: 'kpi-storage',
+      partialize: (state) => ({ kpiData: state.kpiData, actions: state.actions, collapsedNodes: state.collapsedNodes }),
+    }
+  )
+);

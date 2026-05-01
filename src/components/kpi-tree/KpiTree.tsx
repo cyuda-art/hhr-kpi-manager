@@ -52,18 +52,18 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
   return { nodes: newNodes, edges };
 };
 
-// ノードの間隔を広げて重なりを解消
 const generateNodesAndEdges = (kpiData: Record<string, any>) => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  const addNode = (id: string, x: number, y: number) => {
+  Object.keys(kpiData).forEach(id => {
     const data = kpiData[id];
     if (!data) return;
+
     nodes.push({
       id,
       type: 'kpiNode',
-      position: { x, y },
+      position: { x: 0, y: 0 },
       data,
     });
 
@@ -76,20 +76,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
         style: { stroke: data.isSimulated ? '#6366f1' : '#cbd5e1', strokeWidth: 2 },
       });
     }
-  };
-
-  // ここでは一旦座標は適当に配置しておき、後で getLayoutedElements で整列させることも可能
-  addNode('kgi_profit', 0, 0);
-  addNode('kgi_sales_total', 0, 0);
-  addNode('kgi_sales_hotel', 0, 0);
-  addNode('kgi_sales_spa', 0, 0);
-  addNode('kgi_sales_restaurant', 0, 0);
-  addNode('kgi_sales_shop', 0, 0);
-  addNode('kpi_hotel_occ', 0, 0);
-  addNode('kpi_hotel_adr', 0, 0);
-  addNode('kpi_spa_visitors', 0, 0);
-  addNode('kpi_restaurant_visitors', 0, 0);
-  addNode('kpi_restaurant_cost', 0, 0);
+  });
 
   return { nodes, edges };
 };
