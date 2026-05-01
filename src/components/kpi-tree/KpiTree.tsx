@@ -95,12 +95,13 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
 };
 
 export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
-  const { kpiData, setSelectedNodeId, collapsedNodes } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap } = useLayoutStore();
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(true);
+  const [rfInstance, setRfInstance] = useState<any>(null);
 
   useEffect(() => {
     const handleResizeMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -250,6 +251,19 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
     });
   }, [kpiData, setNodes, setEdges, collapsedNodes]);
 
+  // 選択されたノードが変更されたらセンタリングするアニメーション
+  useEffect(() => {
+    if (selectedNodeId && rfInstance) {
+      const node = nodes.find(n => n.id === selectedNodeId);
+      if (node) {
+        // ノードの中心座標を計算してセンタリング
+        const x = node.position.x + nodeWidth / 2;
+        const y = node.position.y + nodeHeight / 2;
+        rfInstance.setCenter(x, y, { zoom: 1.1, duration: 800 });
+      }
+    }
+  }, [selectedNodeId, rfInstance, nodes]);
+
   return (
     <div className={`w-full min-w-0 flex flex-col lg:flex-row gap-4 ${isDashboard ? "h-[500px] lg:h-full" : "h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)]"}`}>
       <div className="w-full flex-1 min-w-0 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors relative">
@@ -276,6 +290,7 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
           onEdgesChange={onEdgesChange}
           onNodeClick={(_, node) => setSelectedNodeId(node.id)}
           onPaneClick={() => setSelectedNodeId(null)}
+          onInit={setRfInstance}
           nodeTypes={nodeTypes}
           fitView
           className="bg-slate-50 dark:bg-slate-950 transition-colors"
