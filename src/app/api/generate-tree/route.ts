@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 
+// Vercelでのタイムアウトを防止（最大60秒）
+export const maxDuration = 60;
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const NodeSchema: Schema = {
@@ -51,16 +54,20 @@ export async function POST(req: Request) {
       }
     });
 
-    const jsonText = response.text;
+    let jsonText = response.text;
     if (!jsonText) {
       throw new Error("No response from Gemini");
     }
+
+    // もしマークダウンのコードブロックが含まれていたら除去する
+    jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
 
     const nodes = JSON.parse(jsonText);
     return NextResponse.json({ nodes });
 
   } catch (error: any) {
     console.error('Error generating tree:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // エラーの詳細をフロントエンドに返す
+    return NextResponse.json({ error: error.message || error.toString(), stack: error.stack }, { status: 500 });
   }
 }

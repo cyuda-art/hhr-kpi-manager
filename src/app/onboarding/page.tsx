@@ -87,7 +87,8 @@ export default function OnboardingPage() {
       });
 
       if (!response.ok) {
-        throw new Error('API Error');
+        const errData = await response.json();
+        throw new Error(errData.error || 'API Error');
       }
 
       const data = await response.json();
@@ -113,10 +114,10 @@ export default function OnboardingPage() {
       
       // 保存完了後、ダッシュボードへ遷移
       router.push('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save generated tree", error);
       setIsGenerating(false);
-      alert('ツリーの生成に失敗しました。もう一度お試しください。');
+      alert(`ツリーの生成に失敗しました: ${error.message}`);
     }
   };
 
