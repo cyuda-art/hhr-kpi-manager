@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDp7EmCFfuDhVHitWFnNn3OLvZ0DfTa7oY",
@@ -13,5 +14,6 @@ const firebaseConfig = {
 // Next.js (SSR) での複数回初期化を防ぐ
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-export { db };
+export { db, auth };
