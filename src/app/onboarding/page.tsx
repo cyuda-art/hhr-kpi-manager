@@ -1,41 +1,42 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProjectStore } from '@/store/useProjectStore';
-import { Bot, User as UserIcon, Send, Sparkles, ArrowRight } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { KpiNodeData, KpiNodeWithComputed } from '@/types';
+import { Target, TrendingUp, CheckCircle, ArrowRight, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { KpiNodeData } from '@/types';
 
-interface Message {
+// 入力用の一時データ型
+interface MetricInput {
   id: string;
-  sender: 'ai' | 'user';
-  text: string;
+  name: string;
+  targetValue: number;
+  actualValue: number;
+  unit: string;
 }
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { currentProjectId } = useProjectStore();
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', sender: 'ai', text: '新しいプロジェクトですね！最適なKPIツリーを自動生成するために、いくつか質問させてください。まず、どのような業種・ビジネスモデルですか？（例：ホテル、SaaS、飲食店など）' }
-  ]);
-  const [inputValue, setInputValue] = useState('');
   const [step, setStep] = useState(1);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // ユーザーの回答を保持するステート
-  const [answers, setAnswers] = useState({
-    industry: '',
-    kgi: '',
-    channels: ''
+  // KGIデータ
+  const [kgi, setKgi] = useState<MetricInput>({
+    id: 'kgi_main',
+    name: '月間売上',
+    targetValue: 10000000,
+    actualValue: 0,
+    unit: '円'
   });
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  // KPIデータ（初期状態で2つ用意）
+  const [kpis, setKpis] = useState<MetricInput[]>([
+    { id: 'kpi_1', name: '顧客数', targetValue: 1000, actualValue: 0, unit: '人' },
+    { id: 'kpi_2', name: '客単価', targetValue: 10000, actualValue: 0, unit: '円' }
+  ]);
 
   useEffect(() => {
     if (!currentProjectId) {
@@ -43,178 +44,313 @@ export default function OnboardingPage() {
     }
   }, [currentProjectId, router]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    const userMessage: Message = { id: Date.now().toString(), sender: 'user', text: inputValue };
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-    setIsTyping(true);
-
-    // AIの返答をシミュレート
-    setTimeout(() => {
-      let aiResponse = '';
-      if (step === 1) {
-        setAnswers(prev => ({ ...prev, industry: userMessage.text }));
-        aiResponse = `「${userMessage.text}」ですね、承知いたしました。次に、このプロジェクトの最終的な目標（KGI）は何ですか？（例：月間売上1,000万円、MRR500万円など）`;
-        setStep(2);
-      } else if (step === 2) {
-        setAnswers(prev => ({ ...prev, kgi: userMessage.text }));
-        aiResponse = `ありがとうございます。目標達成のための主要な集客・販売チャネルは何ですか？（例：Web広告とオーガニック検索、OTAと自社サイトなど）`;
-        setStep(3);
-      } else if (step === 3) {
-        setAnswers(prev => ({ ...prev, channels: userMessage.text }));
-        aiResponse = `完璧です！いただいた情報を元に、最適なKPIツリー構造をAIが構築します。準備ができたら下のボタンを押してください。`;
-        setStep(4);
-      }
-      
-      setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'ai', text: aiResponse }]);
-      setIsTyping(false);
-    }, 1000);
+  const addKpi = () => {
+    setKpis([
+      ...kpis,
+      { id: `kpi_${Date.now()}`, name: '', targetValue: 0, actualValue: 0, unit: '' }
+    ]);
   };
 
-  const generateTree = async () => {
+  const removeKpi = (id: string) => {
+    setKpis(kpis.filter(kpi => kpi.id !== id));
+  };
+
+  const updateKpi = (id: string, field: keyof MetricInput, value: string | number) => {
+    setKpis(kpis.map(kpi => kpi.id === id ? { ...kpi, [field]: value } : kpi));
+  };
+
+  const handleComplete = async () => {
     if (!currentProjectId) return;
-    setIsGenerating(true);
+    setIsSaving(true);
+
+    // KGIとKPIをFirestore保存用のフォーマットに変換
+    const kpiData: Record<string, any> = {};
+
+    // KGIの追加
+    kpiData[kgi.id] = {
+      id: kgi.id,
+      name: kgi.name,
+      type: 'KGI',
+      parentId: null,
+      targetValue: kgi.targetValue,
+      actualValue: kgi.actualValue,
+      unit: kgi.unit,
+      businessUnit: 'company',
+      achievementRate: kgi.targetValue > 0 ? (kgi.actualValue / kgi.targetValue) * 100 : 0,
+      status: kgi.actualValue >= kgi.targetValue ? 'good' : 'warning',
+      initialActualValue: kgi.actualValue,
+      isSimulated: false
+    };
+
+    // KPIの追加
+    kpis.forEach(kpi => {
+      kpiData[kpi.id] = {
+        id: kpi.id,
+        name: kpi.name || '未設定のKPI',
+        type: 'KPI',
+        parentId: kgi.id,
+        targetValue: kpi.targetValue,
+        actualValue: kpi.actualValue,
+        unit: kpi.unit || kgi.unit,
+        businessUnit: 'company',
+        achievementRate: kpi.targetValue > 0 ? (kpi.actualValue / kpi.targetValue) * 100 : 0,
+        status: kpi.actualValue >= kpi.targetValue ? 'good' : 'warning',
+        initialActualValue: kpi.actualValue,
+        isSimulated: false
+      };
+    });
 
     try {
-      // サーバーAPI（Gemini）を呼び出してツリーを生成
-      const response = await fetch('/api/generate-tree', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(answers),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'API Error');
-      }
-
-      const data = await response.json();
-      const nodes: any[] = data.nodes;
-
-      // kpiDataフォーマットに変換
-      const kpiData: Record<string, any> = {};
-      nodes.forEach(node => {
-        kpiData[node.id] = {
-          ...node,
-          achievementRate: (node.actualValue / node.targetValue) * 100,
-          status: (node.actualValue / node.targetValue) * 100 >= 100 ? 'good' : 'warning',
-          initialActualValue: node.actualValue,
-          isSimulated: false
-        };
-      });
-
-      // Firestoreに保存
       await setDoc(doc(db, 'projects', currentProjectId, 'kpiData', 'main'), {
         kpiData,
         actions: []
       });
-      
-      // 保存完了後、ダッシュボードへ遷移
       router.push('/');
     } catch (error: any) {
-      console.error("Failed to save generated tree", error);
-      setIsGenerating(false);
-      alert(`ツリーの生成に失敗しました: ${error.message}`);
+      console.error("Failed to save initial tree", error);
+      alert(`保存に失敗しました: ${error.message}`);
+      setIsSaving(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 p-4 shrink-0">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-600" />
-            <h1 className="font-bold text-slate-800">AI オンボーディング</h1>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+          <div className="relative z-10">
+            <h1 className="text-2xl font-bold mb-2">プロジェクトのセットアップ</h1>
+            <p className="text-indigo-100">KPIツリーの骨組みをステップバイステップで作成します</p>
           </div>
-          <button 
-            onClick={() => router.push('/')}
-            className="text-sm text-slate-500 hover:text-slate-800"
-          >
-            スキップして手動で作成
-          </button>
-        </div>
-      </header>
-
-      {/* Chat Area */}
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
-        <div className="max-w-3xl mx-auto space-y-6">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex items-start gap-4 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.sender === 'user' ? 'bg-indigo-600' : 'bg-white border border-slate-200'}`}>
-                {msg.sender === 'user' ? <UserIcon size={16} className="text-white" /> : <Bot size={18} className="text-indigo-600" />}
-              </div>
-              <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${msg.sender === 'user' ? 'bg-indigo-600 text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'}`}>
-                {msg.text}
-              </div>
-            </div>
-          ))}
           
-          {isTyping && (
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                <Bot size={18} className="text-indigo-600" />
+          {/* Progress Bar */}
+          <div className="mt-8 flex items-center justify-between relative z-10">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex flex-col items-center gap-2 relative z-10">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
+                  step >= i ? 'bg-white text-indigo-600' : 'bg-indigo-500/50 text-indigo-200'
+                }`}>
+                  {step > i ? <CheckCircle size={20} /> : i}
+                </div>
+                <span className={`text-xs ${step >= i ? 'text-white font-medium' : 'text-indigo-200'}`}>
+                  {i === 1 && 'KGIの設定'}
+                  {i === 2 && '主要KPIの追加'}
+                  {i === 3 && '確認'}
+                </span>
               </div>
-              <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-4 shadow-sm flex items-center gap-1">
-                <div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            ))}
+            {/* Progress Line */}
+            <div className="absolute top-5 left-0 w-full h-1 bg-indigo-500/50 -z-10 rounded-full">
+              <div 
+                className="h-full bg-white rounded-full transition-all duration-300" 
+                style={{ width: `${((step - 1) / 2) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="p-8">
+          
+          {/* Step 1: KGI */}
+          {step === 1 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="flex items-center gap-3 text-slate-800 mb-6">
+                <Target className="w-6 h-6 text-indigo-600" />
+                <h2 className="text-xl font-bold">最終目標（KGI）の設定</h2>
+              </div>
+              <p className="text-sm text-slate-600 mb-4">
+                このプロジェクトで達成したい最も重要な目標を1つ設定してください。
+                （例：月間売上、年間利益、MRRなど）
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">指標名</label>
+                  <input
+                    type="text"
+                    value={kgi.name}
+                    onChange={(e) => setKgi({ ...kgi, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    placeholder="例: 月間売上"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">目標値</label>
+                    <input
+                      type="number"
+                      value={kgi.targetValue || ''}
+                      onChange={(e) => setKgi({ ...kgi, targetValue: Number(e.target.value) })}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">単位</label>
+                    <input
+                      type="text"
+                      value={kgi.unit}
+                      onChange={(e) => setKgi({ ...kgi, unit: e.target.value })}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      placeholder="例: 円, 人, %"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">現在の実績値（任意）</label>
+                  <input
+                    type="number"
+                    value={kgi.actualValue || ''}
+                    onChange={(e) => setKgi({ ...kgi, actualValue: Number(e.target.value) })}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
-        </div>
-      </main>
 
-      {/* Input Area */}
-      <footer className="bg-white border-t border-slate-200 p-4 shrink-0">
-        <div className="max-w-3xl mx-auto">
-          {step === 4 ? (
-            <button
-              onClick={generateTree}
-              disabled={isGenerating}
-              className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isGenerating ? (
-                <>AIがツリーを生成中...（数秒かかります）</>
-              ) : (
-                <>
-                  <Sparkles size={20} />
-                  KPIツリーを自動生成する
-                </>
-              )}
-            </button>
-          ) : (
-            <form onSubmit={handleSend} className="flex items-end gap-2">
-              <div className="flex-1 bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition-all">
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="メッセージを入力..."
-                  className="w-full bg-transparent px-4 py-3 outline-none resize-none max-h-32 text-slate-700"
-                  rows={1}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend(e);
-                    }
-                  }}
-                />
+          {/* Step 2: KPIs */}
+          {step === 2 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="flex items-center gap-3 text-slate-800 mb-6">
+                <TrendingUp className="w-6 h-6 text-indigo-600" />
+                <h2 className="text-xl font-bold">主要KPIの追加</h2>
               </div>
-              <button
-                type="submit"
-                disabled={!inputValue.trim() || isTyping}
-                className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
-              >
-                <Send size={18} className="ml-1" />
-              </button>
-            </form>
+              <p className="text-sm text-slate-600 mb-4">
+                「{kgi.name}」を達成するために、直下に紐づく主要なKPI（要素）を追加してください。
+                （例：売上であれば「客数」と「客単価」など）
+              </p>
+
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                {kpis.map((kpi, index) => (
+                  <div key={kpi.id} className="p-4 bg-slate-50 border border-slate-200 rounded-xl relative group">
+                    <div className="absolute -left-3 -top-3 w-6 h-6 bg-slate-800 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
+                      {index + 1}
+                    </div>
+                    {kpis.length > 1 && (
+                      <button 
+                        onClick={() => removeKpi(kpi.id)}
+                        className="absolute right-3 top-3 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">KPI名</label>
+                        <input
+                          type="text"
+                          value={kpi.name}
+                          onChange={(e) => updateKpi(kpi.id, 'name', e.target.value)}
+                          className="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                          placeholder="例: 客数"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">目標値</label>
+                        <input
+                          type="number"
+                          value={kpi.targetValue || ''}
+                          onChange={(e) => updateKpi(kpi.id, 'targetValue', Number(e.target.value))}
+                          className="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">単位</label>
+                        <input
+                          type="text"
+                          value={kpi.unit}
+                          onChange={(e) => updateKpi(kpi.id, 'unit', e.target.value)}
+                          className="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button 
+                  onClick={addKpi}
+                  className="w-full py-3 border-2 border-dashed border-slate-300 text-slate-500 rounded-xl flex items-center justify-center gap-2 hover:border-indigo-400 hover:text-indigo-600 transition-colors"
+                >
+                  <Plus size={18} />
+                  <span>KPIを追加する</span>
+                </button>
+              </div>
+            </div>
           )}
+
+          {/* Step 3: Confirmation */}
+          {step === 3 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="flex items-center gap-3 text-slate-800 mb-6">
+                <CheckCircle className="w-6 h-6 text-green-500" />
+                <h2 className="text-xl font-bold">設定内容の確認</h2>
+              </div>
+              <p className="text-sm text-slate-600 mb-6">
+                以下の構成でKPIツリーを作成します。作成後もダッシュボードから自由に追加・編集が可能です。
+              </p>
+
+              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative overflow-hidden">
+                {/* KGI Box */}
+                <div className="bg-indigo-600 text-white p-4 rounded-lg shadow-md mb-8 relative z-10 mx-auto w-3/4 text-center">
+                  <div className="text-xs text-indigo-200 font-bold mb-1">KGI</div>
+                  <div className="font-bold text-lg">{kgi.name}</div>
+                  <div className="text-sm mt-1">{kgi.targetValue.toLocaleString()} {kgi.unit}</div>
+                </div>
+
+                {/* Connecting Lines */}
+                <div className="absolute top-20 left-1/2 w-px h-8 bg-slate-300 -translate-x-1/2 z-0"></div>
+                <div className="absolute top-28 left-1/4 right-1/4 h-px bg-slate-300 z-0"></div>
+
+                {/* KPI Boxes */}
+                <div className="flex justify-center gap-4 relative z-10 flex-wrap">
+                  {kpis.map((kpi, idx) => (
+                    <div key={kpi.id} className="bg-white border border-slate-300 p-3 rounded-lg shadow-sm flex-1 min-w-[120px] text-center relative">
+                      <div className="absolute -top-4 left-1/2 w-px h-4 bg-slate-300 -translate-x-1/2"></div>
+                      <div className="text-xs text-slate-400 font-bold mb-1">KPI</div>
+                      <div className="font-bold text-slate-800 text-sm">{kpi.name || '未設定'}</div>
+                      <div className="text-xs text-slate-500 mt-1">{kpi.targetValue.toLocaleString()} {kpi.unit}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer Navigation */}
+          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <button
+              onClick={() => step > 1 ? setStep(step - 1) : router.push('/projects')}
+              className="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium transition-colors flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              {step === 1 ? 'プロジェクト一覧へ戻る' : '戻る'}
+            </button>
+
+            {step < 3 ? (
+              <button
+                onClick={() => setStep(step + 1)}
+                disabled={step === 1 && !kgi.name}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                次へ
+                <ArrowRight size={16} />
+              </button>
+            ) : (
+              <button
+                onClick={handleComplete}
+                disabled={isSaving}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                {isSaving ? '作成中...' : 'ツリーを作成して開始'}
+                {!isSaving && <CheckCircle size={16} />}
+              </button>
+            )}
+          </div>
+          
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
