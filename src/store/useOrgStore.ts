@@ -1,0 +1,72 @@
+import { create } from 'zustand';
+import { db } from '@/lib/firebase';
+import { collection, doc, setDoc, onSnapshot, query, where, arrayUnion } from 'firebase/firestore';
+import { Organization, OrgMember } from '@/types/organization';
+
+interface OrgStore {
+  organizations: Organization[];
+  currentOrgId: string | null;
+  isLoading: boolean;
+  initializeOrgs: (userId: string) => () => void;
+  setCurrentOrgId: (id: string | null) => void;
+  createOrganization: (name: string, userId: string) => Promise<string>;
+}
+
+export const useOrgStore = create<OrgStore>((set, get) => ({
+  organizations: [],
+  currentOrgId: null,
+  isLoading: true,
+
+  initializeOrgs: (userId: string) => {
+    set({ isLoading: true });
+    
+    // members配列内のuserIdが存在する組織を取得（Firebaseではオブジェクト配列の検索は難しいため、通常は別フィールドにUIDリストを持つか、サブコレクションにするが、今回は簡易的に ownerId か、別途UIDリストを持たせる運用にする必要がある。しかしここはZustand内でフロントエンドフィルタするか、データ構造を調整する）
+    // Firestoreでのクエリの制限を避けるため、membersUidListというstring配列を持たせることにする
+    const q = query(
+      collection(db, 'organizations'),
+      where('membersUidList', 'array-contains', userId)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const orgs: Organization[] = [];
+      snapshot.forEach((doc) => {
+        orgs.push(doc.data() as Organization);
+      });
+      
+      // デフォルトの組織を選択
+      const currentOrgId = get().currentOrgId;
+      if (!currentOrgId && orgs.length > 0) {
+        set({ currentOrgId: orgs[0].id });
+      }
+      
+      set({ organizations: orgs, isLoading: false });
+    });
+
+    return unsubscribe;
+  },
+
+  setCurrentOrgId: (id) => set({ currentOrgId: id }),
+
+  createOrganization: async (name, userId) => {
+    const newOrgId = Math.random().toString(36).substr(2, 9);
+    
+    const newMember: OrgMember = {
+      userId,
+      role: 'admin',
+      joinedAt: Date.now(),
+    };
+
+    const newOrg = {
+      id: newOrgId,
+      name,
+      ownerId: userId,
+      members: [newMember],
+      membersUidList: [userId], // クエリ用のUID配列
+      createdAt: Date.now(),
+    };
+
+    await setDoc(doc(db, 'organizations', newOrgId), newOrg);
+    set({ currentOrgId: newOrgId });
+    return newOrgId;
+  }
+}));

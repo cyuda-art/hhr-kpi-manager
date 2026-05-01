@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
-import { Building2, Plus, ArrowRight, FolderKanban, Copy, Trash2 } from 'lucide-react';
+import { useOrgStore } from '@/store/useOrgStore';
+import { Building2, Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut } from 'lucide-react';
 
 export default function ProjectsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { projects, isLoading, initializeProjects, setCurrentProjectId, createProject, duplicateProject, deleteProject } = useProjectStore();
+  const { organizations, currentOrgId } = useOrgStore();
   const [isCreating, setIsCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDesc, setNewProjectDesc] = useState('');
@@ -73,6 +75,8 @@ export default function ProjectsPage() {
     return <div className="min-h-screen flex items-center justify-center dark:text-white">Loading projects...</div>;
   }
 
+  const currentOrg = organizations.find(org => org.id === currentOrgId);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 transition-colors relative overflow-hidden flex items-center justify-center">
       
@@ -83,6 +87,11 @@ export default function ProjectsPage() {
       <div className="w-full max-w-5xl relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
           <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full text-xs font-bold tracking-wider uppercase border border-indigo-200 dark:border-indigo-800">
+                {currentOrg?.name || 'ビジネス組織'}
+              </div>
+            </div>
             <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-2">
               Welcome back, {user?.email?.split('@')[0] || 'User'} 👋
             </h1>
