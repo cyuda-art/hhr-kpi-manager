@@ -106,10 +106,10 @@ export const ActionPanel = () => {
       businessUnit: selectedKpi.businessUnit,
       type: 'KPI',
       parentId: selectedKpi.id,
-      targetValue: 100, // 仮の値
-      actualValue: 80,  // 仮の値
+      targetValue: 0,
+      actualValue: 0,
       unit: '件',
-      previousValue: 80,
+      previousValue: 0,
       description: isAi ? 'AIによって提案された下位KPI' : '追加された下位KPI'
     });
     if (!isAi) setNewKpiName('');
