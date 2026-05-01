@@ -11,6 +11,8 @@ interface LayoutStore {
   setActionPanelWidth: (width: number) => void;
   toggleActionPanel: () => void;
   toggleMiniMap: () => void;
+  isMobileMenuOpen: boolean;
+  toggleMobileMenu: () => void;
 }
 
 export const useLayoutStore = create<LayoutStore>((set) => ({
@@ -19,6 +21,7 @@ export const useLayoutStore = create<LayoutStore>((set) => ({
   actionPanelWidth: 320, // default w-80 = 320px
   isActionPanelCollapsed: false,
   showMiniMap: true,
+  isMobileMenuOpen: false,
 
   setSidebarWidth: (width) => set({ sidebarWidth: Math.max(64, Math.min(width, 400)), isSidebarCollapsed: width < 100 }),
   toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
@@ -27,4 +30,5 @@ export const useLayoutStore = create<LayoutStore>((set) => ({
   toggleActionPanel: () => set((state) => ({ isActionPanelCollapsed: !state.isActionPanelCollapsed })),
 
   toggleMiniMap: () => set((state) => ({ showMiniMap: !state.showMiniMap })),
+  toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
 }));

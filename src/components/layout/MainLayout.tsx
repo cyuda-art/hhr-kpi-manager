@@ -80,11 +80,11 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors">
       <Sidebar />
       <div 
-        className="flex-1 flex flex-col transition-all duration-300 ease-in-out"
-        style={{ marginLeft: isSidebarCollapsed ? 80 : sidebarWidth }}
+        className="flex-1 flex flex-col transition-all duration-300 ease-in-out w-full md:w-auto md:ml-0"
+        style={{ marginLeft: typeof window !== 'undefined' && window.innerWidth >= 768 ? (isSidebarCollapsed ? 80 : sidebarWidth) : 0 }}
       >
         <Header />
-        <main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-8 transition-colors">
+        <main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-4 md:p-8 transition-colors max-w-full overflow-x-hidden">
           {children}
         </main>
       </div>

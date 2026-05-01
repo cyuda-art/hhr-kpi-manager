@@ -12,7 +12,7 @@ export const Sidebar = () => {
   const pathname = usePathname();
   const { currentProjectId, projects } = useProjectStore();
   const { organizations, currentOrgId } = useOrgStore();
-  const { sidebarWidth, isSidebarCollapsed, setSidebarWidth, toggleSidebar } = useLayoutStore();
+  const { sidebarWidth, isSidebarCollapsed, setSidebarWidth, toggleSidebar, isMobileMenuOpen, toggleMobileMenu } = useLayoutStore();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
 
@@ -46,11 +46,22 @@ export const Sidebar = () => {
   ];
 
   return (
-    <aside 
-      ref={sidebarRef}
-      style={{ width: isSidebarCollapsed ? 80 : sidebarWidth }}
-      className={`h-screen bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl text-slate-300 flex flex-col fixed left-0 top-0 border-r border-slate-800 dark:border-slate-900 transition-all duration-300 ease-in-out relative z-40 ${isResizing ? 'select-none' : ''}`}
-    >
+    <>
+      {/* モバイル用オーバーレイ */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={toggleMobileMenu}
+        />
+      )}
+      
+      <aside 
+        ref={sidebarRef}
+        style={{ width: isSidebarCollapsed ? 80 : sidebarWidth }}
+        className={`h-screen bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl text-slate-300 flex flex-col fixed left-0 top-0 border-r border-slate-800 dark:border-slate-900 transition-all duration-300 ease-in-out z-50 ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        } ${isResizing ? 'select-none' : ''}`}
+      >
       <div 
         className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"
         onMouseDown={() => setIsResizing(true)}
@@ -134,5 +145,6 @@ export const Sidebar = () => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
