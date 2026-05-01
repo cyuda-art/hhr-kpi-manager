@@ -52,7 +52,15 @@ export const DashboardCard = ({ kpi, onClick }: Props) => {
       
       <div className="flex justify-between items-start mb-4">
         <div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{kpi.name}</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className={cn(
+              "text-[10px] font-black tracking-wider px-1.5 py-0.5 rounded text-white shadow-sm",
+              kpi.type === 'KGI' ? 'bg-indigo-500' : 'bg-emerald-500'
+            )}>
+              {kpi.type}
+            </span>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{kpi.name}</p>
+          </div>
           <div className="flex items-baseline gap-2">
             <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
               {kpi.actualValue.toLocaleString()}

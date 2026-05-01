@@ -107,10 +107,7 @@ export const DashboardSummary = () => {
             <div className="flex overflow-x-auto pb-4 gap-4 snap-x custom-scrollbar">
               {/* KGIを先に、KPIを後に並べる */}
               {[...kgis, ...kpis].map((kpi) => (
-                <div key={kpi.id} className="min-w-[280px] snap-start relative">
-                  <div className={`absolute -top-2.5 -left-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-black tracking-wider shadow-sm ${kpi.type === 'KGI' ? 'bg-indigo-500 text-white' : 'bg-emerald-500 text-white'}`}>
-                    {kpi.type}
-                  </div>
+                <div key={kpi.id} className="min-w-[280px] snap-start">
                   <DashboardCard kpi={kpi} onClick={() => setDrawerKpiId(kpi.id)} />
                 </div>
               ))}

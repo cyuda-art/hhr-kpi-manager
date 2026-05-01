@@ -8,14 +8,7 @@ import { useState } from 'react';
 export default function Dashboard() {
   const [isTreeExpanded, setIsTreeExpanded] = useState(true); // 初期状態で開く
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col transition-colors p-6 gap-6 overflow-hidden">
-      <div className="flex items-center justify-between shrink-0">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">ダッシュボード</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">組織の目標達成度とKPIツリーのリアルタイム状況</p>
-        </div>
-      </div>
-      
+    <div className="h-[calc(100vh-4rem)] flex flex-col transition-colors p-4 gap-4 overflow-hidden">
       {/* 1. 動的サマリー（実データ連動） */}
       <div className="shrink-0">
         <DashboardSummary />
@@ -37,7 +30,7 @@ export default function Dashboard() {
           </div>
         </button>
 
-        <div className={`transition-all duration-300 ease-in-out flex-1 flex flex-col min-h-0 ${isTreeExpanded ? 'opacity-100' : 'h-0 opacity-0 overflow-hidden flex-none'}`}>
+        <div className={`flex-1 flex flex-col min-h-0 ${isTreeExpanded ? 'opacity-100' : 'hidden'}`}>
           <KpiTree isDashboard={true} />
         </div>
       </div>
