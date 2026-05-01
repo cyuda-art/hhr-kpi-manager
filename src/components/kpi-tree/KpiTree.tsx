@@ -6,9 +6,48 @@ import '@xyflow/react/dist/style.css';
 import { useKpiStore } from '@/store/useKpiStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import { ActionPanel } from './ActionPanel';
+import dagre from 'dagre';
+import { Wand2 } from 'lucide-react';
 
 const nodeTypes = {
   kpiNode: KpiNodeComponent,
+};
+
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+const nodeWidth = 280;
+const nodeHeight = 150;
+
+const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
+  const isHorizontal = direction === 'LR';
+  dagreGraph.setGraph({ rankdir: direction, ranksep: 100, nodesep: 50 });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const newNodes = nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    const newNode = {
+      ...node,
+      targetPosition: isHorizontal ? 'left' : 'top',
+      sourcePosition: isHorizontal ? 'right' : 'bottom',
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+    return newNode as Node;
+  });
+
+  return { nodes: newNodes, edges };
 };
 
 // ノードの間隔を広げて重なりを解消
@@ -37,54 +76,72 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
     }
   };
 
-  // Level 1
-  addNode('kgi_profit', 750, 50);
-  
-  // Level 2
-  addNode('kgi_sales_total', 750, 200);
-
-  // Level 3 (横幅を広くとる)
-  addNode('kgi_sales_hotel', 150, 350);
-  addNode('kgi_sales_spa', 600, 350);
-  addNode('kgi_sales_restaurant', 1050, 350);
-  addNode('kgi_sales_shop', 1450, 350);
-
-  // Level 4
-  addNode('kpi_hotel_occ', 0, 500);
-  addNode('kpi_hotel_adr', 300, 500);
-  
-  addNode('kpi_spa_visitors', 600, 500);
-  
-  addNode('kpi_restaurant_visitors', 900, 500);
-  addNode('kpi_restaurant_cost', 1200, 500);
+  // ここでは一旦座標は適当に配置しておき、後で getLayoutedElements で整列させることも可能
+  addNode('kgi_profit', 0, 0);
+  addNode('kgi_sales_total', 0, 0);
+  addNode('kgi_sales_hotel', 0, 0);
+  addNode('kgi_sales_spa', 0, 0);
+  addNode('kgi_sales_restaurant', 0, 0);
+  addNode('kgi_sales_shop', 0, 0);
+  addNode('kpi_hotel_occ', 0, 0);
+  addNode('kpi_hotel_adr', 0, 0);
+  addNode('kpi_spa_visitors', 0, 0);
+  addNode('kpi_restaurant_visitors', 0, 0);
+  addNode('kpi_restaurant_cost', 0, 0);
 
   return { nodes, edges };
 };
 
 export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
-  const { kpiData, setSelectedNodeId } = useKpiStore();
+  const { kpiData, setSelectedNodeId, collapsedNodes } = useKpiStore();
 
-  // 初回のみ位置を含むノード・エッジを生成
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    return generateNodesAndEdges(kpiData);
+    const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData);
+    // 初期状態で自動レイアウトを適用
+    return getLayoutedElements(genNodes, genEdges);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ドラッグや選択状態を管理するためのHook
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // kpiData (状態や数値) が更新されたら、nodes と edges を同期する
-  useEffect(() => {
-    setNodes((nds) => {
-      // 既存ノードの更新と削除
-      const newNodes = nds
-        .filter((node) => kpiData[node.id]) // 削除されたノードを除外
-        .map((node) => ({
-          ...node,
-          data: kpiData[node.id] as any,
-        }));
+  const handleAutoLayout = () => {
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  };
 
-      // 追加された新規ノードの検知
+  useEffect(() => {
+    // kpiDataから親子関係マップを作成し、あるノードが折りたたまれるべきかを判定
+    const isNodeHidden = (nodeId: string): boolean => {
+      let currentId = nodeId;
+      while (currentId) {
+        const nodeData = kpiData[currentId];
+        if (!nodeData || !nodeData.parentId) return false;
+        if (collapsedNodes.includes(nodeData.parentId)) return true;
+        currentId = nodeData.parentId;
+      }
+      return false;
+    };
+
+    setNodes((nds) => {
+      const newNodes = nds
+        .filter((node) => kpiData[node.id])
+        .map((node) => {
+          const hasChildren = Object.values(kpiData).some(k => k.parentId === node.id);
+          const isCollapsed = collapsedNodes.includes(node.id);
+          const hidden = isNodeHidden(node.id);
+
+          return {
+            ...node,
+            hidden,
+            data: {
+              ...kpiData[node.id],
+              hasChildren,
+              isCollapsed,
+            } as any,
+          };
+        });
+
       const existingIds = new Set(newNodes.map((n) => n.id));
       Object.keys(kpiData).forEach((id) => {
         if (!existingIds.has(id)) {
@@ -92,17 +149,27 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
           let x = 500;
           let y = 650;
           if (parentId) {
-            const parentNode = newNodes.find((n) => n.id === parentId) || nds.find((n) => n.id === parentId);
+            const parentNode = newNodes.find((n) => n.id === parentId);
             if (parentNode) {
-              x = parentNode.position.x + (Math.random() * 200 - 100);
+              x = parentNode.position.x;
               y = parentNode.position.y + 150;
             }
           }
+          
+          const hasChildren = Object.values(kpiData).some(k => k.parentId === id);
+          const isCollapsed = collapsedNodes.includes(id);
+          const hidden = isNodeHidden(id);
+
           newNodes.push({
             id,
             type: 'kpiNode',
             position: { x, y },
-            data: kpiData[id] as any,
+            hidden,
+            data: {
+              ...kpiData[id],
+              hasChildren,
+              isCollapsed,
+            } as any,
           });
         }
       });
@@ -110,30 +177,32 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
     });
 
     setEdges((eds) => {
-      // 既存エッジの更新と削除
       const newEdges = eds
-        .filter((edge) => kpiData[edge.target] && kpiData[edge.source]) // 削除されたノードに紐づくエッジを除外
+        .filter((edge) => kpiData[edge.target] && kpiData[edge.source])
         .map((edge) => {
           const targetData = kpiData[edge.target];
           const isSimulated = targetData?.isSimulated || false;
+          const hidden = isNodeHidden(edge.target);
           return {
             ...edge,
+            hidden,
             animated: isSimulated,
             style: { stroke: isSimulated ? '#6366f1' : '#cbd5e1', strokeWidth: 2 },
           };
         });
 
-      // 追加された新規ノードのエッジ
       const existingEdgeIds = new Set(newEdges.map((e) => e.id));
       Object.keys(kpiData).forEach((id) => {
         const parentId = kpiData[id].parentId;
         if (parentId && kpiData[parentId]) {
           const edgeId = `e-${parentId}-${id}`;
           if (!existingEdgeIds.has(edgeId)) {
+            const hidden = isNodeHidden(id);
             newEdges.push({
               id: edgeId,
               source: parentId,
               target: id,
+              hidden,
               animated: kpiData[id].isSimulated || false,
               style: { stroke: kpiData[id].isSimulated ? '#6366f1' : '#cbd5e1', strokeWidth: 2 },
             });
@@ -142,11 +211,20 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
       });
       return newEdges;
     });
-  }, [kpiData, setNodes, setEdges]);
+  }, [kpiData, setNodes, setEdges, collapsedNodes]);
 
   return (
     <div className={isDashboard ? "w-full h-full flex gap-4" : "h-[calc(100vh-8rem)] flex gap-6"}>
       <div className="w-full h-full flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors relative">
+        <div className="absolute top-4 left-4 z-10 flex gap-2">
+          <button
+            onClick={handleAutoLayout}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-xs font-bold"
+          >
+            <Wand2 size={14} />
+            自動整列 (Auto Layout)
+          </button>
+        </div>
         <ReactFlow
           nodes={nodes}
           edges={edges}

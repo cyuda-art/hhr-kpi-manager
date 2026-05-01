@@ -3,13 +3,14 @@ import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
 interface NodeProps {
-  data: KpiNodeWithComputed;
+  data: KpiNodeWithComputed & { hasChildren?: boolean; isCollapsed?: boolean };
 }
 
 export const KpiNodeComponent = ({ data }: NodeProps) => {
@@ -32,6 +33,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
   };
 
   const selectedNodeId = useKpiStore((state) => state.selectedNodeId);
+  const toggleNodeCollapse = useKpiStore((state) => state.toggleNodeCollapse);
   const isSelected = selectedNodeId === data.id;
   const isAlert = data.targetValue > 0 && data.achievementRate < 50;
 
@@ -66,7 +68,19 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         </div>
       </div>
       
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-slate-300 dark:!bg-slate-600" />
+      {data.hasChildren && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleNodeCollapse(data.id);
+          }}
+          className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-full flex items-center justify-center text-slate-500 hover:text-indigo-500 hover:border-indigo-400 transition-colors z-10"
+        >
+          {data.isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+        </button>
+      )}
+
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-slate-300 dark:!bg-slate-600 opacity-0" />
     </div>
   );
 };

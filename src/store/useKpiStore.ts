@@ -30,6 +30,7 @@ export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
 interface KpiStore {
   kpiData: Record<string, KpiNodeWithComputedAndInit>;
   selectedNodeId: string | null;
+  collapsedNodes: string[]; // 折りたたまれたノードのID配列
   actions: Action[];
   isDbInitialized: boolean;
   currentProjectId: string | null;
@@ -42,6 +43,7 @@ interface KpiStore {
   commitBulkUpdate: (updates: { id: string; value: number }[]) => void;
   addKpiNode: (node: KpiNodeData) => void;
   removeKpiNode: (id: string) => void;
+  toggleNodeCollapse: (id: string) => void;
 }
 
 // データベース更新用のヘルパー関数
@@ -91,6 +93,7 @@ const CROSS_SELL_SPA_TO_SHOP = 0.10;
 export const useKpiStore = create<KpiStore>((set, get) => ({
   kpiData: initialData,
   selectedNodeId: null,
+  collapsedNodes: [],
   actions: [
     { id: 'a1', kpiId: 'kpi_restaurant_cost', title: '仕入先の見直しと相見積もり', owner: '田中', dueDate: '2026-05-15', status: 'in_progress' },
     { id: 'a2', kpiId: 'kpi_hotel_occ', title: '平日限定プランのOTA露出強化', owner: '佐藤', dueDate: '2026-05-10', status: 'todo' },
@@ -281,6 +284,16 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
       
       syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft, selectedNodeId: newSelected };
+    });
+  },
+  toggleNodeCollapse: (id) => {
+    set((state) => {
+      const isCollapsed = state.collapsedNodes.includes(id);
+      if (isCollapsed) {
+        return { collapsedNodes: state.collapsedNodes.filter(nodeId => nodeId !== id) };
+      } else {
+        return { collapsedNodes: [...state.collapsedNodes, id] };
+      }
     });
   },
   resetSimulations: () => {
