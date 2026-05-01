@@ -60,7 +60,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
   return { nodes, edges };
 };
 
-export const KpiTree = () => {
+export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
   const { kpiData, setSelectedNodeId } = useKpiStore();
 
   // 初回のみ位置を含むノード・エッジを生成
@@ -144,8 +144,8 @@ export const KpiTree = () => {
   }, [kpiData, setNodes, setEdges]);
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex gap-6">
-      <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+    <div className={isDashboard ? "w-full h-full" : "h-[calc(100vh-8rem)] flex gap-6"}>
+      <div className="w-full h-full flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
         <ReactFlow
           nodes={nodes}
           edges={edges}
