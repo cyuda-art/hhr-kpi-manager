@@ -1,4 +1,5 @@
 import { DashboardSummary } from '@/components/dashboard/DashboardSummary';
+import { KpiList } from '@/components/dashboard/KpiList';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 
 export default function Dashboard() {
@@ -16,9 +17,16 @@ export default function Dashboard() {
         <DashboardSummary />
       </div>
 
-      {/* 2. インタラクティブなツリー */}
-      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <KpiTree isDashboard={true} />
+      <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
+        {/* 2. KPIツリー */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-6 h-[500px]">
+          <KpiTree isDashboard={true} />
+        </div>
+
+        {/* 3. すべての指標リスト */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+          <KpiList />
+        </div>
       </div>
     </div>
   );
