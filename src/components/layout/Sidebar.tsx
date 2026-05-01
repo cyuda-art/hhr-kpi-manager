@@ -25,11 +25,11 @@ export const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 h-screen flex flex-col fixed left-0 top-0">
+    <aside className="w-64 bg-slate-900 dark:bg-slate-950 text-slate-300 h-screen flex flex-col fixed left-0 top-0 border-r border-slate-800 dark:border-slate-900 transition-colors">
       <div className="p-6">
         <h1 className="text-xl font-bold text-white tracking-wider mb-2">HHR-KPI MANAGER</h1>
         {currentProject && (
-          <div className="bg-slate-800 rounded-lg p-3 border border-slate-700 flex items-center gap-2">
+          <div className="bg-slate-800 dark:bg-slate-900 rounded-lg p-3 border border-slate-700 dark:border-slate-800 flex items-center gap-2 transition-colors">
             <FolderKanban size={16} className="text-indigo-400 flex-shrink-0" />
             <span className="text-sm font-medium text-slate-200 truncate" title={currentProject.name}>
               {currentProject.name}

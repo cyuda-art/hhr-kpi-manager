@@ -114,10 +114,10 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors">
+      <div className="max-w-2xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800 transition-colors">
         {/* Header */}
-        <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+        <div className="bg-indigo-600 dark:bg-indigo-900 p-8 text-white relative overflow-hidden transition-colors">
           <div className="relative z-10">
             <h1 className="text-2xl font-bold mb-2">プロジェクトのセットアップ</h1>
             <p className="text-indigo-100">KPIツリーの骨組みをステップバイステップで作成します</p>
@@ -155,54 +155,54 @@ export default function OnboardingPage() {
           {/* Step 1: KGI */}
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="flex items-center gap-3 text-slate-800 mb-6">
-                <Target className="w-6 h-6 text-indigo-600" />
+              <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100 mb-6">
+                <Target className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-xl font-bold">最終目標（KGI）の設定</h2>
               </div>
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 このプロジェクトで達成したい最も重要な目標を1つ設定してください。
                 （例：月間売上、年間利益、MRRなど）
               </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">指標名</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">指標名</label>
                   <input
                     type="text"
                     value={kgi.name}
                     onChange={(e) => setKgi({ ...kgi, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
                     placeholder="例: 月間売上"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">目標値</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">目標値</label>
                     <input
                       type="number"
                       value={kgi.targetValue || ''}
                       onChange={(e) => setKgi({ ...kgi, targetValue: Number(e.target.value) })}
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">単位</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">単位</label>
                     <input
                       type="text"
                       value={kgi.unit}
                       onChange={(e) => setKgi({ ...kgi, unit: e.target.value })}
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
                       placeholder="例: 円, 人, %"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">現在の実績値（任意）</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">現在の実績値（任意）</label>
                   <input
                     type="number"
                     value={kgi.actualValue || ''}
                     onChange={(e) => setKgi({ ...kgi, actualValue: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -212,19 +212,19 @@ export default function OnboardingPage() {
           {/* Step 2: KPIs */}
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="flex items-center gap-3 text-slate-800 mb-6">
-                <TrendingUp className="w-6 h-6 text-indigo-600" />
+              <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100 mb-6">
+                <TrendingUp className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-xl font-bold">主要KPIの追加</h2>
               </div>
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                 「{kgi.name}」を達成するために、直下に紐づく主要なKPI（要素）を追加してください。
                 （例：売上であれば「客数」と「客単価」など）
               </p>
 
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                 {kpis.map((kpi, index) => (
-                  <div key={kpi.id} className="p-4 bg-slate-50 border border-slate-200 rounded-xl relative group">
-                    <div className="absolute -left-3 -top-3 w-6 h-6 bg-slate-800 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
+                  <div key={kpi.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl relative group transition-colors">
+                    <div className="absolute -left-3 -top-3 w-6 h-6 bg-slate-800 dark:bg-slate-700 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
                       {index + 1}
                     </div>
                     {kpis.length > 1 && (
@@ -238,31 +238,31 @@ export default function OnboardingPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-slate-500 mb-1">KPI名</label>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">KPI名</label>
                         <input
                           type="text"
                           value={kpi.name}
                           onChange={(e) => updateKpi(kpi.id, 'name', e.target.value)}
-                          className="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-colors"
                           placeholder="例: 客数"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">目標値</label>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">目標値</label>
                         <input
                           type="number"
                           value={kpi.targetValue || ''}
                           onChange={(e) => updateKpi(kpi.id, 'targetValue', Number(e.target.value))}
-                          className="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-colors"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">単位</label>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">単位</label>
                         <input
                           type="text"
                           value={kpi.unit}
                           onChange={(e) => updateKpi(kpi.id, 'unit', e.target.value)}
-                          className="w-full px-3 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-colors"
                         />
                       </div>
                     </div>
@@ -271,7 +271,7 @@ export default function OnboardingPage() {
 
                 <button 
                   onClick={addKpi}
-                  className="w-full py-3 border-2 border-dashed border-slate-300 text-slate-500 rounded-xl flex items-center justify-center gap-2 hover:border-indigo-400 hover:text-indigo-600 transition-colors"
+                  className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl flex items-center justify-center gap-2 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 >
                   <Plus size={18} />
                   <span>KPIを追加する</span>
@@ -283,34 +283,34 @@ export default function OnboardingPage() {
           {/* Step 3: Confirmation */}
           {step === 3 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="flex items-center gap-3 text-slate-800 mb-6">
-                <CheckCircle className="w-6 h-6 text-green-500" />
+              <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100 mb-6">
+                <CheckCircle className="w-6 h-6 text-green-500 dark:text-green-400" />
                 <h2 className="text-xl font-bold">設定内容の確認</h2>
               </div>
-              <p className="text-sm text-slate-600 mb-6">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
                 以下の構成でKPIツリーを作成します。作成後もダッシュボードから自由に追加・編集が可能です。
               </p>
 
-              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative overflow-hidden">
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-colors">
                 {/* KGI Box */}
-                <div className="bg-indigo-600 text-white p-4 rounded-lg shadow-md mb-8 relative z-10 mx-auto w-3/4 text-center">
+                <div className="bg-indigo-600 dark:bg-indigo-700 text-white p-4 rounded-lg shadow-md mb-8 relative z-10 mx-auto w-3/4 text-center">
                   <div className="text-xs text-indigo-200 font-bold mb-1">KGI</div>
                   <div className="font-bold text-lg">{kgi.name}</div>
                   <div className="text-sm mt-1">{kgi.targetValue.toLocaleString()} {kgi.unit}</div>
                 </div>
 
                 {/* Connecting Lines */}
-                <div className="absolute top-20 left-1/2 w-px h-8 bg-slate-300 -translate-x-1/2 z-0"></div>
-                <div className="absolute top-28 left-1/4 right-1/4 h-px bg-slate-300 z-0"></div>
+                <div className="absolute top-20 left-1/2 w-px h-8 bg-slate-300 dark:bg-slate-600 -translate-x-1/2 z-0"></div>
+                <div className="absolute top-28 left-1/4 right-1/4 h-px bg-slate-300 dark:bg-slate-600 z-0"></div>
 
                 {/* KPI Boxes */}
                 <div className="flex justify-center gap-4 relative z-10 flex-wrap">
                   {kpis.map((kpi, idx) => (
-                    <div key={kpi.id} className="bg-white border border-slate-300 p-3 rounded-lg shadow-sm flex-1 min-w-[120px] text-center relative">
-                      <div className="absolute -top-4 left-1/2 w-px h-4 bg-slate-300 -translate-x-1/2"></div>
-                      <div className="text-xs text-slate-400 font-bold mb-1">KPI</div>
-                      <div className="font-bold text-slate-800 text-sm">{kpi.name || '未設定'}</div>
-                      <div className="text-xs text-slate-500 mt-1">{kpi.targetValue.toLocaleString()} {kpi.unit}</div>
+                    <div key={kpi.id} className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 p-3 rounded-lg shadow-sm flex-1 min-w-[120px] text-center relative transition-colors">
+                      <div className="absolute -top-4 left-1/2 w-px h-4 bg-slate-300 dark:bg-slate-600 -translate-x-1/2"></div>
+                      <div className="text-xs text-slate-400 dark:text-slate-500 font-bold mb-1">KPI</div>
+                      <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{kpi.name || '未設定'}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{kpi.targetValue.toLocaleString()} {kpi.unit}</div>
                     </div>
                   ))}
                 </div>
@@ -319,10 +319,10 @@ export default function OnboardingPage() {
           )}
 
           {/* Footer Navigation */}
-          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between transition-colors">
             <button
               onClick={() => step > 1 ? setStep(step - 1) : router.push('/projects')}
-              className="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium transition-colors flex items-center gap-2"
+              className="px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium transition-colors flex items-center gap-2"
             >
               <ArrowLeft size={16} />
               {step === 1 ? 'プロジェクト一覧へ戻る' : '戻る'}

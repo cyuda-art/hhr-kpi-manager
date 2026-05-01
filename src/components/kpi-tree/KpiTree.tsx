@@ -144,21 +144,23 @@ export const KpiTree = () => {
   }, [kpiData, setNodes, setEdges]);
 
   return (
-    <div className="h-[700px] w-full bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-inner">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-        onPaneClick={() => setSelectedNodeId(null)}
-        nodeTypes={nodeTypes}
-        fitView
-        className="bg-slate-50/50"
-      >
-        <Background color="#e2e8f0" gap={16} />
-        <Controls />
-      </ReactFlow>
+    <div className="h-[calc(100vh-8rem)] flex gap-6">
+      <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+          onPaneClick={() => setSelectedNodeId(null)}
+          nodeTypes={nodeTypes}
+          fitView
+          className="bg-slate-50 dark:bg-slate-950 transition-colors"
+        >
+          <Background color="#94a3b8" gap={16} />
+          <Controls className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 fill-slate-700 dark:fill-slate-300" />
+        </ReactFlow>
+      </div>
     </div>
   );
 };

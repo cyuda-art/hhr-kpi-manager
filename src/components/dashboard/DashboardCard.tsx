@@ -38,25 +38,26 @@ export const DashboardCard = ({ kpi, onClick }: Props) => {
     <div 
       onClick={onClick}
       className={cn(
-        "bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden",
-        onClick && "cursor-pointer hover:border-indigo-300",
-        kpi.isSimulated ? "border-indigo-300 shadow-indigo-100" : "border-slate-200"
+        "bg-white dark:bg-slate-900 rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden",
+        onClick && "cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500",
+        kpi.isSimulated ? "border-indigo-300 shadow-indigo-100 dark:border-indigo-500 dark:shadow-none" : "border-slate-200 dark:border-slate-800"
       )}
     >
       {kpi.isSimulated && (
-        <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold uppercase tracking-wider">
+        <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold uppercase tracking-wider flex items-center gap-1">
+          <Sparkles size={10} />
           Simulated
         </div>
       )}
       
       <div className="flex justify-between items-start mb-4">
         <div>
-          <p className="text-sm font-medium text-slate-500 mb-1">{kpi.name}</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{kpi.name}</p>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl font-bold text-slate-800">
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
               {kpi.actualValue.toLocaleString()}
             </h3>
-            <span className="text-sm text-slate-500">{kpi.unit}</span>
+            <span className="text-sm text-slate-500 dark:text-slate-400">{kpi.unit}</span>
           </div>
         </div>
         <div className={cn("px-2.5 py-1 rounded-full text-xs font-bold border flex items-center gap-1", getStatusColor(kpi.status))}>
@@ -65,10 +66,10 @@ export const DashboardCard = ({ kpi, onClick }: Props) => {
       </div>
 
       <div className="mb-4">
-        <div className="flex justify-between text-xs text-slate-500 mb-1">
+        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
           <span>目標: {kpi.targetValue.toLocaleString()} {kpi.unit}</span>
         </div>
-        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
           <div 
             className={cn("h-full rounded-full transition-all duration-1000", getProgressColor(kpi.status))}
             style={{ width: `${Math.min(kpi.achievementRate, 100)}%` }}

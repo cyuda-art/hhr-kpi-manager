@@ -25,7 +25,7 @@ export const KpiList = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
           <div className="w-2 h-6 bg-indigo-500 rounded-full"></div>
           全社重要指標 (KGI)
         </h2>
@@ -37,7 +37,7 @@ export const KpiList = () => {
       </div>
 
       <div>
-        <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
           <div className="w-2 h-6 bg-emerald-500 rounded-full"></div>
           事業別KGI
         </h2>

@@ -58,11 +58,11 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
       <Sidebar />
-      <div className="pl-64">
+      <div className="pl-64 flex flex-col min-h-screen">
         <Header />
-        <main className="p-8">
+        <main className="p-8 flex-1">
           {children}
         </main>
       </div>
