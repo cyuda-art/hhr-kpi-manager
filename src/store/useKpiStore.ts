@@ -26,6 +26,8 @@ interface KpiStore {
   commitBulkUpdate: (updates: { id: string; value: number }[]) => void;
   addKpiNode: (node: KpiNodeData) => void;
   removeKpiNode: (id: string) => void;
+  updateKpiNode: (id: string, data: Partial<KpiNodeData>) => void;
+  setKpiDataBulk: (nodes: KpiNodeData[]) => void;
   toggleNodeCollapse: (id: string) => void;
 }
 
@@ -270,6 +272,31 @@ export const useKpiStore = create<KpiStore>()(
       
       syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft };
+    });
+  },
+  updateKpiNode: (id, data) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      if (draft[id]) {
+        draft[id] = calculateComputed({ ...draft[id], ...data });
+        syncToDB(draft, state.actions, state.currentProjectId);
+      }
+      return { kpiData: draft };
+    });
+  },
+  setKpiDataBulk: (nodes) => {
+    set((state) => {
+      const newData: Record<string, KpiNodeWithComputedAndInit> = {};
+      nodes.forEach(node => {
+        newData[node.id] = {
+          ...node,
+          initialActualValue: node.actualValue,
+          achievementRate: (node.actualValue / node.targetValue) * 100,
+          status: ((node.actualValue / node.targetValue) * 100) >= 100 ? 'good' : ((node.actualValue / node.targetValue) * 100) >= 80 ? 'warning' : 'danger',
+          isSimulated: false
+        };
+      });
+      return { kpiData: newData, selectedNodeId: null };
     });
   },
   removeKpiNode: (id) => {
