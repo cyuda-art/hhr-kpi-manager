@@ -146,9 +146,17 @@ export const ActionPanel = () => {
       )}
 
       {selectedKpi && isGeneratingAi && (
-        <div className="mb-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-3">
-          <Loader2 size={24} className="text-indigo-500 animate-spin" />
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 animate-pulse">KPIデータを分析中...</p>
+        <div className="mb-6 siri-blob-container p-1 rounded-xl">
+          <div className="siri-blob rounded-xl"></div>
+          <div className="relative z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-4">
+            <div className="relative">
+              <Sparkles size={28} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] mix-blend-overlay animate-pulse absolute inset-0" />
+              <Sparkles size={28} className="text-slate-800 dark:text-slate-200 animate-pulse relative" />
+            </div>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 animate-pulse tracking-wide">
+              AIがインサイトを分析中...
+            </p>
+          </div>
         </div>
       )}
 
