@@ -6,37 +6,49 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useProjectStore } from '@/store/useProjectStore';
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { initializeDB } = useKpiStore();
-  const { user, isLoading, initializeAuth } = useAuthStore();
+  const { user, isLoading: isAuthLoading, initializeAuth } = useAuthStore();
+  const { currentProjectId, isLoading: isProjectLoading } = useProjectStore();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    // データベースと認証の初期化
-    initializeDB();
     const unsubscribe = initializeAuth();
     return () => unsubscribe();
-  }, [initializeDB, initializeAuth]);
+  }, [initializeAuth]);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (user && currentProjectId) {
+      initializeDB(currentProjectId);
+    }
+  }, [user, currentProjectId, initializeDB]);
+
+  useEffect(() => {
+    if (!isAuthLoading) {
       if (!user && pathname !== '/login') {
         router.push('/login');
-      } else if (user && pathname === '/login') {
-        router.push('/');
+      } else if (user) {
+        // ログイン済みだがプロジェクト未選択の場合はプロジェクト画面へ
+        if (!currentProjectId && pathname !== '/projects' && !isProjectLoading) {
+          router.push('/projects');
+        } else if (currentProjectId && pathname === '/projects') {
+          // プロジェクト選択済みなのにプロジェクト一覧にいる場合はダッシュボードへ戻すのもありだが、
+          // 別プロジェクトに切り替えたい場合もあるのでここでは何もしない
+        }
       }
     }
-  }, [user, isLoading, pathname, router]);
+  }, [user, isAuthLoading, pathname, router, currentProjectId, isProjectLoading]);
 
   // ローディング中は何かしらのスピナーか空画面を見せる
-  if (isLoading) {
+  if (isAuthLoading) {
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
   }
 
-  // ログインページの場合はサイドバーなどを表示しない
-  if (pathname === '/login') {
+  // ログインページやプロジェクト選択画面の場合はサイドバーなどを表示しない
+  if (pathname === '/login' || pathname === '/projects') {
     return <>{children}</>;
   }
 

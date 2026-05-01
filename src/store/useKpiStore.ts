@@ -32,7 +32,8 @@ interface KpiStore {
   selectedNodeId: string | null;
   actions: Action[];
   isDbInitialized: boolean;
-  initializeDB: () => Promise<void>;
+  currentProjectId: string | null;
+  initializeDB: (projectId: string) => Promise<void>;
   updateActualValue: (id: string, newValue: number) => void;
   resetSimulations: () => void;
   setSelectedNodeId: (id: string | null) => void;
@@ -44,9 +45,10 @@ interface KpiStore {
 }
 
 // データベース更新用のヘルパー関数
-const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[]) => {
+const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null) => {
+  if (!projectId) return;
   try {
-    await setDoc(doc(db, 'config', 'main'), { kpiData, actions });
+    await setDoc(doc(db, 'projects', projectId, 'kpiData', 'main'), { kpiData, actions });
   } catch (error) {
     console.error("DB Sync Error:", error);
   }
@@ -94,11 +96,15 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
     { id: 'a2', kpiId: 'kpi_hotel_occ', title: '平日限定プランのOTA露出強化', owner: '佐藤', dueDate: '2026-05-10', status: 'todo' },
   ],
   isDbInitialized: false,
+  currentProjectId: null,
 
-  initializeDB: async () => {
-    if (get().isDbInitialized) return;
+  initializeDB: async (projectId: string) => {
+    // 既に同じプロジェクトで初期化済みならリターン
+    if (get().isDbInitialized && get().currentProjectId === projectId) return;
     
-    const docRef = doc(db, 'config', 'main');
+    set({ currentProjectId: projectId, isDbInitialized: false });
+    
+    const docRef = doc(db, 'projects', projectId, 'kpiData', 'main');
     const docSnap = await getDoc(docRef);
 
     // DBにデータがなければ初期データを書き込む
@@ -128,7 +134,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
     const newAction = { ...action, id: Math.random().toString(36).substr(2, 9) };
     set((state) => {
       const newActions = [...state.actions, newAction];
-      syncToDB(state.kpiData, newActions);
+      syncToDB(state.kpiData, newActions, state.currentProjectId);
       return { actions: newActions };
     });
   },
@@ -138,7 +144,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
       const newActions = state.actions.map(a => 
         a.id === actionId ? { ...a, status: (a.status === 'done' ? 'todo' : 'done') as 'todo' | 'done' } : a
       );
-      syncToDB(state.kpiData, newActions);
+      syncToDB(state.kpiData, newActions, state.currentProjectId);
       return { actions: newActions };
     });
   },
@@ -254,7 +260,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
         draft[key] = { ...draft[key], isSimulated: false, initialActualValue: draft[key].actualValue };
       });
 
-      syncToDB(draft, state.actions);
+      syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft };
     });
   },
@@ -263,7 +269,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
       const draft = { ...state.kpiData };
       draft[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
       
-      syncToDB(draft, state.actions);
+      syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft };
     });
   },
@@ -273,7 +279,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
       delete draft[id];
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
-      syncToDB(draft, state.actions);
+      syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft, selectedNodeId: newSelected };
     });
   },
