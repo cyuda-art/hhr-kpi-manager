@@ -98,37 +98,24 @@ export const DashboardSummary = () => {
             </div>
           </div>
 
-          {/* KGIカード一覧（横スクロール可能に） */}
+          {/* 指標カード一覧（横スクロール可能に） */}
           <div>
             <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
               <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
-              全社重要指標 (KGI)
+              すべての指標一覧
             </h3>
             <div className="flex overflow-x-auto pb-4 gap-4 snap-x custom-scrollbar">
-              {kgis.map((kpi) => (
-                <div key={kpi.id} className="min-w-[280px] snap-start">
+              {/* KGIを先に、KPIを後に並べる */}
+              {[...kgis, ...kpis].map((kpi) => (
+                <div key={kpi.id} className="min-w-[280px] snap-start relative">
+                  <div className={`absolute -top-2.5 -left-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-black tracking-wider shadow-sm ${kpi.type === 'KGI' ? 'bg-indigo-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                    {kpi.type}
+                  </div>
                   <DashboardCard kpi={kpi} onClick={() => setDrawerKpiId(kpi.id)} />
                 </div>
               ))}
             </div>
           </div>
-
-          {/* KPIカード一覧（横スクロール可能に） */}
-          {kpis.length > 0 && (
-            <div className="pt-2">
-              <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                <div className="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
-                現場指標 (KPI)
-              </h3>
-              <div className="flex overflow-x-auto pb-4 gap-4 snap-x custom-scrollbar">
-                {kpis.map((kpi) => (
-                  <div key={kpi.id} className="min-w-[280px] snap-start">
-                    <DashboardCard kpi={kpi} onClick={() => setDrawerKpiId(kpi.id)} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
