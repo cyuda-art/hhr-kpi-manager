@@ -5,6 +5,7 @@ import { ReactFlow, Background, Controls, MiniMap, Node, Edge, useNodesState, us
 import '@xyflow/react/dist/style.css';
 import { useKpiStore } from '@/store/useKpiStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
+import { ActionPanel } from './ActionPanel';
 
 const nodeTypes = {
   kpiNode: KpiNodeComponent,
@@ -144,8 +145,8 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
   }, [kpiData, setNodes, setEdges]);
 
   return (
-    <div className={isDashboard ? "w-full h-full" : "h-[calc(100vh-8rem)] flex gap-6"}>
-      <div className="w-full h-full flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+    <div className={isDashboard ? "w-full h-full flex gap-4" : "h-[calc(100vh-8rem)] flex gap-6"}>
+      <div className="w-full h-full flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -169,6 +170,19 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
             maskColor="rgba(0, 0, 0, 0.1)"
           />
         </ReactFlow>
+      </div>
+
+      {/* 右側のインサイト・アクションパネル */}
+      <div className="w-80 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors flex flex-col">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50">
+          <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
+            <span className="w-2 h-4 bg-indigo-500 rounded-full"></span>
+            アクション ＆ インサイト
+          </h2>
+        </div>
+        <div className="flex-1 p-4 overflow-y-auto">
+          <ActionPanel />
+        </div>
       </div>
     </div>
   );
