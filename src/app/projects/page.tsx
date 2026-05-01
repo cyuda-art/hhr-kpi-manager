@@ -4,15 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
-import { Building2, Plus, ArrowRight, FolderKanban } from 'lucide-react';
+import { Building2, Plus, ArrowRight, FolderKanban, Copy, Trash2 } from 'lucide-react';
 
 export default function ProjectsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { projects, isLoading, initializeProjects, setCurrentProjectId, createProject } = useProjectStore();
+  const { projects, isLoading, initializeProjects, setCurrentProjectId, createProject, duplicateProject, deleteProject } = useProjectStore();
   const [isCreating, setIsCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDesc, setNewProjectDesc] = useState('');
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -36,6 +37,35 @@ export default function ProjectsPage() {
       router.push('/onboarding');
     } catch (error) {
       console.error("Failed to create project", error);
+    }
+  };
+
+  const handleDuplicate = async (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation(); // カード自体のクリック発火を防ぐ
+    if (!user) return;
+    setIsProcessing(projectId);
+    try {
+      await duplicateProject(projectId, user.uid);
+    } catch (error) {
+      console.error("Failed to duplicate", error);
+      alert("複製に失敗しました");
+    } finally {
+      setIsProcessing(null);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, projectId: string, projectName: string) => {
+    e.stopPropagation();
+    if (window.confirm(`「${projectName}」を本当に削除しますか？\nこの操作は取り消せません。`)) {
+      setIsProcessing(projectId);
+      try {
+        await deleteProject(projectId);
+      } catch (error) {
+        console.error("Failed to delete", error);
+        alert("削除に失敗しました");
+      } finally {
+        setIsProcessing(null);
+      }
     }
   };
 
@@ -138,16 +168,41 @@ export default function ProjectsPage() {
                   <FolderKanban className="w-6 h-6" />
                 </div>
                 
-                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                {/* 操作メニュー（右上に配置） */}
+                <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={(e) => handleDuplicate(e, project.id)}
+                    disabled={isProcessing === project.id}
+                    title="プロジェクトを複製"
+                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-lg transition-colors"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={(e) => handleDelete(e, project.id, project.name)}
+                    disabled={isProcessing === project.id}
+                    title="プロジェクトを削除"
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pr-12">
                   {project.name}
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2 min-h-[40px]">
                   {project.description || '説明なし'}
                 </p>
                 
-                <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-bold">
-                  プロジェクトを開く 
-                  <ArrowRight className="w-4 h-4 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                <div className="flex items-center justify-between mt-auto">
+                  <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-bold">
+                    プロジェクトを開く 
+                    <ArrowRight className="w-4 h-4 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                  </div>
+                  {isProcessing === project.id && (
+                    <span className="text-xs text-indigo-500 animate-pulse font-medium">処理中...</span>
+                  )}
                 </div>
               </button>
             );

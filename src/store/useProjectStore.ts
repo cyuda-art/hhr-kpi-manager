@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { Project } from '@/types/project';
 
 interface ProjectStore {
@@ -10,6 +10,8 @@ interface ProjectStore {
   initializeProjects: (userId: string) => () => void;
   setCurrentProjectId: (id: string | null) => void;
   createProject: (name: string, description: string, userId: string) => Promise<string>;
+  deleteProject: (projectId: string) => Promise<void>;
+  duplicateProject: (projectId: string, userId: string) => Promise<string>;
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
@@ -47,5 +49,53 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
     await setDoc(doc(db, 'projects', newProjectId), newProject);
     return newProjectId;
+  },
+
+  deleteProject: async (projectId: string) => {
+    try {
+      // 1. KPIデータの削除
+      await deleteDoc(doc(db, 'projects', projectId, 'kpiData', 'main'));
+      // 2. プロジェクト自体の削除
+      await deleteDoc(doc(db, 'projects', projectId));
+      
+      const { currentProjectId, setCurrentProjectId } = get();
+      if (currentProjectId === projectId) {
+        setCurrentProjectId(null);
+      }
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      throw error;
+    }
+  },
+
+  duplicateProject: async (projectId: string, userId: string) => {
+    try {
+      // 1. 元プロジェクトの情報を取得
+      const projectDoc = await getDoc(doc(db, 'projects', projectId));
+      if (!projectDoc.exists()) throw new Error("Project not found");
+      const originalProject = projectDoc.data() as Project;
+
+      // 2. 新しいプロジェクトを作成
+      const newProjectId = Math.random().toString(36).substr(2, 9);
+      const newProject: Project = {
+        ...originalProject,
+        id: newProjectId,
+        name: `${originalProject.name} のコピー`,
+        ownerId: userId, // 複製した人がオーナーになる
+        createdAt: Date.now(),
+      };
+      await setDoc(doc(db, 'projects', newProjectId), newProject);
+
+      // 3. 元のKPIデータを取得してコピー
+      const kpiDataDoc = await getDoc(doc(db, 'projects', projectId, 'kpiData', 'main'));
+      if (kpiDataDoc.exists()) {
+        await setDoc(doc(db, 'projects', newProjectId, 'kpiData', 'main'), kpiDataDoc.data());
+      }
+
+      return newProjectId;
+    } catch (error) {
+      console.error("Error duplicating project:", error);
+      throw error;
+    }
   }
 }));
