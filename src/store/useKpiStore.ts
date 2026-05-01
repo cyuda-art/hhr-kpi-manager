@@ -296,6 +296,7 @@ export const useKpiStore = create<KpiStore>()(
           isSimulated: false
         };
       });
+      syncToDB(newData, state.actions, state.currentProjectId);
       return { kpiData: newData, selectedNodeId: null };
     });
   },
