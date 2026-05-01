@@ -89,7 +89,14 @@ export const ActionPanel = () => {
       });
 
       if (!response.ok) {
-        throw new Error('APIリクエストに失敗しました');
+        let errorMsg = `APIリクエストに失敗しました (Status: ${response.status})`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) errorMsg = errorData.error;
+        } catch (e) {
+          // JSONパース失敗（VercelのHTMLエラーページなどが返ってきた場合）
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
