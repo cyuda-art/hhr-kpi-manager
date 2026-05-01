@@ -33,10 +33,25 @@ export default function OnboardingPage() {
   });
 
   // KPIデータ（初期状態で2つ用意）
-  const [kpis, setKpis] = useState<MetricInput[]>([
-    { id: 'kpi_1', name: '顧客数', targetValue: 1000, actualValue: 0, unit: '人' },
-    { id: 'kpi_2', name: '客単価', targetValue: 10000, actualValue: 0, unit: '円' }
-  ]);
+  const [kpis, setKpis] = useState<MetricInput[]>([]);
+
+  const applyTemplate = (type: 'retail' | 'saas') => {
+    if (type === 'retail') {
+      setKgi({ id: 'kgi_main', name: '月間店舗売上', targetValue: 5000000, actualValue: 0, unit: '円' });
+      setKpis([
+        { id: 'kpi_1', name: '来店客数', targetValue: 1000, actualValue: 0, unit: '人' },
+        { id: 'kpi_2', name: '客単価', targetValue: 5000, actualValue: 0, unit: '円' }
+      ]);
+    } else if (type === 'saas') {
+      setKgi({ id: 'kgi_main', name: 'MRR (月次経常収益)', targetValue: 10000000, actualValue: 0, unit: '円' });
+      setKpis([
+        { id: 'kpi_1', name: '新規獲得件数', targetValue: 50, actualValue: 0, unit: '件' },
+        { id: 'kpi_2', name: '平均顧客単価', targetValue: 200000, actualValue: 0, unit: '円' },
+        { id: 'kpi_3', name: '解約率 (Churn)', targetValue: 1, actualValue: 0, unit: '%' }
+      ]);
+    }
+    setStep(1);
+  };
 
   useEffect(() => {
     if (!currentProjectId) {
@@ -149,13 +164,24 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="p-8">
+        {/* Content Area - 2 Columns */}
+        <div className="flex flex-col md:flex-row h-full max-h-[80vh] overflow-hidden">
           
-          {/* Step 1: KGI */}
-          {step === 1 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100 mb-6">
+          {/* Left Column: Form */}
+          <div className="p-8 md:w-1/2 overflow-y-auto border-r border-slate-100 dark:border-slate-800">
+            
+            {/* Step 1: KGI */}
+            {step === 1 && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="mb-8 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">💡 テンプレートから始める</p>
+                  <div className="flex gap-2">
+                    <button onClick={() => applyTemplate('retail')} className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs hover:border-indigo-400 transition-colors">店舗・小売</button>
+                    <button onClick={() => applyTemplate('saas')} className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs hover:border-indigo-400 transition-colors">B2B SaaS</button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100 mb-6">
                 <Target className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-xl font-bold">最終目標（KGI）の設定</h2>
               </div>
@@ -348,7 +374,36 @@ export default function OnboardingPage() {
               </button>
             )}
           </div>
+          </div>
           
+          {/* Right Column: Live Preview */}
+          <div className="hidden md:block md:w-1/2 bg-slate-50/50 dark:bg-slate-900/20 p-8 overflow-y-auto flex items-center justify-center">
+            <div className="w-full flex flex-col items-center">
+              <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 mb-8 uppercase tracking-wider">Live Preview</h3>
+              
+              <div className="bg-indigo-600 dark:bg-indigo-700 text-white p-4 rounded-xl shadow-lg mb-8 relative z-10 w-full max-w-[240px] text-center border-2 border-indigo-400 dark:border-indigo-500/50">
+                <div className="text-xs text-indigo-200 font-bold mb-1">KGI</div>
+                <div className="font-bold text-lg">{kgi.name || '未設定'}</div>
+                <div className="text-sm mt-1 text-indigo-100">{kgi.targetValue ? kgi.targetValue.toLocaleString() : '-'} {kgi.unit}</div>
+              </div>
+
+              {kpis.length > 0 && (
+                <div className="relative w-full flex justify-center gap-4 flex-wrap">
+                  <div className="absolute -top-8 left-1/2 w-px h-8 bg-slate-300 dark:bg-slate-600 -translate-x-1/2 z-0"></div>
+                  {kpis.length > 1 && <div className="absolute -top-4 left-[20%] right-[20%] h-px bg-slate-300 dark:bg-slate-600 z-0"></div>}
+                  
+                  {kpis.map((kpi, idx) => (
+                    <div key={kpi.id} className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-md w-[140px] text-center relative z-10 transition-all hover:-translate-y-1">
+                      <div className="absolute -top-4 left-1/2 w-px h-4 bg-slate-300 dark:bg-slate-600 -translate-x-1/2"></div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-1">KPI</div>
+                      <div className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">{kpi.name || '未設定'}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{kpi.targetValue ? kpi.targetValue.toLocaleString() : '-'} {kpi.unit}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

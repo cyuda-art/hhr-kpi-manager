@@ -33,13 +33,15 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
 
   const selectedNodeId = useKpiStore((state) => state.selectedNodeId);
   const isSelected = selectedNodeId === data.id;
+  const isAlert = data.targetValue > 0 && data.achievementRate < 50;
 
   return (
     <div className={cn(
-      "w-64 bg-white dark:bg-slate-900 rounded-lg shadow-sm border-2 p-4 transition-all hover:shadow-md",
+      "w-64 bg-white dark:bg-slate-900 rounded-xl shadow-lg border-2 p-4 transition-all hover:shadow-xl hover:-translate-y-1 duration-300",
       getStatusBorder(data.status),
       data.isSimulated && "shadow-indigo-100 dark:shadow-none",
-      isSelected && "ring-4 ring-indigo-400 border-indigo-400 dark:ring-indigo-800 dark:border-indigo-600"
+      isSelected && "ring-4 ring-indigo-400/50 border-indigo-400 dark:ring-indigo-800/50 dark:border-indigo-600",
+      isAlert && "animate-pulse shadow-red-500/20 dark:shadow-red-900/30 border-red-400 dark:border-red-600"
     )}>
       <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-slate-300 dark:!bg-slate-600" />
       

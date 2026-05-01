@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from 'react';
-import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
+import { ReactFlow, Background, Controls, MiniMap, Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useKpiStore } from '@/store/useKpiStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
@@ -158,7 +158,16 @@ export const KpiTree = () => {
           className="bg-slate-50 dark:bg-slate-950 transition-colors"
         >
           <Background color="#94a3b8" gap={16} />
-          <Controls className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 fill-slate-700 dark:fill-slate-300" />
+          <Controls className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-slate-200 dark:border-slate-700 fill-slate-700 dark:fill-slate-300 shadow-lg" />
+          <MiniMap 
+            className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl"
+            nodeColor={(node) => {
+              if (node.data?.status === 'warning') return '#f43f5e';
+              if (node.data?.status === 'good') return '#10b981';
+              return '#6366f1';
+            }}
+            maskColor="rgba(0, 0, 0, 0.1)"
+          />
         </ReactFlow>
       </div>
     </div>

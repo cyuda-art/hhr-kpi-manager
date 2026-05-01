@@ -25,12 +25,20 @@ export const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 dark:bg-slate-950 text-slate-300 h-screen flex flex-col fixed left-0 top-0 border-r border-slate-800 dark:border-slate-900 transition-colors">
+    <aside className="w-64 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl text-slate-300 h-screen flex flex-col fixed left-0 top-0 border-r border-slate-800 dark:border-slate-900 transition-colors z-40 shadow-2xl shadow-indigo-900/20">
       <div className="p-6">
-        <h1 className="text-xl font-bold text-white tracking-wider mb-2">HHR-KPI MANAGER</h1>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center">
+            <span className="text-white font-black text-sm">H</span>
+          </div>
+          <h1 className="text-lg font-black text-white tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">HHR-KPI</h1>
+        </div>
+        
         {currentProject && (
-          <div className="bg-slate-800 dark:bg-slate-900 rounded-lg p-3 border border-slate-700 dark:border-slate-800 flex items-center gap-2 transition-colors">
-            <FolderKanban size={16} className="text-indigo-400 flex-shrink-0" />
+          <div className="bg-slate-800/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50 dark:border-slate-800/50 flex items-center gap-3 transition-colors shadow-inner">
+            <div className="p-1.5 bg-indigo-500/20 rounded-md">
+              <FolderKanban size={16} className="text-indigo-400 flex-shrink-0" />
+            </div>
             <span className="text-sm font-medium text-slate-200 truncate" title={currentProject.name}>
               {currentProject.name}
             </span>
