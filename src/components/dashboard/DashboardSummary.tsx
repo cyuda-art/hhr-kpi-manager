@@ -22,8 +22,9 @@ export const DashboardSummary = () => {
     );
   }
 
-  // KGIをすべて抽出
+  // KGIとKPIを抽出
   const kgis = allNodes.filter(node => node.type === 'KGI' || node.parentId === null);
+  const kpis = allNodes.filter(node => node.type === 'KPI' && node.parentId !== null);
   
   // 達成率が危険なKPIを抽出 (80%未満をアラートとする)
   const alertKpis = allNodes.filter(node => (node.achievementRate || 0) < 80);
@@ -99,10 +100,11 @@ export const DashboardSummary = () => {
 
           {/* KGIカード一覧（横スクロール可能に） */}
           <div>
-            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">
-              主要指標一覧
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+              <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
+              全社重要指標 (KGI)
             </h3>
-            <div className="flex overflow-x-auto pb-4 gap-4 snap-x hide-scrollbar">
+            <div className="flex overflow-x-auto pb-4 gap-4 snap-x custom-scrollbar">
               {kgis.map((kpi) => (
                 <div key={kpi.id} className="min-w-[280px] snap-start">
                   <DashboardCard kpi={kpi} onClick={() => setDrawerKpiId(kpi.id)} />
@@ -110,6 +112,23 @@ export const DashboardSummary = () => {
               ))}
             </div>
           </div>
+
+          {/* KPIカード一覧（横スクロール可能に） */}
+          {kpis.length > 0 && (
+            <div className="pt-2">
+              <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
+                現場指標 (KPI)
+              </h3>
+              <div className="flex overflow-x-auto pb-4 gap-4 snap-x custom-scrollbar">
+                {kpis.map((kpi) => (
+                  <div key={kpi.id} className="min-w-[280px] snap-start">
+                    <DashboardCard kpi={kpi} onClick={() => setDrawerKpiId(kpi.id)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
