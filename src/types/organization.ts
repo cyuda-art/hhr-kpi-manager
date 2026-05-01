@@ -11,5 +11,6 @@ export interface Organization {
   name: string;
   ownerId: string;
   members: OrgMember[];
+  membersUidList?: string[]; // クエリ用のUID配列
   createdAt: number;
 }

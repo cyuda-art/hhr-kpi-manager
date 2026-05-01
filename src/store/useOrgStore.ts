@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, onSnapshot, query, where, arrayUnion } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, onSnapshot, query, where, arrayUnion } from 'firebase/firestore';
 import { Organization, OrgMember } from '@/types/organization';
 
 interface OrgStore {
@@ -10,6 +10,7 @@ interface OrgStore {
   initializeOrgs: (userId: string) => () => void;
   setCurrentOrgId: (id: string | null) => void;
   createOrganization: (name: string, userId: string) => Promise<string>;
+  joinOrganization: (orgId: string, userId: string) => Promise<void>;
 }
 
 export const useOrgStore = create<OrgStore>((set, get) => ({
@@ -68,5 +69,41 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
     await setDoc(doc(db, 'organizations', newOrgId), newOrg);
     set({ currentOrgId: newOrgId });
     return newOrgId;
+  },
+
+  joinOrganization: async (orgId: string, userId: string) => {
+    try {
+      const newMember: OrgMember = {
+        userId,
+        role: 'viewer', // デフォルトはviewer
+        joinedAt: Date.now(),
+      };
+      
+      const orgRef = doc(db, 'organizations', orgId);
+      
+      // 注意: arrayUnionを使ってオブジェクトを追加するのは値が完全一致する場合のみ機能するが、新規追加なら問題ない。
+      // もし重複チェック等を厳密にするなら、一度getDocして確認する必要がある。今回は簡略化。
+      // また、membersUidListも同時に更新する。
+      
+      const docSnap = await getDoc(orgRef);
+      if (!docSnap.exists()) throw new Error("Organization not found");
+      
+      const orgData = docSnap.data() as Organization;
+      const isAlreadyMember = orgData.membersUidList?.includes(userId);
+      
+      if (!isAlreadyMember) {
+        // FIXME: importに updateDoc 等を追加する必要があるが、ここは既存のsetDocを使うか、updateDocを使う
+        // useProjectStoreのように上部にupdateDocをインポートしたはずだが、無ければsetDoc(..., {merge: true})で代用
+        await setDoc(orgRef, {
+          members: arrayUnion(newMember),
+          membersUidList: arrayUnion(userId)
+        }, { merge: true });
+      }
+      
+      set({ currentOrgId: orgId });
+    } catch (error) {
+      console.error("Error joining organization:", error);
+      throw error;
+    }
   }
 }));

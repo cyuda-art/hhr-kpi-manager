@@ -1,21 +1,25 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Link2, Check } from 'lucide-react';
+import { Bell, Search, User, LogOut, Link2, Check, Settings } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useOrgStore } from '@/store/useOrgStore';
 import { ThemeToggle } from './ThemeToggle';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export const Header = () => {
   const { user, logout } = useAuthStore();
   const { currentProjectId, projects } = useProjectStore();
+  const { currentOrgId } = useOrgStore();
   const [isCopied, setIsCopied] = useState(false);
 
   const currentProject = projects.find(p => p.id === currentProjectId);
 
   const handleCopyInviteLink = () => {
-    if (!currentProjectId) return;
-    const url = `${window.location.origin}/invite/${currentProjectId}`;
+    if (!currentOrgId) return;
+    // 組織への招待リンクに変更
+    const url = `${window.location.origin}/invite-org/${currentOrgId}`;
     navigator.clipboard.writeText(url).then(() => {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
@@ -45,11 +49,12 @@ export const Header = () => {
         <ThemeToggle />
         <button className="relative text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
           <Bell size={20} />
-          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-            3
-          </span>
+          <span className="absolute 0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
         </button>
-        <div className="flex items-center gap-3 border-l border-slate-200 dark:border-slate-800 pl-6">
+        <Link href="/settings" className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+          <Settings size={20} />
+        </Link>
+        <div className="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700">
           <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center overflow-hidden">
             {user?.photoURL ? (
               <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
