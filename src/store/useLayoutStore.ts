@@ -17,7 +17,7 @@ interface LayoutStore {
 
 export const useLayoutStore = create<LayoutStore>((set) => ({
   sidebarWidth: 256, // default w-64 = 256px
-  isSidebarCollapsed: false,
+  isSidebarCollapsed: true, // 初期状態を閉じる
   actionPanelWidth: 320, // default w-80 = 320px
   isActionPanelCollapsed: false,
   showMiniMap: true,

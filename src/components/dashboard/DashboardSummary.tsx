@@ -9,7 +9,7 @@ import { AlertTriangle, TrendingUp, Target, Activity, ChevronDown, ChevronUp } f
 export const DashboardSummary = () => {
   const { kpiData } = useKpiStore();
   const [drawerKpiId, setDrawerKpiId] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false); // 初期状態を閉じる
 
   // データドリブンな集計
   const allNodes = Object.values(kpiData);

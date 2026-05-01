@@ -1,7 +1,12 @@
+"use client";
+
 import { DashboardSummary } from '@/components/dashboard/DashboardSummary';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
+import { Network, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Dashboard() {
+  const [isTreeExpanded, setIsTreeExpanded] = useState(true); // 初期状態で開く
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col transition-colors p-6 gap-6 overflow-hidden">
       <div className="flex items-center justify-between shrink-0">
@@ -16,8 +21,25 @@ export default function Dashboard() {
         <DashboardSummary />
       </div>
 
-      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <KpiTree isDashboard={true} />
+      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-all duration-300">
+        <button 
+          onClick={() => setIsTreeExpanded(!isTreeExpanded)}
+          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200 dark:border-slate-800"
+        >
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wider">
+              <Network className="w-4 h-4 text-indigo-500" />
+              インタラクティブ・KPIツリー
+            </h2>
+          </div>
+          <div className="text-slate-400 hover:text-indigo-600 transition-colors">
+            {isTreeExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </div>
+        </button>
+
+        <div className={`transition-all duration-300 ease-in-out flex-1 flex flex-col min-h-0 ${isTreeExpanded ? 'opacity-100' : 'h-0 opacity-0 overflow-hidden flex-none'}`}>
+          <KpiTree isDashboard={true} />
+        </div>
       </div>
     </div>
   );
