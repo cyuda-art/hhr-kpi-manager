@@ -307,8 +307,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         </ReactFlow>
       </div>
 
-      {/* 右側のインサイト・アクションパネル (プレビューモードでは非表示) */}
-      {!previewMode && (
+      {/* 右側のインサイト・アクションパネル (プレビューモードでは非表示、かつノード選択時のみ表示) */}
+      {!previewMode && selectedNodeId && (
         <div 
           ref={panelRef}
           style={{ width: isMobile ? '100%' : (isActionPanelCollapsed ? 48 : actionPanelWidth) }}
