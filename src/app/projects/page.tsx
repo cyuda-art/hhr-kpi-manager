@@ -33,7 +33,7 @@ export default function ProjectsPage() {
     try {
       const newId = await createProject(newProjectName, newProjectDesc, user.uid);
       setCurrentProjectId(newId);
-      router.push('/');
+      router.push('/onboarding');
     } catch (error) {
       console.error("Failed to create project", error);
     }

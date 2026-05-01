@@ -107,11 +107,11 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
     const docRef = doc(db, 'projects', projectId, 'kpiData', 'main');
     const docSnap = await getDoc(docRef);
 
-    // DBにデータがなければ初期データを書き込む
+    // DBにデータがなければ空データ（もしくは初期構造）を書き込む
     if (!docSnap.exists()) {
       await setDoc(docRef, {
-        kpiData: initialData,
-        actions: get().actions
+        kpiData: {},
+        actions: []
       });
     }
 
@@ -120,7 +120,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
       if (snapshot.exists()) {
         const data = snapshot.data();
         set({ 
-          kpiData: data.kpiData || initialData, 
+          kpiData: data.kpiData || {}, 
           actions: data.actions || [],
           isDbInitialized: true 
         });
