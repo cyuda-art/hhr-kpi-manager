@@ -112,28 +112,28 @@ export default function ProjectsPage() {
             <button
               key={project.id}
               onClick={() => handleSelectProject(project.id)}
-              className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all text-left group"
+              className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all text-left group"
             >
-              <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition-colors">
-                <FolderKanban className="w-6 h-6 text-indigo-600" />
+              <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800 transition-colors">
+                <FolderKanban className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <h3 className="font-bold text-slate-800 text-lg mb-1 group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 {project.name}
               </h3>
-              <p className="text-slate-500 text-sm mb-4 line-clamp-2">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-4 line-clamp-2">
                 {project.description || '説明なし'}
               </p>
-              <div className="flex items-center text-sm text-indigo-600 font-medium">
+              <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
                 開く <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
           ))}
 
           {!isCreating && projects.length === 0 && (
-            <div className="col-span-full py-12 text-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-300">
-              <Building2 className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-slate-700 mb-1">プロジェクトがありません</h3>
-              <p className="text-slate-500 mb-4">右上のボタンから最初のプロジェクトを作成してください。</p>
+            <div className="col-span-full py-12 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
+              <Building2 className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-1">プロジェクトがありません</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">右上のボタンから最初のプロジェクトを作成してください。</p>
             </div>
           )}
         </div>
