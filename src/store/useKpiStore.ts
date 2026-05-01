@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { KpiNodeData, KpiNodeWithComputed, Status, Action } from '@/types';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
 const mockKpiData: KpiNodeData[] = [
   { id: 'kgi_profit', name: '全社営業利益', businessUnit: 'company', type: 'KGI', parentId: null, targetValue: 50000000, actualValue: 45000000, unit: '円', previousValue: 40000000, description: '全社の営業利益' },
@@ -29,6 +31,8 @@ interface KpiStore {
   kpiData: Record<string, KpiNodeWithComputedAndInit>;
   selectedNodeId: string | null;
   actions: Action[];
+  isDbInitialized: boolean;
+  initializeDB: () => Promise<void>;
   updateActualValue: (id: string, newValue: number) => void;
   resetSimulations: () => void;
   setSelectedNodeId: (id: string | null) => void;
@@ -38,6 +42,15 @@ interface KpiStore {
   addKpiNode: (node: KpiNodeData) => void;
   removeKpiNode: (id: string) => void;
 }
+
+// データベース更新用のヘルパー関数
+const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[]) => {
+  try {
+    await setDoc(doc(db, 'config', 'main'), { kpiData, actions });
+  } catch (error) {
+    console.error("DB Sync Error:", error);
+  }
+};
 
 const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWithComputedAndInit => {
   const actual = node.actualValue || 0;
@@ -80,17 +93,55 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
     { id: 'a1', kpiId: 'kpi_restaurant_cost', title: '仕入先の見直しと相見積もり', owner: '田中', dueDate: '2026-05-15', status: 'in_progress' },
     { id: 'a2', kpiId: 'kpi_hotel_occ', title: '平日限定プランのOTA露出強化', owner: '佐藤', dueDate: '2026-05-10', status: 'todo' },
   ],
+  isDbInitialized: false,
+
+  initializeDB: async () => {
+    if (get().isDbInitialized) return;
+    
+    const docRef = doc(db, 'config', 'main');
+    const docSnap = await getDoc(docRef);
+
+    // DBにデータがなければ初期データを書き込む
+    if (!docSnap.exists()) {
+      await setDoc(docRef, {
+        kpiData: initialData,
+        actions: get().actions
+      });
+    }
+
+    // リアルタイム同期のリスナーを設定
+    onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        set({ 
+          kpiData: data.kpiData || initialData, 
+          actions: data.actions || [],
+          isDbInitialized: true 
+        });
+      }
+    });
+  },
+
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
-  addAction: (action) => set((state) => ({ 
-    actions: [...state.actions, { ...action, id: Math.random().toString(36).substr(2, 9) }] 
-  })),
-  toggleActionStatus: (actionId) => set((state) => ({
-    actions: state.actions.map(a => 
-      a.id === actionId 
-        ? { ...a, status: a.status === 'done' ? 'todo' : 'done' } 
-        : a
-    )
-  })),
+  
+  addAction: (action) => {
+    const newAction = { ...action, id: Math.random().toString(36).substr(2, 9) };
+    set((state) => {
+      const newActions = [...state.actions, newAction];
+      syncToDB(state.kpiData, newActions);
+      return { actions: newActions };
+    });
+  },
+
+  toggleActionStatus: (actionId) => {
+    set((state) => {
+      const newActions = state.actions.map(a => 
+        a.id === actionId ? { ...a, status: a.status === 'done' ? 'todo' : 'done' } : a
+      );
+      syncToDB(state.kpiData, newActions);
+      return { actions: newActions };
+    });
+  },
   updateActualValue: (id: string, newValue: number) => {
     set((state) => {
       const draft = { ...state.kpiData };
@@ -154,6 +205,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
         }
       }
 
+      // Firestoreにはシミュレーション中の値は送らず、ローカルの状態のみ更新する
       return { kpiData: draft };
     });
   },
@@ -202,6 +254,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
         draft[key] = { ...draft[key], isSimulated: false, initialActualValue: draft[key].actualValue };
       });
 
+      syncToDB(draft, state.actions);
       return { kpiData: draft };
     });
   },
@@ -209,18 +262,31 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
     set((state) => {
       const draft = { ...state.kpiData };
       draft[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
+      
+      syncToDB(draft, state.actions);
       return { kpiData: draft };
     });
   },
   removeKpiNode: (id) => {
     set((state) => {
       const draft = { ...state.kpiData };
-      // 削除対象と、その子ノードも再帰的に消すのが理想だが、今回は対象のみ削除
       delete draft[id];
-      // もし選択中なら選択解除
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
+      
+      syncToDB(draft, state.actions);
       return { kpiData: draft, selectedNodeId: newSelected };
     });
   },
-  resetSimulations: () => set(() => ({ kpiData: initialData })),
+  resetSimulations: () => {
+    set((state) => {
+      // isSimulatedがtrueのものだけを元に戻す
+      const draft = { ...state.kpiData };
+      Object.keys(draft).forEach(key => {
+        if (draft[key].isSimulated) {
+          draft[key] = calculateComputed({ ...draft[key], actualValue: draft[key].initialActualValue, isSimulated: false });
+        }
+      });
+      return { kpiData: draft };
+    });
+  },
 }));
