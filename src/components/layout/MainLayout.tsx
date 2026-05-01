@@ -28,7 +28,9 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!isAuthLoading) {
-      if (!user && pathname !== '/login') {
+      const isPublicPath = pathname === '/login' || pathname.startsWith('/invite');
+      
+      if (!user && !isPublicPath) {
         router.push('/login');
       } else if (user) {
         // ログイン済みだがプロジェクト未選択の場合はプロジェクト画面へ
@@ -47,8 +49,8 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
   }
 
-  // ログインページやプロジェクト選択・オンボーディング画面の場合はサイドバーなどを表示しない
-  if (pathname === '/login' || pathname === '/projects' || pathname === '/onboarding') {
+  // ログインページやプロジェクト選択、オンボーディング、招待画面の場合はサイドバーなどを表示しない
+  if (pathname === '/login' || pathname === '/projects' || pathname === '/onboarding' || pathname.startsWith('/invite')) {
     return <>{children}</>;
   }
 

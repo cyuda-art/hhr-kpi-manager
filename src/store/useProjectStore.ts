@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, deleteDoc, updateDoc, arrayUnion, onSnapshot, query, where, or } from 'firebase/firestore';
 import { Project } from '@/types/project';
 
 interface ProjectStore {
@@ -12,6 +12,7 @@ interface ProjectStore {
   createProject: (name: string, description: string, userId: string) => Promise<string>;
   deleteProject: (projectId: string) => Promise<void>;
   duplicateProject: (projectId: string, userId: string) => Promise<string>;
+  joinProject: (projectId: string, userId: string) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
@@ -21,8 +22,14 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   initializeProjects: (userId: string) => {
     set({ isLoading: true });
-    // ユーザーがオーナーのプロジェクトを取得（※将来的に共有機能をつけるならwhere句を広げる）
-    const q = query(collection(db, 'projects'), where('ownerId', '==', userId));
+    // 自分がオーナー、またはメンバーとして含まれているプロジェクトを取得
+    const q = query(
+      collection(db, 'projects'), 
+      or(
+        where('ownerId', '==', userId),
+        where('members', 'array-contains', userId)
+      )
+    );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const projects: Project[] = [];
@@ -44,6 +51,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       name,
       description,
       ownerId: userId,
+      members: [userId], // 作成者もメンバーに含める
       createdAt: Date.now(),
     };
 
@@ -95,6 +103,18 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       return newProjectId;
     } catch (error) {
       console.error("Error duplicating project:", error);
+      throw error;
+    }
+  },
+
+  joinProject: async (projectId: string, userId: string) => {
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, {
+        members: arrayUnion(userId)
+      });
+    } catch (error) {
+      console.error("Error joining project:", error);
       throw error;
     }
   }

@@ -1,11 +1,26 @@
 "use client";
 
-import { Bell, Search, User, LogOut } from 'lucide-react';
+import { Bell, Search, User, LogOut, Link2, Check } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useProjectStore } from '@/store/useProjectStore';
 import { ThemeToggle } from './ThemeToggle';
+import { useState } from 'react';
 
 export const Header = () => {
   const { user, logout } = useAuthStore();
+  const { currentProjectId, projects } = useProjectStore();
+  const [isCopied, setIsCopied] = useState(false);
+
+  const currentProject = projects.find(p => p.id === currentProjectId);
+
+  const handleCopyInviteLink = () => {
+    if (!currentProjectId) return;
+    const url = `${window.location.origin}/invite/${currentProjectId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
 
   return (
     <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50 transition-colors">
@@ -18,6 +33,15 @@ export const Header = () => {
         />
       </div>
       <div className="flex items-center gap-6">
+        {currentProject && (
+          <button 
+            onClick={handleCopyInviteLink}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg text-sm font-bold transition-colors border border-indigo-200 dark:border-indigo-800"
+          >
+            {isCopied ? <Check size={16} /> : <Link2 size={16} />}
+            {isCopied ? 'コピーしました' : '共有リンク'}
+          </button>
+        )}
         <ThemeToggle />
         <button className="relative text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
           <Bell size={20} />
