@@ -1,5 +1,5 @@
 import { KpiNodeWithComputed } from '@/types';
-import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Minus, Sparkles } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
