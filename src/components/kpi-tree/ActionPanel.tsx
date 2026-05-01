@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
-import { CheckCircle2, Circle, Plus, Sparkles, Trash2, Network, Loader2 } from 'lucide-react';
+import { CheckCircle2, Circle, Plus, Sparkles, Trash2, Network, Loader2, MessageSquare, Send, ListChecks } from 'lucide-react';
 import { Action } from '@/types';
 
 export const ActionPanel = () => {
@@ -21,6 +21,54 @@ export const ActionPanel = () => {
   const filteredActions = selectedNodeId 
     ? actions.filter(a => a.kpiId === selectedNodeId)
     : actions;
+
+  // タブとチャット用の状態
+  const [activeTab, setActiveTab] = useState<'actions' | 'chat'>('actions');
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'model', content: string }[]>([
+    { role: 'model', content: 'こんにちは！KPI管理アシスタントです。現在の数値の分析や、改善施策のアイデア出しなど、何でもご相談ください。' }
+  ]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  // チャットが更新されたら一番下へスクロール
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatHistory, isChatLoading]);
+
+  const handleSendChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatMessage.trim() || isChatLoading) return;
+
+    const newUserMsg = { role: 'user' as const, content: chatMessage };
+    setChatHistory(prev => [...prev, newUserMsg]);
+    setChatMessage('');
+    setIsChatLoading(true);
+
+    try {
+      const response = await fetch('/api/gemini/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: newUserMsg.content,
+          kpiContext: selectedKpi,
+          history: chatHistory.slice(1) // 最初の挨拶は除くか、すべて送るか。今回は全て送る
+        }),
+      });
+
+      if (!response.ok) throw new Error('チャットの送信に失敗しました');
+      const data = await response.json();
+      
+      setChatHistory(prev => [...prev, { role: 'model', content: data.text }]);
+    } catch (err) {
+      console.error(err);
+      setChatHistory(prev => [...prev, { role: 'model', content: '申し訳ありません、エラーが発生しました。もう一度お試しください。' }]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
 
   const handleAddAction = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +191,78 @@ export const ActionPanel = () => {
           </div>
         )}
       </div>
+
+      {/* タブ切り替え */}
+      <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg mb-4">
+        <button
+          onClick={() => setActiveTab('actions')}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'actions' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+        >
+          <ListChecks size={14} />
+          アクション & インサイト
+        </button>
+        <button
+          onClick={() => setActiveTab('chat')}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'chat' ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+        >
+          <MessageSquare size={14} />
+          AIチャット
+        </button>
+      </div>
+
+      {activeTab === 'chat' ? (
+        <div className="flex flex-col flex-1 min-h-0 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800/50 overflow-hidden relative">
+          {/* チャット履歴 */}
+          <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+            {chatHistory.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                  msg.role === 'user' 
+                    ? 'bg-indigo-500 text-white rounded-tr-sm' 
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-tl-sm shadow-sm'
+                }`}>
+                  {msg.role === 'model' && i === 0 ? (
+                    <div className="flex items-center gap-1.5 mb-1 text-indigo-500 dark:text-indigo-400">
+                      <Sparkles size={14} />
+                      <span className="text-[10px] font-bold">AIアシスタント</span>
+                    </div>
+                  ) : null}
+                  <p className="whitespace-pre-wrap leading-relaxed text-xs">{msg.content}</p>
+                </div>
+              </div>
+            ))}
+            {isChatLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            )}
+          </div>
+          {/* 入力フォーム */}
+          <form onSubmit={handleSendChat} className="p-2 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex gap-2">
+            <input
+              type="text"
+              value={chatMessage}
+              onChange={(e) => setChatMessage(e.target.value)}
+              placeholder="KPI改善についてAIに質問..."
+              disabled={isChatLoading}
+              className="flex-1 bg-slate-100 dark:bg-slate-900 border-none text-xs rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={!chatMessage.trim() || isChatLoading}
+              className="w-8 h-8 flex-shrink-0 bg-indigo-500 text-white rounded-full flex items-center justify-center hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 transition-colors"
+            >
+              <Send size={14} className="ml-0.5" />
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="flex flex-col flex-1 min-h-0">
+
 
       {selectedKpi && !aiInsight && !isGeneratingAi && (
         <button 
@@ -304,6 +424,8 @@ export const ActionPanel = () => {
             </button>
           </div>
         </form>
+      )}
+        </div>
       )}
     </div>
   );
