@@ -2,85 +2,136 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Network, Settings, Building2, Utensils, ShoppingBag, ChefHat, Bath, Database, FolderKanban } from 'lucide-react';
+import { LayoutDashboard, Database, FolderKanban, Activity, ChevronRight, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
+import { useLayoutStore } from '@/store/useLayoutStore';
+import { useEffect, useRef, useState } from 'react';
 
 export const Sidebar = () => {
   const pathname = usePathname();
   const { currentProjectId, projects } = useProjectStore();
   const { organizations, currentOrgId } = useOrgStore();
-  
+  const { sidebarWidth, isSidebarCollapsed, setSidebarWidth, toggleSidebar } = useLayoutStore();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [isResizing, setIsResizing] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      setSidebarWidth(Math.max(200, Math.min(e.clientX, 400)));
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, setSidebarWidth]);
+
   const currentProject = projects.find(p => p.id === currentProjectId);
   const currentOrg = organizations.find(org => org.id === currentOrgId);
 
   const menuItems = [
-    { name: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
-    // KPIツリーはダッシュボードに統合されたため削除、代わりにレポートなどのメニューを想定
-    { name: 'データ入力', icon: Database, path: '/data-entry' },
+    { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
+    { id: 'data-entry', label: 'データ入力', icon: Database, path: '/data-entry' },
   ];
 
   return (
-    <aside className="w-64 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl text-slate-300 h-screen flex flex-col fixed left-0 top-0 border-r border-slate-800 dark:border-slate-900 transition-colors z-40 shadow-2xl shadow-indigo-900/20">
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center">
-            <span className="text-white font-black text-sm">H</span>
-          </div>
-          <h1 className="text-lg font-black text-white tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">HHR-KPI</h1>
-        </div>
-        
-        <div className="space-y-3">
-          {/* 組織情報 */}
-          <div className="flex items-center gap-2 px-1">
-            <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
-              {currentOrg?.name || '組織未設定'}
-            </span>
-          </div>
+    <aside 
+      ref={sidebarRef}
+      style={{ width: isSidebarCollapsed ? 80 : sidebarWidth }}
+      className={`h-screen bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl text-slate-300 flex flex-col fixed left-0 top-0 border-r border-slate-800 dark:border-slate-900 transition-all duration-300 ease-in-out relative z-40 ${isResizing ? 'select-none' : ''}`}
+    >
+      <div 
+        className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"
+        onMouseDown={() => setIsResizing(true)}
+        onDoubleClick={() => setSidebarWidth(256)}
+      />
 
-          {/* プロジェクト情報 */}
-          {currentProject && (
-            <div className="bg-slate-800/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50 dark:border-slate-800/50 flex items-center gap-3 transition-colors shadow-inner group cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-900">
-              <div className="p-1.5 bg-indigo-500/20 rounded-md group-hover:bg-indigo-500/30 transition-colors">
-                <FolderKanban size={16} className="text-indigo-400 flex-shrink-0" />
-              </div>
-              <span className="text-sm font-medium text-slate-200 truncate" title={currentProject.name}>
-                {currentProject.name}
-              </span>
+      <div className="p-6 flex items-center justify-between">
+        {!isSidebarCollapsed && (
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-black text-sm">H</span>
             </div>
-          )}
-        </div>
+            <h1 className="text-lg font-black text-white tracking-wider truncate">HHR-KPI</h1>
+          </div>
+        )}
+        {isSidebarCollapsed && (
+          <div className="w-full flex justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center">
+              <span className="text-white font-black text-sm">H</span>
+            </div>
+          </div>
+        )}
       </div>
-      <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
-        <div className="mb-8">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-2">Main</p>
+
+      <div className="flex-1 px-4 overflow-y-auto">
+        <div className="mb-6">
+          {!isSidebarCollapsed && <p className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider px-2">組織・プロジェクト</p>}
+          <div className={`flex ${isSidebarCollapsed ? 'justify-center' : 'items-center justify-between'} p-3 rounded-xl bg-slate-800/50 border border-slate-700/50`}>
+            {isSidebarCollapsed ? (
+              <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center font-bold text-white text-xs">
+                {currentOrg?.name?.charAt(0) || 'O'}
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase truncate">{currentOrg?.name || '組織未設定'}</span>
+                  <span className="text-sm font-bold text-white truncate">{currentProject?.name || 'プロジェクトを選択'}</span>
+                </div>
+                <ChevronRight size={16} className="text-slate-500" />
+              </>
+            )}
+          </div>
+        </div>
+
+        <nav className="space-y-1">
           {menuItems.map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link
-                key={item.name}
+                key={item.id}
                 href={item.path}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 hover:text-white'
+                title={isSidebarCollapsed ? item.label : undefined}
+                className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-colors ${
+                  isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 hover:text-white text-slate-400'
                 }`}
               >
                 <item.icon size={20} />
-                <span>{item.name}</span>
+                {!isSidebarCollapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
-        </div>
-      </nav>
+        </nav>
+      </div>
+
       <div className="p-4 border-t border-slate-800 space-y-2">
-        <Link href="/projects" className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-slate-800 hover:text-white transition-colors text-left text-sm text-slate-400">
+        <Link href="/projects" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-lg hover:bg-slate-800 hover:text-white transition-colors text-left text-sm text-slate-400`} title={isSidebarCollapsed ? "プロジェクト切替" : undefined}>
           <FolderKanban size={18} />
-          <span>プロジェクト切替</span>
+          {!isSidebarCollapsed && <span>プロジェクト切替</span>}
         </Link>
-        <Link href="/settings" className="flex items-center gap-3 px-3 py-2 w-full rounded-lg hover:bg-slate-800 hover:text-white transition-colors text-left text-sm text-slate-400">
+        <Link href="/settings" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-lg hover:bg-slate-800 hover:text-white transition-colors text-left text-sm text-slate-400`} title={isSidebarCollapsed ? "組織設定" : undefined}>
           <Settings size={18} />
-          <span>組織設定</span>
+          {!isSidebarCollapsed && <span>組織設定</span>}
         </Link>
+        <button 
+          onClick={toggleSidebar}
+          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg hover:bg-slate-800/50 transition-colors text-slate-400 hover:text-white mt-2`}
+          title={isSidebarCollapsed ? "サイドバーを展開" : "サイドバーを折りたたむ"}
+        >
+          {isSidebarCollapsed ? <PanelLeftOpen size={24} /> : <PanelLeftClose size={18} />}
+          {!isSidebarCollapsed && <span className="text-sm">折りたたむ</span>}
+        </button>
       </div>
     </aside>
   );

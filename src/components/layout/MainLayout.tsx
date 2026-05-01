@@ -8,12 +8,14 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
+import { useLayoutStore } from '@/store/useLayoutStore';
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { initializeDB } = useKpiStore();
   const { user, isLoading: isAuthLoading, initializeAuth } = useAuthStore();
   const { currentProjectId, isLoading: isProjectLoading } = useProjectStore();
   const { organizations, isLoading: isOrgLoading, initializeOrgs } = useOrgStore();
+  const { sidebarWidth, isSidebarCollapsed } = useLayoutStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -75,11 +77,14 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors">
       <Sidebar />
-      <div className="pl-64 flex flex-col min-h-screen">
+      <div 
+        className="flex-1 flex flex-col transition-all duration-300 ease-in-out"
+        style={{ marginLeft: isSidebarCollapsed ? 80 : sidebarWidth }}
+      >
         <Header />
-        <main className="p-8 flex-1">
+        <main className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-8 transition-colors">
           {children}
         </main>
       </div>

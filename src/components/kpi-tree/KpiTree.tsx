@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { ReactFlow, Background, Controls, MiniMap, Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useKpiStore } from '@/store/useKpiStore';
+import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import { ActionPanel } from './ActionPanel';
 import dagre from 'dagre';
-import { Wand2 } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map } from 'lucide-react';
+
 
 const nodeTypes = {
   kpiNode: KpiNodeComponent,
@@ -94,6 +96,33 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
 
 export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
   const { kpiData, setSelectedNodeId, collapsedNodes } = useKpiStore();
+  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap } = useLayoutStore();
+  
+  const [isResizingPanel, setIsResizingPanel] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizingPanel) return;
+      // 右側からの幅 = ウィンドウ幅 - マウスX座標
+      const newWidth = window.innerWidth - e.clientX;
+      setActionPanelWidth(Math.max(250, Math.min(newWidth, 600)));
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingPanel(false);
+    };
+
+    if (isResizingPanel) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingPanel, setActionPanelWidth]);
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData);
@@ -224,6 +253,13 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
             <Wand2 size={14} />
             自動整列 (Auto Layout)
           </button>
+          <button
+            onClick={toggleMiniMap}
+            className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            title="ミニマップの表示/非表示"
+          >
+            <Map size={16} />
+          </button>
         </div>
         <ReactFlow
           nodes={nodes}
@@ -238,28 +274,50 @@ export const KpiTree = ({ isDashboard = false }: { isDashboard?: boolean }) => {
         >
           <Background color="#94a3b8" gap={16} />
           <Controls className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-slate-200 dark:border-slate-700 fill-slate-700 dark:fill-slate-300 shadow-lg" />
-          <MiniMap 
-            className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl"
-            nodeColor={(node) => {
-              if (node.data?.status === 'warning') return '#f43f5e';
-              if (node.data?.status === 'good') return '#10b981';
-              return '#6366f1';
-            }}
-            maskColor="rgba(0, 0, 0, 0.1)"
-          />
+          {showMiniMap && (
+            <MiniMap 
+              className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl transition-opacity"
+              nodeColor={(node) => {
+                if (node.data?.status === 'warning') return '#f43f5e';
+                if (node.data?.status === 'good') return '#10b981';
+                return '#6366f1';
+              }}
+              maskColor="rgba(0, 0, 0, 0.1)"
+            />
+          )}
         </ReactFlow>
       </div>
 
       {/* 右側のインサイト・アクションパネル */}
-      <div className="w-80 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors flex flex-col">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50">
-          <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
-            <span className="w-2 h-4 bg-indigo-500 rounded-full"></span>
-            アクション ＆ インサイト
-          </h2>
+      <div 
+        ref={panelRef}
+        style={{ width: isActionPanelCollapsed ? 48 : actionPanelWidth }}
+        className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300 ease-in-out relative flex flex-col ${isResizingPanel ? 'select-none' : ''}`}
+      >
+        <div 
+          className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"
+          onMouseDown={() => setIsResizingPanel(true)}
+          onDoubleClick={() => setActionPanelWidth(320)}
+        />
+        
+        <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between">
+          {!isActionPanelCollapsed && (
+            <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2 truncate">
+              <span className="w-2 h-4 bg-indigo-500 rounded-full flex-shrink-0"></span>
+              アクション ＆ インサイト
+            </h2>
+          )}
+          <button 
+            onClick={toggleActionPanel}
+            className={`p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors ${isActionPanelCollapsed ? 'mx-auto' : ''}`}
+            title={isActionPanelCollapsed ? "パネルを展開" : "パネルを折りたたむ"}
+          >
+            {isActionPanelCollapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+          </button>
         </div>
-        <div className="flex-1 p-4 overflow-y-auto">
-          <ActionPanel />
+        
+        <div className={`flex-1 overflow-y-auto transition-opacity duration-300 ${isActionPanelCollapsed ? 'opacity-0 invisible w-0' : 'opacity-100 p-4'}`}>
+          {!isActionPanelCollapsed && <ActionPanel />}
         </div>
       </div>
     </div>
