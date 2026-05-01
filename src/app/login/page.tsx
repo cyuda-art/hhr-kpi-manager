@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Lock, Mail, Chrome, ArrowRight, Building2 } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Building2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -123,7 +123,6 @@ export default function LoginPage() {
             onClick={handleGoogleLogin}
             className="mt-6 w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 py-2.5 border border-slate-200 rounded-lg font-medium transition-colors"
           >
-            <Chrome className="w-5 h-5 text-blue-500" />
             Googleでログイン
           </button>
 

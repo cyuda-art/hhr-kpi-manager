@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { User, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { User, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, Unsubscribe } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 interface AuthStore {
   user: User | null;
   isLoading: boolean;
-  initializeAuth: () => void;
+  initializeAuth: () => Unsubscribe;
   logout: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
 }
