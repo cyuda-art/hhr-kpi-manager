@@ -136,7 +136,7 @@ export const useKpiStore = create<KpiStore>((set, get) => ({
   toggleActionStatus: (actionId) => {
     set((state) => {
       const newActions = state.actions.map(a => 
-        a.id === actionId ? { ...a, status: a.status === 'done' ? 'todo' : 'done' } : a
+        a.id === actionId ? { ...a, status: (a.status === 'done' ? 'todo' : 'done') as 'todo' | 'done' } : a
       );
       syncToDB(state.kpiData, newActions);
       return { actions: newActions };
