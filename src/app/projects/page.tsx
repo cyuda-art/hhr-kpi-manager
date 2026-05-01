@@ -44,16 +44,23 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 transition-colors">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 transition-colors relative overflow-hidden flex items-center justify-center">
+      
+      {/* Background Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/20 dark:bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/20 dark:bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="w-full max-w-5xl relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">プロジェクト選択</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">作業するプロジェクトを選択するか、新しく作成してください</p>
+            <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-2">
+              Welcome back, {user?.email?.split('@')[0] || 'User'} 👋
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400">管理するプロジェクトを選択するか、新しく作成してください</p>
           </div>
           <button 
             onClick={() => setIsCreating(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-indigo-600/30"
           >
             <Plus size={20} />
             新規プロジェクト
@@ -108,32 +115,60 @@ export default function ProjectsPage() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <button
-              key={project.id}
-              onClick={() => handleSelectProject(project.id)}
-              className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all text-left group"
-            >
-              <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800 transition-colors">
-                <FolderKanban className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                {project.name}
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mb-4 line-clamp-2">
-                {project.description || '説明なし'}
-              </p>
-              <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-medium">
-                開く <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </button>
-          ))}
+          {projects.map((project, idx) => {
+            // プロジェクトごとに異なるグラデーションを当てる簡易ロジック
+            const gradients = [
+              'from-blue-500 to-indigo-600',
+              'from-emerald-400 to-teal-500',
+              'from-purple-500 to-pink-600',
+              'from-amber-400 to-orange-500'
+            ];
+            const bgGradient = gradients[idx % gradients.length];
+
+            return (
+              <button
+                key={project.id}
+                onClick={() => handleSelectProject(project.id)}
+                className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-6 rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] hover:shadow-[0_8px_30px_rgb(79,70,229,0.15)] hover:-translate-y-1 transition-all text-left group overflow-hidden relative"
+              >
+                {/* 飾り帯 */}
+                <div className={`absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r ${bgGradient} opacity-70 group-hover:opacity-100 transition-opacity`} />
+                
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-gradient-to-br ${bgGradient} text-white shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                  <FolderKanban className="w-6 h-6" />
+                </div>
+                
+                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {project.name}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2 min-h-[40px]">
+                  {project.description || '説明なし'}
+                </p>
+                
+                <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-bold">
+                  プロジェクトを開く 
+                  <ArrowRight className="w-4 h-4 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                </div>
+              </button>
+            );
+          })}
 
           {!isCreating && projects.length === 0 && (
-            <div className="col-span-full py-12 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
-              <Building2 className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-1">プロジェクトがありません</h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-4">右上のボタンから最初のプロジェクトを作成してください。</p>
+            <div className="col-span-full py-16 text-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700">
+              <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Building2 className="w-10 h-10 text-slate-400 dark:text-slate-500" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-2">まだプロジェクトがありません</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+                最初のプロジェクトを作成して、KPIツリーの構築を始めましょう。テンプレートから簡単に始めることもできます。
+              </p>
+              <button 
+                onClick={() => setIsCreating(true)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold inline-flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-indigo-600/30"
+              >
+                <Plus size={20} />
+                最初のプロジェクトを作る
+              </button>
             </div>
           )}
         </div>
