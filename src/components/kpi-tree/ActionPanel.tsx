@@ -93,7 +93,9 @@ export const ActionPanel = () => {
       }
 
       const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       setAiInsight({
         issue: data.issue || '課題が分析できませんでした',
@@ -102,7 +104,7 @@ export const ActionPanel = () => {
       });
     } catch (err: any) {
       console.error(err);
-      setAiError('AIインサイトの生成に失敗しました。APIキーが設定されているか確認してください。');
+      setAiError(`APIエラー: ${err.message || '予期せぬエラーが発生しました'}`);
     } finally {
       setIsGeneratingAi(false);
     }
