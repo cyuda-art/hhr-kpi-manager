@@ -4,7 +4,8 @@ import { GoogleGenAI, Type, Schema } from '@google/genai';
 // Vercelでのタイムアウトを防止（最大60秒）
 export const maxDuration = 60;
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const apiKey = process.env.GEMINI_API_KEY;
+const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key-to-prevent-crash' });
 
 const NodeSchema: Schema = {
   type: Type.OBJECT,
@@ -23,6 +24,10 @@ const NodeSchema: Schema = {
 
 export async function POST(req: Request) {
   try {
+    if (!apiKey) {
+      throw new Error("Vercelの環境変数に GEMINI_API_KEY が設定されていません。VercelのSettings > Environment Variables を確認し、再デプロイしてください。");
+    }
+
     const { industry, kgi, channels } = await req.json();
 
     const prompt = `
