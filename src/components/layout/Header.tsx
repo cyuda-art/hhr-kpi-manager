@@ -1,10 +1,11 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Link2, Check, Settings, Menu } from 'lucide-react';
+import { Bell, Search, User, LogOut, Link2, Check, Settings, Menu, Calendar, Sparkles } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
+import { useKpiStore } from '@/store/useKpiStore';
 import { ThemeToggle } from './ThemeToggle';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -14,6 +15,7 @@ export const Header = () => {
   const { currentProjectId, projects } = useProjectStore();
   const { currentOrgId } = useOrgStore();
   const { toggleMobileMenu } = useLayoutStore();
+  const { currentPeriod, setPeriod, isPredictionMode, togglePredictionMode } = useKpiStore();
   const [isCopied, setIsCopied] = useState(false);
 
   const currentProject = projects.find(p => p.id === currentProjectId);
@@ -37,14 +39,29 @@ export const Header = () => {
         >
           <Menu size={24} />
         </button>
-        <div className="hidden md:flex items-center bg-slate-100/50 dark:bg-slate-800/50 rounded-full px-4 py-2 w-96 border border-slate-200/50 dark:border-slate-700/50">
-          <Search size={18} className="text-slate-400 mr-2 flex-shrink-0" />
-          <input 
-            type="text" 
-            placeholder="指標を検索..." 
-            className="bg-transparent border-none outline-none text-sm w-full text-slate-700 dark:text-slate-200"
-          />
+        <div className="hidden md:flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl px-3 py-1.5 border border-slate-200/50 dark:border-slate-700/50">
+          <Calendar size={16} className="text-slate-500" />
+          <select 
+            value={currentPeriod}
+            onChange={(e) => setPeriod(e.target.value)}
+            className="bg-transparent border-none outline-none text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
+          >
+            <option value="2026-03">2026年3月 (過去)</option>
+            <option value="2026-04">2026年4月 (過去)</option>
+            <option value="2026-05">2026年5月 (現在)</option>
+          </select>
         </div>
+        <button
+          onClick={togglePredictionMode}
+          className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-bold transition-all border ${
+            isPredictionMode 
+              ? 'bg-gradient-to-r from-primary-500 to-purple-500 text-white border-transparent shadow-lg shadow-primary-500/30' 
+              : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+          }`}
+        >
+          <Sparkles size={16} className={isPredictionMode ? "animate-pulse" : ""} />
+          AI未来予測
+        </button>
       </div>
       <div className="flex items-center gap-3 md:gap-6">
         {currentProject && (

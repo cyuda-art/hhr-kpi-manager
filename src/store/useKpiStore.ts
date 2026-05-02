@@ -15,6 +15,10 @@ interface KpiStore {
   actions: Action[];
   isDbInitialized: boolean;
   currentProjectId: string | null;
+  currentPeriod: string;
+  isPredictionMode: boolean;
+  setPeriod: (period: string) => void;
+  togglePredictionMode: () => void;
   initializeDB: (projectId: string) => Promise<void>;
   updateActualValue: (id: string, newValue: number) => void;
   resetSimulations: () => void;
@@ -102,6 +106,11 @@ export const useKpiStore = create<KpiStore>()(
       actions: [],
       isDbInitialized: false,
       currentProjectId: null,
+      currentPeriod: '2026-05',
+      isPredictionMode: false,
+
+      setPeriod: (period) => set({ currentPeriod: period }),
+      togglePredictionMode: () => set((state) => ({ isPredictionMode: !state.isPredictionMode })),
 
       initializeDB: async (projectId: string) => {
         // 既に同じプロジェクトで初期化済みならリターン
