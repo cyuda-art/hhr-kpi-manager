@@ -13,6 +13,8 @@ interface LayoutStore {
   toggleMiniMap: () => void;
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
+  autoCenter: boolean;
+  toggleAutoCenter: () => void;
 }
 
 export const useLayoutStore = create<LayoutStore>((set) => ({
@@ -31,4 +33,7 @@ export const useLayoutStore = create<LayoutStore>((set) => ({
 
   toggleMiniMap: () => set((state) => ({ showMiniMap: !state.showMiniMap })),
   toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
+  
+  autoCenter: true,
+  toggleAutoCenter: () => set((state) => ({ autoCenter: !state.autoCenter })),
 }));

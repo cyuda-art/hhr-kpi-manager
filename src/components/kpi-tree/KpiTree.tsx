@@ -9,7 +9,7 @@ import { KpiNodeComponent } from './KpiNodeComponent';
 import { ActionPanel } from './ActionPanel';
 import { AiSetupWizard } from './AiSetupWizard';
 import dagre from 'dagre';
-import { Wand2, PanelRightClose, PanelRightOpen, Map } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X } from 'lucide-react';
 
 
 const nodeTypes = {
@@ -84,7 +84,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
   const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes } = useKpiStore();
-  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap } = useLayoutStore();
+  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter } = useLayoutStore();
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -241,7 +241,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
   // 選択されたノードが変更されたらセンタリングするアニメーション
   useEffect(() => {
-    if (selectedNodeId && rfInstance) {
+    if (autoCenter && selectedNodeId && rfInstance) {
       const node = nodes.find(n => n.id === selectedNodeId);
       if (node) {
         // ノードの中心座標を計算してセンタリング
@@ -250,7 +250,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         rfInstance.setCenter(x, y, { zoom: 1.1, duration: 800 });
       }
     }
-  }, [selectedNodeId, rfInstance, nodes]);
+  }, [selectedNodeId, rfInstance, nodes, autoCenter]);
 
   return (
     <div className={`w-full min-w-0 flex flex-col lg:flex-row gap-4 ${previewMode ? "h-screen w-screen m-0 p-0 fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950" : isDashboard ? "h-[500px] lg:h-full" : "h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)]"}`}>
@@ -263,6 +263,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             >
               <Wand2 size={14} />
               自動整列 (Auto Layout)
+            </button>
+            <button
+              onClick={toggleAutoCenter}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-colors text-xs font-bold ${autoCenter ? 'bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+              title="選択時の自動センタリングのオン/オフ"
+            >
+              <Focus size={14} />
+              自動フォーカス
             </button>
             <button
               onClick={toggleMiniMap}
@@ -307,37 +315,29 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         </ReactFlow>
       </div>
 
-      {/* 右側のインサイト・アクションパネル (プレビューモードでは非表示、かつノード選択時のみ表示) */}
+      {/* ポップアップ（モーダル）形式のアクションパネル */}
       {!previewMode && selectedNodeId && (
-        <div 
-          ref={panelRef}
-          style={{ width: isMobile ? '100%' : (isActionPanelCollapsed ? 48 : actionPanelWidth) }}
-          className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300 ease-in-out relative flex flex-col shrink-0 min-h-0 ${isMobile ? 'h-[40vh]' : 'h-full'} ${isResizingPanel ? 'select-none' : ''}`}
-        >
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
           <div 
-            className="hidden lg:block absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"
-            onMouseDown={() => setIsResizingPanel(true)}
-            onDoubleClick={() => setActionPanelWidth(320)}
-          />
-          
-          <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between">
-            {!isActionPanelCollapsed && (
-              <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2 truncate">
-                <span className="w-2 h-4 bg-indigo-500 rounded-full flex-shrink-0"></span>
+            className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setSelectedNodeId(null)}
+          ></div>
+          <div className="relative w-full max-w-md h-[85vh] sm:h-[80vh] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between shrink-0">
+              <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
+                <span className="w-2 h-4 bg-indigo-500 rounded-full"></span>
                 アクション ＆ インサイト
               </h2>
-            )}
-            <button 
-              onClick={toggleActionPanel}
-              className={`p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors ${isActionPanelCollapsed ? 'mx-auto' : ''}`}
-              title={isActionPanelCollapsed ? "パネルを展開" : "パネルを折りたたむ"}
-            >
-              {isActionPanelCollapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
-            </button>
-          </div>
-          
-          <div className={`flex-1 overflow-y-auto transition-opacity duration-300 ${isActionPanelCollapsed ? 'opacity-0 invisible w-0' : 'opacity-100 p-4'}`}>
-            {!isActionPanelCollapsed && <ActionPanel />}
+              <button 
+                onClick={() => setSelectedNodeId(null)}
+                className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+              <ActionPanel />
+            </div>
           </div>
         </div>
       )}
