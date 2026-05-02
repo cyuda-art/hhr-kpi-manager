@@ -45,7 +45,7 @@ export const Sidebar = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
-    { id: 'data-entry', label: 'データ入力', icon: Database, path: '/data-entry' },
+    { id: 'data-entry', label: 'シートエディタ', icon: Database, path: '/data-entry' },
   ];
 
   const rootNodes = useMemo(() => {

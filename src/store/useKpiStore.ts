@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { KpiNodeData, KpiNodeWithComputed, Status, Action } from '@/types';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 
 const mockKpiData: KpiNodeData[] = [];
 
@@ -31,13 +29,19 @@ interface KpiStore {
   toggleNodeCollapse: (id: string) => void;
 }
 
-// データベース更新用のヘルパー関数
+// データベース(Google Sheets)更新用のヘルパー関数
 const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null) => {
-  if (!projectId) return;
+  // projectIdは将来の拡張用。現在は1つのスプレッドシートを想定。
   try {
-    await setDoc(doc(db, 'projects', projectId, 'kpiData', 'main'), { kpiData, actions });
+    await fetch('/api/sheets', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ kpiData, actions }),
+    });
   } catch (error) {
-    console.error("DB Sync Error:", error);
+    console.error("Sheets Sync Error:", error);
   }
 };
 
@@ -100,34 +104,33 @@ export const useKpiStore = create<KpiStore>()(
       currentProjectId: null,
 
       initializeDB: async (projectId: string) => {
-    // 既に同じプロジェクトで初期化済みならリターン
-    if (get().isDbInitialized && get().currentProjectId === projectId) return;
-    
-    set({ currentProjectId: projectId, isDbInitialized: false });
-    
-    const docRef = doc(db, 'projects', projectId, 'kpiData', 'main');
-    const docSnap = await getDoc(docRef);
-
-    // DBにデータがなければ空データ（もしくは初期構造）を書き込む
-    if (!docSnap.exists()) {
-      await setDoc(docRef, {
-        kpiData: {},
-        actions: []
-      });
-    }
-
-    // リアルタイム同期のリスナーを設定
-    onSnapshot(docRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        set({ 
-          kpiData: data.kpiData || {}, 
-          actions: data.actions || [],
-          isDbInitialized: true 
-        });
-      }
-    });
-  },
+        // 既に同じプロジェクトで初期化済みならリターン
+        if (get().isDbInitialized && get().currentProjectId === projectId) return;
+        
+        set({ currentProjectId: projectId, isDbInitialized: false });
+        
+        try {
+          const res = await fetch('/api/sheets');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.kpiData && Object.keys(data.kpiData).length > 0) {
+              set({ 
+                kpiData: data.kpiData, 
+                actions: data.actions || [],
+                isDbInitialized: true 
+              });
+            } else {
+              // データが空なら初期データをセット（または現在のデータを保存）
+              set({ isDbInitialized: true });
+              syncToDB(get().kpiData, get().actions, projectId);
+            }
+          } else {
+            console.error("Failed to fetch from sheets");
+          }
+        } catch (error) {
+          console.error("Initialize DB Error:", error);
+        }
+      },
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   
