@@ -21,11 +21,11 @@ export default function Dashboard() {
         >
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wider">
-              <Network className="w-4 h-4 text-indigo-500" />
+              <Network className="w-4 h-4 text-primary-500" />
               インタラクティブ・KPIツリー
             </h2>
           </div>
-          <div className="text-slate-400 hover:text-indigo-600 transition-colors">
+          <div className="text-slate-400 hover:text-primary-600 transition-colors">
             {isTreeExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </div>
         </button>

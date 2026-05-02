@@ -15,7 +15,7 @@ export default function TreePage() {
           href="/tree/preview" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-indigo-100 dark:border-indigo-800/50"
+          className="flex items-center gap-2 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-600 dark:text-primary-400 px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-primary-100 dark:border-primary-800/50"
         >
           <ExternalLink size={16} />
           別ウィンドウで全体表示

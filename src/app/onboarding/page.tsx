@@ -132,10 +132,10 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors">
       <div className="max-w-2xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800 transition-colors">
         {/* Header */}
-        <div className="bg-indigo-600 dark:bg-indigo-900 p-8 text-white relative overflow-hidden transition-colors">
+        <div className="bg-primary-600 dark:bg-primary-900 p-8 text-white relative overflow-hidden transition-colors">
           <div className="relative z-10">
             <h1 className="text-2xl font-bold mb-2">プロジェクトのセットアップ</h1>
-            <p className="text-indigo-100">KPIツリーの骨組みをステップバイステップで作成します</p>
+            <p className="text-primary-100">KPIツリーの骨組みをステップバイステップで作成します</p>
           </div>
           
           {/* Progress Bar */}
@@ -143,11 +143,11 @@ export default function OnboardingPage() {
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex flex-col items-center gap-2 relative z-10">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
-                  step >= i ? 'bg-white text-indigo-600' : 'bg-indigo-500/50 text-indigo-200'
+                  step >= i ? 'bg-white text-primary-600' : 'bg-primary-500/50 text-primary-200'
                 }`}>
                   {step > i ? <CheckCircle size={20} /> : i}
                 </div>
-                <span className={`text-xs ${step >= i ? 'text-white font-medium' : 'text-indigo-200'}`}>
+                <span className={`text-xs ${step >= i ? 'text-white font-medium' : 'text-primary-200'}`}>
                   {i === 1 && 'KGIの設定'}
                   {i === 2 && '主要KPIの追加'}
                   {i === 3 && '確認'}
@@ -155,7 +155,7 @@ export default function OnboardingPage() {
               </div>
             ))}
             {/* Progress Line */}
-            <div className="absolute top-5 left-0 w-full h-1 bg-indigo-500/50 -z-10 rounded-full">
+            <div className="absolute top-5 left-0 w-full h-1 bg-primary-500/50 -z-10 rounded-full">
               <div 
                 className="h-full bg-white rounded-full transition-all duration-300" 
                 style={{ width: `${((step - 1) / 2) * 100}%` }}
@@ -176,13 +176,13 @@ export default function OnboardingPage() {
                 <div className="mb-8 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                   <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">💡 テンプレートから始める</p>
                   <div className="flex gap-2">
-                    <button onClick={() => applyTemplate('retail')} className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs hover:border-indigo-400 transition-colors">店舗・小売</button>
-                    <button onClick={() => applyTemplate('saas')} className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs hover:border-indigo-400 transition-colors">B2B SaaS</button>
+                    <button onClick={() => applyTemplate('retail')} className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs hover:border-primary-400 transition-colors">店舗・小売</button>
+                    <button onClick={() => applyTemplate('saas')} className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs hover:border-primary-400 transition-colors">B2B SaaS</button>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100 mb-6">
-                <Target className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                <Target className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 <h2 className="text-xl font-bold">最終目標（KGI）の設定</h2>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
@@ -197,7 +197,7 @@ export default function OnboardingPage() {
                     type="text"
                     value={kgi.name}
                     onChange={(e) => setKgi({ ...kgi, name: e.target.value })}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-colors"
                     placeholder="例: 月間売上"
                   />
                 </div>
@@ -208,7 +208,7 @@ export default function OnboardingPage() {
                       type="number"
                       value={kgi.targetValue || ''}
                       onChange={(e) => setKgi({ ...kgi, targetValue: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -217,7 +217,7 @@ export default function OnboardingPage() {
                       type="text"
                       value={kgi.unit}
                       onChange={(e) => setKgi({ ...kgi, unit: e.target.value })}
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-colors"
                       placeholder="例: 円, 人, %"
                     />
                   </div>
@@ -228,7 +228,7 @@ export default function OnboardingPage() {
                     type="number"
                     value={kgi.actualValue || ''}
                     onChange={(e) => setKgi({ ...kgi, actualValue: Number(e.target.value) })}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100 mb-6">
-                <TrendingUp className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                <TrendingUp className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 <h2 className="text-xl font-bold">主要KPIの追加</h2>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
                           type="text"
                           value={kpi.name}
                           onChange={(e) => updateKpi(kpi.id, 'name', e.target.value)}
-                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-colors"
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-primary-500 outline-none text-sm transition-colors"
                           placeholder="例: 客数"
                         />
                       </div>
@@ -279,7 +279,7 @@ export default function OnboardingPage() {
                           type="number"
                           value={kpi.targetValue || ''}
                           onChange={(e) => updateKpi(kpi.id, 'targetValue', Number(e.target.value))}
-                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-colors"
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-primary-500 outline-none text-sm transition-colors"
                         />
                       </div>
                       <div>
@@ -288,7 +288,7 @@ export default function OnboardingPage() {
                           type="text"
                           value={kpi.unit}
                           onChange={(e) => updateKpi(kpi.id, 'unit', e.target.value)}
-                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-colors"
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-primary-500 outline-none text-sm transition-colors"
                         />
                       </div>
                     </div>
@@ -297,7 +297,7 @@ export default function OnboardingPage() {
 
                 <button 
                   onClick={addKpi}
-                  className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl flex items-center justify-center gap-2 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl flex items-center justify-center gap-2 hover:border-primary-400 dark:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Plus size={18} />
                   <span>KPIを追加する</span>
@@ -319,8 +319,8 @@ export default function OnboardingPage() {
 
               <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-colors">
                 {/* KGI Box */}
-                <div className="bg-indigo-600 dark:bg-indigo-700 text-white p-4 rounded-lg shadow-md mb-8 relative z-10 mx-auto w-3/4 text-center">
-                  <div className="text-xs text-indigo-200 font-bold mb-1">KGI</div>
+                <div className="bg-primary-600 dark:bg-primary-700 text-white p-4 rounded-lg shadow-md mb-8 relative z-10 mx-auto w-3/4 text-center">
+                  <div className="text-xs text-primary-200 font-bold mb-1">KGI</div>
                   <div className="font-bold text-lg">{kgi.name}</div>
                   <div className="text-sm mt-1">{kgi.targetValue.toLocaleString()} {kgi.unit}</div>
                 </div>
@@ -358,7 +358,7 @@ export default function OnboardingPage() {
               <button
                 onClick={() => setStep(step + 1)}
                 disabled={step === 1 && !kgi.name}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 次へ
                 <ArrowRight size={16} />
@@ -381,10 +381,10 @@ export default function OnboardingPage() {
             <div className="w-full flex flex-col items-center">
               <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 mb-8 uppercase tracking-wider">Live Preview</h3>
               
-              <div className="bg-indigo-600 dark:bg-indigo-700 text-white p-4 rounded-xl shadow-lg mb-8 relative z-10 w-full max-w-[240px] text-center border-2 border-indigo-400 dark:border-indigo-500/50">
-                <div className="text-xs text-indigo-200 font-bold mb-1">KGI</div>
+              <div className="bg-primary-600 dark:bg-primary-700 text-white p-4 rounded-xl shadow-lg mb-8 relative z-10 w-full max-w-[240px] text-center border-2 border-primary-400 dark:border-primary-500/50">
+                <div className="text-xs text-primary-200 font-bold mb-1">KGI</div>
                 <div className="font-bold text-lg">{kgi.name || '未設定'}</div>
-                <div className="text-sm mt-1 text-indigo-100">{kgi.targetValue ? kgi.targetValue.toLocaleString() : '-'} {kgi.unit}</div>
+                <div className="text-sm mt-1 text-primary-100">{kgi.targetValue ? kgi.targetValue.toLocaleString() : '-'} {kgi.unit}</div>
               </div>
 
               {kpis.length > 0 && (

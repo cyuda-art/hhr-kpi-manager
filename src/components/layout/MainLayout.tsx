@@ -15,7 +15,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading: isAuthLoading, initializeAuth } = useAuthStore();
   const { currentProjectId, isLoading: isProjectLoading } = useProjectStore();
   const { organizations, isLoading: isOrgLoading, initializeOrgs } = useOrgStore();
-  const { sidebarWidth, isSidebarCollapsed } = useLayoutStore();
+  const { sidebarWidth, isSidebarCollapsed, themeColor } = useLayoutStore();
   const pathname = usePathname();
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(true); // 初期値true(SSRエラー回避用)
@@ -26,6 +26,15 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // テーマカラーの適用
+  useEffect(() => {
+    if (themeColor === 'indigo') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', themeColor);
+    }
+  }, [themeColor]);
 
   useEffect(() => {
     const unsubscribe = initializeAuth();

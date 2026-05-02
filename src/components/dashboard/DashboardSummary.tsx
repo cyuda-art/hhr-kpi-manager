@@ -43,14 +43,14 @@ export const DashboardSummary = () => {
       >
         <div className="flex items-center gap-6">
           <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wider">
-            <TrendingUp className="w-4 h-4 text-indigo-500" />
+            <TrendingUp className="w-4 h-4 text-primary-500" />
             ダッシュボード・サマリー
           </h2>
           
           {/* 折りたたみ時でも重要な指標だけは小さく見せる */}
           {!isExpanded && (
             <div className="flex items-center gap-6 text-xs font-bold animate-in fade-in">
-              <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+              <div className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400">
                 <Target className="w-3.5 h-3.5" />
                 <span>平均達成率: {Math.round(avgKgiAchievement)}%</span>
               </div>
@@ -63,7 +63,7 @@ export const DashboardSummary = () => {
             </div>
           )}
         </div>
-        <div className="text-slate-400 hover:text-indigo-600 transition-colors">
+        <div className="text-slate-400 hover:text-primary-600 transition-colors">
           {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </div>
       </button>
@@ -73,8 +73,8 @@ export const DashboardSummary = () => {
         <div className="p-4 pt-0 space-y-6">
           {/* サマリーハイライト */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-500/20">
-              <div className="flex items-center gap-2 text-indigo-100 mb-2">
+            <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-4 text-white shadow-lg shadow-primary-500/20">
+              <div className="flex items-center gap-2 text-primary-100 mb-2">
                 <Target className="w-5 h-5" />
                 <span className="font-bold text-sm">主要KGI 平均達成率</span>
               </div>
@@ -101,7 +101,7 @@ export const DashboardSummary = () => {
           {/* 指標カード一覧（横スクロール可能に） */}
           <div>
             <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-              <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
+              <div className="w-1.5 h-4 bg-primary-500 rounded-full"></div>
               すべての指標一覧
             </h3>
             <div className="flex overflow-x-auto pb-4 gap-4 snap-x custom-scrollbar">

@@ -15,6 +15,8 @@ interface LayoutStore {
   toggleMobileMenu: () => void;
   autoCenter: boolean;
   toggleAutoCenter: () => void;
+  themeColor: string;
+  setThemeColor: (color: string) => void;
 }
 
 export const useLayoutStore = create<LayoutStore>((set) => ({
@@ -36,4 +38,7 @@ export const useLayoutStore = create<LayoutStore>((set) => ({
   
   autoCenter: true,
   toggleAutoCenter: () => set((state) => ({ autoCenter: !state.autoCenter })),
+  
+  themeColor: 'indigo', // デフォルトテーマ
+  setThemeColor: (color) => set({ themeColor: color }),
 }));

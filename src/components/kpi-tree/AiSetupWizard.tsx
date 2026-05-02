@@ -44,14 +44,14 @@ export const AiSetupWizard = () => {
     <div className="absolute inset-0 z-50 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
         {/* ヘッダー */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-primary-500 to-purple-600 p-6 text-white">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
               <Sparkles size={24} className="text-white" />
             </div>
             <h2 className="text-xl font-bold">AI オンボーディング</h2>
           </div>
-          <p className="text-indigo-100 text-sm">
+          <p className="text-primary-100 text-sm">
             あなたの事業内容や目標を教えてください。AIが最適なKPIツリー構造を自動設計します。
           </p>
         </div>
@@ -60,7 +60,7 @@ export const AiSetupWizard = () => {
         <div className="p-6 space-y-6">
           {/* ドラッグ＆ドロップエリア (モック) */}
           <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
-            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 text-primary-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
               <UploadCloud size={24} />
             </div>
             <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-1">ファイルをドラッグ＆ドロップ</h3>
@@ -83,7 +83,7 @@ export const AiSetupWizard = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="例：都内でリゾートホテルを3店舗運営しています。来期の目標は全社売上を20%アップさせることです。宿泊部門だけでなく、併設するスパやレストランのクロスセルも強化したいと考えています..."
-              className="w-full h-32 pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="w-full h-32 pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
             />
           </div>
 
@@ -97,7 +97,7 @@ export const AiSetupWizard = () => {
           <button
             onClick={handleGenerate}
             disabled={!description.trim() || isGenerating}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all"
+            className="w-full py-4 bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all"
           >
             {isGenerating ? (
               <>

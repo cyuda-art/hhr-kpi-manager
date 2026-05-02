@@ -92,7 +92,7 @@ export const DataEditor = () => {
     <div className="flex flex-col h-[calc(100vh-4rem)] p-4">
       <div className="flex items-center justify-between mb-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
+          <div className="p-2 bg-primary-100 dark:bg-primary-900/50 rounded-lg text-primary-600 dark:text-primary-400">
             <FileSpreadsheet size={24} />
           </div>
           <div>
@@ -114,7 +114,7 @@ export const DataEditor = () => {
             disabled={!hasChanges}
             className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${
               hasChanges 
-                ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-md' 
+                ? 'bg-primary-500 hover:bg-primary-600 text-white shadow-md' 
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
             }`}
           >
@@ -144,10 +144,10 @@ export const DataEditor = () => {
               {nodesList.map(node => (
                 <tr 
                   key={node.id} 
-                  className={`hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-colors group ${editingId === node.id ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}
+                  className={`hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors group ${editingId === node.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
                   onClick={() => setEditingId(node.id)}
                 >
-                  <td className="p-3 text-center text-slate-300 dark:text-slate-600 group-hover:text-indigo-400">
+                  <td className="p-3 text-center text-slate-300 dark:text-slate-600 group-hover:text-primary-400">
                     <Edit size={14} className="mx-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                   </td>
                   
@@ -157,7 +157,7 @@ export const DataEditor = () => {
                       type="text"
                       value={node.name}
                       onChange={(e) => handleChange(node.id, 'name', e.target.value)}
-                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold text-slate-800 dark:text-slate-200 transition-all"
+                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold text-slate-800 dark:text-slate-200 transition-all"
                     />
                   </td>
                   
@@ -166,7 +166,7 @@ export const DataEditor = () => {
                     <select
                       value={node.type}
                       onChange={(e) => handleChange(node.id, 'type', e.target.value)}
-                      className={`w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold transition-all ${node.type === 'KGI' ? 'text-amber-600 dark:text-amber-400' : 'text-indigo-600 dark:text-indigo-400'}`}
+                      className={`w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold transition-all ${node.type === 'KGI' ? 'text-amber-600 dark:text-amber-400' : 'text-primary-600 dark:text-primary-400'}`}
                     >
                       <option value="KGI">KGI</option>
                       <option value="KPI">KPI</option>
@@ -179,7 +179,7 @@ export const DataEditor = () => {
                       type="text"
                       value={node.businessUnit}
                       onChange={(e) => handleChange(node.id, 'businessUnit', e.target.value)}
-                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 uppercase transition-all"
+                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 uppercase transition-all"
                     />
                   </td>
 
@@ -188,7 +188,7 @@ export const DataEditor = () => {
                     <select
                       value={node.parentId || ''}
                       onChange={(e) => handleChange(node.id, 'parentId', e.target.value || null)}
-                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all truncate"
+                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all truncate"
                     >
                       <option value="">-- なし (Root) --</option>
                       {nodesList.filter(n => n.id !== node.id).map(n => (
@@ -203,7 +203,7 @@ export const DataEditor = () => {
                       type="number"
                       value={node.targetValue}
                       onChange={(e) => handleChange(node.id, 'targetValue', e.target.value)}
-                      className="w-full text-right px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-700 dark:text-slate-300 transition-all"
+                      className="w-full text-right px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-700 dark:text-slate-300 transition-all"
                     />
                   </td>
 
@@ -213,7 +213,7 @@ export const DataEditor = () => {
                       type="number"
                       value={node.actualValue}
                       onChange={(e) => handleChange(node.id, 'actualValue', e.target.value)}
-                      className="w-full text-right px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold text-slate-800 dark:text-slate-200 transition-all"
+                      className="w-full text-right px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold text-slate-800 dark:text-slate-200 transition-all"
                     />
                   </td>
 
@@ -223,7 +223,7 @@ export const DataEditor = () => {
                       type="text"
                       value={node.unit}
                       onChange={(e) => handleChange(node.id, 'unit', e.target.value)}
-                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all"
+                      className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all"
                     />
                   </td>
 

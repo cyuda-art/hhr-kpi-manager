@@ -21,7 +21,7 @@ export const SidePanel = () => {
           onClick={() => setActiveTab('simulation')}
           className={cn(
             "flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors",
-            activeTab === 'simulation' ? "border-indigo-500 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            activeTab === 'simulation' ? "border-primary-500 text-primary-600" : "border-transparent text-slate-500 hover:text-slate-700"
           )}
         >
           <LayoutDashboard size={16} />
@@ -31,7 +31,7 @@ export const SidePanel = () => {
           onClick={() => setActiveTab('action')}
           className={cn(
             "flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors",
-            activeTab === 'action' ? "border-indigo-500 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            activeTab === 'action' ? "border-primary-500 text-primary-600" : "border-transparent text-slate-500 hover:text-slate-700"
           )}
         >
           <CheckSquare size={16} />

@@ -74,7 +74,7 @@ export const Sidebar = () => {
         <button
           onClick={() => setSelectedNodeId(node.id)}
           className={`w-full flex items-center gap-1.5 py-1.5 pr-2 rounded-md transition-colors text-left ${
-            isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'hover:bg-slate-800/50 text-slate-400 hover:text-slate-200'
+            isSelected ? 'bg-primary-500/20 text-primary-300' : 'hover:bg-slate-800/50 text-slate-400 hover:text-slate-200'
           }`}
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
         >
@@ -87,7 +87,7 @@ export const Sidebar = () => {
             )}
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className={`text-xs truncate ${isSelected ? 'font-bold text-indigo-300' : 'font-medium'}`}>
+            <span className={`text-xs truncate ${isSelected ? 'font-bold text-primary-300' : 'font-medium'}`}>
               {node.name}
             </span>
           </div>
@@ -120,7 +120,7 @@ export const Sidebar = () => {
         } ${isResizing ? 'select-none' : ''}`}
       >
       <div 
-        className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 z-50 transition-colors"
+        className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-primary-500/50 active:bg-primary-500 z-50 transition-colors"
         onMouseDown={() => setIsResizing(true)}
         onDoubleClick={() => setSidebarWidth(256)}
       />
@@ -128,7 +128,7 @@ export const Sidebar = () => {
       <div className="p-6 flex items-center justify-between">
         {!isSidebarCollapsed && (
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center flex-shrink-0">
               <span className="text-white font-black text-sm">H</span>
             </div>
             <h1 className="text-lg font-black text-white tracking-wider truncate">HHR-KPI</h1>
@@ -136,7 +136,7 @@ export const Sidebar = () => {
         )}
         {isSidebarCollapsed && (
           <div className="w-full flex justify-center">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center">
               <span className="text-white font-black text-sm">H</span>
             </div>
           </div>
@@ -172,7 +172,7 @@ export const Sidebar = () => {
                 href={item.path}
                 title={isSidebarCollapsed ? item.label : undefined}
                 className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-colors ${
-                  isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 hover:text-white text-slate-400'
+                  isActive ? 'bg-primary-600 text-white' : 'hover:bg-slate-800 hover:text-white text-slate-400'
                 }`}
               >
                 <item.icon size={20} />

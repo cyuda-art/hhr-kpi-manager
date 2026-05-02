@@ -50,7 +50,7 @@ export const Header = () => {
         {currentProject && (
           <button 
             onClick={handleCopyInviteLink}
-            className="hidden md:flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg text-sm font-bold transition-colors border border-indigo-200 dark:border-indigo-800"
+            className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 dark:hover:bg-primary-900/50 rounded-lg text-sm font-bold transition-colors border border-primary-200 dark:border-primary-800"
           >
             {isCopied ? <Check size={16} /> : <Link2 size={16} />}
             {isCopied ? 'コピーしました' : '共有リンク'}
@@ -65,11 +65,11 @@ export const Header = () => {
           <Settings size={20} />
         </Link>
         <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-slate-200 dark:border-slate-700">
-          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center overflow-hidden flex-shrink-0">
             {user?.photoURL ? (
               <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <User size={16} className="text-indigo-600 dark:text-indigo-400" />
+              <User size={16} className="text-primary-600 dark:text-primary-400" />
             )}
           </div>
           <div className="hidden md:flex flex-col">

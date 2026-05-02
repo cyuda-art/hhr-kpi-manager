@@ -259,14 +259,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           <div className="absolute top-4 left-4 z-10 flex gap-2">
             <button
               onClick={handleAutoLayout}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-xs font-bold"
+              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-xs font-bold"
             >
               <Wand2 size={14} />
               自動整列 (Auto Layout)
             </button>
             <button
               onClick={toggleAutoCenter}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-colors text-xs font-bold ${autoCenter ? 'bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-colors text-xs font-bold ${autoCenter ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
               title="選択時の自動センタリングのオン/オフ"
             >
               <Focus size={14} />
@@ -274,7 +274,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             </button>
             <button
               onClick={toggleMiniMap}
-              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
               title="ミニマップの表示/非表示"
             >
               <Map size={16} />
@@ -325,7 +325,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           <div className="relative w-full max-w-md h-[85vh] sm:h-[80vh] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between shrink-0">
               <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
-                <span className="w-2 h-4 bg-indigo-500 rounded-full"></span>
+                <span className="w-2 h-4 bg-primary-500 rounded-full"></span>
                 アクション ＆ インサイト
               </h2>
               <button 

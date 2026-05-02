@@ -27,7 +27,7 @@ export const DetailDrawer = ({ isOpen, onClose, kpi }: Props) => {
         {/* Header */}
         <div className="flex justify-between items-start p-6 bg-white border-b border-slate-200">
           <div>
-            <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-2 py-1 rounded">
+            <span className="text-[10px] font-bold text-primary-500 uppercase tracking-wider bg-primary-50 px-2 py-1 rounded">
               {kpi.businessUnit}
             </span>
             <h2 className="text-xl font-bold text-slate-800 mt-2">{kpi.name}</h2>
@@ -71,7 +71,7 @@ export const DetailDrawer = ({ isOpen, onClose, kpi }: Props) => {
           {/* Chart */}
           <div>
             <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
+              <div className="w-1.5 h-4 bg-primary-500 rounded-full"></div>
               直近6ヶ月の推移
             </h3>
             <TrendChart actualValue={kpi.actualValue} targetValue={kpi.targetValue} unit={kpi.unit} />

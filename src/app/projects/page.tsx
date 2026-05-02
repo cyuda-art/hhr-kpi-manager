@@ -81,14 +81,14 @@ export default function ProjectsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 transition-colors relative overflow-hidden flex items-center justify-center">
       
       {/* Background Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/20 dark:bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-500/20 dark:bg-primary-600/20 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/20 dark:bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="w-full max-w-5xl relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full text-xs font-bold tracking-wider uppercase border border-indigo-200 dark:border-indigo-800">
+              <div className="px-3 py-1 bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300 rounded-full text-xs font-bold tracking-wider uppercase border border-primary-200 dark:border-primary-800">
                 {currentOrg?.name || 'ビジネス組織'}
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function ProjectsPage() {
           </div>
           <button 
             onClick={() => setIsCreating(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-indigo-600/30"
+            className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-primary-600/30"
           >
             <Plus size={20} />
             新規プロジェクト
@@ -120,7 +120,7 @@ export default function ProjectsPage() {
                     value={newProjectName}
                     onChange={(e) => setNewProjectName(e.target.value)}
                     placeholder="例：株式会社HHRグループ KPI"
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                   />
                 </div>
                 <div>
@@ -130,7 +130,7 @@ export default function ProjectsPage() {
                     value={newProjectDesc}
                     onChange={(e) => setNewProjectDesc(e.target.value)}
                     placeholder="例：2026年度の全社オムニチャネル指標"
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                   />
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
@@ -143,7 +143,7 @@ export default function ProjectsPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     作成して始める
                   </button>
@@ -157,7 +157,7 @@ export default function ProjectsPage() {
           {projects.map((project, idx) => {
             // プロジェクトごとに異なるグラデーションを当てる簡易ロジック
             const gradients = [
-              'from-blue-500 to-indigo-600',
+              'from-blue-500 to-primary-600',
               'from-emerald-400 to-teal-500',
               'from-purple-500 to-pink-600',
               'from-amber-400 to-orange-500'
@@ -183,7 +183,7 @@ export default function ProjectsPage() {
                     onClick={(e) => handleDuplicate(e, project.id)}
                     disabled={isProcessing === project.id}
                     title="プロジェクトを複製"
-                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
@@ -197,7 +197,7 @@ export default function ProjectsPage() {
                   </button>
                 </div>
                 
-                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pr-12">
+                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors pr-12">
                   {project.name}
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2 min-h-[40px]">
@@ -205,12 +205,12 @@ export default function ProjectsPage() {
                 </p>
                 
                 <div className="flex items-center justify-between mt-auto">
-                  <div className="flex items-center text-sm text-indigo-600 dark:text-indigo-400 font-bold">
+                  <div className="flex items-center text-sm text-primary-600 dark:text-primary-400 font-bold">
                     プロジェクトを開く 
                     <ArrowRight className="w-4 h-4 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
                   {isProcessing === project.id && (
-                    <span className="text-xs text-indigo-500 animate-pulse font-medium">処理中...</span>
+                    <span className="text-xs text-primary-500 animate-pulse font-medium">処理中...</span>
                   )}
                 </div>
               </button>
@@ -228,7 +228,7 @@ export default function ProjectsPage() {
               </p>
               <button 
                 onClick={() => setIsCreating(true)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold inline-flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-indigo-600/30"
+                className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold inline-flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-primary-600/30"
               >
                 <Plus size={20} />
                 最初のプロジェクトを作る

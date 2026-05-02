@@ -215,7 +215,7 @@ export const ActionPanel = () => {
                       type="number" 
                       value={editTargetValue} 
                       onChange={(e) => setEditTargetValue(e.target.value)}
-                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                     <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
                   </div>
@@ -225,13 +225,13 @@ export const ActionPanel = () => {
                       type="number" 
                       value={editActualValue} 
                       onChange={(e) => setEditActualValue(e.target.value)}
-                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
                     />
                     <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
                   </div>
                   <div className="flex justify-end gap-2 mt-2">
                     <button onClick={() => setIsEditingValue(false)} className="text-[10px] px-2 py-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">キャンセル</button>
-                    <button onClick={handleSaveValues} className="text-[10px] px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 font-bold">保存して反映</button>
+                    <button onClick={handleSaveValues} className="text-[10px] px-2 py-1 bg-primary-500 text-white rounded hover:bg-primary-600 font-bold">保存して反映</button>
                   </div>
                 </div>
               ) : (
@@ -244,7 +244,7 @@ export const ActionPanel = () => {
                       実績: <span className="font-bold text-slate-800 dark:text-slate-200">{selectedKpi.actualValue.toLocaleString()}</span> {selectedKpi.unit}
                     </div>
                   </div>
-                  <div className="text-indigo-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold">
+                  <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold">
                     <Edit2 size={12} />
                     編集
                   </div>
@@ -270,7 +270,7 @@ export const ActionPanel = () => {
         </button>
         <button
           onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'chat' ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+          className={`flex-1 py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'chat' ? 'bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
         >
           <MessageSquare size={14} />
           AIチャット
@@ -285,11 +285,11 @@ export const ActionPanel = () => {
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                   msg.role === 'user' 
-                    ? 'bg-indigo-500 text-white rounded-tr-sm' 
+                    ? 'bg-primary-500 text-white rounded-tr-sm' 
                     : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-tl-sm shadow-sm'
                 }`}>
                   {msg.role === 'model' && i === 0 ? (
-                    <div className="flex items-center gap-1.5 mb-1 text-indigo-500 dark:text-indigo-400">
+                    <div className="flex items-center gap-1.5 mb-1 text-primary-500 dark:text-primary-400">
                       <Sparkles size={14} />
                       <span className="text-[10px] font-bold">AIアシスタント</span>
                     </div>
@@ -301,9 +301,9 @@ export const ActionPanel = () => {
             {isChatLoading && (
               <div className="flex justify-start">
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             )}
@@ -316,12 +316,12 @@ export const ActionPanel = () => {
               onChange={(e) => setChatMessage(e.target.value)}
               placeholder="KPI改善についてAIに質問..."
               disabled={isChatLoading}
-              className="flex-1 bg-slate-100 dark:bg-slate-900 border-none text-xs rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="flex-1 bg-slate-100 dark:bg-slate-900 border-none text-xs rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={!chatMessage.trim() || isChatLoading}
-              className="w-8 h-8 flex-shrink-0 bg-indigo-500 text-white rounded-full flex items-center justify-center hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 transition-colors"
+              className="w-8 h-8 flex-shrink-0 bg-primary-500 text-white rounded-full flex items-center justify-center hover:bg-primary-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 transition-colors"
             >
               <Send size={14} className="ml-0.5" />
             </button>
@@ -334,7 +334,7 @@ export const ActionPanel = () => {
       {selectedKpi && !aiInsight && !isGeneratingAi && (
         <button 
           onClick={generateAiInsights}
-          className="mb-6 w-full py-3 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 border border-indigo-200 dark:border-indigo-800/50 rounded-xl flex items-center justify-center gap-2 text-indigo-700 dark:text-indigo-400 text-sm font-bold transition-all shadow-sm group"
+          className="mb-6 w-full py-3 bg-gradient-to-r from-primary-500/10 to-purple-500/10 hover:from-primary-500/20 hover:to-purple-500/20 border border-primary-200 dark:border-primary-800/50 rounded-xl flex items-center justify-center gap-2 text-primary-700 dark:text-primary-400 text-sm font-bold transition-all shadow-sm group"
         >
           <Sparkles size={16} className="group-hover:animate-pulse" />
           AIに改善案を分析させる
@@ -363,31 +363,31 @@ export const ActionPanel = () => {
       )}
 
       {selectedKpi && aiInsight && (
-        <div className="mb-6 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/50 p-4 rounded-xl">
+        <div className="mb-6 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/50 p-4 rounded-xl">
           <div className="flex justify-between items-center mb-2">
-            <h5 className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+            <h5 className="text-xs font-bold text-primary-700 dark:text-primary-400 flex items-center gap-1.5">
               <Sparkles size={14} />
               AI インサイト・提案
             </h5>
-            <button onClick={generateAiInsights} className="text-[10px] text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 underline">再分析</button>
+            <button onClick={generateAiInsights} className="text-[10px] text-primary-500 hover:text-primary-700 dark:hover:text-primary-300 underline">再分析</button>
           </div>
-          <p className="text-xs text-indigo-900 dark:text-indigo-200 mb-3">{aiInsight.issue}</p>
+          <p className="text-xs text-primary-900 dark:text-primary-200 mb-3">{aiInsight.issue}</p>
           
           <div className="space-y-2">
-            <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-indigo-100 dark:border-indigo-800/30 flex justify-between items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-primary-100 dark:border-primary-800/30 flex justify-between items-center gap-2">
               <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">💡 推奨アクション</p>
                 <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.actionIdea}>{aiInsight.actionIdea}</p>
               </div>
               <button 
                 onClick={() => handleAddSuggestedAction(aiInsight.actionIdea)}
-                className="flex-shrink-0 text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded font-bold hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                className="flex-shrink-0 text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 px-2 py-1 rounded font-bold hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
               >
                 追加
               </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-indigo-100 dark:border-indigo-800/30 flex justify-between items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-primary-100 dark:border-primary-800/30 flex justify-between items-center gap-2">
               <div className="min-w-0">
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">📊 推奨下位KPI</p>
                 <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.kpiIdea}>
@@ -396,7 +396,7 @@ export const ActionPanel = () => {
               </div>
               <button 
                 onClick={() => handleAddKpi(aiInsight.kpiIdea, true, aiInsight.kpiIdeaTarget, aiInsight.kpiIdeaUnit)}
-                className="flex-shrink-0 text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded font-bold hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                className="flex-shrink-0 text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 px-2 py-1 rounded font-bold hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
               >
                 ツリーに追加
               </button>
@@ -416,7 +416,7 @@ export const ActionPanel = () => {
                 {action.status === 'done' ? (
                   <CheckCircle2 size={18} className="text-emerald-500 dark:text-emerald-400" />
                 ) : (
-                  <Circle size={18} className="text-slate-300 dark:text-slate-600 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors" />
+                  <Circle size={18} className="text-slate-300 dark:text-slate-600 hover:text-primary-500 dark:hover:text-primary-400 transition-colors" />
                 )}
               </button>
               <div className="flex-1 min-w-0">
@@ -442,7 +442,7 @@ export const ActionPanel = () => {
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             disabled={!selectedNodeId}
-            className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
+            className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
           />
           <div className="flex gap-2">
             <input
@@ -451,20 +451,20 @@ export const ActionPanel = () => {
               value={newTaskOwner}
               onChange={(e) => setNewTaskOwner(e.target.value)}
               disabled={!selectedNodeId}
-              className="w-1/2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
+              className="w-1/2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
             />
             <input
               type="date"
               value={newTaskDate}
               onChange={(e) => setNewTaskDate(e.target.value)}
               disabled={!selectedNodeId}
-              className="w-1/2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
+              className="w-1/2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
             />
           </div>
           <button
             type="submit"
             disabled={!selectedNodeId || !newTaskTitle}
-            className="w-full mt-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white text-xs font-bold py-2 rounded transition-colors flex items-center justify-center gap-1"
+            className="w-full mt-2 bg-primary-500 hover:bg-primary-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white text-xs font-bold py-2 rounded transition-colors flex items-center justify-center gap-1"
           >
             <Plus size={14} />
             アクションを追加
@@ -481,7 +481,7 @@ export const ActionPanel = () => {
               placeholder="新しい指標名"
               value={newKpiName}
               onChange={(e) => setNewKpiName(e.target.value)}
-              className="flex-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500"
             />
             <button
               type="submit"

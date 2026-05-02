@@ -39,12 +39,12 @@ export const DashboardCard = ({ kpi, onClick }: Props) => {
       onClick={onClick}
       className={cn(
         "bg-white dark:bg-slate-900 rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden",
-        onClick && "cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500",
-        kpi.isSimulated ? "border-indigo-300 shadow-indigo-100 dark:border-indigo-500 dark:shadow-none" : "border-slate-200 dark:border-slate-800"
+        onClick && "cursor-pointer hover:border-primary-300 dark:hover:border-primary-500",
+        kpi.isSimulated ? "border-primary-300 shadow-primary-100 dark:border-primary-500 dark:shadow-none" : "border-slate-200 dark:border-slate-800"
       )}
     >
       {kpi.isSimulated && (
-        <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold uppercase tracking-wider flex items-center gap-1">
+        <div className="absolute top-0 right-0 bg-primary-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold uppercase tracking-wider flex items-center gap-1">
           <Sparkles size={10} />
           Simulated
         </div>
@@ -55,7 +55,7 @@ export const DashboardCard = ({ kpi, onClick }: Props) => {
           <div className="flex items-center gap-2 mb-1">
             <span className={cn(
               "text-[10px] font-black tracking-wider px-1.5 py-0.5 rounded text-white shadow-sm",
-              kpi.type === 'KGI' ? 'bg-indigo-500' : 'bg-emerald-500'
+              kpi.type === 'KGI' ? 'bg-primary-500' : 'bg-emerald-500'
             )}>
               {kpi.type}
             </span>

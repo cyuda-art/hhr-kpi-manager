@@ -136,7 +136,7 @@ export const TrendChart = ({ actualValue, targetValue, unit }: Props) => {
             onClick={() => setPeriod(opt.value)}
             className={`px-3 py-1 text-xs font-bold rounded-full transition-colors whitespace-nowrap ${
               period === opt.value
-                ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
+                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300'
                 : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
             }`}
           >
