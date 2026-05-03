@@ -424,7 +424,9 @@ export const ActionPanel = () => {
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
         <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">登録済み KFC (重要施策)</h5>
-        {filteredActions.length === 0 ? (
+        {!selectedNodeId ? (
+          <p className="text-xs text-slate-400 dark:text-slate-500">ツリーからKPIを選択すると表示されます</p>
+        ) : filteredActions.length === 0 ? (
           <p className="text-xs text-slate-400 dark:text-slate-500">KFCは登録されていません</p>
         ) : (
           filteredActions.map((action) => (
