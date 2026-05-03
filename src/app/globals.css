@@ -7,17 +7,17 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Default: Indigo */
-  --theme-primary-50: #eef2ff;
-  --theme-primary-100: #e0e7ff;
-  --theme-primary-200: #c7d2fe;
-  --theme-primary-300: #a5b4fc;
-  --theme-primary-400: #818cf8;
-  --theme-primary-500: #6366f1;
-  --theme-primary-600: #4f46e5;
-  --theme-primary-700: #4338ca;
-  --theme-primary-800: #3730a3;
-  --theme-primary-900: #312e81;
+  /* Default: Trust Corporate Blue */
+  --theme-primary-50: #f0f7ff;
+  --theme-primary-100: #e0effe;
+  --theme-primary-200: #bae0fd;
+  --theme-primary-300: #7cc5fb;
+  --theme-primary-400: #36a5f6;
+  --theme-primary-500: #0b8ce9;
+  --theme-primary-600: #026fcb;
+  --theme-primary-700: #0358a3;
+  --theme-primary-800: #074b87;
+  --theme-primary-900: #0b3f70;
 }
 
 :root[data-theme="ocean"] {

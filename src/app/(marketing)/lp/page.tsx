@@ -22,7 +22,7 @@ export default function LandingPage() {
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
         {/* Background Effects */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] opacity-30 dark:opacity-20 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-indigo-500 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse-slow"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-700 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse-slow"></div>
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center max-w-5xl">
@@ -36,7 +36,7 @@ export default function LandingPage() {
           
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-8 leading-tight">
             過去の報告会を終わらせる。<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-indigo-500">
+            <span className="text-transparent bg-clip-text bg-primary-600">
               「動く」KPIツリー。
             </span>
           </h1>
@@ -86,8 +86,8 @@ export default function LandingPage() {
                 desc: "月末や期末に数字が締まってから「未達」に気付くため、軌道修正の打ち手を打つ時間がない。"
               }
             ].map((item, i) => (
-              <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-3xl border border-slate-200 dark:border-slate-700/50 hover:border-primary-500/50 transition-colors">
-                <div className="bg-white dark:bg-slate-800 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100 dark:border-slate-700">
+              <div key={i} className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-xl border border-slate-200 dark:border-slate-700/50 hover:border-primary-500/50 transition-colors">
+                <div className="bg-white dark:bg-slate-800 w-16 h-16 rounded-lg flex items-center justify-center mb-6 shadow-sm border border-slate-100 dark:border-slate-700">
                   {item.icon}
                 </div>
                 <h3 className="text-xl font-bold mb-3">{item.title}</h3>
@@ -130,7 +130,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div className="flex-1 w-full relative">
-                <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden flex items-center justify-center p-8">
+                <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden flex items-center justify-center p-8">
                   {/* Mockup visual */}
                   <div className="w-full h-full bg-white dark:bg-slate-950 rounded-xl shadow-inner border border-slate-200 dark:border-slate-800 flex flex-col p-4 opacity-90">
                     <div className="flex gap-2 mb-4">
@@ -168,7 +168,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div className="flex-1 w-full relative">
-                <div className="aspect-[4/3] bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-3xl border border-emerald-200 dark:border-emerald-800 shadow-2xl overflow-hidden flex items-center justify-center p-8">
+                <div className="aspect-[4/3] bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-xl border border-emerald-200 dark:border-emerald-800 shadow-2xl overflow-hidden flex items-center justify-center p-8">
                   <div className="w-full h-full bg-white dark:bg-slate-950 rounded-xl shadow-inner border border-emerald-100 dark:border-emerald-900 flex flex-col p-4 opacity-90">
                     <div className="flex gap-2 mb-4">
                       <div className="w-3 h-3 rounded-full bg-emerald-500/50"></div>
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div className="flex-1 w-full relative">
-                <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 rounded-3xl border border-indigo-200 dark:border-indigo-800 shadow-2xl overflow-hidden flex items-center justify-center p-8">
+                <div className="aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-2xl overflow-hidden flex items-center justify-center p-8">
                   <div className="w-full h-full bg-slate-900 rounded-xl shadow-inner border border-indigo-500/30 flex flex-col p-4 opacity-95 relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
@@ -230,7 +230,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-slate-800/80 backdrop-blur-xl p-8 rounded-3xl border border-slate-700">
+            <div className="bg-slate-800/80 backdrop-blur-xl p-8 rounded-xl border border-slate-700">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-700 text-slate-300 text-xs font-bold mb-6 tracking-wider">
                 BEFORE
               </div>
@@ -243,7 +243,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-primary-900/80 to-indigo-900/80 backdrop-blur-xl p-8 rounded-3xl border border-primary-500/30 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-primary-900/80 to-indigo-900/80 backdrop-blur-xl p-8 rounded-xl border border-primary-500/30 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/20 blur-3xl rounded-full"></div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-primary-500/20 text-primary-300 text-xs font-bold mb-6 tracking-wider border border-primary-500/30">
                 AFTER
@@ -275,7 +275,7 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-6">
             <Link 
               href="/"
-              className="px-10 py-5 bg-gradient-to-r from-primary-500 to-indigo-500 hover:from-primary-600 hover:to-indigo-600 text-white rounded-2xl font-black text-xl transition-all shadow-xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:-translate-y-1 flex items-center gap-3"
+              className="px-10 py-5 bg-primary-600 hover:from-primary-600 hover:to-indigo-600 text-white rounded-lg font-black text-xl transition-all shadow-xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:-translate-y-1 flex items-center gap-3"
             >
               無料で自社のKPIツリーを作ってみる
               <ChevronRight size={24} />
