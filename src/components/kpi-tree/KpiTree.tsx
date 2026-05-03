@@ -6,7 +6,6 @@ import '@xyflow/react/dist/style.css';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
-import { ActionPanel } from './ActionPanel';
 import dagre from 'dagre';
 import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Search } from 'lucide-react';
 
@@ -395,32 +394,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         </ReactFlow>
       </div>
 
-      {/* ポップアップ（モーダル）形式のアクションパネル */}
-      {!previewMode && selectedNodeId && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
-          <div 
-            className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
-            onClick={() => setSelectedNodeId(null)}
-          ></div>
-          <div className="relative w-full max-w-md h-[85vh] sm:h-[80vh] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between shrink-0">
-              <h2 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
-                <span className="w-2 h-4 bg-primary-500 rounded-full"></span>
-                アクション ＆ インサイト
-              </h2>
-              <button 
-                onClick={() => setSelectedNodeId(null)}
-                className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-              <ActionPanel />
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };
