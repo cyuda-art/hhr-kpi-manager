@@ -315,17 +315,24 @@ export const useKpiStore = create<KpiStore>()(
                 if (!node || !node.parentId) return;
                 
                 const parent = draft[node.parentId];
-                // 単位が同じ場合（金額や件数など）のみ単純加算する
-                // もし親が「％」や「率」などの指標の場合は単純加算はおかしいため、今回は簡易的に親にもそのまま増分を足す（または無視する）
                 if (parent) {
-                  const newParentActual = parent.actualValue + valueDelta;
+                  // 単位が異なる場合（例：子が「件」、親が「円」）、親子の目標値から「単価（換算レート）」を自動計算して掛ける
+                  let conversionRate = 1;
+                  if (node.unit !== parent.unit && node.targetValue > 0 && parent.targetValue > 0) {
+                    conversionRate = parent.targetValue / node.targetValue;
+                  }
+                  
+                  // 波及させる値（親への影響額/件数など）
+                  const impactValue = valueDelta * conversionRate;
+                  
+                  const newParentActual = parent.actualValue + impactValue;
                   draft[parent.id] = calculateComputed({ 
                     ...parent, 
                     actualValue: Math.max(0, newParentActual), // 0未満にはしない
                     isSimulated: true // シミュレーションによって動いたことをマーク
                   });
                   // さらに上の親へ波及
-                  propagateToParent(parent.id, valueDelta);
+                  propagateToParent(parent.id, impactValue);
                 }
               };
               
