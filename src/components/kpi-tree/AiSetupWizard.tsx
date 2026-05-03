@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
-import { Sparkles, UploadCloud, MessageSquare, ArrowRight, Loader2 } from 'lucide-react';
+import { Sparkles, UploadCloud, MessageSquare, ArrowRight, Loader2, Hotel, Utensils, Store } from 'lucide-react';
+import { TEMPLATES } from '@/lib/templates';
 
 export const AiSetupWizard = () => {
   const { setKpiDataBulk } = useKpiStore();
@@ -40,6 +41,14 @@ export const AiSetupWizard = () => {
     }
   };
 
+  const handleApplyTemplate = async (type: keyof typeof TEMPLATES) => {
+    setIsGenerating(true);
+    // 擬似的なAI生成時間（SaaSとしての演出）
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setKpiDataBulk(TEMPLATES[type]);
+    setIsGenerating(false);
+  };
+
   return (
     <div className="absolute inset-0 z-50 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
@@ -58,21 +67,51 @@ export const AiSetupWizard = () => {
 
         {/* コンテンツ */}
         <div className="p-6 space-y-6">
-          {/* ドラッグ＆ドロップエリア (モック) */}
-          <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
-            <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 text-primary-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <UploadCloud size={24} />
+          {/* 業種別テンプレートセクション */}
+          <div>
+            <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-3 text-sm flex items-center gap-2">
+              <span className="w-1.5 h-4 bg-primary-500 rounded-full"></span>
+              おすすめ: 業種テンプレートから1秒で生成
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <button
+                onClick={() => handleApplyTemplate('hotel')}
+                disabled={isGenerating}
+                className="flex flex-col items-center justify-center gap-2 p-4 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary-100 dark:group-hover:bg-primary-900 transition-colors">
+                  <Hotel size={20} className="text-slate-600 dark:text-slate-400 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
+                </div>
+                <span className="font-bold text-slate-700 dark:text-slate-300 text-sm">ホテル・宿泊業</span>
+              </button>
+              
+              <button
+                onClick={() => handleApplyTemplate('restaurant')}
+                disabled={isGenerating}
+                className="flex flex-col items-center justify-center gap-2 p-4 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900 transition-colors">
+                  <Utensils size={20} className="text-slate-600 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
+                </div>
+                <span className="font-bold text-slate-700 dark:text-slate-300 text-sm">飲食・レストラン</span>
+              </button>
+
+              <button
+                onClick={() => handleApplyTemplate('retail')}
+                disabled={isGenerating}
+                className="flex flex-col items-center justify-center gap-2 p-4 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900 transition-colors">
+                  <Store size={20} className="text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                </div>
+                <span className="font-bold text-slate-700 dark:text-slate-300 text-sm">小売・店舗運営</span>
+              </button>
             </div>
-            <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-1">ファイルをドラッグ＆ドロップ</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              PDF（事業計画書）やCSV（過去データ）を読み込ませることも可能です<br/>
-              ※現在プロトタイプのためテキスト入力をお使いください
-            </p>
           </div>
 
           <div className="flex items-center gap-4 text-sm text-slate-400 font-medium">
             <div className="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
-            またはテキストで入力
+            またはテキストやファイルからAI生成
             <div className="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
           </div>
 
