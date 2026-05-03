@@ -20,6 +20,36 @@ export const DataEditor = () => {
   const [hasActionChanges, setHasActionChanges] = useState(false);
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
 
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [recentlySavedRowId, setRecentlySavedRowId] = useState<string | null>(null);
+
+  const handleAutoSave = (rowId?: string) => {
+    if (activeTab === 'kpi' && !hasChanges) return;
+    if (activeTab === 'kfc' && !hasActionChanges) return;
+    
+    setSaveStatus('saving');
+    
+    if (activeTab === 'kpi') {
+      // ローカルデータを最新のオブジェクトから配列化して保存
+      setKpiDataBulk(Object.values(localData));
+      setHasChanges(false);
+    } else {
+      setActionsBulk(Object.values(localActions));
+      setHasActionChanges(false);
+    }
+
+    if (rowId) {
+      setRecentlySavedRowId(rowId);
+    }
+    
+    setSaveStatus('saved');
+    setTimeout(() => {
+      setSaveStatus('idle');
+      setRecentlySavedRowId(null);
+    }, 2000);
+  };
+
+
   useEffect(() => {
     // kpiDataのコピーをローカルステートにセット
     const initialLocal: Record<string, KpiNodeData> = {};
@@ -240,7 +270,7 @@ export const DataEditor = () => {
               {activeTab === 'kpi' && nodesList.map(node => (
                 <tr 
                   key={node.id} 
-                  className={`hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors group ${editingId === node.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                  className={`hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors group ${editingId === node.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''} ${recentlySavedRowId === node.id ? 'bg-emerald-100 dark:bg-emerald-900/40 transition-none' : ''}`}
                   onClick={() => setEditingId(node.id)}
                 >
                   <td className="p-3 text-center text-slate-300 dark:text-slate-600 group-hover:text-primary-400">
@@ -252,6 +282,7 @@ export const DataEditor = () => {
                     <input
                       type="text"
                       value={node.name}
+                      onBlur={() => handleAutoSave(node.id)}
                       onChange={(e) => handleChange(node.id, 'name', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold text-slate-800 dark:text-slate-200 transition-all"
                     />
@@ -261,6 +292,7 @@ export const DataEditor = () => {
                   <td className="p-2">
                     <select
                       value={node.type}
+                      onBlur={() => handleAutoSave(node.id)}
                       onChange={(e) => handleChange(node.id, 'type', e.target.value)}
                       className={`w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold transition-all ${node.type === 'KGI' ? 'text-amber-600 dark:text-amber-400' : 'text-primary-600 dark:text-primary-400'}`}
                     >
@@ -274,6 +306,7 @@ export const DataEditor = () => {
                     <input
                       type="text"
                       value={node.businessUnit}
+                      onBlur={() => handleAutoSave(node.id)}
                       onChange={(e) => handleChange(node.id, 'businessUnit', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 uppercase transition-all"
                     />
@@ -283,6 +316,7 @@ export const DataEditor = () => {
                   <td className="p-2">
                     <select
                       value={node.parentId || ''}
+                      onBlur={() => handleAutoSave(node.id)}
                       onChange={(e) => handleChange(node.id, 'parentId', e.target.value || null)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all truncate"
                     >
@@ -298,6 +332,7 @@ export const DataEditor = () => {
                     <input
                       type="number"
                       value={node.targetValue}
+                      onBlur={() => handleAutoSave(node.id)}
                       onChange={(e) => handleChange(node.id, 'targetValue', e.target.value)}
                       className="w-full text-right px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-700 dark:text-slate-300 transition-all"
                     />
@@ -308,6 +343,7 @@ export const DataEditor = () => {
                     <input
                       type="number"
                       value={node.actualValue}
+                      onBlur={() => handleAutoSave(node.id)}
                       onChange={(e) => handleChange(node.id, 'actualValue', e.target.value)}
                       className="w-full text-right px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold text-slate-800 dark:text-slate-200 transition-all"
                     />
@@ -318,6 +354,7 @@ export const DataEditor = () => {
                     <input
                       type="text"
                       value={node.unit}
+                      onBlur={() => handleAutoSave(node.id)}
                       onChange={(e) => handleChange(node.id, 'unit', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all"
                     />
@@ -339,7 +376,7 @@ export const DataEditor = () => {
               {activeTab === 'kfc' && Object.values(localActions).map(action => (
                 <tr 
                   key={action.id} 
-                  className={`hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 transition-colors group ${editingActionId === action.id ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''}`}
+                  className={`hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 transition-colors group ${editingActionId === action.id ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''} ${recentlySavedRowId === action.id ? 'bg-emerald-100 dark:bg-emerald-900/40 transition-none' : ''}`}
                   onClick={() => setEditingActionId(action.id)}
                 >
                   <td className="p-3 text-center text-slate-300 dark:text-slate-600 group-hover:text-emerald-400">
@@ -351,6 +388,7 @@ export const DataEditor = () => {
                     <input
                       type="text"
                       value={action.title}
+                      onBlur={() => handleAutoSave(action.id)}
                       onChange={(e) => handleActionChange(action.id, 'title', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold text-slate-800 dark:text-slate-200 transition-all"
                     />
@@ -360,6 +398,7 @@ export const DataEditor = () => {
                   <td className="p-2">
                     <select
                       value={action.kpiId}
+                      onBlur={() => handleAutoSave(action.id)}
                       onChange={(e) => handleActionChange(action.id, 'kpiId', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all truncate"
                     >
@@ -374,6 +413,7 @@ export const DataEditor = () => {
                   <td className="p-2">
                     <select
                       value={action.department || ''}
+                      onBlur={() => handleAutoSave(action.id)}
                       onChange={(e) => handleActionChange(action.id, 'department', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all"
                     >
@@ -393,6 +433,7 @@ export const DataEditor = () => {
                     <input
                       type="text"
                       value={action.owner}
+                      onBlur={() => handleAutoSave(action.id)}
                       onChange={(e) => handleActionChange(action.id, 'owner', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all"
                     />
@@ -403,6 +444,7 @@ export const DataEditor = () => {
                     <input
                       type="date"
                       value={action.dueDate}
+                      onBlur={() => handleAutoSave(action.id)}
                       onChange={(e) => handleActionChange(action.id, 'dueDate', e.target.value)}
                       className="w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none text-slate-600 dark:text-slate-400 transition-all"
                     />
@@ -412,6 +454,7 @@ export const DataEditor = () => {
                   <td className="p-2">
                     <select
                       value={action.status}
+                      onBlur={() => handleAutoSave(action.id)}
                       onChange={(e) => handleActionChange(action.id, 'status', e.target.value)}
                       className={`w-full px-2 py-1.5 bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 rounded outline-none font-bold transition-all ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-600'}`}
                     >
@@ -456,6 +499,12 @@ export const DataEditor = () => {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* オートセーブのトースト通知 */}
+      <div className={`fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg shadow-lg transition-all duration-300 transform ${saveStatus === 'saved' ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
+        <Save size={16} className="text-emerald-400" />
+        <span className="text-sm font-bold">自動保存しました</span>
       </div>
     </div>
   );
