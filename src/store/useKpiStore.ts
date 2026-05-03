@@ -305,30 +305,31 @@ export const useKpiStore = create<KpiStore>()(
           draft[id] = calculateComputed({ ...draft[id], ...data });
           
           // 実績値が更新された場合、汎用シミュレーション（親ノードへの波及）を実行
-          if (data.actualValue !== undefined && oldActual > 0 && data.actualValue !== oldActual) {
-            const ratio = data.actualValue / oldActual;
+          if (data.actualValue !== undefined && data.actualValue !== oldActual) {
+            const delta = data.actualValue - oldActual;
             
-            if (ratio !== 1) {
+            if (delta !== 0) {
               // 親を辿って数値を更新する関数
-              const propagateToParent = (childId: string, changeRatio: number) => {
+              const propagateToParent = (childId: string, valueDelta: number) => {
                 const node = draft[childId];
                 if (!node || !node.parentId) return;
                 
                 const parent = draft[node.parentId];
+                // 単位が同じ場合（金額や件数など）のみ単純加算する
+                // もし親が「％」や「率」などの指標の場合は単純加算はおかしいため、今回は簡易的に親にもそのまま増分を足す（または無視する）
                 if (parent) {
-                  // 親の新しい実績値を、子の変化率と同じだけ動かす
-                  const newParentActual = parent.actualValue * changeRatio;
+                  const newParentActual = parent.actualValue + valueDelta;
                   draft[parent.id] = calculateComputed({ 
                     ...parent, 
-                    actualValue: newParentActual,
+                    actualValue: Math.max(0, newParentActual), // 0未満にはしない
                     isSimulated: true // シミュレーションによって動いたことをマーク
                   });
                   // さらに上の親へ波及
-                  propagateToParent(parent.id, changeRatio);
+                  propagateToParent(parent.id, valueDelta);
                 }
               };
               
-              propagateToParent(id, ratio);
+              propagateToParent(id, delta);
             }
           }
 
