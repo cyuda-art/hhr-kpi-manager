@@ -81,28 +81,37 @@ export const Header = () => {
         <Link href="/settings" className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
           <Settings size={20} />
         </Link>
-        <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-slate-200 dark:border-slate-700">
-          <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center overflow-hidden flex-shrink-0">
-            {user?.photoURL ? (
-              <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User size={16} className="text-primary-600 dark:text-primary-400" />
-            )}
+        {user ? (
+          <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-slate-200 dark:border-slate-700">
+            <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User size={16} className="text-primary-600 dark:text-primary-400" />
+              )}
+            </div>
+            <div className="hidden md:flex flex-col">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
+                {user.displayName || user.email?.split('@')[0]}
+              </span>
+              <span className="text-xs text-slate-400 dark:text-slate-500">経営管理部</span>
+            </div>
+            <button 
+              onClick={async () => {
+                await logout();
+                window.location.href = '/lp';
+              }}
+              title="ログアウト"
+              className="ml-2 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
-          <div className="hidden md:flex flex-col">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
-              {user?.displayName || user?.email?.split('@')[0] || 'ゲスト'}
-            </span>
-            <span className="text-xs text-slate-400 dark:text-slate-500">経営管理部</span>
+        ) : (
+          <div className="flex items-center pl-3 md:pl-6 border-l border-slate-200 dark:border-slate-700">
+            <Link href="/login" className="text-sm font-bold text-primary-600 dark:text-primary-400">ログイン</Link>
           </div>
-          <button 
-            onClick={logout}
-            title="ログアウト"
-            className="ml-2 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"
-          >
-            <LogOut size={16} />
-          </button>
-        </div>
+        )}
       </div>
     </header>
   );

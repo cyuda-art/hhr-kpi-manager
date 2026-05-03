@@ -6,6 +6,7 @@ import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Lock, Mail, ArrowRight, Building2 } from 'lucide-react';
+import { Header } from '@/components/layout/Header';
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -28,7 +29,7 @@ export default function LoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push('/projects'); // 成功したらプロジェクト選択へ
+      router.push('/onboarding'); // 成功したらチャットオンボーディングへ
     } catch (err: any) {
       setError(err.message || '認証に失敗しました');
     } finally {
@@ -40,7 +41,7 @@ export default function LoginPage() {
     setError('');
     try {
       await loginWithGoogle();
-      router.push('/projects');
+      router.push('/onboarding');
     } catch (err: any) {
       console.error("Google Login Error:", err);
       setError(`Googleログインに失敗しました: ${err.message || err.toString()}`);
@@ -48,8 +49,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <Header />
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
         
         {/* ヘッダー部分 */}
         <div className="bg-primary-600 p-8 text-center">
@@ -139,6 +142,7 @@ export default function LoginPage() {
 
         </div>
       </div>
+    </div>
     </div>
   );
 }
