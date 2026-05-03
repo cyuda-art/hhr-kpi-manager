@@ -38,7 +38,7 @@ export default function Dashboard() {
     return () => observer.disconnect();
   }, [isMounted]);
 
-  const onLayoutChange = (layout: any[], allLayouts: any) => {
+  const onLayoutChange = (layout: any, allLayouts: any) => {
     setLayouts(allLayouts);
   };
 
@@ -54,6 +54,7 @@ export default function Dashboard() {
         rowHeight={150}
         width={containerWidth}
         onLayoutChange={onLayoutChange}
+        // @ts-ignore
         draggableHandle=".drag-handle"
         margin={[16, 16]}
       >
