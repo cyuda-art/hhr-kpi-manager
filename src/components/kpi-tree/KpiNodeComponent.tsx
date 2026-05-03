@@ -56,16 +56,16 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
 
   if (isPredictionMode) {
     displayLabel = "AI予測";
-    // 予測ロジック: 未達なら目標に向けて80%改善、達成済みなら5%成長
-    if (displayActual < displayTarget) {
-      displayActual = Math.round(displayActual + (displayTarget - displayActual) * 0.8);
-    } else {
-      displayActual = Math.round(displayActual * 1.05);
-    }
+    displayActual = data.simulatedValue !== undefined ? data.simulatedValue : data.actualValue;
   }
 
-  const displayAchievementRate = (displayActual / displayTarget) * 100;
-  const displayStatus = displayAchievementRate >= 100 ? 'good' : displayAchievementRate >= 80 ? 'warning' : 'danger';
+  const displayAchievementRate = isPredictionMode && data.simulatedAchievementRate !== undefined 
+    ? data.simulatedAchievementRate 
+    : (displayActual / displayTarget) * 100;
+    
+  const displayStatus = isPredictionMode && data.simulatedStatus !== undefined
+    ? data.simulatedStatus
+    : displayAchievementRate >= 100 ? 'good' : displayAchievementRate >= 80 ? 'warning' : 'danger';
 
   const isAlert = displayTarget > 0 && displayAchievementRate < 50;
 

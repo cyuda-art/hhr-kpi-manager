@@ -22,6 +22,7 @@ interface KpiStore {
   togglePredictionMode: () => void;
   initializeDB: (projectId: string) => Promise<void>;
   updateActualValue: (id: string, newValue: number) => void;
+  updateSimulatedValue: (id: string, newValue: number) => void;
   resetSimulations: () => void;
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
@@ -67,10 +68,27 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
     status = 'warning';
   }
 
+  // シミュレーション用の計算
+  let simulatedAchievementRate = undefined;
+  let simulatedStatus = undefined;
+  if (node.simulatedValue !== undefined) {
+    simulatedAchievementRate = (node.simulatedValue / target) * 100;
+    if (node.name?.includes('原価率') || node.name?.includes('キャンセル率') || node.name?.includes('コスト')) {
+      simulatedAchievementRate = (target / node.simulatedValue) * 100;
+    }
+    simulatedStatus = 'good' as Status;
+    if (simulatedAchievementRate < 80) {
+      simulatedStatus = 'danger';
+    } else if (simulatedAchievementRate < 100) {
+      simulatedStatus = 'warning';
+    }
+  }
+
   return {
     ...node,
     achievementRate,
     status,
+    ...(simulatedAchievementRate !== undefined ? { simulatedAchievementRate, simulatedStatus } : {})
   } as KpiNodeWithComputedAndInit;
 };
 
@@ -125,7 +143,18 @@ export const useKpiStore = create<KpiStore>()(
       isPredictionMode: false,
 
       setPeriod: (period) => set({ currentPeriod: period }),
-      togglePredictionMode: () => set((state) => ({ isPredictionMode: !state.isPredictionMode })),
+      togglePredictionMode: () => set((state) => {
+        const isNowPrediction = !state.isPredictionMode;
+        const draft = { ...state.kpiData };
+        Object.keys(draft).forEach(key => {
+          if (isNowPrediction) {
+            draft[key] = calculateComputed({ ...draft[key], simulatedValue: draft[key].actualValue });
+          } else {
+            draft[key] = calculateComputed({ ...draft[key], simulatedValue: undefined, isSimulated: false });
+          }
+        });
+        return { isPredictionMode: isNowPrediction, kpiData: draft };
+      }),
 
       initializeDB: async (projectId: string) => {
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
@@ -237,6 +266,45 @@ export const useKpiStore = create<KpiStore>()(
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
+
+  updateSimulatedValue: (id: string, newValue: number) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      if (!draft[id] || draft[id].simulatedValue === undefined) return state;
+
+      const oldSimulated = draft[id].simulatedValue!;
+      draft[id] = calculateComputed({ ...draft[id], simulatedValue: newValue, isSimulated: true });
+
+      if (newValue !== oldSimulated) {
+        const delta = newValue - oldSimulated;
+        if (delta !== 0) {
+          const propagateToParent = (childId: string, valueDelta: number) => {
+            const node = draft[childId];
+            if (!node || !node.parentId) return;
+            const parent = draft[node.parentId];
+            if (parent && parent.simulatedValue !== undefined) {
+              let conversionRate = 1;
+              if (node.unit !== parent.unit && node.targetValue > 0 && parent.targetValue > 0) {
+                conversionRate = parent.targetValue / node.targetValue;
+              }
+              const impactValue = valueDelta * conversionRate;
+              const newParentSimulated = parent.simulatedValue + impactValue;
+              
+              draft[parent.id] = calculateComputed({ 
+                ...parent, 
+                simulatedValue: Math.max(0, newParentSimulated),
+                isSimulated: true 
+              });
+              propagateToParent(parent.id, impactValue);
+            }
+          };
+          propagateToParent(id, delta);
+        }
+      }
+      return { kpiData: draft }; // シミュレーションはDBやプロジェクトデータには即時保存しない
+    });
+  },
+
   commitBulkUpdate: (updates) => {
     set((state) => {
       const draft = { ...state.kpiData };

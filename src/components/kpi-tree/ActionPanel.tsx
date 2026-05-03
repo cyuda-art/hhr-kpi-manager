@@ -5,7 +5,7 @@ import { Action } from '@/types';
 import { TrendChart } from '../dashboard/TrendChart';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, actions, addAction, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode } = useKpiStore();
+  const { kpiData, selectedNodeId, actions, addAction, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue } = useKpiStore();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskOwner, setNewTaskOwner] = useState('');
   const [newTaskDepartment, setNewTaskDepartment] = useState('');
@@ -16,7 +16,7 @@ export const ActionPanel = () => {
   // 編集モード用
   const [isEditingValue, setIsEditingValue] = useState(false);
   const [editTargetValue, setEditTargetValue] = useState('');
-  const [editActualValue, setEditActualValue] = useState('');
+  const [editActualValue, setEditActualValue] = useState(''); // シミュレーション時もこのstateを共用する
 
   // AIインサイト用状態
   const [aiInsight, setAiInsight] = useState<{issue: string, actionIdea: string, kpiIdea: string, kpiIdeaTarget?: number, kpiIdeaUnit?: string} | null>(null);
@@ -131,16 +131,22 @@ export const ActionPanel = () => {
     setIsEditingValue(false);
     if (selectedKpi) {
       setEditTargetValue(selectedKpi.targetValue.toString());
-      setEditActualValue(selectedKpi.actualValue.toString());
+      setEditActualValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toString() : selectedKpi.actualValue.toString());
     }
-  }, [selectedNodeId, kpiData]); // kpiDataも依存配列に入れて、外部で更新された際にもフォームに反映する
+  }, [selectedNodeId, kpiData, isPredictionMode]); 
 
   const handleSaveValues = () => {
     if (!selectedNodeId) return;
-    updateKpiNode(selectedNodeId, {
-      targetValue: Number(editTargetValue) || 0,
-      actualValue: Number(editActualValue) || 0,
-    });
+    
+    if (isPredictionMode) {
+      updateSimulatedValue(selectedNodeId, Number(editActualValue) || 0);
+      // 目標値のシミュレーション編集は一旦省略（実績のシミュレーションのみ）
+    } else {
+      updateKpiNode(selectedNodeId, {
+        targetValue: Number(editTargetValue) || 0,
+        actualValue: Number(editActualValue) || 0,
+      });
+    }
     setIsEditingValue(false);
   };
 
@@ -203,10 +209,16 @@ export const ActionPanel = () => {
               <Trash2 size={16} />
             </button>
             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
-            <h4 className="font-bold text-slate-800 dark:text-slate-200">{selectedKpi.name}</h4>
+            <h4 className="font-bold text-slate-800 dark:text-slate-200">
+              {isPredictionMode && <span className="text-primary-500 mr-1 text-xs">[予測]</span>}
+              {selectedKpi.name}
+            </h4>
             <div className="flex gap-2 mt-2">
-              <span className={`text-xs font-bold ${selectedKpi.status === 'danger' ? 'text-rose-500 dark:text-rose-400' : selectedKpi.status === 'warning' ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'}`}>
-                達成率: {selectedKpi.achievementRate.toFixed(1)}%
+              <span className={`text-xs font-bold ${
+                (isPredictionMode ? selectedKpi.simulatedStatus : selectedKpi.status) === 'danger' ? 'text-rose-500 dark:text-rose-400' : 
+                (isPredictionMode ? selectedKpi.simulatedStatus : selectedKpi.status) === 'warning' ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'
+              }`}>
+                達成率: {isPredictionMode && selectedKpi.simulatedAchievementRate !== undefined ? selectedKpi.simulatedAchievementRate.toFixed(1) : selectedKpi.achievementRate.toFixed(1)}%
               </span>
             </div>
 
@@ -220,12 +232,13 @@ export const ActionPanel = () => {
                       type="number" 
                       value={editTargetValue} 
                       onChange={(e) => setEditTargetValue(e.target.value)}
-                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      disabled={isPredictionMode}
+                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
                     />
                     <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-slate-500 w-12">実績値</span>
+                    <span className="text-xs text-slate-500 w-12">{isPredictionMode ? '予測値' : '実績値'}</span>
                     <input 
                       type="number" 
                       value={editActualValue} 
@@ -246,7 +259,7 @@ export const ActionPanel = () => {
                       目標: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedKpi.targetValue.toLocaleString()}</span> {selectedKpi.unit}
                     </div>
                     <div className="text-xs text-slate-500 dark:text-slate-400">
-                      実績: <span className="font-bold text-slate-800 dark:text-slate-200">{selectedKpi.actualValue.toLocaleString()}</span> {selectedKpi.unit}
+                      {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toLocaleString() : selectedKpi.actualValue.toLocaleString()}</span> {selectedKpi.unit}
                     </div>
                   </div>
                   <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold">
