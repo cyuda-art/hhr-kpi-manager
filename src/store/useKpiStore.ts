@@ -10,6 +10,7 @@ export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
 
 interface KpiStore {
   kpiData: Record<string, KpiNodeWithComputedAndInit>;
+  projectData: Record<string, { kpiData: Record<string, KpiNodeWithComputedAndInit>; actions: Action[] }>;
   selectedNodeId: string | null;
   collapsedNodes: string[]; // 折りたたまれたノードのID配列
   actions: Action[];
@@ -98,10 +99,23 @@ const MARGINAL_PROFIT_RATIO = 0.4;
 const CROSS_SELL_SPA_TO_REST = 0.25; 
 const CROSS_SELL_SPA_TO_SHOP = 0.10;
 
+
+const saveToProjectData = (state: any) => {
+  if (!state.currentProjectId) return state.projectData;
+  return {
+    ...state.projectData,
+    [state.currentProjectId]: {
+      kpiData: state.kpiData,
+      actions: state.actions
+    }
+  };
+};
+
 export const useKpiStore = create<KpiStore>()(
   persist(
     (set, get) => ({
       kpiData: initialData,
+      projectData: {},
       selectedNodeId: null,
       collapsedNodes: [],
       actions: [],
@@ -114,42 +128,28 @@ export const useKpiStore = create<KpiStore>()(
       togglePredictionMode: () => set((state) => ({ isPredictionMode: !state.isPredictionMode })),
 
       initializeDB: async (projectId: string) => {
-        // 既に同じプロジェクトで初期化済みならリターン
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
         
-        set({ currentProjectId: projectId, isDbInitialized: false });
+        const state = get();
+        // プロジェクトごとのデータがあればそれをロード、なければ空にする
+        const pData = state.projectData[projectId] || { kpiData: {}, actions: [] };
         
-        try {
-          const res = await fetch('/api/sheets');
-          if (res.ok) {
-            const data = await res.json();
-            if (data.kpiData && Object.keys(data.kpiData).length > 0) {
-              set({ 
-                kpiData: data.kpiData, 
-                actions: data.actions || [],
-                isDbInitialized: true 
-              });
-            } else {
-              // データが空なら初期データをセット（または現在のデータを保存）
-              set({ isDbInitialized: true });
-              syncToDB(get().kpiData, get().actions, projectId);
-            }
-          } else {
-            console.error("Failed to fetch from sheets");
-          }
-        } catch (error) {
-          console.error("Initialize DB Error:", error);
-        }
+        set({ 
+          currentProjectId: projectId, 
+          kpiData: pData.kpiData,
+          actions: pData.actions,
+          isDbInitialized: true 
+        });
       },
 
-  setSelectedNodeId: (id) => set({ selectedNodeId: id }),
+      setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   
   addAction: (action) => {
     const newAction = { ...action, id: Math.random().toString(36).substr(2, 9) };
     set((state) => {
       const newActions = [...state.actions, newAction];
       syncToDB(state.kpiData, newActions, state.currentProjectId);
-      return { actions: newActions };
+      return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
 
@@ -159,14 +159,14 @@ export const useKpiStore = create<KpiStore>()(
         a.id === actionId ? { ...a, status: (a.status === 'done' ? 'todo' : 'done') as 'todo' | 'done' } : a
       );
       syncToDB(state.kpiData, newActions, state.currentProjectId);
-      return { actions: newActions };
+      return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
 
   setActionsBulk: (newActions) => {
     set((state) => {
       syncToDB(state.kpiData, newActions, state.currentProjectId);
-      return { actions: newActions };
+      return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
 
@@ -234,7 +234,7 @@ export const useKpiStore = create<KpiStore>()(
       }
 
       // Firestoreにはシミュレーション中の値は送らず、ローカルの状態のみ更新する
-      return { kpiData: draft };
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
   commitBulkUpdate: (updates) => {
@@ -283,7 +283,7 @@ export const useKpiStore = create<KpiStore>()(
       });
 
       syncToDB(draft, state.actions, state.currentProjectId);
-      return { kpiData: draft };
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
   addKpiNode: (node) => {
@@ -292,7 +292,7 @@ export const useKpiStore = create<KpiStore>()(
       draft[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
       
       syncToDB(draft, state.actions, state.currentProjectId);
-      return { kpiData: draft };
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
     updateKpiNode: (id, data) => {
@@ -375,7 +375,7 @@ export const useKpiStore = create<KpiStore>()(
           
           syncToDB(draft, state.actions, state.currentProjectId);
         }
-        return { kpiData: draft };
+        return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
       });
     },
   setKpiDataBulk: (nodes) => {
@@ -391,7 +391,7 @@ export const useKpiStore = create<KpiStore>()(
         };
       });
       syncToDB(newData, state.actions, state.currentProjectId);
-      return { kpiData: newData, selectedNodeId: null };
+      return { kpiData: newData, selectedNodeId: null, projectData: saveToProjectData({ ...state, kpiData: newData }) };
     });
   },
   removeKpiNode: (id) => {
@@ -401,7 +401,7 @@ export const useKpiStore = create<KpiStore>()(
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
       syncToDB(draft, state.actions, state.currentProjectId);
-      return { kpiData: draft, selectedNodeId: newSelected };
+      return { kpiData: draft, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
   toggleNodeCollapse: (id) => {
@@ -423,13 +423,13 @@ export const useKpiStore = create<KpiStore>()(
           draft[key] = calculateComputed({ ...draft[key], actualValue: draft[key].initialActualValue, isSimulated: false });
         }
       });
-      return { kpiData: draft };
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
     }),
     {
       name: 'kpi-storage',
-      partialize: (state) => ({ kpiData: state.kpiData, actions: state.actions, collapsedNodes: state.collapsedNodes }),
+      partialize: (state) => ({ projectData: state.projectData, collapsedNodes: state.collapsedNodes }),
     }
   )
 );
