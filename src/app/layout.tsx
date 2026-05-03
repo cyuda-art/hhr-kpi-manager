@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AppProvider } from "@/components/providers/AppProvider";
 
 const notoSansJP = Noto_Sans_JP({ 
   subsets: ["latin"],
@@ -29,7 +29,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <MainLayout>{children}</MainLayout>
+          <AppProvider>
+            {children}
+          </AppProvider>
         </ThemeProvider>
       </body>
     </html>
