@@ -7,7 +7,6 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import { ActionPanel } from './ActionPanel';
-import { AiSetupWizard } from './AiSetupWizard';
 import dagre from 'dagre';
 import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Search } from 'lucide-react';
 
@@ -366,10 +365,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           </div>
         )}
 
-        {/* 初期セットアップウィザード */}
-        {!previewMode && Object.keys(kpiData).length <= 1 && (
-          <AiSetupWizard />
-        )}
+
 
         <ReactFlow
           nodes={nodes}
