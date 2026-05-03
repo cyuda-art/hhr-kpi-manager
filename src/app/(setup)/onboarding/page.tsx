@@ -113,13 +113,19 @@ export default function OnboardingChatPage() {
         targetOrgId = orgId;
       }
 
-      // プロジェクト作成
-      const projectName = `${selectedIndustry === 'hotel' ? 'ホテル事業' : selectedIndustry === 'restaurant' ? '飲食事業' : selectedIndustry === 'saas' ? 'SaaS事業' : '新規'}プロジェクト`;
-      const projectId = await createProject(
-        projectName,
-        'AIオンボーディングで自動生成されたプロジェクトです。',
-        user?.uid || 'guest'
-      );
+      const { currentProjectId } = useProjectStore.getState();
+      let projectId = currentProjectId;
+
+      // もし projects/page.tsx などで事前にプロジェクトが作られていなければ、ここで新規作成する
+      if (!projectId) {
+        const projectName = `${selectedIndustry === 'hotel' ? 'ホテル事業' : selectedIndustry === 'restaurant' ? '飲食事業' : selectedIndustry === 'saas' ? 'SaaS事業' : '新規'}プロジェクト`;
+        projectId = await createProject(
+          projectName,
+          'AIオンボーディングで自動生成されたプロジェクトです。',
+          user?.uid || 'guest'
+        );
+        setCurrentProjectId(projectId);
+      }
 
       // KPIデータの保存
       // templates.tsのデータ構造をFirestore用（Record<string, KpiNode>）に変換する
