@@ -25,6 +25,7 @@ interface KpiStore {
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
   toggleActionStatus: (actionId: string) => void;
+  setActionsBulk: (actions: Action[]) => void;
   commitBulkUpdate: (updates: { id: string; value: number }[]) => void;
   addKpiNode: (node: KpiNodeData) => void;
   removeKpiNode: (id: string) => void;
@@ -161,6 +162,14 @@ export const useKpiStore = create<KpiStore>()(
       return { actions: newActions };
     });
   },
+
+  setActionsBulk: (newActions) => {
+    set((state) => {
+      syncToDB(state.kpiData, newActions, state.currentProjectId);
+      return { actions: newActions };
+    });
+  },
+
   updateActualValue: (id: string, newValue: number) => {
     set((state) => {
       const draft = { ...state.kpiData };
