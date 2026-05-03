@@ -9,7 +9,7 @@ import { KpiNodeComponent } from './KpiNodeComponent';
 import { ActionPanel } from './ActionPanel';
 import { AiSetupWizard } from './AiSetupWizard';
 import dagre from 'dagre';
-import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Search } from 'lucide-react';
 
 
 const nodeTypes = {
@@ -88,8 +88,50 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(true);
   const [rfInstance, setRfInstance] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // 検索結果の計算
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return Object.values(kpiData).filter(node => 
+      node.name.toLowerCase().includes(query) || 
+      node.businessUnit.toLowerCase().includes(query)
+    ).slice(0, 5); // 上位5件を表示
+  }, [searchQuery, kpiData]);
+
+  // 検索窓の外をクリックした時に閉じる
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as globalThis.Node)) {
+        setShowSearchResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectSearchResult = (nodeId: string) => {
+    setSelectedNodeId(nodeId);
+    setSearchQuery('');
+    setShowSearchResults(false);
+    
+    if (rfInstance) {
+      // 検索時にそのノードが折りたたまれている場合は展開するなどの処理が必要ならここで行う
+      const node = nodes.find(n => n.id === nodeId);
+      if (node) {
+        const x = node.position.x + nodeWidth / 2;
+        const y = node.position.y + nodeHeight / 2;
+        rfInstance.setCenter(x, y, { zoom: 1.1, duration: 800 });
+      } else {
+        // ノードが hidden な場合はとりあえず親を辿って展開する必要があるが、今回は省略
+      }
+    }
+  };
 
   useEffect(() => {
     const handleResizeMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -279,6 +321,48 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             >
               <Map size={16} />
             </button>
+            
+            {/* スマート検索バー */}
+            <div className="relative ml-2" ref={searchContainerRef}>
+              <div className="flex items-center px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-primary-500/50 focus-within:border-primary-500 transition-all">
+                <Search size={14} className="text-slate-400 mr-2" />
+                <input
+                  type="text"
+                  placeholder="KPI・部署を検索..."
+                  className="bg-transparent border-none outline-none text-xs w-32 focus:w-48 transition-all duration-300 text-slate-700 dark:text-slate-200 placeholder:text-slate-400"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSearchResults(true);
+                  }}
+                  onFocus={() => setShowSearchResults(true)}
+                />
+              </div>
+              
+              {/* 検索結果ドロップダウン */}
+              {showSearchResults && searchQuery.trim() !== '' && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {searchResults.length > 0 ? (
+                    <div className="flex flex-col">
+                      {searchResults.map(node => (
+                        <button
+                          key={node.id}
+                          onClick={() => handleSelectSearchResult(node.id)}
+                          className="flex flex-col text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700/50 last:border-0"
+                        >
+                          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{node.name}</span>
+                          <span className="text-[10px] font-bold text-primary-500 uppercase">{node.businessUnit}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-xs text-slate-500">
+                      見つかりませんでした
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
