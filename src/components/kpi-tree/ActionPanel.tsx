@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { CheckCircle2, Circle, Plus, Sparkles, Trash2, Network, Loader2, MessageSquare, Send, ListChecks, Edit2 } from 'lucide-react';
 import { Action } from '@/types';
+import { TrendChart } from '../dashboard/TrendChart';
 
 export const ActionPanel = () => {
   const { kpiData, selectedNodeId, actions, addAction, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode } = useKpiStore();
@@ -254,6 +255,18 @@ export const ActionPanel = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* トレンドチャート */}
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+              <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">トレンド推移</h5>
+              <div className="bg-white dark:bg-slate-900 rounded-lg overflow-hidden">
+                <TrendChart 
+                  actualValue={selectedKpi.actualValue} 
+                  targetValue={selectedKpi.targetValue} 
+                  unit={selectedKpi.unit} 
+                />
+              </div>
             </div>
           </div>
         ) : (
