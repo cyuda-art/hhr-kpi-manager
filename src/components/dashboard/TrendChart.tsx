@@ -18,9 +18,10 @@ interface Props {
   unit: string;
 }
 
-type Period = '1w' | '1m' | '3m' | '6m' | '1y' | '3y' | '5y';
+type Period = '1d' | '1w' | '1m' | '3m' | '6m' | '1y' | '3y' | '5y';
 
 const periodOptions: { value: Period; label: string }[] = [
+  { value: '1d', label: '1日' },
   { value: '1w', label: '1週' },
   { value: '1m', label: '1ヶ月' },
   { value: '3m', label: '3ヶ月' },
@@ -41,6 +42,14 @@ export const TrendChart = ({ actualValue, targetValue, unit }: Props) => {
     const today = new Date();
     
     switch (period) {
+      case '1d':
+        points = 8; // 3時間ごと（24時間）
+        labelFormatter = (i, total) => {
+          const d = new Date(today);
+          d.setHours(today.getHours() - (total - 1 - i) * 3);
+          return `${d.getHours()}:00`;
+        };
+        break;
       case '1w':
         points = 7;
         labelFormatter = (i, total) => {
