@@ -27,6 +27,7 @@ export interface Action {
   kpiId: string;
   title: string;
   owner: string;
+  department?: string;
   dueDate: string;
   status: 'todo' | 'in_progress' | 'done';
 }

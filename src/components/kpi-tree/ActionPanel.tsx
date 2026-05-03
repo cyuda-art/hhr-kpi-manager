@@ -7,6 +7,7 @@ export const ActionPanel = () => {
   const { kpiData, selectedNodeId, actions, addAction, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode } = useKpiStore();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskOwner, setNewTaskOwner] = useState('');
+  const [newTaskDepartment, setNewTaskDepartment] = useState('');
   const [newTaskDate, setNewTaskDate] = useState('');
 
   const [newKpiName, setNewKpiName] = useState('');
@@ -82,11 +83,13 @@ export const ActionPanel = () => {
       kpiId: selectedNodeId,
       title: newTaskTitle,
       owner: newTaskOwner || '未定',
+      department: newTaskDepartment || '部署未定',
       dueDate: newTaskDate || new Date().toISOString().split('T')[0],
       status: 'todo'
     });
     setNewTaskTitle('');
     setNewTaskOwner('');
+    setNewTaskDepartment('');
     setNewTaskDate('');
   };
 
@@ -96,6 +99,7 @@ export const ActionPanel = () => {
       kpiId: selectedNodeId,
       title: title,
       owner: 'AI提案',
+      department: '未定',
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
       status: 'todo'
     });
@@ -266,7 +270,7 @@ export const ActionPanel = () => {
           className={`flex-1 py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'actions' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
         >
           <ListChecks size={14} />
-          アクション & インサイト
+          KFC & インサイト
         </button>
         <button
           onClick={() => setActiveTab('chat')}
@@ -406,9 +410,9 @@ export const ActionPanel = () => {
       )}
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">登録済みアクション</h5>
+        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">登録済み KFC (重要施策)</h5>
         {filteredActions.length === 0 ? (
-          <p className="text-xs text-slate-400 dark:text-slate-500">アクションは登録されていません</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">KFCは登録されていません</p>
         ) : (
           filteredActions.map((action) => (
             <div key={action.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-sm flex items-start gap-3">
@@ -423,9 +427,10 @@ export const ActionPanel = () => {
                 <p className={`text-sm font-medium ${action.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
                   {action.title}
                 </p>
-                <div className="flex gap-3 mt-1 text-[10px] text-slate-500 dark:text-slate-400">
-                  <span>担当: {action.owner}</span>
-                  <span>期限: {action.dueDate}</span>
+                <div className="flex gap-3 mt-1 text-[10px] text-slate-500 dark:text-slate-400 flex-wrap">
+                  <span className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300">部署: {action.department || '未設定'}</span>
+                  <span className="flex items-center">担当: {action.owner}</span>
+                  <span className="flex items-center">期限: {action.dueDate}</span>
                 </div>
               </div>
             </div>
@@ -434,7 +439,7 @@ export const ActionPanel = () => {
       </div>
 
       <form onSubmit={handleAddAction} className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50">
-        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">新規アクション追加</h5>
+        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">新規 KFC (重要施策) 追加</h5>
         <div className="space-y-2">
           <input
             type="text"
@@ -445,20 +450,35 @@ export const ActionPanel = () => {
             className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
           />
           <div className="flex gap-2">
+            <select
+              value={newTaskDepartment}
+              onChange={(e) => setNewTaskDepartment(e.target.value)}
+              disabled={!selectedNodeId}
+              className="w-1/3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
+            >
+              <option value="">担当部署</option>
+              <option value="経営管理部">経営管理部</option>
+              <option value="宿泊部">宿泊部</option>
+              <option value="温浴部">温浴部</option>
+              <option value="料飲部">料飲部</option>
+              <option value="物販部">物販部</option>
+              <option value="マーケティング部">マーケティング部</option>
+              <option value="全社横断">全社横断</option>
+            </select>
             <input
               type="text"
               placeholder="担当者"
               value={newTaskOwner}
               onChange={(e) => setNewTaskOwner(e.target.value)}
               disabled={!selectedNodeId}
-              className="w-1/2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
+              className="w-1/3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
             />
             <input
               type="date"
               value={newTaskDate}
               onChange={(e) => setNewTaskDate(e.target.value)}
               disabled={!selectedNodeId}
-              className="w-1/2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
+              className="w-1/3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
             />
           </div>
           <button
@@ -467,7 +487,7 @@ export const ActionPanel = () => {
             className="w-full mt-2 bg-primary-500 hover:bg-primary-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white text-xs font-bold py-2 rounded transition-colors flex items-center justify-center gap-1"
           >
             <Plus size={14} />
-            アクションを追加
+            KFC を追加
           </button>
         </div>
       </form>
