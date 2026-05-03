@@ -45,11 +45,11 @@ export const DashboardSummary = () => {
   }, {} as Record<string, { total: number; done: number }>);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-300">
+    <div className="h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden transition-colors">
       {/* アコーディオンのヘッダー部分 */}
       <button 
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+        className="w-full flex-shrink-0 flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/50"
       >
         <div className="flex items-center gap-6">
           <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wider">
@@ -78,9 +78,9 @@ export const DashboardSummary = () => {
         </div>
       </button>
 
-      {/* 展開されるコンテンツ */}
-      <div className={`transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-        <div className="p-4 pt-0 space-y-6">
+      {/* 展開されるコンテンツ（高さを親に追従） */}
+      <div className={`flex-1 min-h-0 overflow-y-auto transition-all duration-300 ease-in-out custom-scrollbar ${isExpanded ? 'opacity-100' : 'hidden'}`}>
+        <div className="p-4 space-y-6">
           {/* サマリーハイライト */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-4 text-white shadow-lg shadow-primary-500/20">
