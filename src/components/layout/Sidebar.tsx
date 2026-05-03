@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Database, FolderKanban, Activity, ChevronRight, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings, Network } from 'lucide-react';
+import { LayoutDashboard, Database, FolderKanban, Activity, ChevronRight, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings, Network, CheckSquare } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
@@ -45,6 +45,7 @@ export const Sidebar = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
+    { id: 'my-tasks', label: '私のタスク', icon: CheckSquare, path: '/my-tasks' },
     { id: 'data-entry', label: 'シートエディタ', icon: Database, path: '/data-entry' },
   ];
 
