@@ -6,10 +6,28 @@ import { DetailDrawer } from '@/components/ui/DetailDrawer';
 import { useState } from 'react';
 import { AlertTriangle, TrendingUp, Target, Activity, ChevronDown, ChevronUp, ListChecks } from 'lucide-react';
 
-export const DashboardSummary = () => {
+interface DashboardSummaryProps {
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+}
+
+export const DashboardSummary = ({ 
+  isExpanded: controlledIsExpanded, 
+  onToggleExpand 
+}: DashboardSummaryProps = {}) => {
   const { kpiData } = useKpiStore();
   const [drawerKpiId, setDrawerKpiId] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false); // 初期状態を閉じる
+  const [internalIsExpanded, setInternalIsExpanded] = useState(false);
+
+  const isExpanded = controlledIsExpanded !== undefined ? controlledIsExpanded : internalIsExpanded;
+  
+  const handleToggle = () => {
+    if (onToggleExpand) {
+      onToggleExpand();
+    } else {
+      setInternalIsExpanded(!internalIsExpanded);
+    }
+  };
 
   // データドリブンな集計
   const allNodes = Object.values(kpiData);
@@ -48,7 +66,7 @@ export const DashboardSummary = () => {
     <div className="h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden transition-colors">
       {/* アコーディオンのヘッダー部分 */}
       <button 
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggle}
         className="w-full flex-shrink-0 flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/50"
       >
         <div className="flex items-center gap-6">

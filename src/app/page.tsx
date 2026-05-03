@@ -6,6 +6,7 @@ import { Network, ChevronDown, ChevronUp, GripHorizontal } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 export default function Dashboard() {
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true); // 初期状態で開く
   const [isTreeExpanded, setIsTreeExpanded] = useState(true);
   const [summaryHeight, setSummaryHeight] = useState(250); // 初期高さ
   const [isResizing, setIsResizing] = useState(false);
@@ -47,16 +48,19 @@ export default function Dashboard() {
     <div ref={containerRef} className="h-[calc(100vh-4rem)] flex flex-col transition-colors p-4 gap-2 overflow-hidden">
       {/* 1. 動的サマリー（実データ連動） */}
       <div 
-        className="shrink-0 flex flex-col min-h-0"
-        style={{ height: `${summaryHeight}px` }}
+        className="shrink-0 flex flex-col min-h-0 transition-all duration-300"
+        style={{ height: isSummaryExpanded ? `${summaryHeight}px` : '56px' }}
       >
-        <DashboardSummary />
+        <DashboardSummary 
+          isExpanded={isSummaryExpanded} 
+          onToggleExpand={() => setIsSummaryExpanded(!isSummaryExpanded)} 
+        />
       </div>
 
       {/* リサイズハンドル */}
       <div 
-        className="h-2 -mx-4 cursor-row-resize flex items-center justify-center group/resizer"
-        onMouseDown={() => setIsResizing(true)}
+        className={`h-2 -mx-4 flex items-center justify-center group/resizer transition-opacity ${isSummaryExpanded ? 'cursor-row-resize opacity-100' : 'opacity-30 pointer-events-none'}`}
+        onMouseDown={() => isSummaryExpanded && setIsResizing(true)}
       >
         <div className="w-16 h-1 rounded-full bg-slate-200 dark:bg-slate-700 group-hover/resizer:bg-primary-400 dark:group-hover/resizer:bg-primary-500 transition-colors flex items-center justify-center">
         </div>
