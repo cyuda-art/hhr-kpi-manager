@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 // @ts-ignore
-import { Responsive as ResponsiveGridLayout, WidthProvider } from 'react-grid-layout';
+import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { ActionPanel } from '@/components/kpi-tree/ActionPanel';
 import { useKpiStore } from '@/store/useKpiStore';
-import { Maximize2, Minimize2, GripHorizontal } from 'lucide-react';
-
-const ResponsiveGridLayoutWithProvider = WidthProvider(ResponsiveGridLayout);
+import { GripHorizontal } from 'lucide-react';
 
 export default function Dashboard() {
   const { selectedNodeId } = useKpiStore();
   const [isMounted, setIsMounted] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(1200);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const [layouts, setLayouts] = useState<any>({
     lg: [
       { i: 'kpi-tree', x: 0, y: 0, w: 8, h: 4, minW: 4, minH: 2 },
@@ -26,6 +27,17 @@ export default function Dashboard() {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setContainerWidth(entries[0].contentRect.width);
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [isMounted]);
+
   const onLayoutChange = (layout: any[], allLayouts: any) => {
     setLayouts(allLayouts);
   };
@@ -33,13 +45,14 @@ export default function Dashboard() {
   if (!isMounted) return null;
 
   return (
-    <div className="h-[calc(100vh-4rem)] p-2 overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950">
-      <ResponsiveGridLayoutWithProvider
+    <div ref={containerRef} className="h-[calc(100vh-4rem)] p-2 overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950">
+      <ResponsiveGridLayout
         className="layout"
         layouts={layouts}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
         cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
         rowHeight={150}
+        width={containerWidth}
         onLayoutChange={onLayoutChange}
         draggableHandle=".drag-handle"
         margin={[16, 16]}
@@ -67,7 +80,7 @@ export default function Dashboard() {
             <ActionPanel />
           </div>
         </div>
-      </ResponsiveGridLayoutWithProvider>
+      </ResponsiveGridLayout>
     </div>
   );
 }
