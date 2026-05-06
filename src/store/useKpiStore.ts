@@ -84,10 +84,29 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
     }
   }
 
+  const today = new Date().toISOString().split('T')[0];
+  let newHistory = node.history ? [...node.history] : [];
+  
+  // シミュレーション中でなければ履歴を更新
+  if (!node.isSimulated && node.simulatedValue === undefined) {
+    const existingIndex = newHistory.findIndex(h => h.date === today);
+    const entry = {
+      date: today,
+      actualValue: actual,
+      targetValue: target
+    };
+    if (existingIndex >= 0) {
+      newHistory[existingIndex] = entry;
+    } else {
+      newHistory.push(entry);
+    }
+  }
+
   return {
     ...node,
     achievementRate,
     status,
+    history: newHistory,
     ...(simulatedAchievementRate !== undefined ? { simulatedAchievementRate, simulatedStatus } : {})
   } as KpiNodeWithComputedAndInit;
 };

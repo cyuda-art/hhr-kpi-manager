@@ -45,6 +45,7 @@ export const Sidebar = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
+    { id: 'trend-report', label: '時系列レポート', icon: Activity, path: '/trend-report' },
     { id: 'my-tasks', label: '私のタスク', icon: CheckSquare, path: '/my-tasks' },
     { id: 'data-entry', label: 'シートエディタ', icon: Database, path: '/data-entry' },
   ];

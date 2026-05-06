@@ -2,6 +2,12 @@ export type KpiType = 'KGI' | 'KPI';
 export type BusinessUnit = 'company' | 'hotel' | 'spa' | 'restaurant' | 'shop' | 'kitchen' | 'cross';
 export type Status = 'good' | 'warning' | 'danger';
 
+export interface KpiHistoryEntry {
+  date: string; // YYYY-MM-DD形式
+  actualValue: number;
+  targetValue: number;
+}
+
 export interface KpiNodeData {
   id: string;
   name: string;
@@ -13,6 +19,7 @@ export interface KpiNodeData {
   unit: string;
   previousValue: number;
   description: string;
+  history?: KpiHistoryEntry[]; // 時系列データ
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース
