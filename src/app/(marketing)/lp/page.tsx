@@ -42,7 +42,7 @@ export default function LandingPage() {
           </h1>
           
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Excelでの静的なKPI管理はもう限界です。事業構造を可視化するインタラクティブなツリーと、未達を防ぐ「KFC（重要施策）」の実行管理を統合。AIが期末の着地点を予測し、会議室の議論を「過去の反省」から「未来の打ち手」へと変革します。
+            Excelでの静的なKPI管理はもう限界です。事業構造を可視化するインタラクティブなツリーと、未達を防ぐ「KSF（重要施策）」の実行管理を統合。AIが期末の着地点を予測し、会議室の議論を「過去の反省」から「未来の打ち手」へと変革します。
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -156,7 +156,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black leading-tight">「数字」の責任と、<br />「行動」の責任を分離する。</h3>
                 <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                  KPIはあくまで「数値の箱」。それを動かすための具体的な行動を「KFC (重要施策)」として定義し、担当部署・担当者をアサイン。ダッシュボードには「部署別のKFC進捗率」が表示され、行動レベルのボトルネックを瞬時に把握できます。
+                  KPIはあくまで「数値の箱」。それを動かすための具体的な行動を「KSF (重要施策)」として定義し、担当部署・担当者をアサイン。ダッシュボードには「部署別のKSF進捗率」が表示され、行動レベルのボトルネックを瞬時に把握できます。
                 </p>
                 <ul className="space-y-3 pt-4">
                   {['部署・担当者別のタスク紐付け', 'スプレッドシート型エディターでの一括管理', '部署別の施策進捗サマリー'].map((point, i) => (
@@ -176,7 +176,7 @@ export default function LandingPage() {
                     </div>
                     <div className="flex-1 border-2 border-dashed border-emerald-200 dark:border-emerald-900/50 rounded-lg flex items-center justify-center flex-col gap-4">
                       <ListChecks size={48} className="text-emerald-400 opacity-50" />
-                      <div className="font-bold text-emerald-400/80 tracking-widest">KFC MANAGEMENT</div>
+                      <div className="font-bold text-emerald-400/80 tracking-widest">KSF MANAGEMENT</div>
                     </div>
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black leading-tight">手遅れになる前に、<br />AIが未来の着地点を警告。</h3>
                 <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                  過去のトレンドと現在の進捗ペースをAIが分析し、ボタン一つで「期末の着地予測値」を算出。未達が予測されるボトルネックKPIを赤くハイライトし、今すぐ打つべき有効な施策（KFC）案をAIがその場で提案します。
+                  過去のトレンドと現在の進捗ペースをAIが分析し、ボタン一つで「期末の着地予測値」を算出。未達が予測されるボトルネックKPIを赤くハイライトし、今すぐ打つべき有効な施策（KSF）案をAIがその場で提案します。
                 </p>
                 <ul className="space-y-3 pt-4">
                   {['ワンクリックAI未来予測', 'ボトルネックの自動特定', '生成AIによる改善施策の提案'].map((point, i) => (
@@ -252,7 +252,7 @@ export default function LandingPage() {
               <div className="space-y-4 text-indigo-100/80">
                 <p>「サマリーを見ると、宿泊部の施策完了率が30%で遅れていますね。」</p>
                 <p>「ツリーでシミュレーションしましょう。客単価を200円上げられれば挽回可能です。」</p>
-                <p>「では、単価UPのための新しいKFCを今すぐデータエディターで追加し、マーケティング部にアサインします。」</p>
+                <p>「では、単価UPのための新しいKSFを今すぐデータエディターで追加し、マーケティング部にアサインします。」</p>
                 <p className="text-primary-300 font-bold pt-2 flex items-center gap-2">
                   <ArrowRight size={16} /> わずか15分で「次なる打ち手」が決定。
                 </p>

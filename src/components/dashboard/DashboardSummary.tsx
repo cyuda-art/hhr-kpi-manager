@@ -52,9 +52,9 @@ export const DashboardSummary = ({
     ? kgis.reduce((sum, kgi) => sum + (kgi.achievementRate || 0), 0) / kgis.length
     : 0;
 
-  // 部署別KFC(アクション)の集計
+  // 部署別KSF(アクション)の集計
   const { actions } = useKpiStore();
-  const kfcByDept = actions.reduce((acc, action) => {
+  const ksfByDept = actions.reduce((acc, action) => {
     const dept = action.department || '未設定';
     if (!acc[dept]) acc[dept] = { total: 0, done: 0 };
     acc[dept].total++;
@@ -142,18 +142,18 @@ export const DashboardSummary = ({
             </div>
           </div>
 
-          {/* 部署別 KFC (重要施策) 進捗 */}
+          {/* 部署別 KSF (重要施策) 進捗 */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
             <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-4 uppercase tracking-wider flex items-center gap-2">
               <ListChecks className="w-4 h-4 text-primary-500" />
-              部署別 KFC (重要施策) 進捗状況
+              部署別 KSF (重要施策) 進捗状況
             </h3>
             
-            {Object.keys(kfcByDept).length === 0 ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400">KFC(施策)がまだ登録されていません。ツリーからKPIを選択し、施策を追加してください。</p>
+            {Object.keys(ksfByDept).length === 0 ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400">KSF(施策)がまだ登録されていません。ツリーからKPIを選択し、施策を追加してください。</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {Object.entries(kfcByDept).map(([dept, stats]) => {
+                {Object.entries(ksfByDept).map(([dept, stats]) => {
                   const progress = Math.round((stats.done / stats.total) * 100) || 0;
                   return (
                     <div key={dept} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-200 dark:border-slate-700/50">

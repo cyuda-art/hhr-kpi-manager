@@ -26,7 +26,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, initializeOrgs]);
 
-  // 3. プロジェクトが選択されている場合、DB（KPI/KFC）を初期化
+  // 3. プロジェクトが選択されている場合、DB（KPI/KSF）を初期化
   useEffect(() => {
     if (user && currentProjectId) {
       initializeDB(currentProjectId);

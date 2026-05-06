@@ -298,7 +298,7 @@ export const ActionPanel = () => {
           className={`flex-1 py-1.5 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors ${activeTab === 'actions' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
         >
           <ListChecks size={14} />
-          KFC & インサイト
+          KSF & インサイト
         </button>
         <button
           onClick={() => setActiveTab('chat')}
@@ -438,11 +438,11 @@ export const ActionPanel = () => {
       )}
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">登録済み KFC (重要施策)</h5>
+        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">登録済み KSF (重要施策)</h5>
         {!selectedNodeId ? (
           <p className="text-xs text-slate-400 dark:text-slate-500">ツリーからKPIを選択すると表示されます</p>
         ) : filteredActions.length === 0 ? (
-          <p className="text-xs text-slate-400 dark:text-slate-500">KFCは登録されていません</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">KSFは登録されていません</p>
         ) : (
           filteredActions.map((action) => (
             <div key={action.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-sm flex items-start gap-3">
@@ -469,7 +469,7 @@ export const ActionPanel = () => {
       </div>
 
       <form onSubmit={handleAddAction} className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50">
-        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">新規 KFC (重要施策) 追加</h5>
+        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">新規 KSF (重要施策) 追加</h5>
         <div className="space-y-2">
           <input
             type="text"
@@ -517,7 +517,7 @@ export const ActionPanel = () => {
             className="w-full mt-2 bg-primary-500 hover:bg-primary-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white text-xs font-bold py-2 rounded transition-colors flex items-center justify-center gap-1"
           >
             <Plus size={14} />
-            KFC を追加
+            KSF を追加
           </button>
         </div>
       </form>

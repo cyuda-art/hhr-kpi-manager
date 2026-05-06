@@ -8,14 +8,14 @@ import { KpiNodeData, Action } from '@/types';
 export const DataEditor = () => {
   const { kpiData, setKpiDataBulk, actions, setActionsBulk } = useKpiStore();
   
-  const [activeTab, setActiveTab] = useState<'kpi' | 'kfc'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'ksf'>('kpi');
 
   // KPI用のローカルステート
   const [localData, setLocalData] = useState<Record<string, KpiNodeData>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // KFC用のローカルステート
+  // KSF用のローカルステート
   const [localActions, setLocalActions] = useState<Record<string, Action>>({});
   const [hasActionChanges, setHasActionChanges] = useState(false);
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
@@ -25,7 +25,7 @@ export const DataEditor = () => {
 
   const handleAutoSave = (rowId?: string) => {
     if (activeTab === 'kpi' && !hasChanges) return;
-    if (activeTab === 'kfc' && !hasActionChanges) return;
+    if (activeTab === 'ksf' && !hasActionChanges) return;
     
     setSaveStatus('saving');
     
@@ -155,7 +155,7 @@ export const DataEditor = () => {
   };
 
   const handleDeleteActionRow = (id: string) => {
-    if (confirm('このKFCを削除しますか？')) {
+    if (confirm('このKSFを削除しますか？')) {
       setLocalActions(prev => {
         const next = { ...prev };
         delete next[id];
@@ -192,7 +192,7 @@ export const DataEditor = () => {
           </div>
           <div>
             <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">データエディター (Data Editor)</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Glideappsのようなフル機能のエディターで、ツリーの全構造やKFCを直接編集します。</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Glideappsのようなフル機能のエディターで、ツリーの全構造やKSFを直接編集します。</p>
           </div>
         </div>
         
@@ -205,10 +205,10 @@ export const DataEditor = () => {
               <FileSpreadsheet size={14} /> KPIマスター
             </button>
             <button
-              onClick={() => setActiveTab('kfc')}
-              className={`px-4 py-1.5 text-xs font-bold rounded-md flex items-center gap-1.5 transition-colors ${activeTab === 'kfc' ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+              onClick={() => setActiveTab('ksf')}
+              className={`px-4 py-1.5 text-xs font-bold rounded-md flex items-center gap-1.5 transition-colors ${activeTab === 'ksf' ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
             >
-              <ListChecks size={14} /> KFC (重要施策)
+              <ListChecks size={14} /> KSF (重要施策)
             </button>
           </div>
 
@@ -252,7 +252,7 @@ export const DataEditor = () => {
                 </tr>
               </thead>
             )}
-            {activeTab === 'kfc' && (
+            {activeTab === 'ksf' && (
               <thead className="bg-emerald-50/50 dark:bg-emerald-900/10 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 shadow-sm">
                 <tr>
                   <th className="p-3 font-bold text-slate-500 dark:text-slate-400 w-12 text-center"></th>
@@ -373,7 +373,7 @@ export const DataEditor = () => {
                 </tr>
               ))}
 
-              {activeTab === 'kfc' && Object.values(localActions).map(action => (
+              {activeTab === 'ksf' && Object.values(localActions).map(action => (
                 <tr 
                   key={action.id} 
                   className={`hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 transition-colors group ${editingActionId === action.id ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''} ${recentlySavedRowId === action.id ? 'bg-emerald-100 dark:bg-emerald-900/40 transition-none' : ''}`}
@@ -486,13 +486,13 @@ export const DataEditor = () => {
                   </td>
                 </tr>
               )}
-              {activeTab === 'kfc' && Object.values(localActions).length === 0 && (
+              {activeTab === 'ksf' && Object.values(localActions).length === 0 && (
                 <tr>
                   <td colSpan={8} className="p-12 text-center text-slate-500 flex flex-col items-center gap-4">
                     <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
                       <ListChecks size={32} className="text-slate-400" />
                     </div>
-                    <p>KFCデータがありません。「行を追加」から新しい施策を作成してください。</p>
+                    <p>KSFデータがありません。「行を追加」から新しい施策を作成してください。</p>
                   </td>
                 </tr>
               )}

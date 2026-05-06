@@ -105,7 +105,7 @@ export default function MyTasksPage() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">マイタスク (カンバンボード)</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">あなたが担当している施策（KFC）を管理し、ドラッグ＆ドロップでステータスを更新します。</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">あなたが担当している施策（KSF）を管理し、ドラッグ＆ドロップでステータスを更新します。</p>
           </div>
         </div>
 
