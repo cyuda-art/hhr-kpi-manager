@@ -106,8 +106,29 @@ export const ActionPanel = () => {
     });
   };
 
-  const handleAddKpi = (name: string, isAi = false, targetValue = 0, unit = '件') => {
+  const handleAddKpi = (name: string, isAi = false, targetValue = 0, providedUnit?: string) => {
     if (!selectedKpi) return;
+    
+    // 単位が指定されていない場合は名前から推論
+    let unit = providedUnit;
+    if (!unit) {
+      if (name.includes('売上') || name.includes('利益') || name.includes('コスト') || name.includes('費用') || name.includes('単価') || name.includes('金額')) {
+        unit = '円';
+      } else if (name.includes('率') || name.includes('割合') || name.includes('パーセント') || name.includes('%')) {
+        unit = '%';
+      } else if (name.includes('人') || name.includes('客') || name.includes('従業員')) {
+        unit = '人';
+      } else if (name.includes('社') || name.includes('企業')) {
+        unit = '社';
+      } else if (name.includes('回')) {
+        unit = '回';
+      } else if (name.includes('時間')) {
+        unit = '時間';
+      } else {
+        unit = '件';
+      }
+    }
+
     const newId = `kpi_custom_${Math.random().toString(36).substr(2, 9)}`;
     addKpiNode({
       id: newId,
