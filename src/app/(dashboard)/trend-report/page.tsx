@@ -196,7 +196,7 @@ export default function TrendReportPage() {
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
                       formatter={(value: any, name: any) => [
                         viewMode === 'actual' ? `${value.toLocaleString()} ${selectedNode.unit}` : `${value.toFixed(1)}%`,
-                        name === 'actualValue' || name === 'achievementRate' ? '実績' : '目標'
+                        name
                       ]}
                       labelStyle={{ color: '#64748b', marginBottom: '4px' }}
                     />
