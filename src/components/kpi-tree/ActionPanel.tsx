@@ -201,13 +201,15 @@ export const ActionPanel = () => {
       <div className="mb-4">
         {selectedKpi ? (
           <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50 relative">
-            <button 
-              onClick={() => removeKpiNode(selectedKpi.id)}
-              className="absolute top-2 right-2 p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors"
-              title="このKPIを削除"
-            >
-              <Trash2 size={16} />
-            </button>
+            {selectedKpi.type !== 'KGI' && (
+              <button 
+                onClick={() => removeKpiNode(selectedKpi.id)}
+                className="absolute top-2 right-2 p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors"
+                title="このKPIを削除"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
             <h4 className="font-bold text-slate-800 dark:text-slate-200">
               {isPredictionMode && <span className="text-primary-500 mr-1 text-xs">[予測]</span>}

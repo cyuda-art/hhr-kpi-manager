@@ -163,9 +163,27 @@ export const useKpiStore = create<KpiStore>()(
         // プロジェクトごとのデータがあればそれをロード、なければ空にする
         const pData = state.projectData[projectId] || { kpiData: {}, actions: [] };
         
+        let kpiData = { ...pData.kpiData };
+        if (Object.keys(kpiData).length === 0) {
+          kpiData = {
+            kgi_profit: calculateComputed({
+              id: 'kgi_profit',
+              name: '全社利益（KGI）',
+              businessUnit: 'company',
+              type: 'KGI',
+              parentId: null,
+              targetValue: 10000000,
+              actualValue: 0,
+              unit: '円',
+              previousValue: 0,
+              description: '組織全体の最終利益目標'
+            })
+          };
+        }
+        
         set({ 
           currentProjectId: projectId, 
-          kpiData: pData.kpiData,
+          kpiData: kpiData,
           actions: pData.actions,
           isDbInitialized: true 
         });
@@ -473,6 +491,10 @@ export const useKpiStore = create<KpiStore>()(
   removeKpiNode: (id) => {
     set((state) => {
       const draft = { ...state.kpiData };
+      if (draft[id]?.type === 'KGI') {
+        alert('KGI（ゴール）は削除できません。');
+        return state;
+      }
       delete draft[id];
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
