@@ -193,7 +193,9 @@ export default function WorkspacePage() {
                   {/* Context Menu Toggle */}
                   <button 
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
+                      e.nativeEvent.stopImmediatePropagation();
                       setMenuOpenId(menuOpenId === project.id ? null : project.id);
                     }}
                     className="text-slate-500 dark:text-[#9aa0a6] hover:text-slate-900 dark:text-[#f1f3f4] p-1 -m-1 rounded-full hover:bg-slate-200 dark:bg-[#3c4043] transition-colors z-10"
