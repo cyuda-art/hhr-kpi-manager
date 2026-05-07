@@ -11,9 +11,11 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 
 interface NodeProps {
   data: KpiNodeWithComputed & { hasChildren?: boolean; isCollapsed?: boolean };
+  targetPosition?: Position;
+  sourcePosition?: Position;
 }
 
-export const KpiNodeComponent = ({ data }: NodeProps) => {
+export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePosition = Position.Bottom }: NodeProps) => {
   const getStatusBorder = (status: string) => {
     switch (status) {
       case 'good': return 'border-emerald-400';
@@ -78,7 +80,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
       isAlert && "animate-pulse shadow-red-900/30 border-[#f28b82]",
       isPredictionMode && "bg-[#202124] border-[#8ab4f8]"
     )}>
-      <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-[#5f6368] border-none" />
+      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none" />
       
       <div className="flex justify-between items-start mb-2">
         <div className="flex flex-col flex-1 min-w-0 pr-2">
@@ -141,13 +143,16 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
             e.stopPropagation();
             toggleNodeCollapse(data.id);
           }}
-          className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-[#2d2f31] border border-[#5f6368] rounded-full flex items-center justify-center text-[#9aa0a6] hover:text-[#e8eaed] hover:border-[#8ab4f8] hover:bg-[#323639] transition-colors z-10"
+          className={cn(
+            "absolute w-6 h-6 bg-[#2d2f31] border border-[#5f6368] rounded-full flex items-center justify-center text-[#9aa0a6] hover:text-[#e8eaed] hover:border-[#8ab4f8] hover:bg-[#323639] transition-colors z-10",
+            sourcePosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
+          )}
         >
           {data.isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
         </button>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-transparent border-none opacity-0" />
+      <Handle type="source" position={sourcePosition} className="w-3 h-3 !bg-transparent border-none opacity-0" />
     </div>
   );
 };
