@@ -6,7 +6,6 @@ import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Lock, Mail, ArrowRight, Building2 } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -50,7 +49,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header />
+      <div className="absolute top-4 left-4">
+        <button onClick={() => router.push('/lp')} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm font-medium transition-colors">
+          <ArrowRight className="w-4 h-4 rotate-180" />
+          トップページへ戻る
+        </button>
+      </div>
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
         
