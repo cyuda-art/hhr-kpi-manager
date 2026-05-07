@@ -36,6 +36,7 @@ export async function POST(req: Request) {
 - businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。基本は "company" で構いません。
 - 現状の課題（${currentIssues}）を解決するための具体的なKPIを必ずツリーの中に含めてください。
 - 数値（targetValue, actualValue, previousValue）は、売上規模（${revenueScale}）から推測してリアリティのある数値を設定してください（単位に注意）。
+- さらに、子を持たない末端のKPIノードには、そのKPIを達成するために現場が明日から実行すべき具体的な「タスク（ToDo）」を1〜3個程度、"tasks" 配列として付与してください。
 
 【JSONインターフェース】
 [
@@ -52,7 +53,28 @@ export async function POST(req: Request) {
     "previousValue": 75000000,
     "description": "KGIの詳細説明"
   },
-  // ... その他のKPIノード
+  {
+    "id": "kpi_child_1",
+    "name": "末端KPIの名前",
+    "qualitativeName": "定性的な目標",
+    "businessUnit": "company",
+    "type": "KPI",
+    "parentId": "kgi_main",
+    "targetValue": 50,
+    "actualValue": 0,
+    "unit": "件",
+    "previousValue": 0,
+    "description": "KPIの詳細",
+    "tasks": [
+      {
+        "task_name": "具体的なタスク名",
+        "description": "タスクの手順",
+        "expected_impact": "High", // High | Medium | Low
+        "effort_level": "Medium", // Small | Medium | Large
+        "focus_point": "注意点"
+      }
+    ]
+  }
 ]
 `;
 

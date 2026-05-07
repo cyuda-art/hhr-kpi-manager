@@ -201,18 +201,49 @@ export const useKpiStore = create<KpiStore>()(
         if (Object.keys(kpiData).length === 0) {
           if (initDataStr) {
             try {
-              const parsedNodes = JSON.parse(initDataStr) as KpiNodeData[];
+              const parsedNodes = JSON.parse(initDataStr) as any[];
+              const initialActions: Action[] = [];
+              
               parsedNodes.forEach(node => {
                 kpiData[node.id] = calculateComputed({
-                  ...node,
+                  id: node.id,
+                  name: node.name,
+                  qualitativeName: node.qualitativeName,
+                  businessUnit: node.businessUnit,
+                  type: node.type,
+                  parentId: node.parentId,
+                  targetValue: node.targetValue,
+                  actualValue: node.actualValue,
+                  unit: node.unit,
+                  previousValue: node.previousValue,
+                  description: node.description,
                   initialActualValue: node.actualValue || 0
                 });
+                
+                // AIが生成したタスクがあれば抽出
+                if (node.tasks && Array.isArray(node.tasks)) {
+                  node.tasks.forEach((task: any) => {
+                    initialActions.push({
+                      id: Math.random().toString(36).substr(2, 9),
+                      kpiId: node.id,
+                      title: task.task_name,
+                      owner: '未定',
+                      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
+                      status: 'todo'
+                    });
+                  });
+                }
               });
+
+              if (initialActions.length > 0) {
+                pData.actions = [...pData.actions, ...initialActions];
+              }
+
               // ロード完了したらストレージから削除
               sessionStorage.removeItem(`kpi_init_${projectId}`);
               
               // この段階でFirestoreへ保存する
-              syncToDB(kpiData, [], projectId, orgId, pData.projectInfo);
+              syncToDB(kpiData, pData.actions, projectId, orgId, pData.projectInfo);
             } catch (e) {
               console.error("Failed to parse init KPI data", e);
             }
