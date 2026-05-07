@@ -81,7 +81,11 @@ export const ActionPanel = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ kpiData: selectedKpi, allKpiData: kpiData }),
+        body: JSON.stringify({ 
+          kpiData: selectedKpi, 
+          allKpiData: kpiData,
+          projectInfo: useKpiStore.getState().currentProjectInfo
+        }),
       });
 
       if (!response.ok) {

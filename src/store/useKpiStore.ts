@@ -10,12 +10,13 @@ export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
 
 interface KpiStore {
   kpiData: Record<string, KpiNodeWithComputedAndInit>;
-  projectData: Record<string, { kpiData: Record<string, KpiNodeWithComputedAndInit>; actions: Action[] }>;
+  projectData: Record<string, { projectInfo?: import('@/types').ProjectInfo, kpiData: Record<string, KpiNodeWithComputedAndInit>; actions: Action[] }>;
   selectedNodeId: string | null;
   collapsedNodes: string[]; // 折りたたまれたノードのID配列
   actions: Action[];
   isDbInitialized: boolean;
   currentProjectId: string | null;
+  currentProjectInfo: import('@/types').ProjectInfo | null;
   currentPeriod: string;
   isPredictionMode: boolean;
   setPeriod: (period: string) => void;
@@ -34,6 +35,7 @@ interface KpiStore {
   updateKpiNode: (id: string, data: Partial<KpiNodeData>) => void;
   setKpiDataBulk: (nodes: KpiNodeData[]) => void;
   toggleNodeCollapse: (id: string) => void;
+  setProjectInfo: (info: Partial<import('@/types').ProjectInfo>) => void;
 }
 
 // データベース(Google Sheets)更新用のヘルパー関数
@@ -143,6 +145,7 @@ const saveToProjectData = (state: any) => {
   return {
     ...state.projectData,
     [state.currentProjectId]: {
+      projectInfo: state.currentProjectInfo || undefined,
       kpiData: state.kpiData,
       actions: state.actions
     }
@@ -159,6 +162,7 @@ export const useKpiStore = create<KpiStore>()(
       actions: [],
       isDbInitialized: false,
       currentProjectId: null,
+      currentProjectInfo: null,
       currentPeriod: '2026-05',
       isPredictionMode: false,
 
@@ -181,7 +185,7 @@ export const useKpiStore = create<KpiStore>()(
         
         const state = get();
         // プロジェクトごとのデータがあればそれをロード、なければ空にする
-        const pData = state.projectData[projectId] || { kpiData: {}, actions: [] };
+        const pData = state.projectData[projectId] || { kpiData: {}, actions: [], projectInfo: undefined };
         
         let kpiData = { ...pData.kpiData };
         if (Object.keys(kpiData).length === 0) {
@@ -204,11 +208,21 @@ export const useKpiStore = create<KpiStore>()(
         
         set({ 
           currentProjectId: projectId, 
+          currentProjectInfo: pData.projectInfo || { name: '新規プロジェクト', description: '' },
           kpiData: kpiData,
           actions: pData.actions,
           isDbInitialized: true 
         });
       },
+
+      setProjectInfo: (info) => set((state) => {
+        const newInfo = { ...(state.currentProjectInfo || { name: '', description: '' }), ...info };
+        const newState = { ...state, currentProjectInfo: newInfo };
+        return {
+          currentProjectInfo: newInfo,
+          projectData: saveToProjectData(newState)
+        };
+      }),
 
       setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   

@@ -15,7 +15,7 @@ export const DashboardSummary = ({
   isExpanded: controlledIsExpanded, 
   onToggleExpand 
 }: DashboardSummaryProps = {}) => {
-  const { kpiData } = useKpiStore();
+  const { kpiData, currentProjectInfo, setProjectInfo } = useKpiStore();
   const [drawerKpiId, setDrawerKpiId] = useState<string | null>(null);
   const [internalIsExpanded, setInternalIsExpanded] = useState(false);
 
@@ -99,6 +99,46 @@ export const DashboardSummary = ({
       {/* 展開されるコンテンツ（高さを親に追従） */}
       <div className={`flex-1 min-h-0 overflow-y-auto transition-all duration-300 ease-in-out custom-scrollbar ${isExpanded ? 'opacity-100' : 'hidden'}`}>
         <div className="p-4 space-y-6">
+          {/* プロジェクト・事業情報 */}
+          <div className="bg-slate-50 dark:bg-slate-800/30 rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+              <div className="w-1.5 h-4 bg-primary-500 rounded-full"></div>
+              プロジェクト・事業情報
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">プロジェクト/事業名</label>
+                <input 
+                  type="text" 
+                  value={currentProjectInfo?.name || ''} 
+                  onChange={(e) => setProjectInfo({ name: e.target.value })}
+                  placeholder="例：ホテル事業改革プロジェクト"
+                  className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">ビジネスモデル/ターゲット層</label>
+                <input 
+                  type="text" 
+                  value={currentProjectInfo?.businessModel || ''} 
+                  onChange={(e) => setProjectInfo({ businessModel: e.target.value })}
+                  placeholder="例：BtoC、富裕層向けインバウンド旅行客"
+                  className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">事業概要・特記事項（AIの分析精度を向上させます）</label>
+                <textarea 
+                  value={currentProjectInfo?.description || ''} 
+                  onChange={(e) => setProjectInfo({ description: e.target.value })}
+                  placeholder="例：現在、客単価は上がっているが稼働率が低下傾向にある。新規顧客の獲得が課題。"
+                  rows={2}
+                  className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200 resize-none"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* サマリーハイライト */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-4 text-white shadow-lg shadow-primary-500/20">

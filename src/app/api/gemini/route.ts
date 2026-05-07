@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'GEMINI_API_KEY is not configured.' }, { status: 500 });
     }
 
-    const { kpiData, allKpiData } = await req.json();
+    const { kpiData, allKpiData, projectInfo } = await req.json();
 
     if (!kpiData) {
       return NextResponse.json({ error: 'Missing KPI data in request body.' }, { status: 400 });
@@ -26,9 +26,19 @@ export async function POST(req: NextRequest) {
       }).join('\\n');
     }
 
+    // 事業概要を文字列化
+    let projectContext = "特に指定されていません";
+    if (projectInfo) {
+      projectContext = `
+・プロジェクト名: ${projectInfo.name || '未設定'}
+・ビジネスモデル/ターゲット層: ${projectInfo.businessModel || '未設定'}
+・事業概要/特記事項: ${projectInfo.description || '未設定'}
+      `.trim();
+    }
+
     const prompt = `
 あなたはプロフェッショナルな経営コンサルタントです。
-以下の「プロジェクト全体のKPIツリー・事業内容」と「今回選択されたKPIデータ」の両方を加味して、現在の課題（issue）、目標達成のための定性的な成功要因（ksfIdea）、そしてそのKSFを定量的に測定するための下位KPI（kpiIdea）を提案してください。
+以下の「プロジェクト事業内容」「全体のKPIツリー構造」と「今回選択されたKPIデータ」を加味して、現在の課題（issue）、目標達成のための定性的な成功要因（ksfIdea）、そしてそのKSFを定量的に測定するための下位KPI（kpiIdea）を提案してください。
 必ず事業全体の文脈や上位KGI・Goalの達成につながるような、本質的なKSFとKPIを提示してください。アクションプランの提案は不要です。
 
 出力は必ず以下の形式の有効なJSONとしてください。他の文章やMarkdownのバッククォートを含めないでください。
@@ -44,7 +54,10 @@ export async function POST(req: NextRequest) {
 
 ※ kpiIdeaTarget は数値のみを返してください。kpiIdeaUnit は単位（例：件、円、%、回など）を返してください。目標値は全体のバランスや親KPIの数値を考慮して現実的な数値を提案してください。
 
-【プロジェクト全体のKPIツリー・事業内容】
+【プロジェクト事業内容】
+${projectContext}
+
+【プロジェクト全体のKPIツリー・構造】
 ${allKpiContext || 'データなし'}
 
 【今回選択されたKPIデータ（このノードに対する改善案を出してください）】

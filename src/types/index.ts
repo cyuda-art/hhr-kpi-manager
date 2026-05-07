@@ -43,3 +43,10 @@ export interface Action {
   status: 'todo' | 'in_progress' | 'done';
 }
 
+export interface ProjectInfo {
+  name: string;
+  description: string;
+  businessModel?: string;
+  targetAudience?: string;
+}
+
