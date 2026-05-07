@@ -35,7 +35,7 @@ export default function WorkspacePage() {
 
   const handleSelectProject = (projectId: string) => {
     setCurrentProjectId(projectId);
-    router.push(`/p/${projectId}`);
+    router.push(`/${currentOrgId}/p/${projectId}`);
   };
 
   const handleCreateProject = async (e: React.FormEvent) => {

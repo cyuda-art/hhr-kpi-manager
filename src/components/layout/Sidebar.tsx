@@ -43,12 +43,13 @@ export const Sidebar = () => {
   const currentProject = projects.find(p => p.id === currentProjectId);
   const currentOrg = organizations.find(org => org.id === currentOrgId);
 
-  const basePath = currentProjectId ? `/p/${currentProjectId}` : '';
+  const basePath = currentOrgId && currentProjectId ? `/${currentOrgId}/p/${currentProjectId}` : '';
+  const orgBasePath = currentOrgId ? `/${currentOrgId}` : '';
   const menuItems = [
-    { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: currentProjectId ? basePath : '/' },
-    { id: 'trend-report', label: '時系列レポート', icon: Activity, path: currentProjectId ? `${basePath}/trend-report` : '/trend-report' },
-    { id: 'my-tasks', label: '私のタスク', icon: CheckSquare, path: currentProjectId ? `${basePath}/my-tasks` : '/my-tasks' },
-    { id: 'data-entry', label: 'シートエディタ', icon: Database, path: currentProjectId ? `${basePath}/data-entry` : '/data-entry' },
+    { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: currentProjectId ? basePath : orgBasePath },
+    { id: 'trend-report', label: '時系列レポート', icon: Activity, path: currentProjectId ? `${basePath}/trend-report` : `${orgBasePath}/trend-report` },
+    { id: 'my-tasks', label: '私のタスク', icon: CheckSquare, path: currentProjectId ? `${basePath}/my-tasks` : `${orgBasePath}/my-tasks` },
+    { id: 'data-entry', label: 'シートエディタ', icon: Database, path: currentProjectId ? `${basePath}/data-entry` : `${orgBasePath}/data-entry` },
   ];
 
   const rootNodes = useMemo(() => {
@@ -205,11 +206,11 @@ export const Sidebar = () => {
       </div>
 
       <div className="p-3 border-t border-slate-200 dark:border-[#3c4043] space-y-0.5">
-        <Link href="/projects" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "プロジェクト切替" : undefined}>
+        <Link href={currentOrgId ? `/${currentOrgId}/projects` : '/projects'} className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "プロジェクト切替" : undefined}>
           <FolderKanban size={16} />
           {!isSidebarCollapsed && <span>プロジェクト切替</span>}
         </Link>
-        <Link href="/settings" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "組織設定" : undefined}>
+        <Link href={currentOrgId ? `/${currentOrgId}/settings` : '/settings'} className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "組織設定" : undefined}>
           <Settings size={16} />
           {!isSidebarCollapsed && <span>組織設定</span>}
         </Link>

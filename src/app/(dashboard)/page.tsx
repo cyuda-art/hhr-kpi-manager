@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useOrgStore } from '@/store/useOrgStore';
 
 export default function DashboardRootRedirect() {
   const router = useRouter();
   const { currentProjectId, projects, isLoading } = useProjectStore();
+  const { currentOrgId, isLoading: isOrgLoading } = useOrgStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -14,19 +16,24 @@ export default function DashboardRootRedirect() {
   }, []);
 
   useEffect(() => {
-    if (!mounted || isLoading) return;
+    if (!mounted || isLoading || isOrgLoading) return;
 
-    if (currentProjectId) {
-      // 最後に開いていたプロジェクトにリダイレクト
-      router.replace(`/p/${currentProjectId}`);
-    } else if (projects.length > 0) {
-      // プロジェクトがある場合は最初のプロジェクトにリダイレクト
-      router.replace(`/p/${projects[0].id}`);
+    if (currentOrgId) {
+      if (currentProjectId) {
+        // 最後に開いていたプロジェクトにリダイレクト
+        router.replace(`/${currentOrgId}/p/${currentProjectId}`);
+      } else if (projects.length > 0) {
+        // プロジェクトがある場合は最初のプロジェクトにリダイレクト
+        router.replace(`/${currentOrgId}/p/${projects[0].id}`);
+      } else {
+        // プロジェクトがない場合は作成画面（プロジェクト一覧）へ
+        router.replace(`/${currentOrgId}/projects`);
+      }
     } else {
-      // プロジェクトがない場合は作成画面へ
-      router.replace('/projects');
+      // 組織が存在しない場合は組織作成（または初期プロジェクト一覧）へ
+      router.replace('/org-setup');
     }
-  }, [mounted, isLoading, currentProjectId, projects, router]);
+  }, [mounted, isLoading, isOrgLoading, currentProjectId, currentOrgId, projects, router]);
 
   return (
     <div className="flex items-center justify-center h-screen">
