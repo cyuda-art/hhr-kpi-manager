@@ -27,7 +27,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
       return;
     } else if (!projectExists && projects.length === 0) {
       // プロジェクトが1つもない場合は作成画面へ
-      router.replace('/projects');
+      router.replace('/');
       return;
     }
 

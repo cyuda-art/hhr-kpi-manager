@@ -16,7 +16,7 @@ export default function OrgSetupPage() {
   useEffect(() => {
     // 既に組織を持っている場合はプロジェクト一覧へ
     if (!isLoading && organizations.length > 0) {
-      router.push('/projects');
+      router.push('/');
     }
   }, [isLoading, organizations, router]);
 
@@ -28,7 +28,7 @@ export default function OrgSetupPage() {
     try {
       await createOrganization(orgName, user.uid);
       // 作成成功したらプロジェクト一覧へ
-      router.push('/projects');
+      router.push('/');
     } catch (error) {
       console.error("Failed to create organization:", error);
       setIsSubmitting(false);

@@ -50,7 +50,7 @@ export default function InviteOrgPage() {
     setIsJoining(true);
     try {
       await joinOrganization(orgId, user.uid);
-      router.push('/projects');
+      router.push('/');
     } catch (err) {
       console.error(err);
       setError("組織への参加に失敗しました。");

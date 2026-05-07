@@ -206,11 +206,11 @@ export const Sidebar = () => {
       </div>
 
       <div className="p-3 border-t border-slate-200 dark:border-[#3c4043] space-y-0.5">
-        <Link href={currentOrgId ? `/${currentOrgId}/projects` : '/projects'} className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "プロジェクト切替" : undefined}>
+        <Link href={currentOrgId ? `/${currentOrgId}/projects` : '/'} className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "プロジェクト切替" : undefined}>
           <FolderKanban size={16} />
           {!isSidebarCollapsed && <span>プロジェクト切替</span>}
         </Link>
-        <Link href={currentOrgId ? `/${currentOrgId}/settings` : '/settings'} className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "組織設定" : undefined}>
+        <Link href={currentOrgId ? `/${currentOrgId}/settings` : '/'} className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "組織設定" : undefined}>
           <Settings size={16} />
           {!isSidebarCollapsed && <span>組織設定</span>}
         </Link>

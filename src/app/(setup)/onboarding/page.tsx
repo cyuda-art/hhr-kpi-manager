@@ -165,7 +165,7 @@ export default function OnboardingChatPage() {
         });
         
         setTimeout(() => {
-          router.push('/projects');
+          router.push('/');
         }, 1500);
       }, 2000);
 

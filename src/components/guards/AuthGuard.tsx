@@ -29,9 +29,9 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // 組織はあるがプロジェクトが未選択の場合はプロジェクト選択画面へ
-    if (organizations.length > 0 && !currentProjectId && !isProjectLoading && pathname !== '/projects' && pathname !== '/org-setup') {
-      router.push('/projects');
+    // 組織はあるがプロジェクトが未選択の場合、プロジェクト画面でないならルートへ
+    if (organizations.length > 0 && !currentProjectId && !isProjectLoading && !pathname.includes('/projects') && pathname !== '/org-setup') {
+      router.push('/');
       return;
     }
 
