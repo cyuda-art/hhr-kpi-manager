@@ -63,11 +63,11 @@ export default function Dashboard() {
         draggableHandle=".drag-handle"
         margin={[16, 16]}
       >
-        <div key="kpi-tree" className="bg-[#2d2f31] rounded-[8px] shadow-sm border border-[#3c4043] flex flex-col overflow-hidden">
-          <div className="drag-handle h-10 shrink-0 bg-[#282a2d] border-b border-[#3c4043] flex items-center justify-between px-4 cursor-move hover:bg-[#323639] transition-colors">
-            <div className="flex items-center gap-2 text-[#9aa0a6]">
+        <div key="kpi-tree" className="bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border border-slate-200 dark:border-[#3c4043] flex flex-col overflow-hidden">
+          <div className="drag-handle h-10 shrink-0 bg-slate-50 dark:bg-[#282a2d] border-b border-slate-200 dark:border-[#3c4043] flex items-center justify-between px-4 cursor-move hover:bg-slate-100 dark:hover:bg-[#323639] transition-colors">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-[#9aa0a6]">
               <GripHorizontal size={16} />
-              <span className="text-[11px] font-medium uppercase tracking-wider">KPI Tree</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">KPI Tree</span>
             </div>
           </div>
           <div className="flex-1 min-h-0 relative">
@@ -75,11 +75,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div key="action-panel" className="bg-[#2d2f31] rounded-[8px] shadow-sm border border-[#3c4043] flex flex-col overflow-hidden">
-          <div className="drag-handle h-10 shrink-0 bg-[#282a2d] border-b border-[#3c4043] flex items-center justify-between px-4 cursor-move hover:bg-[#323639] transition-colors">
-            <div className="flex items-center gap-2 text-[#9aa0a6]">
+        <div key="action-panel" className="bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border border-slate-200 dark:border-[#3c4043] flex flex-col overflow-hidden">
+          <div className="drag-handle h-10 shrink-0 bg-slate-50 dark:bg-[#282a2d] border-b border-slate-200 dark:border-[#3c4043] flex items-center justify-between px-4 cursor-move hover:bg-slate-100 dark:hover:bg-[#323639] transition-colors">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-[#9aa0a6]">
               <GripHorizontal size={16} />
-              <span className="text-[11px] font-medium uppercase tracking-wider">Action Panel</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">Action Panel</span>
             </div>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto p-4 custom-scrollbar">
