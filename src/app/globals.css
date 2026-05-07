@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Enable class-based dark mode for next-themes */
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
@@ -133,6 +133,23 @@ body {
 }
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #80868b; /* var(--color-slate-500) equivalent */
+}
+
+/* React Flow ダークモード対応 */
+.dark .react-flow__controls-button {
+  background-color: var(--color-slate-800) !important;
+  border-color: var(--color-slate-700) !important;
+  border-bottom-color: var(--color-slate-700) !important;
+  fill: var(--color-slate-300) !important;
+}
+.dark .react-flow__controls-button:hover {
+  background-color: var(--color-slate-700) !important;
+}
+.dark .react-flow__minimap {
+  background-color: var(--color-slate-900) !important;
+}
+.dark .react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.3) !important;
 }
 
 /* AI起動時のSiri風アニメーション */
