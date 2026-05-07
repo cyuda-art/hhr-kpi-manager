@@ -13,6 +13,7 @@ interface ProjectStore {
   deleteProject: (projectId: string) => Promise<void>;
   duplicateProject: (projectId: string, userId: string) => Promise<string>;
   joinProject: (projectId: string, userId: string) => Promise<void>;
+  updateProject: (projectId: string, data: Partial<Project>) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
@@ -115,6 +116,16 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       });
     } catch (error) {
       console.error("Error joining project:", error);
+      throw error;
+    }
+  },
+
+  updateProject: async (projectId: string, data: Partial<Project>) => {
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, data);
+    } catch (error) {
+      console.error("Error updating project:", error);
       throw error;
     }
   }

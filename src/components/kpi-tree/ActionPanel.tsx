@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
+import { useProjectStore } from '@/store/useProjectStore';
 import { Sparkles, Trash2, Edit2 } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 
 export const ActionPanel = () => {
   const { kpiData, selectedNodeId, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue } = useKpiStore();
+  const { currentProjectId, projects } = useProjectStore();
+  const currentProject = projects.find(p => p.id === currentProjectId);
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
 
   const handleAddKsfAndKpi = () => {
@@ -84,7 +87,7 @@ export const ActionPanel = () => {
         body: JSON.stringify({ 
           kpiData: selectedKpi, 
           allKpiData: kpiData,
-          projectInfo: useKpiStore.getState().currentProjectInfo
+          projectInfo: currentProject
         }),
       });
 

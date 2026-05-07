@@ -1,9 +1,10 @@
 "use client";
 
 import { useKpiStore } from '@/store/useKpiStore';
+import { useProjectStore } from '@/store/useProjectStore';
 import { DashboardCard } from './DashboardCard';
 import { DetailDrawer } from '@/components/ui/DetailDrawer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AlertTriangle, TrendingUp, Target, Activity, ChevronDown, ChevronUp, ListChecks } from 'lucide-react';
 
 interface DashboardSummaryProps {
@@ -15,9 +16,26 @@ export const DashboardSummary = ({
   isExpanded: controlledIsExpanded, 
   onToggleExpand 
 }: DashboardSummaryProps = {}) => {
-  const { kpiData, currentProjectInfo, setProjectInfo } = useKpiStore();
+  const { kpiData, actions } = useKpiStore();
+  const { currentProjectId, projects, updateProject } = useProjectStore();
+  const currentProject = projects.find(p => p.id === currentProjectId);
+
   const [drawerKpiId, setDrawerKpiId] = useState<string | null>(null);
   const [internalIsExpanded, setInternalIsExpanded] = useState(false);
+
+  // ローカルステートで入力値を管理（Firestoreへの過剰書き込みを防ぐため）
+  const [localName, setLocalName] = useState('');
+  const [localBusinessModel, setLocalBusinessModel] = useState('');
+  const [localDescription, setLocalDescription] = useState('');
+
+  // Firestoreのデータが降ってきたらローカルステートに同期
+  useEffect(() => {
+    if (currentProject) {
+      setLocalName(currentProject.name || '');
+      setLocalBusinessModel(currentProject.businessModel || '');
+      setLocalDescription(currentProject.description || '');
+    }
+  }, [currentProject]);
 
   const isExpanded = controlledIsExpanded !== undefined ? controlledIsExpanded : internalIsExpanded;
   
@@ -53,7 +71,7 @@ export const DashboardSummary = ({
     : 0;
 
   // 部署別KSF(アクション)の集計
-  const { actions } = useKpiStore();
+  // 部署別KSF(アクション)の集計
   const ksfByDept = actions.reduce((acc, action) => {
     const dept = action.department || '未設定';
     if (!acc[dept]) acc[dept] = { total: 0, done: 0 };
@@ -110,8 +128,13 @@ export const DashboardSummary = ({
                 <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">プロジェクト/事業名</label>
                 <input 
                   type="text" 
-                  value={currentProjectInfo?.name || ''} 
-                  onChange={(e) => setProjectInfo({ name: e.target.value })}
+                  value={localName} 
+                  onChange={(e) => setLocalName(e.target.value)}
+                  onBlur={() => {
+                    if (currentProjectId && currentProject?.name !== localName) {
+                      updateProject(currentProjectId, { name: localName });
+                    }
+                  }}
                   placeholder="例：ホテル事業改革プロジェクト"
                   className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200"
                 />
@@ -120,8 +143,13 @@ export const DashboardSummary = ({
                 <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">ビジネスモデル/ターゲット層</label>
                 <input 
                   type="text" 
-                  value={currentProjectInfo?.businessModel || ''} 
-                  onChange={(e) => setProjectInfo({ businessModel: e.target.value })}
+                  value={localBusinessModel} 
+                  onChange={(e) => setLocalBusinessModel(e.target.value)}
+                  onBlur={() => {
+                    if (currentProjectId && currentProject?.businessModel !== localBusinessModel) {
+                      updateProject(currentProjectId, { businessModel: localBusinessModel });
+                    }
+                  }}
                   placeholder="例：BtoC、富裕層向けインバウンド旅行客"
                   className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200"
                 />
@@ -129,8 +157,13 @@ export const DashboardSummary = ({
               <div className="md:col-span-2">
                 <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">事業概要・特記事項（AIの分析精度を向上させます）</label>
                 <textarea 
-                  value={currentProjectInfo?.description || ''} 
-                  onChange={(e) => setProjectInfo({ description: e.target.value })}
+                  value={localDescription} 
+                  onChange={(e) => setLocalDescription(e.target.value)}
+                  onBlur={() => {
+                    if (currentProjectId && currentProject?.description !== localDescription) {
+                      updateProject(currentProjectId, { description: localDescription });
+                    }
+                  }}
                   placeholder="例：現在、客単価は上がっているが稼働率が低下傾向にある。新規顧客の獲得が課題。"
                   rows={2}
                   className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200 resize-none"
