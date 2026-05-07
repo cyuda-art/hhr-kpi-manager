@@ -39,7 +39,8 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
       setSelectedNodeId(null);
       
       // KPIのDB（Firestore）からの読み込み・初期化もこのタイミングで行う
-      initializeDB(projectId, orgId).then(() => {
+      const currentProjectData = projects.find(p => p.id === projectId);
+      initializeDB(projectId, orgId, currentProjectData?.name, currentProjectData?.description).then(() => {
         setIsInitializing(false);
       });
     } else {

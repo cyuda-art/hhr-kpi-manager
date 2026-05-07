@@ -47,7 +47,7 @@ export default function WorkspacePage() {
       if (!currentOrgId) throw new Error("No organization selected");
       const newId = await createProject(newProjectName, newProjectDesc, user.uid, currentOrgId);
       setCurrentProjectId(newId);
-      router.push(`/${currentOrgId}/onboarding`);
+      router.push(`/${currentOrgId}/p/${newId}`);
     } catch (error) {
       console.error("Failed to create project", error);
     }

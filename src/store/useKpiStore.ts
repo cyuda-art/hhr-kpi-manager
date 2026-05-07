@@ -21,7 +21,7 @@ interface KpiStore {
   isPredictionMode: boolean;
   setPeriod: (period: string) => void;
   togglePredictionMode: () => void;
-  initializeDB: (projectId: string, orgId: string) => Promise<void>;
+  initializeDB: (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => Promise<void>;
   updateActualValue: (id: string, newValue: number) => void;
   updateSimulatedValue: (id: string, newValue: number) => void;
   resetSimulations: () => void;
@@ -181,7 +181,7 @@ export const useKpiStore = create<KpiStore>()(
         return { isPredictionMode: isNowPrediction, kpiData: draft };
       }),
 
-      initializeDB: async (projectId: string, orgId: string) => {
+      initializeDB: async (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => {
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
         
         const state = get();
@@ -193,7 +193,7 @@ export const useKpiStore = create<KpiStore>()(
           kpiData = {
             kgi_profit: calculateComputed({
               id: 'kgi_profit',
-              name: '全社利益（KGI）',
+              name: projectName || pData.projectInfo?.name || '全社利益（KGI）',
               qualitativeName: '事業の成長と収益化',
               businessUnit: 'company',
               type: 'KGI',
@@ -202,7 +202,7 @@ export const useKpiStore = create<KpiStore>()(
               actualValue: 0,
               unit: '円',
               previousValue: 0,
-              description: 'Goalを数値化した組織全体の最終利益目標'
+              description: projectDesc || pData.projectInfo?.description || 'Goalを数値化した組織全体の最終利益目標'
             })
           };
         }
@@ -210,7 +210,7 @@ export const useKpiStore = create<KpiStore>()(
         set({ 
           currentProjectId: projectId, 
           currentOrgId: orgId,
-          currentProjectInfo: pData.projectInfo || { name: '新規プロジェクト', description: '' },
+          currentProjectInfo: pData.projectInfo || { name: projectName || '新規プロジェクト', description: projectDesc || '' },
           kpiData: kpiData,
           actions: pData.actions,
           isDbInitialized: true 
