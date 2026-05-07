@@ -99,6 +99,7 @@ export const ActionPanel = () => {
 
       if (data.data && data.data.workflow) {
         let taskCount = 0;
+        let currentParentId = selectedKpi.id; // 最初は選択されたノードを親とする
         
         // フェーズ（KSF）ごとに子ノードを作成し、そこにタスクをぶら下げる
         data.data.workflow.forEach((phase: any) => {
@@ -109,13 +110,16 @@ export const ActionPanel = () => {
             qualitativeName: phase.phase_name,
             businessUnit: selectedKpi.businessUnit,
             type: 'KPI',
-            parentId: selectedKpi.id,
+            parentId: currentParentId, // 直前のノードを親に設定して直列（一本道）に繋ぐ
             targetValue: phase.target_value || 0,
             actualValue: 0,
             unit: phase.unit || '件',
             previousValue: 0,
             description: phase.objective || ''
           });
+
+          // 次のPhaseは、このPhaseの「下位」として繋ぐためにIDを更新する
+          currentParentId = newKpiId;
 
           // 各タスクをToDo（actions）に追加
           if (Array.isArray(phase.tasks)) {
