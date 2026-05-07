@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'GEMINI_API_KEY is not configured.' }, { status: 500 });
     }
 
-    const { kpiData } = await req.json();
+    const { kpiData, allKpiData } = await req.json();
 
     if (!kpiData) {
       return NextResponse.json({ error: 'Missing KPI data in request body.' }, { status: 400 });
@@ -17,29 +17,43 @@ export async function POST(req: NextRequest) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
+    // 全体のKPIツリー構造を文字列化（階層などの情報を付与）
+    let allKpiContext = "";
+    if (allKpiData) {
+      const nodes = Object.values(allKpiData) as any[];
+      allKpiContext = nodes.map(node => {
+        return `- ${node.type}: ${node.qualitativeName || '(定性名称なし)'} / ${node.name} (事業部: ${node.businessUnit}, 目標: ${node.targetValue}${node.unit}, 実績: ${node.actualValue}${node.unit})`;
+      }).join('\\n');
+    }
+
     const prompt = `
 あなたはプロフェッショナルな経営コンサルタントです。
-以下のKPIデータに基づいて、現在の課題（issue）、目標達成のための定性的な成功要因（ksfIdea）、そしてそのKSFを定量的に測定するための下位KPI（kpiIdea）を提案してください。アクションプランの提案は不要です。
+以下の「プロジェクト全体のKPIツリー・事業内容」と「今回選択されたKPIデータ」の両方を加味して、現在の課題（issue）、目標達成のための定性的な成功要因（ksfIdea）、そしてそのKSFを定量的に測定するための下位KPI（kpiIdea）を提案してください。
+必ず事業全体の文脈や上位KGI・Goalの達成につながるような、本質的なKSFとKPIを提示してください。アクションプランの提案は不要です。
+
 出力は必ず以下の形式の有効なJSONとしてください。他の文章やMarkdownのバッククォートを含めないでください。
 
 {
   "issue": "課題の要約（簡潔に）",
   "ksfIdea": "目標達成に不可欠な定性的な重要成功要因（KSF）の名称",
-  "ksfReason": "なぜこのKSFが重要なのかの理由",
+  "ksfReason": "なぜこのKSFが重要なのか、全体の事業内容や上位KGIとどうリンクしているかの理由",
   "kpiIdea": "そのKSFの達成度を測るための定量的なKPIの名称",
   "kpiIdeaTarget": 1000,
   "kpiIdeaUnit": "件"
 }
 
-※ kpiIdeaTarget は数値のみを返してください。kpiIdeaUnit は単位（例：件、円、%、回など）を返してください。目標値は親KPIの数値を考慮して現実的な数値を提案してください。
+※ kpiIdeaTarget は数値のみを返してください。kpiIdeaUnit は単位（例：件、円、%、回など）を返してください。目標値は全体のバランスや親KPIの数値を考慮して現実的な数値を提案してください。
 
-[KPIデータ]
-名称: ${kpiData.name}
+【プロジェクト全体のKPIツリー・事業内容】
+${allKpiContext || 'データなし'}
+
+【今回選択されたKPIデータ（このノードに対する改善案を出してください）】
+名称 (定量): ${kpiData.name}
+名称 (定性): ${kpiData.qualitativeName || '未設定'}
 所属事業部: ${kpiData.businessUnit}
 目標値: ${kpiData.targetValue}${kpiData.unit}
 実績値: ${kpiData.actualValue}${kpiData.unit}
 達成率: ${((kpiData.actualValue / kpiData.targetValue) * 100).toFixed(1)}%
-これまでの値: ${kpiData.previousValue}${kpiData.unit}
 `;
 
     const result = await model.generateContent(prompt);
