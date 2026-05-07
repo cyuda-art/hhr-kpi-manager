@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function DashboardRootRedirect() {
   const router = useRouter();
   const { currentProjectId, projects, isLoading } = useProjectStore();
   const { currentOrgId, isLoading: isOrgLoading } = useOrgStore();
+  const { user, isLoading: isAuthLoading } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -16,7 +18,12 @@ export default function DashboardRootRedirect() {
   }, []);
 
   useEffect(() => {
-    if (!mounted || isLoading || isOrgLoading) return;
+    if (!mounted || isAuthLoading || isOrgLoading || (user && isLoading)) return;
+
+    if (!user) {
+      router.replace('/lp');
+      return;
+    }
 
     if (currentOrgId) {
       if (currentProjectId) {
@@ -33,7 +40,7 @@ export default function DashboardRootRedirect() {
       // 組織が存在しない場合は組織作成（または初期プロジェクト一覧）へ
       router.replace('/org-setup');
     }
-  }, [mounted, isLoading, isOrgLoading, currentProjectId, currentOrgId, projects, router]);
+  }, [mounted, isAuthLoading, user, isLoading, isOrgLoading, currentProjectId, currentOrgId, projects, router]);
 
   return (
     <div className="flex items-center justify-center h-screen">
