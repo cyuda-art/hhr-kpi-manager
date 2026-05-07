@@ -8,7 +8,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const { user, initializeAuth } = useAuthStore();
-  const { initializeOrgs } = useOrgStore();
+  const { initializeOrgs, currentOrgId } = useOrgStore();
   const { currentProjectId } = useProjectStore();
   const { initializeDB } = useKpiStore();
 
@@ -28,10 +28,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   // 3. プロジェクトが選択されている場合、DB（KPI/KSF）を初期化
   useEffect(() => {
-    if (user && currentProjectId) {
-      initializeDB(currentProjectId);
+    if (user && currentProjectId && currentOrgId) {
+      initializeDB(currentProjectId, currentOrgId);
     }
-  }, [user, currentProjectId, initializeDB]);
+  }, [user, currentProjectId, currentOrgId, initializeDB]);
 
   return <>{children}</>;
 };

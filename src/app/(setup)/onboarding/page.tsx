@@ -119,10 +119,12 @@ export default function OnboardingChatPage() {
       // もし projects/page.tsx などで事前にプロジェクトが作られていなければ、ここで新規作成する
       if (!projectId) {
         const projectName = `${selectedIndustry === 'hotel' ? 'ホテル事業' : selectedIndustry === 'restaurant' ? '飲食事業' : selectedIndustry === 'saas' ? 'SaaS事業' : '新規'}プロジェクト`;
+        if (!currentOrgId) throw new Error("No organization selected");
         projectId = await createProject(
           projectName,
           'AIオンボーディングで自動生成されたプロジェクトです。',
-          user?.uid || 'guest'
+          user?.uid || 'guest',
+          currentOrgId
         );
         setCurrentProjectId(projectId);
       }
