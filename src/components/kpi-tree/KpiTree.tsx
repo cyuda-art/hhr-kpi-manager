@@ -17,12 +17,12 @@ const nodeTypes = {
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-const nodeWidth = 280;
-const nodeHeight = 150;
+const nodeWidth = 360;
+const nodeHeight = 220;
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
   const isHorizontal = direction === 'LR';
-  dagreGraph.setGraph({ rankdir: direction, ranksep: 100, nodesep: 50 });
+  dagreGraph.setGraph({ rankdir: direction, ranksep: 120, nodesep: 80 });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
@@ -91,6 +91,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   const [rfInstance, setRfInstance] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
 
   // 検索結果の計算
   const searchResults = useMemo(() => {
@@ -164,16 +165,26 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData);
     // 初期状態で自動レイアウトを適用
-    return getLayoutedElements(genNodes, genEdges);
+    return getLayoutedElements(genNodes, genEdges, layoutDirection);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  const handleAutoLayout = () => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges);
+  const handleAutoLayout = (direction: 'TB' | 'LR' = layoutDirection) => {
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, direction);
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
+    
+    if (rfInstance) {
+      setTimeout(() => rfInstance.fitView({ padding: 0.2, duration: 800 }), 50);
+    }
+  };
+
+  const toggleDirection = () => {
+    const newDir = layoutDirection === 'TB' ? 'LR' : 'TB';
+    setLayoutDirection(newDir);
+    handleAutoLayout(newDir);
   };
 
   useEffect(() => {
@@ -298,7 +309,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         {!previewMode && (
           <div className="absolute top-4 left-4 z-10 flex gap-2">
             <button
-              onClick={handleAutoLayout}
+              onClick={() => handleAutoLayout()}
               className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-xs font-bold"
             >
               <Wand2 size={14} />
@@ -311,6 +322,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             >
               <Focus size={14} />
               自動フォーカス
+            </button>
+            <button
+              onClick={toggleDirection}
+              className="flex items-center justify-center px-3 py-1.5 rounded-lg shadow-sm border transition-colors bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold"
+              title="レイアウトの方向（縦・横）を切り替え"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M21 9V3h-6"/><path d="M3 15v6h6"/><path d="M21 3l-6 6"/><path d="M3 21l6-6"/></svg>
+              方向切替 ({layoutDirection === 'TB' ? '上→下' : '左→右'})
             </button>
             <button
               onClick={toggleMiniMap}
