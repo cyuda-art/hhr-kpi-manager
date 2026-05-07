@@ -39,7 +39,7 @@ interface KpiStore {
 }
 
 // データベース(Google Sheets)更新用のヘルパー関数
-const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null) => {
+const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null, projectInfo?: import('@/types').ProjectInfo) => {
   // projectIdは将来の拡張用。現在は1つのスプレッドシートを想定。
   try {
     await fetch('/api/sheets', {
@@ -47,7 +47,7 @@ const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, act
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ kpiData, actions }),
+      body: JSON.stringify({ kpiData, actions, projectInfo }),
     });
   } catch (error) {
     console.error("Sheets Sync Error:", error);
@@ -218,6 +218,7 @@ export const useKpiStore = create<KpiStore>()(
       setProjectInfo: (info) => set((state) => {
         const newInfo = { ...(state.currentProjectInfo || { name: '', description: '' }), ...info };
         const newState = { ...state, currentProjectInfo: newInfo };
+        syncToDB(state.kpiData, state.actions, state.currentProjectId, newInfo);
         return {
           currentProjectInfo: newInfo,
           projectData: saveToProjectData(newState)
@@ -230,7 +231,7 @@ export const useKpiStore = create<KpiStore>()(
     const newAction = { ...action, id: Math.random().toString(36).substr(2, 9) };
     set((state) => {
       const newActions = [...state.actions, newAction];
-      syncToDB(state.kpiData, newActions, state.currentProjectId);
+      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo || undefined);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
@@ -240,14 +241,14 @@ export const useKpiStore = create<KpiStore>()(
       const newActions = state.actions.map(a => 
         a.id === actionId ? { ...a, status: (a.status === 'done' ? 'todo' : 'done') as 'todo' | 'done' } : a
       );
-      syncToDB(state.kpiData, newActions, state.currentProjectId);
+      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo || undefined);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
 
   setActionsBulk: (newActions) => {
     set((state) => {
-      syncToDB(state.kpiData, newActions, state.currentProjectId);
+      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo || undefined);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
@@ -403,7 +404,7 @@ export const useKpiStore = create<KpiStore>()(
         draft[key] = { ...draft[key], isSimulated: false, initialActualValue: draft[key].actualValue };
       });
 
-      syncToDB(draft, state.actions, state.currentProjectId);
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
@@ -412,7 +413,7 @@ export const useKpiStore = create<KpiStore>()(
       const draft = { ...state.kpiData };
       draft[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
       
-      syncToDB(draft, state.actions, state.currentProjectId);
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
@@ -502,7 +503,7 @@ export const useKpiStore = create<KpiStore>()(
             propagateDown(id);
           }
           
-          syncToDB(draft, state.actions, state.currentProjectId);
+          syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
         }
         return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
       });
@@ -519,7 +520,7 @@ export const useKpiStore = create<KpiStore>()(
           isSimulated: false
         };
       });
-      syncToDB(newData, state.actions, state.currentProjectId);
+      syncToDB(newData, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
       return { kpiData: newData, selectedNodeId: null, projectData: saveToProjectData({ ...state, kpiData: newData }) };
     });
   },
@@ -533,7 +534,7 @@ export const useKpiStore = create<KpiStore>()(
       delete draft[id];
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
-      syncToDB(draft, state.actions, state.currentProjectId);
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
       return { kpiData: draft, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
