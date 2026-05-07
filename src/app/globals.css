@@ -92,12 +92,25 @@
   --color-primary-700: var(--theme-primary-700);
   --color-primary-800: var(--theme-primary-800);
   --color-primary-900: var(--theme-primary-900);
+
+  /* Override Slate palette to match Firebase Console Dark Theme */
+  --color-slate-950: #202124;
+  --color-slate-900: #282a2d;
+  --color-slate-800: #2d2f31;
+  --color-slate-700: #3c4043;
+  --color-slate-600: #5f6368;
+  --color-slate-500: #80868b;
+  --color-slate-400: #9aa0a6;
+  --color-slate-300: #bdc1c6;
+  --color-slate-200: #e8eaed;
+  --color-slate-100: #f1f3f4;
+  --color-slate-50: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #202124;
+    --foreground: #e8eaed;
   }
 }
 

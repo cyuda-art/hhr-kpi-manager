@@ -45,7 +45,7 @@ export default function Dashboard() {
   if (!isMounted) return null;
 
   return (
-    <div ref={containerRef} className="h-[calc(100vh-4rem)] p-2 overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950">
+    <div ref={containerRef} className="h-[calc(100vh-4rem)] p-2 overflow-y-auto overflow-x-hidden">
       <ResponsiveGridLayout
         className="layout"
         layouts={layouts}
@@ -58,11 +58,11 @@ export default function Dashboard() {
         draggableHandle=".drag-handle"
         margin={[16, 16]}
       >
-        <div key="kpi-tree" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
-          <div className="drag-handle h-10 shrink-0 bg-slate-100 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 cursor-move hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        <div key="kpi-tree" className="bg-[#2d2f31] rounded-[8px] shadow-sm border border-[#3c4043] flex flex-col overflow-hidden">
+          <div className="drag-handle h-10 shrink-0 bg-[#282a2d] border-b border-[#3c4043] flex items-center justify-between px-4 cursor-move hover:bg-[#323639] transition-colors">
+            <div className="flex items-center gap-2 text-[#9aa0a6]">
               <GripHorizontal size={16} />
-              <span className="text-xs font-bold uppercase tracking-wider">KPI Tree</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider">KPI Tree</span>
             </div>
           </div>
           <div className="flex-1 min-h-0 relative">
@@ -70,11 +70,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div key="action-panel" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
-          <div className="drag-handle h-10 shrink-0 bg-slate-100 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 cursor-move hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+        <div key="action-panel" className="bg-[#2d2f31] rounded-[8px] shadow-sm border border-[#3c4043] flex flex-col overflow-hidden">
+          <div className="drag-handle h-10 shrink-0 bg-[#282a2d] border-b border-[#3c4043] flex items-center justify-between px-4 cursor-move hover:bg-[#323639] transition-colors">
+            <div className="flex items-center gap-2 text-[#9aa0a6]">
               <GripHorizontal size={16} />
-              <span className="text-xs font-bold uppercase tracking-wider">Action Panel</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider">Action Panel</span>
             </div>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto p-4 custom-scrollbar">

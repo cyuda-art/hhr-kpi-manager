@@ -25,8 +25,8 @@ export default function RootLayout({
       <body className={notoSansJP.className} style={{ fontFamily: '"Google Sans", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif' }}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          forcedTheme="dark"
           disableTransitionOnChange
         >
           <AppProvider>
