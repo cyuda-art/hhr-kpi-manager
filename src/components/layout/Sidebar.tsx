@@ -43,11 +43,12 @@ export const Sidebar = () => {
   const currentProject = projects.find(p => p.id === currentProjectId);
   const currentOrg = organizations.find(org => org.id === currentOrgId);
 
+  const basePath = currentProjectId ? `/p/${currentProjectId}` : '';
   const menuItems = [
-    { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: '/' },
-    { id: 'trend-report', label: '時系列レポート', icon: Activity, path: '/trend-report' },
-    { id: 'my-tasks', label: '私のタスク', icon: CheckSquare, path: '/my-tasks' },
-    { id: 'data-entry', label: 'シートエディタ', icon: Database, path: '/data-entry' },
+    { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: currentProjectId ? basePath : '/' },
+    { id: 'trend-report', label: '時系列レポート', icon: Activity, path: currentProjectId ? `${basePath}/trend-report` : '/trend-report' },
+    { id: 'my-tasks', label: '私のタスク', icon: CheckSquare, path: currentProjectId ? `${basePath}/my-tasks` : '/my-tasks' },
+    { id: 'data-entry', label: 'シートエディタ', icon: Database, path: currentProjectId ? `${basePath}/data-entry` : '/data-entry' },
   ];
 
   const rootNodes = useMemo(() => {
