@@ -19,7 +19,7 @@ export const ActionPanel = () => {
   const [editActualValue, setEditActualValue] = useState(''); // シミュレーション時もこのstateを共用する
 
   // AIインサイト用状態
-  const [aiInsight, setAiInsight] = useState<{issue: string, actionIdea: string, kpiIdea: string, kpiIdeaTarget?: number, kpiIdeaUnit?: string} | null>(null);
+  const [aiInsight, setAiInsight] = useState<{issue: string, ksfIdea: string, ksfReason: string, kpiIdea: string, kpiIdeaTarget?: number, kpiIdeaUnit?: string} | null>(null);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState('');
 
@@ -94,16 +94,40 @@ export const ActionPanel = () => {
     setNewTaskDate('');
   };
 
-  const handleAddSuggestedAction = (title: string) => {
-    if (!selectedNodeId) return;
-    addAction({
-      kpiId: selectedNodeId,
-      title: title,
-      owner: 'AI提案',
-      department: '未定',
-      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
-      status: 'todo'
+  const handleAddKsfAndKpi = () => {
+    if (!selectedKpi || !aiInsight) return;
+    
+    // 1. KSFの追加
+    const ksfId = `kpi_custom_ksf_${Math.random().toString(36).substr(2, 9)}`;
+    addKpiNode({
+      id: ksfId,
+      name: aiInsight.ksfIdea,
+      businessUnit: selectedKpi.businessUnit,
+      type: 'KSF',
+      parentId: selectedKpi.id,
+      targetValue: 100, // 定性的なので達成度100%を目指す形にする
+      actualValue: 0,
+      unit: '%',
+      previousValue: 0,
+      description: aiInsight.ksfReason
     });
+
+    // 2. 続いてKPIの追加 (KSFの子として)
+    const kpiId = `kpi_custom_kpi_${Math.random().toString(36).substr(2, 9)}`;
+    addKpiNode({
+      id: kpiId,
+      name: aiInsight.kpiIdea,
+      businessUnit: selectedKpi.businessUnit,
+      type: 'KPI',
+      parentId: ksfId, // 親はさきほどのKSF
+      targetValue: aiInsight.kpiIdeaTarget || 0,
+      actualValue: 0,
+      unit: aiInsight.kpiIdeaUnit || '件',
+      previousValue: 0,
+      description: 'KSFの進捗を測るための定量KPI'
+    });
+    
+    setAiInsight(null); // 追加後はクリア
   };
 
   const handleAddKpi = (name: string, isAi = false, targetValue = 0, providedUnit?: string) => {
@@ -204,7 +228,8 @@ export const ActionPanel = () => {
 
       setAiInsight({
         issue: data.issue || '課題が分析できませんでした',
-        actionIdea: data.actionIdea || '具体的な改善案がありません',
+        ksfIdea: data.ksfIdea || '推奨KSFなし',
+        ksfReason: data.ksfReason || '',
         kpiIdea: data.kpiIdea || '推奨KPIなし',
         kpiIdeaTarget: Number(data.kpiIdeaTarget) || 0,
         kpiIdeaUnit: data.kpiIdeaUnit || '件',
@@ -416,42 +441,37 @@ export const ActionPanel = () => {
       )}
 
       {selectedKpi && aiInsight && (
-        <div className="mb-6 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/50 p-4 rounded-xl">
-          <div className="flex justify-between items-center mb-2">
-            <h5 className="text-xs font-bold text-primary-700 dark:text-primary-400 flex items-center gap-1.5">
+        <div className="mb-6 bg-[#2d2f31] border border-[#8ab4f8]/30 p-4 rounded-[8px]">
+          <div className="flex justify-between items-center mb-3">
+            <h5 className="text-[12px] font-bold text-[#8ab4f8] flex items-center gap-1.5">
               <Sparkles size={14} />
               AI インサイト・提案
             </h5>
-            <button onClick={generateAiInsights} className="text-[10px] text-primary-500 hover:text-primary-700 dark:hover:text-primary-300 underline">再分析</button>
+            <button onClick={generateAiInsights} className="text-[10px] text-[#9aa0a6] hover:text-[#e8eaed] underline">再分析</button>
           </div>
-          <p className="text-xs text-primary-900 dark:text-primary-200 mb-3">{aiInsight.issue}</p>
+          <p className="text-[12px] text-[#e8eaed] mb-4">{aiInsight.issue}</p>
           
-          <div className="space-y-2">
-            <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-primary-100 dark:border-primary-800/30 flex justify-between items-center gap-2">
-              <div className="min-w-0">
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">💡 推奨アクション</p>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.actionIdea}>{aiInsight.actionIdea}</p>
+          <div className="bg-[#202124] p-3 rounded-[4px] shadow-sm border border-[#3c4043] flex flex-col gap-3">
+            <div className="flex justify-between items-start">
+              <div className="min-w-0 flex-1 pr-2">
+                <p className="text-[10px] text-[#8ab4f8] font-bold mb-1 uppercase tracking-wider">🎯 推奨 KSF (重要成功要因)</p>
+                <p className="text-[14px] font-medium text-[#e8eaed] truncate" title={aiInsight.ksfIdea}>{aiInsight.ksfIdea}</p>
+                <p className="text-[11px] text-[#9aa0a6] mt-1 line-clamp-2">{aiInsight.ksfReason}</p>
               </div>
-              <button 
-                onClick={() => handleAddSuggestedAction(aiInsight.actionIdea)}
-                className="flex-shrink-0 text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 px-2 py-1 rounded font-bold hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
-              >
-                追加
-              </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-2.5 rounded shadow-sm border border-primary-100 dark:border-primary-800/30 flex justify-between items-center gap-2">
+            <div className="border-t border-[#3c4043] pt-3 flex justify-between items-end gap-2">
               <div className="min-w-0">
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-0.5">📊 推奨下位KPI</p>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate" title={aiInsight.kpiIdea}>
-                  {aiInsight.kpiIdea} (目標: {aiInsight.kpiIdeaTarget?.toLocaleString()}{aiInsight.kpiIdeaUnit})
+                <p className="text-[10px] text-[#fbbc04] font-bold mb-1 uppercase tracking-wider">📊 測定のための KPI</p>
+                <p className="text-[13px] font-medium text-[#e8eaed] truncate" title={aiInsight.kpiIdea}>
+                  {aiInsight.kpiIdea} <span className="text-[#9aa0a6] text-[11px] font-normal">(目標: {aiInsight.kpiIdeaTarget?.toLocaleString()}{aiInsight.kpiIdeaUnit})</span>
                 </p>
               </div>
               <button 
-                onClick={() => handleAddKpi(aiInsight.kpiIdea, true, aiInsight.kpiIdeaTarget, aiInsight.kpiIdeaUnit)}
-                className="flex-shrink-0 text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 px-2 py-1 rounded font-bold hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
+                onClick={handleAddKsfAndKpi}
+                className="flex-shrink-0 text-[11px] bg-[#8ab4f8] text-[#202124] px-3 py-1.5 rounded-[4px] font-bold hover:bg-[#aecbfa] transition-colors"
               >
-                ツリーに追加
+                KSF & KPI を追加
               </button>
             </div>
           </div>

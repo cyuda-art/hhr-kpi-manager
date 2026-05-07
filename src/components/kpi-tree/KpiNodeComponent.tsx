@@ -71,45 +71,53 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
 
   return (
     <div className={cn(
-      "w-64 bg-white dark:bg-slate-900 rounded-xl shadow-lg border-2 p-4 transition-all hover:shadow-xl hover:-translate-y-1 duration-300",
+      "w-64 bg-[#2d2f31] rounded-[8px] shadow-sm border p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300",
       getStatusBorder(displayStatus),
-      data.isSimulated && "shadow-primary-100 dark:shadow-none",
-      isSelected && "ring-4 ring-primary-400/50 border-primary-400 dark:ring-primary-800/50 dark:border-primary-600",
-      isAlert && "animate-pulse shadow-red-500/20 dark:shadow-red-900/30 border-red-400 dark:border-red-600",
-      isPredictionMode && "bg-gradient-to-br from-primary-50 to-purple-50 dark:from-primary-950/30 dark:to-purple-950/30 border-primary-300 dark:border-primary-700"
+      data.isSimulated && "shadow-[#8ab4f8]/20",
+      isSelected && "ring-2 ring-[#8ab4f8] border-[#8ab4f8]",
+      isAlert && "animate-pulse shadow-red-900/30 border-[#f28b82]",
+      isPredictionMode && "bg-[#202124] border-[#8ab4f8]"
     )}>
-      <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-slate-300 dark:!bg-slate-600" />
+      <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-[#5f6368] border-none" />
       
       <div className="flex justify-between items-start mb-2">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{data.businessUnit}</span>
-          <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{data.name}</span>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="text-[10px] font-bold text-[#8ab4f8] uppercase tracking-wider">{data.businessUnit}</span>
+            {data.type === 'KSF' && (
+              <span className="text-[9px] bg-[#fbbc04]/20 text-[#fbbc04] px-1.5 py-0.5 rounded-[2px] font-bold">KSF</span>
+            )}
+            {data.type === 'KGI' && (
+              <span className="text-[9px] bg-[#81c995]/20 text-[#81c995] px-1.5 py-0.5 rounded-[2px] font-bold">KGI</span>
+            )}
+          </div>
+          <span className="font-medium text-[#e8eaed] text-[14px] leading-tight mt-1">{data.name}</span>
         </div>
-        <div className={cn("px-2 py-0.5 rounded text-[10px] font-bold text-white", getStatusBg(displayStatus))}>
+        <div className={cn("px-2 py-0.5 rounded-[4px] text-[11px] font-bold text-[#202124]", getStatusBg(displayStatus))}>
           {displayAchievementRate.toFixed(1)}%
         </div>
       </div>
 
-      <div className="space-y-1 mt-3">
-        <div className="flex justify-between text-xs items-center">
+      <div className="space-y-1.5 mt-4 pt-3 border-t border-[#3c4043]">
+        <div className="flex justify-between text-[12px] items-center">
           <span className={cn(
             "flex items-center gap-1",
-            isPredictionMode ? "text-primary-600 dark:text-primary-400 font-bold" : "text-slate-500 dark:text-slate-400"
+            isPredictionMode ? "text-[#8ab4f8] font-medium" : "text-[#9aa0a6]"
           )}>
             {isPredictionMode && <Sparkles size={12} />}
             {isPast && !isPredictionMode && <History size={12} />}
             {displayLabel}
           </span>
           <span className={cn(
-            "font-bold",
-            isPredictionMode ? "text-primary-700 dark:text-primary-300" : "text-slate-700 dark:text-slate-200"
+            "font-medium",
+            isPredictionMode ? "text-[#e8eaed]" : "text-[#f1f3f4]"
           )}>
             {displayActual.toLocaleString()} {data.unit}
           </span>
         </div>
-        <div className="flex justify-between text-xs">
-          <span className="text-slate-400 dark:text-slate-500">目標</span>
-          <span className="text-slate-500 dark:text-slate-400">{displayTarget.toLocaleString()} {data.unit}</span>
+        <div className="flex justify-between text-[12px]">
+          <span className="text-[#9aa0a6]">目標</span>
+          <span className="text-[#9aa0a6]">{displayTarget.toLocaleString()} {data.unit}</span>
         </div>
       </div>
       
@@ -119,13 +127,13 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
             e.stopPropagation();
             toggleNodeCollapse(data.id);
           }}
-          className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-full flex items-center justify-center text-slate-500 hover:text-primary-500 hover:border-primary-400 transition-colors z-10"
+          className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-[#2d2f31] border border-[#5f6368] rounded-full flex items-center justify-center text-[#9aa0a6] hover:text-[#e8eaed] hover:border-[#8ab4f8] hover:bg-[#323639] transition-colors z-10"
         >
           {data.isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
         </button>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-slate-300 dark:!bg-slate-600 opacity-0" />
+      <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-transparent border-none opacity-0" />
     </div>
   );
 };

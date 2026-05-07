@@ -19,13 +19,14 @@ export async function POST(req: NextRequest) {
 
     const prompt = `
 あなたはプロフェッショナルな経営コンサルタントです。
-以下のKPIデータに基づいて、現在の課題（issue）、具体的な改善アクション（actionIdea）、そして新しく監視すべき下位KPI（kpiIdea）を提案してください。
+以下のKPIデータに基づいて、現在の課題（issue）、目標達成のための定性的な成功要因（ksfIdea）、そしてそのKSFを定量的に測定するための下位KPI（kpiIdea）を提案してください。アクションプランの提案は不要です。
 出力は必ず以下の形式の有効なJSONとしてください。他の文章やMarkdownのバッククォートを含めないでください。
 
 {
   "issue": "課題の要約（簡潔に）",
-  "actionIdea": "具体的なアクションプラン（短く、行動に移せる形で）",
-  "kpiIdea": "次に監視すべき下位KPIの名前（短く）",
+  "ksfIdea": "目標達成に不可欠な定性的な重要成功要因（KSF）の名称",
+  "ksfReason": "なぜこのKSFが重要なのかの理由",
+  "kpiIdea": "そのKSFの達成度を測るための定量的なKPIの名称",
   "kpiIdeaTarget": 1000,
   "kpiIdeaUnit": "件"
 }
