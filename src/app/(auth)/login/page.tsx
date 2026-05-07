@@ -28,7 +28,7 @@ export default function LoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push('/projects'); // ログイン後は必ずプロジェクト一覧(コンソール)へ遷移
+      router.push('/'); // ログイン後はルートへ遷移し、システム側で適切な階層へリダイレクトさせる
     } catch (err: any) {
       setError(err.message || '認証に失敗しました');
     } finally {
@@ -40,7 +40,7 @@ export default function LoginPage() {
     setError('');
     try {
       await loginWithGoogle();
-      router.push('/projects'); // ログイン後は必ずプロジェクト一覧(コンソール)へ遷移
+      router.push('/'); // ログイン後はルートへ遷移し、システム側で適切な階層へリダイレクトさせる
     } catch (err: any) {
       console.error("Google Login Error:", err);
       setError(`Googleログインに失敗しました: ${err.message || err.toString()}`);
