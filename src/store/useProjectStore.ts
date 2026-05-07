@@ -10,7 +10,7 @@ interface ProjectStore {
   setIsLoading: (loading: boolean) => void;
   initializeProjects: (orgId: string) => () => void;
   setCurrentProjectId: (id: string | null) => void;
-  createProject: (name: string, description: string, userId: string, orgId: string) => Promise<string>;
+  createProject: (name: string, description: string, userId: string, orgId: string, extraData?: Partial<Project>) => Promise<string>;
   deleteProject: (projectId: string, orgId: string) => Promise<void>;
   duplicateProject: (projectId: string, userId: string, orgId: string) => Promise<string>;
   joinProject: (projectId: string, userId: string, orgId: string) => Promise<void>;
@@ -41,7 +41,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   setCurrentProjectId: (id) => set({ currentProjectId: id }),
 
-  createProject: async (name, description, userId, orgId) => {
+  createProject: async (name, description, userId, orgId, extraData) => {
     const newProjectId = Math.random().toString(36).substr(2, 9);
     const newProject: Project = {
       id: newProjectId,
@@ -50,6 +50,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       ownerId: userId,
       members: [userId], // 作成者もメンバーに含める
       createdAt: Date.now(),
+      ...extraData,
     };
 
     await setDoc(doc(db, 'organizations', orgId, 'projects', newProjectId), newProject);

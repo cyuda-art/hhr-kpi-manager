@@ -4,7 +4,11 @@ export interface Project {
   ownerId: string;
   createdAt: number;
   description?: string;
-  businessModel?: string; // 追加
-  targetAudience?: string; // 追加
+  businessModel?: string;
+  targetAudience?: string;
+  mvv?: string;
+  industry?: string;
+  revenueScale?: string;
+  currentIssues?: string;
   members?: string[]; // 参加メンバーのUID配列
 }

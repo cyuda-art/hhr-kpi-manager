@@ -46,7 +46,9 @@ export interface Action {
 export interface ProjectInfo {
   name: string;
   description: string;
-  businessModel?: string;
-  targetAudience?: string;
+  mvv?: string;
+  industry?: string;
+  revenueScale?: string;
+  currentIssues?: string;
 }
 

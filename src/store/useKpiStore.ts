@@ -189,22 +189,48 @@ export const useKpiStore = create<KpiStore>()(
         const pData = state.projectData[projectId] || { kpiData: {}, actions: [], projectInfo: undefined };
         
         let kpiData = { ...pData.kpiData };
+        
+        // SessionStorageにAI生成された初期データがあるかチェック
+        const initDataStr = typeof window !== 'undefined' ? sessionStorage.getItem(`kpi_init_${projectId}`) : null;
+        
         if (Object.keys(kpiData).length === 0) {
-          kpiData = {
-            kgi_profit: calculateComputed({
-              id: 'kgi_profit',
-              name: projectName || pData.projectInfo?.name || '全社利益（KGI）',
-              qualitativeName: '事業の成長と収益化',
-              businessUnit: 'company',
-              type: 'KGI',
-              parentId: null,
-              targetValue: 10000000,
-              actualValue: 0,
-              unit: '円',
-              previousValue: 0,
-              description: projectDesc || pData.projectInfo?.description || 'Goalを数値化した組織全体の最終利益目標'
-            })
-          };
+          if (initDataStr) {
+            try {
+              const parsedNodes = JSON.parse(initDataStr) as KpiNodeData[];
+              parsedNodes.forEach(node => {
+                kpiData[node.id] = calculateComputed({
+                  ...node,
+                  initialActualValue: node.actualValue || 0
+                });
+              });
+              // ロード完了したらストレージから削除
+              sessionStorage.removeItem(`kpi_init_${projectId}`);
+              
+              // この段階でFirestoreへ保存する
+              syncToDB(kpiData, [], projectId, orgId, pData.projectInfo);
+            } catch (e) {
+              console.error("Failed to parse init KPI data", e);
+            }
+          }
+
+          // それでも空ならフォールバックのKGIを作成
+          if (Object.keys(kpiData).length === 0) {
+            kpiData = {
+              kgi_profit: calculateComputed({
+                id: 'kgi_profit',
+                name: projectName || pData.projectInfo?.name || '全社利益（KGI）',
+                qualitativeName: '事業の成長と収益化',
+                businessUnit: 'company',
+                type: 'KGI',
+                parentId: null,
+                targetValue: 10000000,
+                actualValue: 0,
+                unit: '円',
+                previousValue: 0,
+                description: projectDesc || pData.projectInfo?.description || 'Goalを数値化した組織全体の最終利益目標'
+              })
+            };
+          }
         }
         
         set({ 
