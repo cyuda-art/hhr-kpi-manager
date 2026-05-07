@@ -7,7 +7,7 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { useKpiStore } from '@/store/useKpiStore';
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 
 export const Sidebar = () => {
   const pathname = usePathname();
