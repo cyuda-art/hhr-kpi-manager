@@ -54,7 +54,7 @@ export const Sidebar = () => {
     return Object.values(kpiData).filter(node => !node.parentId);
   }, [kpiData]);
 
-  const toggleExplorerNode = (id: string, e: React.MouseEvent) => {
+  const toggleExplorerNode = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setExplorerCollapsed(prev => {
       const next = new Set(prev);
@@ -62,9 +62,9 @@ export const Sidebar = () => {
       else next.add(id);
       return next;
     });
-  };
+  }, []);
 
-  const renderExplorerNode = (node: any, depth: number = 0) => {
+  const renderExplorerNode = useCallback((node: any, depth: number = 0) => {
     const children = Object.values(kpiData).filter(n => n.parentId === node.id);
     const hasChildren = children.length > 0;
     const isCollapsed = explorerCollapsed.has(node.id);
@@ -102,7 +102,7 @@ export const Sidebar = () => {
         )}
       </div>
     );
-  };
+  }, [kpiData, explorerCollapsed, selectedNodeId, setSelectedNodeId, toggleExplorerNode]);
 
   return (
     <>

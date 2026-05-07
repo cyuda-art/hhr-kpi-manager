@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { KpiNodeData, KpiNodeWithComputed, Status, Action } from '@/types';
-
-const mockKpiData: KpiNodeData[] = [];
+import { db } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 
 export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
   initialActualValue: number;
@@ -38,19 +38,18 @@ interface KpiStore {
   setProjectInfo: (info: Partial<import('@/types').ProjectInfo>) => void;
 }
 
-// データベース(Google Sheets)更新用のヘルパー関数
-const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null, projectInfo?: import('@/types').ProjectInfo) => {
-  // projectIdは将来の拡張用。現在は1つのスプレッドシートを想定。
+// データベース(Firestore)更新用のヘルパー関数
+const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null) => {
+  if (!projectId) return;
   try {
-    await fetch('/api/sheets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ kpiData, actions, projectInfo }),
-    });
+    const kpiDataRef = doc(db, 'projects', projectId, 'kpiData', 'main');
+    await setDoc(kpiDataRef, {
+      kpiData,
+      actions,
+      updatedAt: Date.now()
+    }, { merge: true });
   } catch (error) {
-    console.error("Sheets Sync Error:", error);
+    console.error("Firestore Sync Error:", error);
   }
 };
 
@@ -135,9 +134,8 @@ const initialData: Record<string, KpiNodeWithComputedAndInit> = {
 
 // 限界利益率などの仮説パラメータ
 const MARGINAL_PROFIT_RATIO = 0.4;
-// 温浴来館者1人増えた時の飲食・物販への送客割合
+// 温浴来館者1人増えた時の飲食への送客割合
 const CROSS_SELL_SPA_TO_REST = 0.25; 
-const CROSS_SELL_SPA_TO_SHOP = 0.10;
 
 
 const saveToProjectData = (state: any) => {
@@ -218,7 +216,7 @@ export const useKpiStore = create<KpiStore>()(
       setProjectInfo: (info) => set((state) => {
         const newInfo = { ...(state.currentProjectInfo || { name: '', description: '' }), ...info };
         const newState = { ...state, currentProjectInfo: newInfo };
-        syncToDB(state.kpiData, state.actions, state.currentProjectId, newInfo);
+        syncToDB(state.kpiData, state.actions, state.currentProjectId);
         return {
           currentProjectInfo: newInfo,
           projectData: saveToProjectData(newState)
@@ -231,7 +229,7 @@ export const useKpiStore = create<KpiStore>()(
     const newAction = { ...action, id: Math.random().toString(36).substr(2, 9) };
     set((state) => {
       const newActions = [...state.actions, newAction];
-      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo || undefined);
+      syncToDB(state.kpiData, newActions, state.currentProjectId);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
@@ -241,14 +239,14 @@ export const useKpiStore = create<KpiStore>()(
       const newActions = state.actions.map(a => 
         a.id === actionId ? { ...a, status: (a.status === 'done' ? 'todo' : 'done') as 'todo' | 'done' } : a
       );
-      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo || undefined);
+      syncToDB(state.kpiData, newActions, state.currentProjectId);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
 
   setActionsBulk: (newActions) => {
     set((state) => {
-      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo || undefined);
+      syncToDB(state.kpiData, newActions, state.currentProjectId);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
@@ -404,7 +402,7 @@ export const useKpiStore = create<KpiStore>()(
         draft[key] = { ...draft[key], isSimulated: false, initialActualValue: draft[key].actualValue };
       });
 
-      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
+      syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
@@ -413,7 +411,7 @@ export const useKpiStore = create<KpiStore>()(
       const draft = { ...state.kpiData };
       draft[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
       
-      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
+      syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
@@ -503,7 +501,7 @@ export const useKpiStore = create<KpiStore>()(
             propagateDown(id);
           }
           
-          syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
+          syncToDB(draft, state.actions, state.currentProjectId);
         }
         return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
       });
@@ -520,7 +518,7 @@ export const useKpiStore = create<KpiStore>()(
           isSimulated: false
         };
       });
-      syncToDB(newData, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
+      syncToDB(newData, state.actions, state.currentProjectId);
       return { kpiData: newData, selectedNodeId: null, projectData: saveToProjectData({ ...state, kpiData: newData }) };
     });
   },
@@ -534,7 +532,7 @@ export const useKpiStore = create<KpiStore>()(
       delete draft[id];
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
-      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo || undefined);
+      syncToDB(draft, state.actions, state.currentProjectId);
       return { kpiData: draft, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
