@@ -81,20 +81,31 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
       <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-[#5f6368] border-none" />
       
       <div className="flex justify-between items-start mb-2">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1.5 mb-0.5">
+        <div className="flex flex-col flex-1 min-w-0 pr-2">
+          <div className="flex items-center gap-1.5 mb-2">
             <span className="text-[10px] font-bold text-[#8ab4f8] uppercase tracking-wider">{data.businessUnit}</span>
-            {data.type === 'Goal' && (
-              <span className="text-[9px] bg-[#c58af9]/20 text-[#c58af9] px-1.5 py-0.5 rounded-[2px] font-bold">Goal</span>
-            )}
-            {data.type === 'KGI' && (
-              <span className="text-[9px] bg-[#81c995]/20 text-[#81c995] px-1.5 py-0.5 rounded-[2px] font-bold">KGI</span>
-            )}
-            {data.type === 'KSF' && (
-              <span className="text-[9px] bg-[#fbbc04]/20 text-[#fbbc04] px-1.5 py-0.5 rounded-[2px] font-bold">KSF</span>
+            {data.type === 'KGI' ? (
+              <span className="text-[9px] bg-[#c58af9]/20 text-[#c58af9] px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0">Goal & KGI</span>
+            ) : (
+              <span className="text-[9px] bg-[#fbbc04]/20 text-[#fbbc04] px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0">KSF & KPI</span>
             )}
           </div>
-          <span className="font-medium text-[#e8eaed] text-[14px] leading-tight mt-1">{data.name}</span>
+          
+          <div className="flex flex-col gap-2.5">
+            {/* 定性（Goal/KSF）部分 */}
+            {(data.qualitativeName || data.type === 'KGI') && (
+              <div>
+                <p className="text-[10px] text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '🎯 Goal (定性目標)' : '🎯 KSF (重要成功要因)'}</p>
+                <p className="font-bold text-[#e8eaed] text-[14px] leading-tight break-words">{data.qualitativeName || '未設定'}</p>
+              </div>
+            )}
+            
+            {/* 定量（KGI/KPI）部分 */}
+            <div>
+              <p className="text-[10px] text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '📊 KGI (定量指標)' : '📊 KPI (定量指標)'}</p>
+              <p className="font-bold text-[#e8eaed] text-[13px] leading-tight break-words">{data.name}</p>
+            </div>
+          </div>
         </div>
         <div className={cn("px-2 py-0.5 rounded-[4px] text-[11px] font-bold text-[#202124]", getStatusBg(displayStatus))}>
           {displayAchievementRate.toFixed(1)}%

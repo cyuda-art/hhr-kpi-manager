@@ -13,10 +13,11 @@ export const ActionPanel = () => {
 
   const [newKpiName, setNewKpiName] = useState('');
 
-  // 編集モード用
   const [isEditingValue, setIsEditingValue] = useState(false);
   const [editTargetValue, setEditTargetValue] = useState('');
   const [editActualValue, setEditActualValue] = useState(''); // シミュレーション時もこのstateを共用する
+  const [editName, setEditName] = useState('');
+  const [editQualitativeName, setEditQualitativeName] = useState('');
 
   // AIインサイト用状態
   const [aiInsight, setAiInsight] = useState<{issue: string, ksfIdea: string, ksfReason: string, kpiIdea: string, kpiIdeaTarget?: number, kpiIdeaUnit?: string} | null>(null);
@@ -97,34 +98,19 @@ export const ActionPanel = () => {
   const handleAddKsfAndKpi = () => {
     if (!selectedKpi || !aiInsight) return;
     
-    // 1. KSFの追加
-    const ksfId = `kpi_custom_ksf_${Math.random().toString(36).substr(2, 9)}`;
-    addKpiNode({
-      id: ksfId,
-      name: aiInsight.ksfIdea,
-      businessUnit: selectedKpi.businessUnit,
-      type: 'KSF',
-      parentId: selectedKpi.id,
-      targetValue: 100, // 定性的なので達成度100%を目指す形にする
-      actualValue: 0,
-      unit: '%',
-      previousValue: 0,
-      description: aiInsight.ksfReason
-    });
-
-    // 2. 続いてKPIの追加 (KSFの子として)
     const kpiId = `kpi_custom_kpi_${Math.random().toString(36).substr(2, 9)}`;
     addKpiNode({
       id: kpiId,
-      name: aiInsight.kpiIdea,
+      name: aiInsight.kpiIdea, // 定量名
+      qualitativeName: aiInsight.ksfIdea, // 定性名
       businessUnit: selectedKpi.businessUnit,
       type: 'KPI',
-      parentId: ksfId, // 親はさきほどのKSF
+      parentId: selectedKpi.id,
       targetValue: aiInsight.kpiIdeaTarget || 0,
       actualValue: 0,
       unit: aiInsight.kpiIdeaUnit || '件',
       previousValue: 0,
-      description: 'KSFの進捗を測るための定量KPI'
+      description: aiInsight.ksfReason
     });
     
     setAiInsight(null); // 追加後はクリア
@@ -177,6 +163,8 @@ export const ActionPanel = () => {
     if (selectedKpi) {
       setEditTargetValue(selectedKpi.targetValue.toString());
       setEditActualValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toString() : selectedKpi.actualValue.toString());
+      setEditName(selectedKpi.name);
+      setEditQualitativeName(selectedKpi.qualitativeName || '');
     }
   }, [selectedNodeId, kpiData, isPredictionMode]); 
 
@@ -190,6 +178,8 @@ export const ActionPanel = () => {
       updateKpiNode(selectedNodeId, {
         targetValue: Number(editTargetValue) || 0,
         actualValue: Number(editActualValue) || 0,
+        name: editName || selectedKpi?.name,
+        qualitativeName: editQualitativeName || selectedKpi?.qualitativeName
       });
     }
     setIsEditingValue(false);
@@ -257,7 +247,14 @@ export const ActionPanel = () => {
               </button>
             )}
             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
-            <h4 className="font-bold text-slate-800 dark:text-slate-200">
+            {selectedKpi.qualitativeName && (
+              <h4 className="font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">
+                <span className="text-[10px] text-primary-500 mr-1">{selectedKpi.type === 'KGI' ? 'Goal:' : 'KSF:'}</span>
+                {selectedKpi.qualitativeName}
+              </h4>
+            )}
+            <h4 className="font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">
+              <span className="text-[10px] text-emerald-500 mr-1">{selectedKpi.type === 'KGI' ? 'KGI:' : 'KPI:'}</span>
               {isPredictionMode && <span className="text-primary-500 mr-1 text-xs">[予測]</span>}
               {selectedKpi.name}
             </h4>
@@ -274,6 +271,28 @@ export const ActionPanel = () => {
             <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/50">
               {isEditingValue ? (
                 <div className="space-y-2">
+                  <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-slate-200 dark:border-slate-700/50">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'Goal名 (定性)' : 'KSF名 (定性)'}</span>
+                      <input 
+                        type="text" 
+                        value={editQualitativeName} 
+                        onChange={(e) => setEditQualitativeName(e.target.value)}
+                        disabled={isPredictionMode}
+                        className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'KGI名 (定量)' : 'KPI名 (定量)'}</span>
+                      <input 
+                        type="text" 
+                        value={editName} 
+                        onChange={(e) => setEditName(e.target.value)}
+                        disabled={isPredictionMode}
+                        className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs text-slate-500 w-12">目標値</span>
                     <input 

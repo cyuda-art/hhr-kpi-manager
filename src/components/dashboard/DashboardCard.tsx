@@ -51,15 +51,21 @@ export const DashboardCard = ({ kpi, onClick }: Props) => {
       )}
       
       <div className="flex justify-between items-start mb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
+        <div className="min-w-0 pr-2">
+          <div className="flex items-center gap-2 mb-1.5">
             <span className={cn(
-              "text-[10px] font-black tracking-wider px-1.5 py-0.5 rounded text-white shadow-sm",
-              kpi.type === 'KGI' ? 'bg-primary-500' : 'bg-emerald-500'
+              "text-[10px] font-black tracking-wider px-1.5 py-0.5 rounded text-white shadow-sm flex-shrink-0",
+              kpi.type === 'KGI' ? 'bg-[#c58af9]' : 'bg-[#fbbc04]'
             )}>
-              {kpi.type}
+              {kpi.type === 'KGI' ? 'Goal & KGI' : 'KSF & KPI'}
             </span>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{kpi.name}</p>
+          </div>
+          
+          <div className="flex flex-col gap-1 mb-2">
+            {kpi.qualitativeName && (
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 truncate">{kpi.qualitativeName}</p>
+            )}
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{kpi.name}</p>
           </div>
           <div className="flex items-baseline gap-2">
             <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">

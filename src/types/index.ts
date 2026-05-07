@@ -1,4 +1,4 @@
-export type KpiType = 'Goal' | 'KGI' | 'KSF' | 'KPI';
+export type KpiType = 'KGI' | 'KPI';
 export type BusinessUnit = 'company' | 'hotel' | 'spa' | 'restaurant' | 'shop' | 'kitchen' | 'cross';
 export type Status = 'good' | 'warning' | 'danger';
 
@@ -10,7 +10,8 @@ export interface KpiHistoryEntry {
 
 export interface KpiNodeData {
   id: string;
-  name: string;
+  name: string; // KGIまたはKPIの名称（定量）
+  qualitativeName?: string; // GoalまたはKSFの名称（定性）
   businessUnit: BusinessUnit;
   type: KpiType;
   parentId: string | null;
