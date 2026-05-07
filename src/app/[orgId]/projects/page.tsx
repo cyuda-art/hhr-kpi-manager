@@ -203,15 +203,18 @@ export default function WorkspacePage() {
 
                   {/* Context Menu Dropdown */}
                   {menuOpenId === project.id && (
-                    <div className="absolute top-10 right-4 w-40 bg-white dark:bg-[#282a2d] border border-slate-200 dark:border-[#3c4043] rounded-[4px] shadow-lg overflow-hidden z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
+                    <div 
+                      className="absolute top-10 right-4 w-40 bg-white dark:bg-[#282a2d] border border-slate-200 dark:border-[#3c4043] rounded-[4px] shadow-lg overflow-hidden z-20 py-1 animate-in fade-in zoom-in-95 duration-100"
+                      onClick={(e) => e.stopPropagation()} // ドロップダウン内クリックでカード遷移を防ぐ
+                    >
                       <button 
-                        onClick={(e) => handleDuplicate(e, project.id)}
+                        onMouseDown={(e) => { e.preventDefault(); handleDuplicate(e, project.id); }} // onMouseDownを使用してネイティブclickによる消滅を先行ブロック
                         className="w-full text-left px-4 py-2 text-[13px] text-slate-800 dark:text-[#e8eaed] hover:bg-slate-200 dark:bg-[#3c4043] flex items-center gap-2"
                       >
                         <Copy size={14} /> 複製する
                       </button>
                       <button 
-                        onClick={(e) => handleDelete(e, project.id, project.name)}
+                        onMouseDown={(e) => { e.preventDefault(); handleDelete(e, project.id, project.name); }}
                         className="w-full text-left px-4 py-2 text-[13px] text-rose-500 dark:text-[#f28b82] hover:bg-slate-200 dark:bg-[#3c4043] flex items-center gap-2"
                       >
                         <Trash2 size={14} /> 削除する
