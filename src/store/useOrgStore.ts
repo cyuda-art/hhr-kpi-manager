@@ -11,6 +11,7 @@ interface OrgStore {
   setCurrentOrgId: (id: string | null) => void;
   createOrganization: (name: string, userId: string) => Promise<string>;
   joinOrganization: (orgId: string, userId: string) => Promise<void>;
+  updateOrganizationName: (orgId: string, name: string) => Promise<void>;
 }
 
 export const useOrgStore = create<OrgStore>((set, get) => ({
@@ -103,6 +104,16 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       set({ currentOrgId: orgId });
     } catch (error) {
       console.error("Error joining organization:", error);
+      throw error;
+    }
+  },
+
+  updateOrganizationName: async (orgId: string, name: string) => {
+    try {
+      const orgRef = doc(db, 'organizations', orgId);
+      await setDoc(orgRef, { name }, { merge: true });
+    } catch (error) {
+      console.error("Error updating organization name:", error);
       throw error;
     }
   }

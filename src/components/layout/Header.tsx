@@ -79,7 +79,7 @@ export const Header = () => {
           <Bell size={20} />
           <span className="absolute top-0 right-0 w-2 h-2 bg-[#f28b82] rounded-full border border-white dark:border-[#202124]"></span>
         </button>
-        <Link href="/settings" className="text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] transition-colors">
+        <Link href={currentOrgId ? `/${currentOrgId}/settings` : '/'} className="text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] transition-colors">
           <Settings size={20} />
         </Link>
         {user ? (
