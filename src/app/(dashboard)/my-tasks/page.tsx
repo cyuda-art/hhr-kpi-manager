@@ -1,12 +1,17 @@
 "use client";
 
 import { useKpiStore } from '@/store/useKpiStore';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { CheckSquare, Calendar, User, Building, AlertCircle } from 'lucide-react';
 
 export default function MyTasksPage() {
   const { actions, setActionsBulk, kpiData } = useKpiStore();
   const [filterOwner, setFilterOwner] = useState<string>('all');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // 担当者のリスト（重複排除）
   const owners = useMemo(() => {
@@ -95,6 +100,8 @@ export default function MyTasksPage() {
       </div>
     );
   };
+
+  if (!isMounted) return null;
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] p-4 max-w-7xl mx-auto w-full">
