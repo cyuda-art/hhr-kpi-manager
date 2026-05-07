@@ -279,30 +279,30 @@ export const ActionPanel = () => {
       )}
 
       {selectedKpi && aiInsight && (
-        <div className="mb-6 bg-[#2d2f31] border border-[#8ab4f8]/30 p-4 rounded-[8px]">
+        <div className="mb-6 bg-white dark:bg-[#2d2f31] border border-[#8ab4f8]/30 p-4 rounded-[8px]">
           <div className="flex justify-between items-center mb-3">
             <h5 className="text-[12px] font-bold text-[#8ab4f8] flex items-center gap-1.5">
               <Sparkles size={14} />
               AI インサイト・提案
             </h5>
-            <button onClick={generateAiInsights} className="text-[10px] text-[#9aa0a6] hover:text-[#e8eaed] underline">再分析</button>
+            <button onClick={generateAiInsights} className="text-[10px] text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] underline">再分析</button>
           </div>
-          <p className="text-[12px] text-[#e8eaed] mb-4">{aiInsight.issue}</p>
+          <p className="text-[12px] text-slate-800 dark:text-[#e8eaed] mb-4">{aiInsight.issue}</p>
           
-          <div className="bg-[#202124] p-3 rounded-[4px] shadow-sm border border-[#3c4043] flex flex-col gap-3">
+          <div className="bg-slate-50 dark:bg-[#202124] p-3 rounded-[4px] shadow-sm border border-slate-200 dark:border-[#3c4043] flex flex-col gap-3">
             <div className="flex justify-between items-start">
               <div className="min-w-0 flex-1 pr-2">
                 <p className="text-[10px] text-[#8ab4f8] font-bold mb-1 uppercase tracking-wider">🎯 推奨 KSF (重要成功要因)</p>
-                <p className="text-[14px] font-medium text-[#e8eaed] break-words leading-relaxed">{aiInsight.ksfIdea}</p>
-                <p className="text-[11px] text-[#9aa0a6] mt-1.5 break-words leading-relaxed">{aiInsight.ksfReason}</p>
+                <p className="text-[14px] font-medium text-slate-800 dark:text-[#e8eaed] break-words leading-relaxed">{aiInsight.ksfIdea}</p>
+                <p className="text-[11px] text-slate-500 dark:text-[#9aa0a6] mt-1.5 break-words leading-relaxed">{aiInsight.ksfReason}</p>
               </div>
             </div>
 
-            <div className="border-t border-[#3c4043] pt-3 flex justify-between items-end gap-2 mt-2">
+            <div className="border-t border-slate-200 dark:border-[#3c4043] pt-3 flex justify-between items-end gap-2 mt-2">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] text-[#fbbc04] font-bold mb-1 uppercase tracking-wider">📊 測定のための KPI</p>
-                <p className="text-[13px] font-medium text-[#e8eaed] break-words leading-relaxed">
-                  {aiInsight.kpiIdea} <span className="text-[#9aa0a6] text-[11px] font-normal block mt-0.5">(目標: {aiInsight.kpiIdeaTarget?.toLocaleString()}{aiInsight.kpiIdeaUnit})</span>
+                <p className="text-[13px] font-medium text-slate-800 dark:text-[#e8eaed] break-words leading-relaxed">
+                  {aiInsight.kpiIdea} <span className="text-slate-500 dark:text-[#9aa0a6] text-[11px] font-normal block mt-0.5">(目標: {aiInsight.kpiIdeaTarget?.toLocaleString()}{aiInsight.kpiIdeaUnit})</span>
                 </p>
               </div>
               <button 

@@ -76,7 +76,7 @@ export const Sidebar = () => {
         <button
           onClick={() => setSelectedNodeId(node.id)}
           className={`w-full flex items-center gap-1.5 py-1.5 pr-2 rounded-[4px] transition-colors text-left ${
-            isSelected ? 'bg-[#8ab4f8]/10 text-[#8ab4f8]' : 'hover:bg-[#3c4043] text-[#9aa0a6] hover:text-[#e8eaed]'
+            isSelected ? 'bg-[#8ab4f8]/10 text-[#8ab4f8]' : 'hover:bg-slate-100 dark:bg-[#3c4043] text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed]'
           }`}
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
         >
@@ -85,7 +85,7 @@ export const Sidebar = () => {
             onClick={(e) => hasChildren && toggleExplorerNode(node.id, e)}
           >
             {hasChildren && (
-              isCollapsed ? <ChevronRight size={14} className={isSelected ? 'text-[#8ab4f8]' : 'text-[#9aa0a6]'} /> : <ChevronDown size={14} className={isSelected ? 'text-[#8ab4f8]' : 'text-[#9aa0a6]'} />
+              isCollapsed ? <ChevronRight size={14} className={isSelected ? 'text-[#8ab4f8]' : 'text-slate-500 dark:text-[#9aa0a6]'} /> : <ChevronDown size={14} className={isSelected ? 'text-[#8ab4f8]' : 'text-slate-500 dark:text-[#9aa0a6]'} />
             )}
           </div>
           <div className="flex flex-col overflow-hidden">
@@ -117,7 +117,7 @@ export const Sidebar = () => {
       <aside 
         ref={sidebarRef}
         style={{ width: isSidebarCollapsed ? 80 : sidebarWidth }}
-        className={`h-screen bg-[#202124] text-[#9aa0a6] flex flex-col fixed left-0 top-0 border-r border-[#3c4043] transition-all duration-300 ease-in-out z-50 ${
+        className={`h-screen bg-slate-50 dark:bg-[#202124] text-slate-500 dark:text-[#9aa0a6] flex flex-col fixed left-0 top-0 border-r border-slate-200 dark:border-[#3c4043] transition-all duration-300 ease-in-out z-50 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } ${isResizing ? 'select-none' : ''}`}
       >
@@ -127,13 +127,13 @@ export const Sidebar = () => {
         onDoubleClick={() => setSidebarWidth(256)}
       />
 
-      <div className="h-16 flex items-center px-4 md:px-6 border-b border-[#3c4043]">
+      <div className="h-16 flex items-center px-4 md:px-6 border-b border-slate-200 dark:border-[#3c4043]">
         {!isSidebarCollapsed && (
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-6 h-6 bg-[#fbbc04] rounded-[4px] flex items-center justify-center flex-shrink-0">
               <span className="text-[#202124] font-bold text-[12px]">H</span>
             </div>
-            <h1 className="text-[16px] font-medium text-[#e8eaed] truncate">HHR-KPI</h1>
+            <h1 className="text-[16px] font-medium text-slate-800 dark:text-[#e8eaed] truncate">HHR-KPI</h1>
           </div>
         )}
         {isSidebarCollapsed && (
@@ -147,19 +147,19 @@ export const Sidebar = () => {
 
       <div className="flex-1 px-3 py-4 overflow-y-auto">
         <div className="mb-6">
-          {!isSidebarCollapsed && <p className="text-[11px] font-medium text-[#9aa0a6] mb-2 uppercase tracking-wider px-3">組織・プロジェクト</p>}
-          <div className={`flex ${isSidebarCollapsed ? 'justify-center' : 'items-center justify-between'} p-2 rounded-[4px] bg-[#2d2f31] border border-[#3c4043]`}>
+          {!isSidebarCollapsed && <p className="text-[11px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-2 uppercase tracking-wider px-3">組織・プロジェクト</p>}
+          <div className={`flex ${isSidebarCollapsed ? 'justify-center' : 'items-center justify-between'} p-2 rounded-[4px] bg-white dark:bg-[#2d2f31] border border-slate-200 dark:border-[#3c4043]`}>
             {isSidebarCollapsed ? (
-              <div className="w-8 h-8 rounded-[4px] bg-[#3c4043] flex items-center justify-center font-bold text-[#e8eaed] text-[12px]">
+              <div className="w-8 h-8 rounded-[4px] bg-slate-100 dark:bg-[#3c4043] flex items-center justify-center font-bold text-slate-800 dark:text-[#e8eaed] text-[12px]">
                 {currentOrg?.name?.charAt(0) || 'O'}
               </div>
             ) : (
               <>
                 <div className="flex flex-col overflow-hidden px-1">
-                  <span className="text-[10px] text-[#9aa0a6] font-medium uppercase truncate">{currentOrg?.name || '組織未設定'}</span>
-                  <span className="text-[13px] font-medium text-[#e8eaed] truncate">{currentProject?.name || 'プロジェクトを選択'}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-medium uppercase truncate">{currentOrg?.name || '組織未設定'}</span>
+                  <span className="text-[13px] font-medium text-slate-800 dark:text-[#e8eaed] truncate">{currentProject?.name || 'プロジェクトを選択'}</span>
                 </div>
-                <ChevronRight size={16} className="text-[#9aa0a6]" />
+                <ChevronRight size={16} className="text-slate-500 dark:text-[#9aa0a6]" />
               </>
             )}
           </div>
@@ -174,7 +174,7 @@ export const Sidebar = () => {
                 href={item.path}
                 title={isSidebarCollapsed ? item.label : undefined}
                 className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 rounded-[4px] transition-colors text-[13px] font-medium ${
-                  isActive ? 'bg-[#8ab4f8]/10 text-[#8ab4f8]' : 'hover:bg-[#3c4043] hover:text-[#e8eaed] text-[#9aa0a6]'
+                  isActive ? 'bg-[#8ab4f8]/10 text-[#8ab4f8]' : 'hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] text-slate-500 dark:text-[#9aa0a6]'
                 }`}
               >
                 <item.icon size={18} />
@@ -186,7 +186,7 @@ export const Sidebar = () => {
 
         {!isSidebarCollapsed && rootNodes.length > 0 && (
           <div className="mt-6 mb-4">
-            <div className="px-3 mb-2 flex items-center gap-2 text-[11px] font-medium text-[#9aa0a6] uppercase tracking-wider">
+            <div className="px-3 mb-2 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-[#9aa0a6] uppercase tracking-wider">
               <Network size={14} />
               <span>KPI エクスプローラー</span>
             </div>
@@ -197,24 +197,24 @@ export const Sidebar = () => {
         )}
 
         {isSidebarCollapsed && rootNodes.length > 0 && (
-          <div className="mt-6 flex justify-center text-[#9aa0a6]" title="KPI エクスプローラー">
+          <div className="mt-6 flex justify-center text-slate-500 dark:text-[#9aa0a6]" title="KPI エクスプローラー">
             <Network size={18} />
           </div>
         )}
       </div>
 
-      <div className="p-3 border-t border-[#3c4043] space-y-0.5">
-        <Link href="/projects" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-[#3c4043] hover:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-[#9aa0a6]`} title={isSidebarCollapsed ? "プロジェクト切替" : undefined}>
+      <div className="p-3 border-t border-slate-200 dark:border-[#3c4043] space-y-0.5">
+        <Link href="/projects" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "プロジェクト切替" : undefined}>
           <FolderKanban size={16} />
           {!isSidebarCollapsed && <span>プロジェクト切替</span>}
         </Link>
-        <Link href="/settings" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-[#3c4043] hover:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-[#9aa0a6]`} title={isSidebarCollapsed ? "組織設定" : undefined}>
+        <Link href="/settings" className={`flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 w-full rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed] transition-colors text-left text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6]`} title={isSidebarCollapsed ? "組織設定" : undefined}>
           <Settings size={16} />
           {!isSidebarCollapsed && <span>組織設定</span>}
         </Link>
         <button 
           onClick={toggleSidebar}
-          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 rounded-[4px] hover:bg-[#3c4043] transition-colors text-[#9aa0a6] hover:text-[#e8eaed] mt-2`}
+          className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2 rounded-[4px] hover:bg-slate-100 dark:bg-[#3c4043] transition-colors text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] mt-2`}
           title={isSidebarCollapsed ? "サイドバーを展開" : "サイドバーを折りたたむ"}
         >
           {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={16} />}

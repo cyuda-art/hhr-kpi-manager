@@ -107,16 +107,32 @@
   --color-slate-50: #ffffff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #202124;
-    --foreground: #e8eaed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* スクロールバーのカスタマイズ (ダークモード対応) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #bdc1c6; /* var(--color-slate-300) equivalent */
+  border-radius: 5px;
+  border: 2px solid var(--background); /* 背景と同色で余白を作る */
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #5f6368; /* var(--color-slate-600) equivalent */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9aa0a6; /* var(--color-slate-400) equivalent */
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #80868b; /* var(--color-slate-500) equivalent */
 }
 
 /* AI起動時のSiri風アニメーション */

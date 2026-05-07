@@ -23,19 +23,19 @@ export const DetailDrawer = ({ isOpen, onClose, kpi }: Props) => {
         onClick={onClose}
       />
       
-      <div className="fixed inset-y-0 right-0 w-[500px] bg-slate-50 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-slate-200 flex flex-col">
+      <div className="fixed inset-y-0 right-0 w-[500px] bg-slate-50 dark:bg-[#202124] shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-slate-200 dark:border-slate-800 flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-start p-6 bg-white border-b border-slate-200">
+        <div className="flex justify-between items-start p-6 bg-white dark:bg-[#282a2d] border-b border-slate-200 dark:border-slate-800">
           <div>
             <span className="text-[10px] font-bold text-primary-500 uppercase tracking-wider bg-primary-50 px-2 py-1 rounded">
               {kpi.businessUnit}
             </span>
-            <h2 className="text-xl font-bold text-slate-800 mt-2">{kpi.name}</h2>
-            <p className="text-xs text-slate-500 mt-1">{kpi.description}</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mt-2">{kpi.name}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{kpi.description}</p>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
           >
             <X size={20} />
           </button>
@@ -46,21 +46,21 @@ export const DetailDrawer = ({ isOpen, onClose, kpi }: Props) => {
           
           {/* Metrics */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white dark:bg-[#2d2f31] p-4 rounded-xl border border-slate-200 dark:border-slate-700">
               <span className="text-xs font-semibold text-slate-500">当月実績</span>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-bold text-slate-800">{kpi.actualValue.toLocaleString()}</span>
-                <span className="text-sm text-slate-500">{kpi.unit}</span>
+                <span className="text-2xl font-bold text-slate-800 dark:text-slate-200">{kpi.actualValue.toLocaleString()}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{kpi.unit}</span>
               </div>
               <div className={`text-xs mt-1 font-medium ${isUp ? 'text-emerald-500' : isNeutral ? 'text-slate-400' : 'text-rose-500'}`}>
                 前月比 {isUp ? '+' : ''}{(kpi.actualValue - kpi.previousValue).toLocaleString()}{kpi.unit}
               </div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <div className="bg-white dark:bg-[#2d2f31] p-4 rounded-xl border border-slate-200 dark:border-slate-700">
               <span className="text-xs font-semibold text-slate-500">達成率</span>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-bold text-slate-800">{kpi.achievementRate.toFixed(1)}</span>
-                <span className="text-sm text-slate-500">%</span>
+                <span className="text-2xl font-bold text-slate-800 dark:text-slate-200">{kpi.achievementRate.toFixed(1)}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">%</span>
               </div>
               <div className="text-xs mt-1 text-slate-400">
                 目標 {kpi.targetValue.toLocaleString()}{kpi.unit}
@@ -70,7 +70,7 @@ export const DetailDrawer = ({ isOpen, onClose, kpi }: Props) => {
 
           {/* Chart */}
           <div>
-            <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-2">
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-2">
               <div className="w-1.5 h-4 bg-primary-500 rounded-full"></div>
               直近6ヶ月の推移
             </h3>
@@ -79,11 +79,11 @@ export const DetailDrawer = ({ isOpen, onClose, kpi }: Props) => {
 
           {/* Insights (モックテキストの削除と誘導) */}
           <div>
-            <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-3">
               <div className="w-1.5 h-4 bg-amber-500 rounded-full"></div>
               アクション＆インサイト
             </h3>
-            <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg text-sm text-slate-600 space-y-2">
+            <div className="bg-slate-50 dark:bg-[#282a2d] border border-slate-200 dark:border-slate-700 p-4 rounded-lg text-sm text-slate-600 dark:text-slate-400 space-y-2">
               <p>この指標のより詳細なAI分析、および改善アクションプランの作成・管理は、<strong>KPIツリー画面の右側「AIチャット」および「アクション＆インサイト」パネル</strong>から実行できます。</p>
             </div>
           </div>

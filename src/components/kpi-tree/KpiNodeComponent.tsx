@@ -73,12 +73,12 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   return (
     <div className={cn(
-      "w-64 bg-[#2d2f31] rounded-[8px] shadow-sm border p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300",
+      "w-64 bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300",
       getStatusBorder(displayStatus),
       data.isSimulated && "shadow-[#8ab4f8]/20",
       isSelected && "ring-2 ring-[#8ab4f8] border-[#8ab4f8]",
       isAlert && "animate-pulse shadow-red-900/30 border-[#f28b82]",
-      isPredictionMode && "bg-[#202124] border-[#8ab4f8]"
+      isPredictionMode && "bg-slate-50 dark:bg-[#202124] border-[#8ab4f8]"
     )}>
       <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none" />
       
@@ -97,15 +97,15 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {/* 定性（Goal/KSF）部分 */}
             {(data.qualitativeName || data.type === 'KGI') && (
               <div>
-                <p className="text-[10px] text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '🎯 Goal (定性目標)' : '🎯 KSF (重要成功要因)'}</p>
-                <p className="font-bold text-[#e8eaed] text-[14px] leading-tight break-words">{data.qualitativeName || '未設定'}</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '🎯 Goal (定性目標)' : '🎯 KSF (重要成功要因)'}</p>
+                <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[14px] leading-tight break-words">{data.qualitativeName || '未設定'}</p>
               </div>
             )}
             
             {/* 定量（KGI/KPI）部分 */}
             <div>
-              <p className="text-[10px] text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '📊 KGI (定量指標)' : '📊 KPI (定量指標)'}</p>
-              <p className="font-bold text-[#e8eaed] text-[13px] leading-tight break-words">{data.name}</p>
+              <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '📊 KGI (定量指標)' : '📊 KPI (定量指標)'}</p>
+              <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[13px] leading-tight break-words">{data.name}</p>
             </div>
           </div>
         </div>
@@ -114,11 +114,11 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         </div>
       </div>
 
-      <div className="space-y-1.5 mt-4 pt-3 border-t border-[#3c4043]">
+      <div className="space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043]">
         <div className="flex justify-between text-[12px] items-center">
           <span className={cn(
             "flex items-center gap-1",
-            isPredictionMode ? "text-[#8ab4f8] font-medium" : "text-[#9aa0a6]"
+            isPredictionMode ? "text-[#8ab4f8] font-medium" : "text-slate-500 dark:text-[#9aa0a6]"
           )}>
             {isPredictionMode && <Sparkles size={12} />}
             {isPast && !isPredictionMode && <History size={12} />}
@@ -126,14 +126,14 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           </span>
           <span className={cn(
             "font-medium",
-            isPredictionMode ? "text-[#e8eaed]" : "text-[#f1f3f4]"
+            isPredictionMode ? "text-slate-800 dark:text-[#e8eaed]" : "text-slate-900 dark:text-[#f1f3f4]"
           )}>
             {displayActual.toLocaleString()} {data.unit}
           </span>
         </div>
         <div className="flex justify-between text-[12px]">
-          <span className="text-[#9aa0a6]">目標</span>
-          <span className="text-[#9aa0a6]">{displayTarget.toLocaleString()} {data.unit}</span>
+          <span className="text-slate-500 dark:text-[#9aa0a6]">目標</span>
+          <span className="text-slate-500 dark:text-[#9aa0a6]">{displayTarget.toLocaleString()} {data.unit}</span>
         </div>
       </div>
       
@@ -144,7 +144,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             toggleNodeCollapse(data.id);
           }}
           className={cn(
-            "absolute w-6 h-6 bg-[#2d2f31] border border-[#5f6368] rounded-full flex items-center justify-center text-[#9aa0a6] hover:text-[#e8eaed] hover:border-[#8ab4f8] hover:bg-[#323639] transition-colors z-10",
+            "absolute w-6 h-6 bg-white dark:bg-[#2d2f31] border border-slate-300 dark:border-[#5f6368] rounded-full flex items-center justify-center text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] hover:border-[#8ab4f8] hover:bg-slate-50 dark:hover:bg-[#323639] transition-colors z-10",
             sourcePosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
           )}
         >
