@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useKpiStore } from '@/store/useKpiStore';
 
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
   const router = useRouter();
@@ -56,5 +58,5 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
     );
   }
 
-  return <>{children}</>;
+  return <DashboardLayout>{children}</DashboardLayout>;
 }

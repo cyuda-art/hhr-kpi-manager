@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/guards/AuthGuard";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+
 import { useOrgStore } from "@/store/useOrgStore";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -25,9 +25,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthGuard>
-      <DashboardLayout>
-        {children}
-      </DashboardLayout>
+      {children}
     </AuthGuard>
   );
 }

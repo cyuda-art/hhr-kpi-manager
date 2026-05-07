@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
+import { OrgLayout } from '@/components/layout/OrgLayout';
 import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical } from 'lucide-react';
 
 export default function WorkspacePage() {
@@ -95,8 +96,9 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] p-6 md:p-12 font-sans selection:bg-primary-600 dark:bg-[#8ab4f8]/30">
-      <div className="max-w-7xl mx-auto">
+    <OrgLayout>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] p-6 md:p-12 font-sans selection:bg-[#8ab4f8]/30">
+        <div className="max-w-7xl mx-auto">
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
@@ -108,12 +110,6 @@ export default function WorkspacePage() {
               HHR-KPI MANAGER へようこそ
             </h1>
           </div>
-          <button 
-            onClick={handleLogout}
-            className="text-[14px] font-medium text-slate-500 dark:text-[#9aa0a6] hover:text-slate-900 dark:text-[#f1f3f4] flex items-center gap-2 transition-colors px-3 py-1.5 rounded-md hover:bg-slate-200 dark:bg-[#3c4043]"
-          >
-            <LogOut size={16} /> ログアウト
-          </button>
         </div>
 
         {/* Projects Section */}
@@ -253,7 +249,8 @@ export default function WorkspacePage() {
             </form>
           </div>
         </div>
-      )}
-    </div>
+        )}
+      </div>
+    </OrgLayout>
   );
 }
