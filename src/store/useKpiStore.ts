@@ -21,7 +21,7 @@ interface KpiStore {
   isPredictionMode: boolean;
   setPeriod: (period: string) => void;
   togglePredictionMode: () => void;
-  initializeDB: (projectId: string) => Promise<void>;
+  initializeDB: (projectId: string, orgId: string) => Promise<void>;
   updateActualValue: (id: string, newValue: number) => void;
   updateSimulatedValue: (id: string, newValue: number) => void;
   resetSimulations: () => void;
@@ -39,10 +39,10 @@ interface KpiStore {
 }
 
 // データベース(Firestore)更新用のヘルパー関数
-const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null, projectInfo?: any) => {
-  if (!projectId) return;
+const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[], projectId: string | null, orgId: string | null, projectInfo?: any) => {
+  if (!projectId || !orgId) return;
   try {
-    const kpiDataRef = doc(db, 'projects', projectId, 'kpiData', 'main');
+    const kpiDataRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main');
     const dataToSave: any = {
       kpiData,
       actions,
@@ -162,6 +162,7 @@ export const useKpiStore = create<KpiStore>()(
       actions: [],
       isDbInitialized: false,
       currentProjectId: null,
+      currentOrgId: null,
       currentProjectInfo: null,
       currentPeriod: '2026-05',
       isPredictionMode: false,
@@ -180,7 +181,7 @@ export const useKpiStore = create<KpiStore>()(
         return { isPredictionMode: isNowPrediction, kpiData: draft };
       }),
 
-      initializeDB: async (projectId: string) => {
+      initializeDB: async (projectId: string, orgId: string) => {
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
         
         const state = get();
@@ -208,6 +209,7 @@ export const useKpiStore = create<KpiStore>()(
         
         set({ 
           currentProjectId: projectId, 
+          currentOrgId: orgId,
           currentProjectInfo: pData.projectInfo || { name: '新規プロジェクト', description: '' },
           kpiData: kpiData,
           actions: pData.actions,
@@ -218,7 +220,7 @@ export const useKpiStore = create<KpiStore>()(
       setProjectInfo: (info) => set((state) => {
         const newInfo = { ...(state.currentProjectInfo || { name: '', description: '' }), ...info };
         const newState = { ...state, currentProjectInfo: newInfo };
-        syncToDB(state.kpiData, state.actions, state.currentProjectId, newInfo);
+        syncToDB(state.kpiData, state.actions, state.currentProjectId, state.currentOrgId, newInfo);
         return {
           currentProjectInfo: newInfo,
           projectData: saveToProjectData(newState)
@@ -231,7 +233,7 @@ export const useKpiStore = create<KpiStore>()(
     const newAction = { ...action, id: Math.random().toString(36).substr(2, 9) };
     set((state) => {
       const newActions = [...state.actions, newAction];
-      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo);
+      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
@@ -241,14 +243,14 @@ export const useKpiStore = create<KpiStore>()(
       const newActions = state.actions.map(a => 
         a.id === actionId ? { ...a, status: (a.status === 'done' ? 'todo' : 'done') as 'todo' | 'done' } : a
       );
-      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo);
+      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
 
   setActionsBulk: (newActions) => {
     set((state) => {
-      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentProjectInfo);
+      syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
@@ -404,7 +406,7 @@ export const useKpiStore = create<KpiStore>()(
         draft[key] = { ...draft[key], isSimulated: false, initialActualValue: draft[key].actualValue };
       });
 
-      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo);
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
@@ -413,7 +415,7 @@ export const useKpiStore = create<KpiStore>()(
       const draft = { ...state.kpiData };
       draft[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
       
-      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo);
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
@@ -503,7 +505,7 @@ export const useKpiStore = create<KpiStore>()(
             propagateDown(id);
           }
           
-          syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo);
+          syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
         }
         return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
       });
@@ -520,7 +522,7 @@ export const useKpiStore = create<KpiStore>()(
           isSimulated: false
         };
       });
-      syncToDB(newData, state.actions, state.currentProjectId, state.currentProjectInfo);
+      syncToDB(newData, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { kpiData: newData, selectedNodeId: null, projectData: saveToProjectData({ ...state, kpiData: newData }) };
     });
   },
@@ -534,7 +536,7 @@ export const useKpiStore = create<KpiStore>()(
       delete draft[id];
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
-      syncToDB(draft, state.actions, state.currentProjectId, state.currentProjectInfo);
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { kpiData: draft, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },

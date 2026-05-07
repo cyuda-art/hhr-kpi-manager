@@ -2,6 +2,7 @@
 
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useOrgStore } from '@/store/useOrgStore';
 import { DashboardCard } from './DashboardCard';
 import { DetailDrawer } from '@/components/ui/DetailDrawer';
 import { useState, useEffect } from 'react';
@@ -18,6 +19,7 @@ export const DashboardSummary = ({
 }: DashboardSummaryProps = {}) => {
   const { kpiData, actions } = useKpiStore();
   const { currentProjectId, projects, updateProject } = useProjectStore();
+  const { currentOrgId } = useOrgStore();
   const currentProject = projects.find(p => p.id === currentProjectId);
 
   const [drawerKpiId, setDrawerKpiId] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export const DashboardSummary = ({
     }
 
     if (hasChanges) {
-      updateProject(currentProjectId, updates);
+      updateProject(currentProjectId, currentOrgId, updates);
     }
   };
 

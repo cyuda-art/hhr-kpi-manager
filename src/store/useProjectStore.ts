@@ -7,13 +7,13 @@ interface ProjectStore {
   projects: Project[];
   currentProjectId: string | null;
   isLoading: boolean;
-  initializeProjects: (userId: string) => () => void;
+  initializeProjects: (orgId: string) => () => void;
   setCurrentProjectId: (id: string | null) => void;
-  createProject: (name: string, description: string, userId: string) => Promise<string>;
-  deleteProject: (projectId: string) => Promise<void>;
-  duplicateProject: (projectId: string, userId: string) => Promise<string>;
-  joinProject: (projectId: string, userId: string) => Promise<void>;
-  updateProject: (projectId: string, data: Partial<Project>) => Promise<void>;
+  createProject: (name: string, description: string, userId: string, orgId: string) => Promise<string>;
+  deleteProject: (projectId: string, orgId: string) => Promise<void>;
+  duplicateProject: (projectId: string, userId: string, orgId: string) => Promise<string>;
+  joinProject: (projectId: string, userId: string, orgId: string) => Promise<void>;
+  updateProject: (projectId: string, orgId: string, data: Partial<Project>) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
@@ -21,16 +21,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   currentProjectId: null,
   isLoading: true,
 
-  initializeProjects: (userId: string) => {
+  initializeProjects: (orgId: string) => {
     set({ isLoading: true });
-    // 自分がオーナー、またはメンバーとして含まれているプロジェクトを取得
-    const q = query(
-      collection(db, 'projects'), 
-      or(
-        where('ownerId', '==', userId),
-        where('members', 'array-contains', userId)
-      )
-    );
+    // 組織内のプロジェクトを全取得（セキュリティルールで組織メンバーのみアクセス可能にする前提）
+    const q = query(collection(db, 'organizations', orgId, 'projects'));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const projects: Project[] = [];
@@ -45,7 +39,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   setCurrentProjectId: (id) => set({ currentProjectId: id }),
 
-  createProject: async (name, description, userId) => {
+  createProject: async (name, description, userId, orgId) => {
     const newProjectId = Math.random().toString(36).substr(2, 9);
     const newProject: Project = {
       id: newProjectId,
@@ -56,16 +50,16 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       createdAt: Date.now(),
     };
 
-    await setDoc(doc(db, 'projects', newProjectId), newProject);
+    await setDoc(doc(db, 'organizations', orgId, 'projects', newProjectId), newProject);
     return newProjectId;
   },
 
-  deleteProject: async (projectId: string) => {
+  deleteProject: async (projectId: string, orgId: string) => {
     try {
       // 1. KPIデータの削除
-      await deleteDoc(doc(db, 'projects', projectId, 'kpiData', 'main'));
+      await deleteDoc(doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main'));
       // 2. プロジェクト自体の削除
-      await deleteDoc(doc(db, 'projects', projectId));
+      await deleteDoc(doc(db, 'organizations', orgId, 'projects', projectId));
       
       const { currentProjectId, setCurrentProjectId } = get();
       if (currentProjectId === projectId) {
@@ -77,10 +71,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
   },
 
-  duplicateProject: async (projectId: string, userId: string) => {
+  duplicateProject: async (projectId: string, userId: string, orgId: string) => {
     try {
       // 1. 元プロジェクトの情報を取得
-      const projectDoc = await getDoc(doc(db, 'projects', projectId));
+      const projectDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', projectId));
       if (!projectDoc.exists()) throw new Error("Project not found");
       const originalProject = projectDoc.data() as Project;
 
@@ -93,12 +87,12 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         ownerId: userId, // 複製した人がオーナーになる
         createdAt: Date.now(),
       };
-      await setDoc(doc(db, 'projects', newProjectId), newProject);
+      await setDoc(doc(db, 'organizations', orgId, 'projects', newProjectId), newProject);
 
       // 3. 元のKPIデータを取得してコピー
-      const kpiDataDoc = await getDoc(doc(db, 'projects', projectId, 'kpiData', 'main'));
+      const kpiDataDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main'));
       if (kpiDataDoc.exists()) {
-        await setDoc(doc(db, 'projects', newProjectId, 'kpiData', 'main'), kpiDataDoc.data());
+        await setDoc(doc(db, 'organizations', orgId, 'projects', newProjectId, 'kpiData', 'main'), kpiDataDoc.data());
       }
 
       return newProjectId;
@@ -108,9 +102,9 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
   },
 
-  joinProject: async (projectId: string, userId: string) => {
+  joinProject: async (projectId: string, userId: string, orgId: string) => {
     try {
-      const projectRef = doc(db, 'projects', projectId);
+      const projectRef = doc(db, 'organizations', orgId, 'projects', projectId);
       await updateDoc(projectRef, {
         members: arrayUnion(userId)
       });
@@ -120,9 +114,9 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
   },
 
-  updateProject: async (projectId: string, data: Partial<Project>) => {
+  updateProject: async (projectId: string, orgId: string, data: Partial<Project>) => {
     try {
-      const projectRef = doc(db, 'projects', projectId);
+      const projectRef = doc(db, 'organizations', orgId, 'projects', projectId);
       await updateDoc(projectRef, data);
     } catch (error) {
       console.error("Error updating project:", error);

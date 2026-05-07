@@ -20,11 +20,11 @@ export default function WorkspacePage() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      const unsubscribe = initializeProjects(user.uid);
+    if (user && currentOrgId) {
+      const unsubscribe = initializeProjects(currentOrgId);
       return () => unsubscribe();
     }
-  }, [user, initializeProjects]);
+  }, [user, currentOrgId, initializeProjects]);
 
   // メニュー外クリックで閉じる
   useEffect(() => {
@@ -43,9 +43,10 @@ export default function WorkspacePage() {
     if (!user || !newProjectName) return;
 
     try {
-      const newId = await createProject(newProjectName, newProjectDesc, user.uid);
+      if (!currentOrgId) throw new Error("No organization selected");
+      const newId = await createProject(newProjectName, newProjectDesc, user.uid, currentOrgId);
       setCurrentProjectId(newId);
-      router.push('/onboarding');
+      router.push(`/${currentOrgId}/onboarding`);
     } catch (error) {
       console.error("Failed to create project", error);
     }
@@ -56,7 +57,8 @@ export default function WorkspacePage() {
     if (!user) return;
     setIsProcessing(projectId);
     try {
-      await duplicateProject(projectId, user.uid);
+      if (!currentOrgId) throw new Error("No organization selected");
+      const newId = await duplicateProject(projectId, user.uid, currentOrgId);
     } catch (error) {
       console.error("Failed to duplicate", error);
       alert("複製に失敗しました");
@@ -71,7 +73,8 @@ export default function WorkspacePage() {
     if (window.confirm(`「${projectName}」を本当に削除しますか？\nこの操作は取り消せません。`)) {
       setIsProcessing(projectId);
       try {
-        await deleteProject(projectId);
+        if (!currentOrgId) throw new Error("No organization selected");
+        await deleteProject(projectId, currentOrgId);
       } catch (error) {
         console.error("Failed to delete", error);
         alert("削除に失敗しました");

@@ -9,6 +9,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
   const params = useParams();
   const router = useRouter();
   const projectId = params.projectId as string;
+  const orgId = params.orgId as string;
   
   const { currentProjectId, setCurrentProjectId, projects, isLoading } = useProjectStore();
   const { setSelectedNodeId, initializeDB } = useKpiStore();
@@ -36,13 +37,13 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
       setSelectedNodeId(null);
       
       // KPIのDB（Firestore）からの読み込み・初期化もこのタイミングで行う
-      initializeDB(projectId).then(() => {
+      initializeDB(projectId, orgId).then(() => {
         setIsInitializing(false);
       });
     } else {
       setIsInitializing(false);
     }
-  }, [projectId, currentProjectId, projects, isLoading, router, setCurrentProjectId, setSelectedNodeId, initializeDB]);
+  }, [projectId, orgId, currentProjectId, projects, isLoading, router, setCurrentProjectId, setSelectedNodeId, initializeDB]);
 
   if (isLoading || isInitializing) {
     return (
