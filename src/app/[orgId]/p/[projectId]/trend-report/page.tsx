@@ -86,10 +86,10 @@ export default function TrendReportPage() {
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-[32px] md:text-[36px] font-normal text-[#f1f3f4] flex items-center gap-3 tracking-tight">
+          <h1 className="text-[32px] md:text-[36px] font-normal text-slate-900 dark:text-[#f1f3f4] flex items-center gap-3 tracking-tight">
             時系列推移レポート
           </h1>
-          <p className="text-[20px] md:text-[24px] font-normal text-[#9aa0a6] mt-2">
+          <p className="text-[20px] md:text-[24px] font-normal text-slate-500 dark:text-[#9aa0a6] mt-2">
             対象のKGIやKPIを選択し、各期間の目標と実績の推移を可視化します。
           </p>
         </div>
@@ -98,8 +98,8 @@ export default function TrendReportPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* 左側：セレクタ */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#2d2f31] rounded-[8px] border border-[#3c4043] p-4">
-            <h3 className="font-medium text-[14px] mb-4 flex items-center gap-1.5 text-[#e8eaed]">
+          <div className="bg-white dark:bg-[#2d2f31] rounded-[8px] border border-slate-200 dark:border-[#3c4043] p-4">
+            <h3 className="font-medium text-[14px] mb-4 flex items-center gap-1.5 text-slate-800 dark:text-[#e8eaed]">
               <Target size={16} /> 対象指標の選択
             </h3>
             <div className="space-y-1 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
@@ -109,11 +109,11 @@ export default function TrendReportPage() {
                   onClick={() => setSelectedKpiId(kpi.id)}
                   className={`w-full text-left px-3 py-2 rounded-[4px] text-[13px] transition-colors flex items-center gap-2 ${
                     selectedKpiId === kpi.id
-                      ? 'bg-[#8ab4f8]/10 text-[#8ab4f8] font-medium border border-[#8ab4f8]/20'
-                      : 'text-[#9aa0a6] hover:bg-[#3c4043] hover:text-[#e8eaed]'
+                      ? 'bg-primary-600 dark:bg-[#8ab4f8]/10 text-primary-600 dark:text-[#8ab4f8] font-medium border border-primary-500 dark:border-[#8ab4f8]/20'
+                      : 'text-slate-500 dark:text-[#9aa0a6] hover:bg-slate-200 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed]'
                   }`}
                 >
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-[2px] font-bold ${kpi.type === 'KGI' ? 'bg-[#fbbc04]/20 text-[#fbbc04]' : 'bg-[#5f6368] text-[#e8eaed]'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-[2px] font-bold ${kpi.type === 'KGI' ? 'bg-[#fbbc04]/20 text-[#fbbc04]' : 'bg-[#5f6368] text-slate-800 dark:text-[#e8eaed]'}`}>
                     {kpi.type}
                   </span>
                   <span className="truncate">{kpi.name}</span>
@@ -126,25 +126,25 @@ export default function TrendReportPage() {
         {/* 右側：メインレポート */}
         <div className="lg:col-span-3 space-y-6">
           {selectedNode ? (
-            <div className="bg-[#2d2f31] rounded-[8px] border border-[#3c4043] p-6">
+            <div className="bg-white dark:bg-[#2d2f31] rounded-[8px] border border-slate-200 dark:border-[#3c4043] p-6">
               
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                  <h2 className="text-[16px] font-medium text-[#f1f3f4]">{selectedNode.name}</h2>
-                  <p className="text-[13px] text-[#9aa0a6] mt-1">現在の実績: {selectedNode.actualValue.toLocaleString()}{selectedNode.unit} / 目標: {selectedNode.targetValue.toLocaleString()}{selectedNode.unit}</p>
+                  <h2 className="text-[16px] font-medium text-slate-900 dark:text-[#f1f3f4]">{selectedNode.name}</h2>
+                  <p className="text-[13px] text-slate-500 dark:text-[#9aa0a6] mt-1">現在の実績: {selectedNode.actualValue.toLocaleString()}{selectedNode.unit} / 目標: {selectedNode.targetValue.toLocaleString()}{selectedNode.unit}</p>
                 </div>
                 
                 <div className="flex flex-wrap gap-3">
-                  <div className="flex bg-[#202124] rounded-[4px] p-1 border border-[#3c4043]">
+                  <div className="flex bg-slate-50 dark:bg-[#202124] rounded-[4px] p-1 border border-slate-200 dark:border-[#3c4043]">
                     <button 
                       onClick={() => setViewMode('actual')}
-                      className={`px-3 py-1.5 text-[12px] font-medium rounded-[2px] transition-colors ${viewMode === 'actual' ? 'bg-[#3c4043] text-[#e8eaed]' : 'text-[#9aa0a6] hover:text-[#e8eaed]'}`}
+                      className={`px-3 py-1.5 text-[12px] font-medium rounded-[2px] transition-colors ${viewMode === 'actual' ? 'bg-slate-200 dark:bg-[#3c4043] text-slate-800 dark:text-[#e8eaed]' : 'text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed]'}`}
                     >
                       実数値
                     </button>
                     <button 
                       onClick={() => setViewMode('rate')}
-                      className={`px-3 py-1.5 text-[12px] font-medium rounded-[2px] transition-colors ${viewMode === 'rate' ? 'bg-[#3c4043] text-[#e8eaed]' : 'text-[#9aa0a6] hover:text-[#e8eaed]'}`}
+                      className={`px-3 py-1.5 text-[12px] font-medium rounded-[2px] transition-colors ${viewMode === 'rate' ? 'bg-slate-200 dark:bg-[#3c4043] text-slate-800 dark:text-[#e8eaed]' : 'text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed]'}`}
                     >
                       達成率 (%)
                     </button>
@@ -153,7 +153,7 @@ export default function TrendReportPage() {
                   <select 
                     value={periodFilter}
                     onChange={(e) => setPeriodFilter(e.target.value as any)}
-                    className="bg-[#202124] border border-[#3c4043] text-[#e8eaed] text-[13px] rounded-[4px] px-3 py-1.5 outline-none focus:border-[#8ab4f8] transition-colors"
+                    className="bg-slate-50 dark:bg-[#202124] border border-slate-200 dark:border-[#3c4043] text-slate-800 dark:text-[#e8eaed] text-[13px] rounded-[4px] px-3 py-1.5 outline-none focus:border-primary-500 dark:border-[#8ab4f8] transition-colors"
                   >
                     <option value="1m">過去1ヶ月</option>
                     <option value="3m">過去3ヶ月</option>
@@ -220,7 +220,7 @@ export default function TrendReportPage() {
               {/* Data Table */}
               <div className="mt-8 overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="text-[12px] text-[#9aa0a6] uppercase bg-[#282a2d] border-y border-[#3c4043]">
+                  <thead className="text-[12px] text-slate-500 dark:text-[#9aa0a6] uppercase bg-white dark:bg-[#282a2d] border-y border-slate-200 dark:border-[#3c4043]">
                     <tr>
                       <th className="px-4 py-3 font-medium">期間 (日付)</th>
                       <th className="px-4 py-3 font-medium">目標値</th>
@@ -230,12 +230,12 @@ export default function TrendReportPage() {
                   </thead>
                   <tbody>
                     {chartData.map((row, i) => (
-                      <tr key={i} className="border-b border-[#3c4043] last:border-0 hover:bg-[#323639] transition-colors text-[13px]">
-                        <td className="px-4 py-3 text-[#e8eaed]">{row.date}</td>
-                        <td className="px-4 py-3 text-[#9aa0a6]">{row.targetValue.toLocaleString()} {selectedNode.unit}</td>
-                        <td className="px-4 py-3 font-medium text-[#f1f3f4]">{row.actualValue.toLocaleString()} {selectedNode.unit}</td>
+                      <tr key={i} className="border-b border-slate-200 dark:border-[#3c4043] last:border-0 hover:bg-slate-100 dark:bg-[#323639] transition-colors text-[13px]">
+                        <td className="px-4 py-3 text-slate-800 dark:text-[#e8eaed]">{row.date}</td>
+                        <td className="px-4 py-3 text-slate-500 dark:text-[#9aa0a6]">{row.targetValue.toLocaleString()} {selectedNode.unit}</td>
+                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-[#f1f3f4]">{row.actualValue.toLocaleString()} {selectedNode.unit}</td>
                         <td className="px-4 py-3">
-                          <span className={`font-medium ${row.achievementRate >= 100 ? 'text-[#81c995]' : row.achievementRate >= 80 ? 'text-[#fbbc04]' : 'text-[#f28b82]'}`}>
+                          <span className={`font-medium ${row.achievementRate >= 100 ? 'text-[#81c995]' : row.achievementRate >= 80 ? 'text-[#fbbc04]' : 'text-rose-500 dark:text-[#f28b82]'}`}>
                             {row.achievementRate.toFixed(1)}%
                           </span>
                         </td>
@@ -247,10 +247,10 @@ export default function TrendReportPage() {
 
             </div>
           ) : (
-            <div className="bg-[#282a2d] rounded-[8px] border border-dashed border-[#5f6368] p-12 flex flex-col items-center justify-center text-center">
+            <div className="bg-white dark:bg-[#282a2d] rounded-[8px] border border-dashed border-slate-300 dark:border-[#5f6368] p-12 flex flex-col items-center justify-center text-center">
               <AlertCircle size={48} className="text-[#5f6368] mb-4" />
-              <h3 className="text-[16px] font-medium text-[#e8eaed] mb-2">指標が選択されていません</h3>
-              <p className="text-[13px] text-[#9aa0a6]">左側のリストから、推移を確認したいKGIまたはKPIを選択してください。</p>
+              <h3 className="text-[16px] font-medium text-slate-800 dark:text-[#e8eaed] mb-2">指標が選択されていません</h3>
+              <p className="text-[13px] text-slate-500 dark:text-[#9aa0a6]">左側のリストから、推移を確認したいKGIまたはKPIを選択してください。</p>
             </div>
           )}
         </div>
