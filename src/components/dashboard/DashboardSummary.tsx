@@ -28,43 +28,40 @@ export const DashboardSummary = ({
   const [localBusinessModel, setLocalBusinessModel] = useState('');
   const [localDescription, setLocalDescription] = useState('');
 
-  // Firestoreのデータが降ってきたらローカルステートに同期（初期ロードや他ユーザーの更新時）
+  // Firestoreのデータが降ってきたらローカルステートに同期（初期ロード時など）
+  // 入力中の文字消えを防ぐため、現在のローカルステートとFirestoreの値が異なる場合のみ同期する
   useEffect(() => {
     if (currentProject) {
-      setLocalName(currentProject.name || '');
-      setLocalBusinessModel(currentProject.businessModel || '');
-      setLocalDescription(currentProject.description || '');
+      if (localName === '' && currentProject.name) setLocalName(currentProject.name);
+      if (localBusinessModel === '' && currentProject.businessModel) setLocalBusinessModel(currentProject.businessModel);
+      if (localDescription === '' && currentProject.description) setLocalDescription(currentProject.description);
     }
-  }, [currentProject?.name, currentProject?.businessModel, currentProject?.description]);
+  }, [currentProject]);
 
-  // デバウンスによる自動保存
-  useEffect(() => {
+  // フォーカスが外れた（onBlur）タイミングで確実にFirestoreへ保存する
+  const handleSaveToDB = () => {
     if (!currentProjectId || !currentProject) return;
+    
+    const updates: Partial<typeof currentProject> = {};
+    let hasChanges = false;
 
-    const timer = setTimeout(() => {
-      const updates: Partial<typeof currentProject> = {};
-      let hasChanges = false;
+    if (localName !== currentProject.name) {
+      updates.name = localName;
+      hasChanges = true;
+    }
+    if (localBusinessModel !== (currentProject.businessModel || '')) {
+      updates.businessModel = localBusinessModel;
+      hasChanges = true;
+    }
+    if (localDescription !== (currentProject.description || '')) {
+      updates.description = localDescription;
+      hasChanges = true;
+    }
 
-      if (localName !== currentProject.name && localName !== '') {
-        updates.name = localName;
-        hasChanges = true;
-      }
-      if (localBusinessModel !== (currentProject.businessModel || '')) {
-        updates.businessModel = localBusinessModel;
-        hasChanges = true;
-      }
-      if (localDescription !== (currentProject.description || '')) {
-        updates.description = localDescription;
-        hasChanges = true;
-      }
-
-      if (hasChanges) {
-        updateProject(currentProjectId, updates);
-      }
-    }, 1000); // 入力が止まってから1秒後に自動保存
-
-    return () => clearTimeout(timer);
-  }, [localName, localBusinessModel, localDescription, currentProjectId, currentProject, updateProject]);
+    if (hasChanges) {
+      updateProject(currentProjectId, updates);
+    }
+  };
 
   const isExpanded = controlledIsExpanded !== undefined ? controlledIsExpanded : internalIsExpanded;
   
@@ -159,6 +156,7 @@ export const DashboardSummary = ({
                   type="text" 
                   value={localName} 
                   onChange={(e) => setLocalName(e.target.value)}
+                  onBlur={handleSaveToDB}
                   placeholder="例：ホテル事業改革プロジェクト"
                   className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200"
                 />
@@ -169,6 +167,7 @@ export const DashboardSummary = ({
                   type="text" 
                   value={localBusinessModel} 
                   onChange={(e) => setLocalBusinessModel(e.target.value)}
+                  onBlur={handleSaveToDB}
                   placeholder="例：BtoC、富裕層向けインバウンド旅行客"
                   className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200"
                 />
@@ -178,6 +177,7 @@ export const DashboardSummary = ({
                 <textarea 
                   value={localDescription} 
                   onChange={(e) => setLocalDescription(e.target.value)}
+                  onBlur={handleSaveToDB}
                   placeholder="例：現在、客単価は上がっているが稼働率が低下傾向にある。新規顧客の獲得が課題。"
                   rows={2}
                   className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-200 resize-none"
