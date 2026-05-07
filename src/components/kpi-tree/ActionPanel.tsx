@@ -3,12 +3,14 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Sparkles, Trash2, Edit2 } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
+import { WorkflowTask } from '@/types';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue } = useKpiStore();
+  const { kpiData, selectedNodeId, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction } = useKpiStore();
   const { currentProjectId, projects } = useProjectStore();
   const currentProject = projects.find(p => p.id === currentProjectId);
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
+  const currentWorkflow = selectedNodeId ? workflows[selectedNodeId] : null;
 
   const handleAddKsfAndKpi = () => {
     if (!selectedKpi || !aiInsight) return;
@@ -41,11 +43,15 @@ export const ActionPanel = () => {
   const [aiInsight, setAiInsight] = useState<{issue: string, ksfIdea: string, ksfReason: string, kpiIdea: string, kpiIdeaTarget?: number, kpiIdeaUnit?: string} | null>(null);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState('');
+  
+  const [isGeneratingWorkflow, setIsGeneratingWorkflow] = useState(false);
+  const [workflowError, setWorkflowError] = useState('');
 
   // 選択されたKPIが変わったらAIインサイトと編集モードをリセット
   useEffect(() => {
     setAiInsight(null);
     setAiError('');
+    setWorkflowError('');
     setIsEditingValue(false);
     if (selectedKpi) {
       setEditTargetValue(selectedKpi.targetValue.toString());
@@ -121,6 +127,56 @@ export const ActionPanel = () => {
     } finally {
       setIsGeneratingAi(false);
     }
+  };
+
+  const generateWorkflow = async () => {
+    if (!selectedKpi) return;
+    setIsGeneratingWorkflow(true);
+    setWorkflowError('');
+    
+    try {
+      const kgiNode = Object.values(kpiData).find(k => k.type === 'KGI');
+      const companyInfo = currentProject ? `業種: ${currentProject.industry || '未設定'}, 売上規模: ${currentProject.revenueScale || '未設定'}, MVV: ${currentProject.mvv || '未設定'}` : '';
+
+      const response = await fetch('/api/generate-workflow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_info: companyInfo,
+          kgi: kgiNode?.name || '',
+          ksf: selectedKpi.qualitativeName || selectedKpi.name,
+          kpi: `${selectedKpi.name} (目標: ${selectedKpi.targetValue}${selectedKpi.unit})`,
+          current_status: `現在の達成率: ${selectedKpi.achievementRate.toFixed(1)}%`
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to generate workflow');
+
+      if (data.data) {
+        setAiWorkflow(selectedKpi.id, {
+          ...data.data,
+          generatedAt: Date.now()
+        });
+      }
+    } catch (err: any) {
+      console.error(err);
+      setWorkflowError(`ワークフロー生成エラー: ${err.message || '予期せぬエラーが発生しました'}`);
+    } finally {
+      setIsGeneratingWorkflow(false);
+    }
+  };
+
+  const handleAddTaskToTodo = (task: WorkflowTask) => {
+    if (!selectedKpi) return;
+    addAction({
+      kpiId: selectedKpi.id,
+      title: task.task_name,
+      owner: '未定',
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
+      status: 'todo'
+    });
+    alert('タスクをToDoリストに追加しました！');
   };
 
   return (
@@ -247,6 +303,100 @@ export const ActionPanel = () => {
         )}
       </div>
 
+      {/* AIワークフロー（戦略実行プラン）セクション */}
+      {selectedKpi && (
+        <div className="mb-6 border-b border-slate-200 dark:border-[#3c4043] pb-6">
+          {!currentWorkflow && !isGeneratingWorkflow && (
+            <button 
+              onClick={generateWorkflow}
+              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all shadow-md group"
+            >
+              <Sparkles size={16} className="group-hover:animate-pulse" />
+              戦略実行ワークフローをAIで生成
+            </button>
+          )}
+
+          {isGeneratingWorkflow && (
+            <div className="siri-blob-container p-1 rounded-xl">
+              <div className="siri-blob rounded-xl"></div>
+              <div className="relative z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-4">
+                <div className="relative">
+                  <Sparkles size={28} className="text-primary-500 animate-pulse relative" />
+                </div>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 animate-pulse tracking-wide text-center">
+                  戦略を具体的なタスクに分解中...<br/>
+                  <span className="text-[10px] font-normal opacity-70">組織のリソース制約と目標を考慮しています</span>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {workflowError && (
+            <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 p-4 rounded-xl text-rose-600 dark:text-rose-400 text-xs font-medium mt-4">
+              {workflowError}
+            </div>
+          )}
+
+          {currentWorkflow && (
+            <div className="bg-white dark:bg-[#2d2f31] border border-primary-200 dark:border-[#3c4043] p-4 rounded-[8px] shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h5 className="text-[14px] font-bold text-slate-800 dark:text-[#f1f3f4] flex items-center gap-1.5">
+                  <Sparkles size={16} className="text-primary-500" />
+                  実行ワークフロー
+                </h5>
+                <button onClick={generateWorkflow} className="text-[10px] text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] underline">再生成</button>
+              </div>
+              
+              <p className="text-[12px] text-slate-600 dark:text-[#9aa0a6] mb-4 bg-slate-50 dark:bg-[#202124] p-2 rounded">
+                <strong>戦略見解:</strong> {currentWorkflow.ksf_analysis}
+              </p>
+              
+              <div className="space-y-4">
+                {currentWorkflow.workflow.map((phase, idx) => (
+                  <div key={idx} className="border border-slate-200 dark:border-[#5f6368] rounded overflow-hidden">
+                    <div className="bg-slate-100 dark:bg-[#202124] px-3 py-2 border-b border-slate-200 dark:border-[#5f6368]">
+                      <h6 className="text-[12px] font-bold text-slate-800 dark:text-[#e8eaed]">{phase.phase_name}</h6>
+                      <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6]">{phase.objective}</p>
+                    </div>
+                    <div className="divide-y divide-slate-100 dark:divide-[#3c4043]">
+                      {phase.tasks.map((task, taskIdx) => (
+                        <div key={taskIdx} className="p-3 bg-white dark:bg-[#2d2f31] hover:bg-slate-50 dark:hover:bg-[#3c4043] transition-colors">
+                          <div className="flex justify-between items-start gap-2 mb-1">
+                            <span className="text-[12px] font-bold text-slate-800 dark:text-[#e8eaed]">{task.task_name}</span>
+                            <button 
+                              onClick={() => handleAddTaskToTodo(task)}
+                              className="text-[10px] bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-2 py-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/50 flex-shrink-0 font-medium border border-primary-200 dark:border-primary-800/50"
+                            >
+                              + ToDo追加
+                            </button>
+                          </div>
+                          <p className="text-[11px] text-slate-600 dark:text-[#9aa0a6] mb-2">{task.description}</p>
+                          <div className="flex flex-wrap gap-1.5 text-[9px] font-medium">
+                            <span className={`px-1.5 py-0.5 rounded ${task.expected_impact === 'High' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
+                              インパクト: {task.expected_impact}
+                            </span>
+                            <span className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded">
+                              工数: {task.effort_level}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#5f6368]">
+                <p className="text-[11px] text-slate-500 dark:text-[#9aa0a6]">
+                  <strong>💡 KPIアドバイス:</strong> {currentWorkflow.kpi_advice}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* KPI分解インサイト生成（既存） */}
       {selectedKpi && !aiInsight && !isGeneratingAi && (
         <button 
           onClick={generateAiInsights}

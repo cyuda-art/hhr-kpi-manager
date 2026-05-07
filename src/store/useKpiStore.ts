@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { KpiNodeData, KpiNodeWithComputed, Status, Action } from '@/types';
+import { KpiNodeData, KpiNodeWithComputed, Status, Action, AiWorkflow } from '@/types';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -10,10 +10,11 @@ export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
 
 interface KpiStore {
   kpiData: Record<string, KpiNodeWithComputedAndInit>;
-  projectData: Record<string, { projectInfo?: import('@/types').ProjectInfo, kpiData: Record<string, KpiNodeWithComputedAndInit>; actions: Action[] }>;
+  projectData: Record<string, { projectInfo?: import('@/types').ProjectInfo, kpiData: Record<string, KpiNodeWithComputedAndInit>; actions: Action[]; workflows?: Record<string, AiWorkflow> }>;
   selectedNodeId: string | null;
   collapsedNodes: string[]; // 折りたたまれたノードのID配列
   actions: Action[];
+  workflows: Record<string, AiWorkflow>;
   isDbInitialized: boolean;
   currentProjectId: string | null;
   currentProjectInfo: import('@/types').ProjectInfo | null;
@@ -29,6 +30,7 @@ interface KpiStore {
   addAction: (action: Omit<Action, 'id'>) => void;
   toggleActionStatus: (actionId: string) => void;
   setActionsBulk: (actions: Action[]) => void;
+  setAiWorkflow: (kpiId: string, workflow: AiWorkflow) => void;
   commitBulkUpdate: (updates: { id: string; value: number }[]) => void;
   addKpiNode: (node: KpiNodeData) => void;
   removeKpiNode: (id: string) => void;
@@ -46,6 +48,7 @@ const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, act
     const dataToSave: any = {
       kpiData,
       actions,
+      workflows: useKpiStore.getState().workflows || {}, // workflowsも含める
       updatedAt: Date.now()
     };
     if (projectInfo) dataToSave.projectInfo = projectInfo;
@@ -147,7 +150,8 @@ const saveToProjectData = (state: any) => {
     [state.currentProjectId]: {
       projectInfo: state.currentProjectInfo || undefined,
       kpiData: state.kpiData,
-      actions: state.actions
+      actions: state.actions,
+      workflows: state.workflows
     }
   };
 };
@@ -160,6 +164,7 @@ export const useKpiStore = create<KpiStore>()(
       selectedNodeId: null,
       collapsedNodes: [],
       actions: [],
+      workflows: {},
       isDbInitialized: false,
       currentProjectId: null,
       currentOrgId: null,
@@ -186,7 +191,7 @@ export const useKpiStore = create<KpiStore>()(
         
         const state = get();
         // プロジェクトごとのデータがあればそれをロード、なければ空にする
-        const pData = state.projectData[projectId] || { kpiData: {}, actions: [], projectInfo: undefined };
+        const pData = state.projectData[projectId] || { kpiData: {}, actions: [], workflows: {}, projectInfo: undefined };
         
         let kpiData = { ...pData.kpiData };
         
@@ -239,6 +244,7 @@ export const useKpiStore = create<KpiStore>()(
           currentProjectInfo: pData.projectInfo || { name: projectName || '新規プロジェクト', description: projectDesc || '' },
           kpiData: kpiData,
           actions: pData.actions,
+          workflows: pData.workflows || {},
           isDbInitialized: true 
         });
       },
@@ -278,6 +284,15 @@ export const useKpiStore = create<KpiStore>()(
     set((state) => {
       syncToDB(state.kpiData, newActions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
+    });
+  },
+
+  setAiWorkflow: (kpiId, workflow) => {
+    set((state) => {
+      const newWorkflows = { ...state.workflows, [kpiId]: workflow };
+      const newState = { ...state, workflows: newWorkflows };
+      syncToDB(state.kpiData, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
+      return { workflows: newWorkflows, projectData: saveToProjectData(newState) };
     });
   },
 

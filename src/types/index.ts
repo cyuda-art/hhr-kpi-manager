@@ -52,3 +52,24 @@ export interface ProjectInfo {
   currentIssues?: string;
 }
 
+export interface WorkflowTask {
+  task_name: string;
+  description: string;
+  expected_impact: 'High' | 'Medium' | 'Low';
+  effort_level: 'Small' | 'Medium' | 'Large';
+  focus_point: string;
+}
+
+export interface WorkflowPhase {
+  phase_name: string;
+  objective: string;
+  tasks: WorkflowTask[];
+}
+
+export interface AiWorkflow {
+  ksf_analysis: string;
+  workflow: WorkflowPhase[];
+  kpi_advice: string;
+  generatedAt: number;
+}
+
