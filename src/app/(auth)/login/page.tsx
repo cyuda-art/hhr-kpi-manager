@@ -28,7 +28,7 @@ export default function LoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push('/onboarding'); // 成功したらチャットオンボーディングへ
+      router.push('/'); // AuthGuardにルーティングを委ねる
     } catch (err: any) {
       setError(err.message || '認証に失敗しました');
     } finally {
@@ -40,7 +40,7 @@ export default function LoginPage() {
     setError('');
     try {
       await loginWithGoogle();
-      router.push('/onboarding');
+      router.push('/'); // AuthGuardにルーティングを委ねる
     } catch (err: any) {
       console.error("Google Login Error:", err);
       setError(`Googleログインに失敗しました: ${err.message || err.toString()}`);
