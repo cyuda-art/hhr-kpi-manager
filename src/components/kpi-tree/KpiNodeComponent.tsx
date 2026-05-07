@@ -84,11 +84,14 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5 mb-0.5">
             <span className="text-[10px] font-bold text-[#8ab4f8] uppercase tracking-wider">{data.businessUnit}</span>
-            {data.type === 'KSF' && (
-              <span className="text-[9px] bg-[#fbbc04]/20 text-[#fbbc04] px-1.5 py-0.5 rounded-[2px] font-bold">KSF</span>
+            {data.type === 'Goal' && (
+              <span className="text-[9px] bg-[#c58af9]/20 text-[#c58af9] px-1.5 py-0.5 rounded-[2px] font-bold">Goal</span>
             )}
             {data.type === 'KGI' && (
               <span className="text-[9px] bg-[#81c995]/20 text-[#81c995] px-1.5 py-0.5 rounded-[2px] font-bold">KGI</span>
+            )}
+            {data.type === 'KSF' && (
+              <span className="text-[9px] bg-[#fbbc04]/20 text-[#fbbc04] px-1.5 py-0.5 rounded-[2px] font-bold">KSF</span>
             )}
           </div>
           <span className="font-medium text-[#e8eaed] text-[14px] leading-tight mt-1">{data.name}</span>

@@ -479,11 +479,11 @@ export const ActionPanel = () => {
       )}
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">登録済み KSF (重要施策)</h5>
+        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">登録済みアクション (実行タスク)</h5>
         {!selectedNodeId ? (
-          <p className="text-xs text-slate-400 dark:text-slate-500">ツリーからKPIを選択すると表示されます</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">ツリーからノードを選択すると表示されます</p>
         ) : filteredActions.length === 0 ? (
-          <p className="text-xs text-slate-400 dark:text-slate-500">KSFは登録されていません</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">アクションは登録されていません</p>
         ) : (
           filteredActions.map((action) => (
             <div key={action.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-sm flex items-start gap-3">
@@ -510,7 +510,7 @@ export const ActionPanel = () => {
       </div>
 
       <form onSubmit={handleAddAction} className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50">
-        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">新規 KSF (重要施策) 追加</h5>
+        <h5 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">新規アクション追加</h5>
         <div className="space-y-2">
           <input
             type="text"

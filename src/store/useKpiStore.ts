@@ -112,18 +112,34 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
 };
 
 const initialData: Record<string, KpiNodeWithComputedAndInit> = {
+  goal_top: {
+    id: 'goal_top',
+    name: '全社の持続的な成長と利益最大化',
+    businessUnit: 'company',
+    type: 'Goal',
+    parentId: null,
+    targetValue: 100,
+    actualValue: 0,
+    initialActualValue: 0,
+    unit: '%',
+    previousValue: 0,
+    description: '最終的に到達したい定性的なゴール',
+    achievementRate: 0,
+    status: 'warning',
+    isSimulated: false
+  },
   kgi_profit: {
     id: 'kgi_profit',
     name: '全社営業利益',
     businessUnit: 'company',
     type: 'KGI',
-    parentId: null,
+    parentId: 'goal_top',
     targetValue: 50000000,
     actualValue: 45000000,
     initialActualValue: 45000000,
     unit: '円',
     previousValue: 40000000,
-    description: '全社の営業利益',
+    description: 'Goalを数値化した全社の営業利益',
     achievementRate: 90,
     status: 'warning',
     isSimulated: false
@@ -185,17 +201,29 @@ export const useKpiStore = create<KpiStore>()(
         let kpiData = { ...pData.kpiData };
         if (Object.keys(kpiData).length === 0) {
           kpiData = {
+            goal_top: calculateComputed({
+              id: 'goal_top',
+              name: '事業の成長と収益化',
+              businessUnit: 'company',
+              type: 'Goal',
+              parentId: null,
+              targetValue: 100,
+              actualValue: 0,
+              unit: '%',
+              previousValue: 0,
+              description: '最終的な定性ゴール'
+            }),
             kgi_profit: calculateComputed({
               id: 'kgi_profit',
               name: '全社利益（KGI）',
               businessUnit: 'company',
               type: 'KGI',
-              parentId: null,
+              parentId: 'goal_top',
               targetValue: 10000000,
               actualValue: 0,
               unit: '円',
               previousValue: 0,
-              description: '組織全体の最終利益目標'
+              description: 'Goalを数値化した組織全体の最終利益目標'
             })
           };
         }
