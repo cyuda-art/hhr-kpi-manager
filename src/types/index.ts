@@ -63,6 +63,9 @@ export interface WorkflowTask {
 export interface WorkflowPhase {
   phase_name: string;
   objective: string;
+  kpi_name: string;
+  target_value: number;
+  unit: string;
   tasks: WorkflowTask[];
 }
 

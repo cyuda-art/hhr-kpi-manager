@@ -39,18 +39,11 @@ export const ActionPanel = () => {
   const [editName, setEditName] = useState('');
   const [editQualitativeName, setEditQualitativeName] = useState('');
 
-  // AIインサイト用状態
-  const [aiInsight, setAiInsight] = useState<{issue: string, ksfIdea: string, ksfReason: string, kpiIdea: string, kpiIdeaTarget?: number, kpiIdeaUnit?: string} | null>(null);
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [aiError, setAiError] = useState('');
-  
   const [isGeneratingWorkflow, setIsGeneratingWorkflow] = useState(false);
   const [workflowError, setWorkflowError] = useState('');
 
-  // 選択されたKPIが変わったらAIインサイトと編集モードをリセット
+  // 選択されたKPIが変わったら編集モードなどをリセット
   useEffect(() => {
-    setAiInsight(null);
-    setAiError('');
     setWorkflowError('');
     setIsEditingValue(false);
     if (selectedKpi) {
@@ -78,56 +71,7 @@ export const ActionPanel = () => {
     setIsEditingValue(false);
   };
 
-  const generateAiInsights = async () => {
-    if (!selectedKpi) return;
-    setIsGeneratingAi(true);
-    setAiError('');
-    setAiInsight(null);
 
-    try {
-      const response = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          kpiData: selectedKpi, 
-          allKpiData: kpiData,
-          projectInfo: currentProject
-        }),
-      });
-
-      if (!response.ok) {
-        let errorMsg = `APIリクエストに失敗しました (Status: ${response.status})`;
-        try {
-          const errorData = await response.json();
-          if (errorData.error) errorMsg = errorData.error;
-        } catch (e) {
-          // JSONパース失敗（VercelのHTMLエラーページなどが返ってきた場合）
-        }
-        throw new Error(errorMsg);
-      }
-
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setAiInsight({
-        issue: data.issue || '課題が分析できませんでした',
-        ksfIdea: data.ksfIdea || '推奨KSFなし',
-        ksfReason: data.ksfReason || '',
-        kpiIdea: data.kpiIdea || '推奨KPIなし',
-        kpiIdeaTarget: Number(data.kpiIdeaTarget) || 0,
-        kpiIdeaUnit: data.kpiIdeaUnit || '件',
-      });
-    } catch (err: any) {
-      console.error(err);
-      setAiError(`APIエラー: ${err.message || '予期せぬエラーが発生しました'}`);
-    } finally {
-      setIsGeneratingAi(false);
-    }
-  };
 
   const generateWorkflow = async () => {
     if (!selectedKpi) return;
@@ -153,11 +97,48 @@ export const ActionPanel = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to generate workflow');
 
-      if (data.data) {
+      if (data.data && data.data.workflow) {
+        let taskCount = 0;
+        
+        // フェーズ（KSF）ごとに子ノードを作成し、そこにタスクをぶら下げる
+        data.data.workflow.forEach((phase: any) => {
+          const newKpiId = `kpi_ai_${Math.random().toString(36).substr(2, 9)}`;
+          addKpiNode({
+            id: newKpiId,
+            name: phase.kpi_name || '新規KPI',
+            qualitativeName: phase.phase_name,
+            businessUnit: selectedKpi.businessUnit,
+            type: 'KPI',
+            parentId: selectedKpi.id,
+            targetValue: phase.target_value || 0,
+            actualValue: 0,
+            unit: phase.unit || '件',
+            previousValue: 0,
+            description: phase.objective || ''
+          });
+
+          // 各タスクをToDo（actions）に追加
+          if (Array.isArray(phase.tasks)) {
+            phase.tasks.forEach((task: any) => {
+              addAction({
+                kpiId: newKpiId,
+                title: task.task_name,
+                owner: '未定', // 自動アサイン用に仮置き（後でユーザー名に変えやすい）
+                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                status: 'todo'
+              });
+              taskCount++;
+            });
+          }
+        });
+
+        // プレビュー表示用にも保存
         setAiWorkflow(selectedKpi.id, {
           ...data.data,
           generatedAt: Date.now()
         });
+
+        alert(`ツリーの細分化と、全フェーズにおける計${taskCount}個のタスクの自動アサインが完了しました！`);
       }
     } catch (err: any) {
       console.error(err);
@@ -303,7 +284,7 @@ export const ActionPanel = () => {
         )}
       </div>
 
-      {/* AIワークフロー（戦略実行プラン）セクション */}
+      {/* 統合AIアクション生成ボタン */}
       {selectedKpi && (
         <div className="mb-6 border-b border-slate-200 dark:border-[#3c4043] pb-6">
           {!currentWorkflow && !isGeneratingWorkflow && (
@@ -312,7 +293,7 @@ export const ActionPanel = () => {
               className="w-full py-3 bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all shadow-md group"
             >
               <Sparkles size={16} className="group-hover:animate-pulse" />
-              戦略実行ワークフローをAIで生成
+              AIで実行プラン（フェーズとタスク）を自動構築
             </button>
           )}
 
@@ -342,127 +323,24 @@ export const ActionPanel = () => {
               <div className="flex justify-between items-center mb-3">
                 <h5 className="text-[14px] font-bold text-slate-800 dark:text-[#f1f3f4] flex items-center gap-1.5">
                   <Sparkles size={16} className="text-primary-500" />
-                  実行ワークフロー
+                  生成された戦略見解
                 </h5>
-                <button onClick={generateWorkflow} className="text-[10px] text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] underline">再生成</button>
+                <button onClick={generateWorkflow} className="text-[10px] text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] underline">再生成して追加</button>
               </div>
               
-              <p className="text-[12px] text-slate-600 dark:text-[#9aa0a6] mb-4 bg-slate-50 dark:bg-[#202124] p-2 rounded">
-                <strong>戦略見解:</strong> {currentWorkflow.ksf_analysis}
+              <p className="text-[12px] text-slate-600 dark:text-[#9aa0a6] bg-slate-50 dark:bg-[#202124] p-3 rounded">
+                {currentWorkflow.ksf_analysis}
               </p>
-              
-              <div className="space-y-4">
-                {currentWorkflow.workflow.map((phase, idx) => (
-                  <div key={idx} className="border border-slate-200 dark:border-[#5f6368] rounded overflow-hidden">
-                    <div className="bg-slate-100 dark:bg-[#202124] px-3 py-2 border-b border-slate-200 dark:border-[#5f6368]">
-                      <h6 className="text-[12px] font-bold text-slate-800 dark:text-[#e8eaed]">{phase.phase_name}</h6>
-                      <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6]">{phase.objective}</p>
-                    </div>
-                    <div className="divide-y divide-slate-100 dark:divide-[#3c4043]">
-                      {phase.tasks.map((task, taskIdx) => (
-                        <div key={taskIdx} className="p-3 bg-white dark:bg-[#2d2f31] hover:bg-slate-50 dark:hover:bg-[#3c4043] transition-colors">
-                          <div className="flex justify-between items-start gap-2 mb-1">
-                            <span className="text-[12px] font-bold text-slate-800 dark:text-[#e8eaed]">{task.task_name}</span>
-                            <button 
-                              onClick={() => handleAddTaskToTodo(task)}
-                              className="text-[10px] bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-2 py-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/50 flex-shrink-0 font-medium border border-primary-200 dark:border-primary-800/50"
-                            >
-                              + ToDo追加
-                            </button>
-                          </div>
-                          <p className="text-[11px] text-slate-600 dark:text-[#9aa0a6] mb-2">{task.description}</p>
-                          <div className="flex flex-wrap gap-1.5 text-[9px] font-medium">
-                            <span className={`px-1.5 py-0.5 rounded ${task.expected_impact === 'High' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
-                              インパクト: {task.expected_impact}
-                            </span>
-                            <span className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded">
-                              工数: {task.effort_level}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#5f6368]">
                 <p className="text-[11px] text-slate-500 dark:text-[#9aa0a6]">
                   <strong>💡 KPIアドバイス:</strong> {currentWorkflow.kpi_advice}
                 </p>
               </div>
+              <p className="text-[10px] text-emerald-600 font-bold mt-4 text-center">
+                ※ 生成された各フェーズはツリーの子ノード（KPI）として、<br/>タスクはマイタスク（ToDo）としてシステムに自動登録されました。
+              </p>
             </div>
           )}
-        </div>
-      )}
-
-      {/* KPI分解インサイト生成（既存） */}
-      {selectedKpi && !aiInsight && !isGeneratingAi && (
-        <button 
-          onClick={generateAiInsights}
-          className="mb-6 w-full py-3 bg-gradient-to-r from-primary-500/10 to-purple-500/10 hover:from-primary-500/20 hover:to-purple-500/20 border border-primary-200 dark:border-primary-800/50 rounded-xl flex items-center justify-center gap-2 text-primary-700 dark:text-primary-400 text-sm font-bold transition-all shadow-sm group"
-        >
-          <Sparkles size={16} className="group-hover:animate-pulse" />
-          AIに改善案を分析させる
-        </button>
-      )}
-
-      {selectedKpi && isGeneratingAi && (
-        <div className="mb-6 siri-blob-container p-1 rounded-xl">
-          <div className="siri-blob rounded-xl"></div>
-          <div className="relative z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-4">
-            <div className="relative">
-              <Sparkles size={28} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] mix-blend-overlay animate-pulse absolute inset-0" />
-              <Sparkles size={28} className="text-slate-800 dark:text-slate-200 animate-pulse relative" />
-            </div>
-            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 animate-pulse tracking-wide">
-              AIがインサイトを分析中...
-            </p>
-          </div>
-        </div>
-      )}
-
-      {selectedKpi && aiError && (
-        <div className="mb-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 p-4 rounded-xl text-rose-600 dark:text-rose-400 text-xs font-medium">
-          {aiError}
-        </div>
-      )}
-
-      {selectedKpi && aiInsight && (
-        <div className="mb-6 bg-white dark:bg-[#2d2f31] border border-[#8ab4f8]/30 p-4 rounded-[8px]">
-          <div className="flex justify-between items-center mb-3">
-            <h5 className="text-[12px] font-bold text-[#8ab4f8] flex items-center gap-1.5">
-              <Sparkles size={14} />
-              AI インサイト・提案
-            </h5>
-            <button onClick={generateAiInsights} className="text-[10px] text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] underline">再分析</button>
-          </div>
-          <p className="text-[12px] text-slate-800 dark:text-[#e8eaed] mb-4">{aiInsight.issue}</p>
-          
-          <div className="bg-slate-50 dark:bg-[#202124] p-3 rounded-[4px] shadow-sm border border-slate-200 dark:border-[#3c4043] flex flex-col gap-3">
-            <div className="flex justify-between items-start">
-              <div className="min-w-0 flex-1 pr-2">
-                <p className="text-[10px] text-[#8ab4f8] font-bold mb-1 uppercase tracking-wider">🎯 推奨 KSF (重要成功要因)</p>
-                <p className="text-[14px] font-medium text-slate-800 dark:text-[#e8eaed] break-words leading-relaxed">{aiInsight.ksfIdea}</p>
-                <p className="text-[11px] text-slate-500 dark:text-[#9aa0a6] mt-1.5 break-words leading-relaxed">{aiInsight.ksfReason}</p>
-              </div>
-            </div>
-
-            <div className="border-t border-slate-200 dark:border-[#3c4043] pt-3 flex justify-between items-end gap-2 mt-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] text-[#fbbc04] font-bold mb-1 uppercase tracking-wider">📊 測定のための KPI</p>
-                <p className="text-[13px] font-medium text-slate-800 dark:text-[#e8eaed] break-words leading-relaxed">
-                  {aiInsight.kpiIdea} <span className="text-slate-500 dark:text-[#9aa0a6] text-[11px] font-normal block mt-0.5">(目標: {aiInsight.kpiIdeaTarget?.toLocaleString()}{aiInsight.kpiIdeaUnit})</span>
-                </p>
-              </div>
-              <button 
-                onClick={handleAddKsfAndKpi}
-                className="flex-shrink-0 text-[11px] bg-[#8ab4f8] text-[#202124] px-3 py-1.5 rounded-[4px] font-bold hover:bg-[#aecbfa] transition-colors"
-              >
-                KSF & KPI を追加
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
