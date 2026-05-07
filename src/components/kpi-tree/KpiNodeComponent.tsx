@@ -73,7 +73,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   return (
     <div className={cn(
-      "w-64 bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300",
+      "w-64 bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border border-slate-200 dark:border-slate-600 p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300",
       getStatusBorder(displayStatus),
       data.isSimulated && "shadow-[#8ab4f8]/20",
       isSelected && "ring-2 ring-[#8ab4f8] border-[#8ab4f8]",
