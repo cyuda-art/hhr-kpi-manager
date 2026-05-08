@@ -14,68 +14,85 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-あなたはプロの経営コンサルタントであり、KPIマネジメントの専門家です。
-以下の企業/事業情報を元に、最適な「KGI」とそれを達成するための「KPIツリー」を構築し、指定されたJSONフォーマットで出力してください。
+あなたはマッキンゼーやBCGなどのトップティア戦略コンサルティングファーム出身の、AI経営戦略コンサルタントです。
+以下のユーザー提供情報を元に、論理的で実行可能性の高い「KGI・KSF・KPIツリー」を構築してください。
 
-【企業・事業情報】
-- プロジェクト名 (KGI名): ${projectName}
-- プロジェクト概要: ${description || '未設定'}
+【ユーザー入力情報】
+- プロジェクト名 (KGI候補): ${projectName}
+- 事業概要: ${description || '未設定'}
 - MVV (Mission, Vision, Value): ${mvv || '未設定'}
-- 事業・業種: ${industry || '未設定'}
+- 業種・ターゲット顧客: ${industry || '未設定'}
 - 売上規模: ${revenueScale || '未設定'}
-- 現状の課題・悩み: ${currentIssues || '未設定'}
+- 競合情報・自社の強み弱み・現状の課題: ${currentIssues || '未設定'}
+
+【思考プロセス（内部推論のステップ）】
+以下のステップ1〜3の推論を行い、その結果をJSONの "thinking_process" キーに出力してください。
+ステップ1: 環境分析（3C分析・PEST）- マクロ要因から前提を明確化。
+ステップ2: 戦略方針とKSFの抽出（クロスSWOT分析）- 強み×機会などから決定的に重要な成功要因（KSF）を2〜3つ抽出。
+ステップ3: プロセス分解とKPIの設定（バリューチェーン・4P分析）- 各KSFを業務プロセスに分解し、計測可能な定量指標（KPI）に落とし込む。
 
 【出力要件】
-- 以下のTypeScriptインターフェースに準拠したJSON配列（KpiNodeData[]）を出力してください。
-- markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSON配列のみを出力してください。
-- ノードは合計で10個〜15個程度作成してください。
+- 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
+- markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
+- "nodes" 配列内のノードは合計で10個〜15個程度作成してください。
 - 階層構造:
   - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main" としてください。
-  - その他のノード (type: "KPI") は、ツリー構造になるように parentId に親ノードのIDを指定してください。
-  - IDはユニークな半角英数字（例: kpi_sales, kpi_cpa_1 など）にしてください。
-- businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。基本は "company" で構いません。
-- 現状の課題（${currentIssues}）を解決するための具体的なKPIを必ずツリーの中に含めてください。
-- 数値（targetValue, actualValue, previousValue）は、売上規模（${revenueScale}）から推測してリアリティのある数値を設定してください（単位に注意）。
-- さらに、子を持たない末端のKPIノードには、そのKPIを達成するために現場が明日から実行すべき具体的な「タスク（ToDo）」を1〜3個程度、"tasks" 配列として付与してください。
+  - KSFノード（qualitativeNameにKSF名を設定）を作り、その下にKPIノードを繋げてください（parentIdで指定）。
+  - IDはユニークな半角英数字（例: ksf_sales, kpi_cpa_1 など）にしてください。
+- businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。
+- 数値（targetValue, actualValue, previousValue）は、売上規模から推測してリアリティのある数値を設定してください（単位に注意）。
+- 末端のKPIノードには、現場が実行すべき具体的な「タスク（ToDo）」を1〜3個程度、"tasks" 配列として付与してください。
+- Glideライクな自動計算機能（Formula）を活用するため、計算で求まるKPIには isCalculated: true と formula: "#{参照元ID} * #{参照元ID}" のような計算式を可能な限り含めてください。
 
-【JSONインターフェース】
-[
-  {
-    "id": "kgi_main",
-    "name": "KGIの名前",
-    "qualitativeName": "定性的な目標",
-    "businessUnit": "company",
-    "type": "KGI",
-    "parentId": null,
-    "targetValue": 100000000,
-    "actualValue": 80000000,
-    "unit": "円",
-    "previousValue": 75000000,
-    "description": "KGIの詳細説明"
+【JSONフォーマット例】
+{
+  "thinking_process": {
+    "environment_analysis": "環境認識（3Cの要約）...",
+    "cross_swot": "クロスSWOT分析からの洞察...",
+    "ksf_reasons": "KSF選定の理由..."
   },
-  {
-    "id": "kpi_child_1",
-    "name": "末端KPIの名前",
-    "qualitativeName": "定性的な目標",
-    "businessUnit": "company",
-    "type": "KPI",
-    "parentId": "kgi_main",
-    "targetValue": 50,
-    "actualValue": 0,
-    "unit": "件",
-    "previousValue": 0,
-    "description": "KPIの詳細",
-    "tasks": [
-      {
-        "task_name": "具体的なタスク名",
-        "description": "タスクの手順",
-        "expected_impact": "High", // High | Medium | Low
-        "effort_level": "Medium", // Small | Medium | Large
-        "focus_point": "注意点"
-      }
-    ]
-  }
-]
+  "nodes": [
+    {
+      "id": "kgi_main",
+      "name": "KGIの名前 (定量)",
+      "qualitativeName": "目指す方向性 (定性)",
+      "businessUnit": "company",
+      "type": "KGI",
+      "parentId": null,
+      "targetValue": 100000000,
+      "actualValue": 80000000,
+      "unit": "円",
+      "previousValue": 75000000,
+      "description": "KGIの詳細説明",
+      "isCalculated": false,
+      "formula": ""
+    },
+    {
+      "id": "kpi_child_1",
+      "name": "末端KPIの名前",
+      "qualitativeName": "KSFやプロセス名",
+      "businessUnit": "company",
+      "type": "KPI",
+      "parentId": "kgi_main",
+      "targetValue": 50,
+      "actualValue": 0,
+      "unit": "件",
+      "previousValue": 0,
+      "description": "KPIの詳細",
+      "isCalculated": true,
+      "formula": "#{kpi_grandchild_1} * #{kpi_grandchild_2}",
+      "tasks": [
+        {
+          "task_name": "具体的なタスク名",
+          "description": "タスクの手順",
+          "expected_impact": "High",
+          "effort_level": "Medium",
+          "focus_point": "注意点"
+        }
+      ]
+    }
+  ]
+}
 `;
 
     const result = await model.generateContent(prompt);
@@ -83,11 +100,14 @@ export async function POST(req: Request) {
     let text = response.text();
 
     // markdownコードブロックが含まれている場合は除去する
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    text = text.replace(new RegExp('\`\`\`json', 'g'), '').replace(new RegExp('\`\`\`', 'g'), '').trim();
 
-    const nodes = JSON.parse(text);
+    const data = JSON.parse(text);
+    // 元のフロントエンドの実装が nodes 配列を期待しているため、data.nodes を返す
+    // 思考プロセスもあわせてフロントエンドに返却する
+    const nodes = data.nodes || data;
 
-    return NextResponse.json({ nodes });
+    return NextResponse.json({ nodes, thinkingProcess: data.thinking_process });
 
   } catch (error) {
     console.error('Failed to generate KPI tree:', error);

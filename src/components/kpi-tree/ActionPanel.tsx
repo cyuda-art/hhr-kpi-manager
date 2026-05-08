@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 
@@ -37,6 +37,8 @@ export const ActionPanel = () => {
   const [editQualitativeName, setEditQualitativeName] = useState('');
   const [editUpdateFrequency, setEditUpdateFrequency] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
   const [editCalculationFormula, setEditCalculationFormula] = useState('');
+  const [editIsCalculated, setEditIsCalculated] = useState(false);
+  const [editFormula, setEditFormula] = useState('');
 
   const [isGeneratingWorkflow, setIsGeneratingWorkflow] = useState(false);
   const [isAnalyzingPdca, setIsAnalyzingPdca] = useState(false);
@@ -54,6 +56,8 @@ export const ActionPanel = () => {
       setEditQualitativeName(selectedKpi.qualitativeName || '');
       setEditUpdateFrequency(selectedKpi.updateFrequency || 'monthly');
       setEditCalculationFormula(selectedKpi.calculationFormula || '');
+      setEditIsCalculated(selectedKpi.isCalculated || false);
+      setEditFormula(selectedKpi.formula || '');
     }
   }, [selectedNodeId, kpiData, isPredictionMode]); 
 
@@ -70,7 +74,9 @@ export const ActionPanel = () => {
         name: editName || selectedKpi?.name,
         qualitativeName: editQualitativeName || selectedKpi?.qualitativeName,
         updateFrequency: editUpdateFrequency,
-        calculationFormula: editCalculationFormula
+        calculationFormula: editCalculationFormula,
+        isCalculated: editIsCalculated,
+        formula: editFormula
       });
     }
     setIsEditingValue(false);
@@ -206,11 +212,20 @@ export const ActionPanel = () => {
                 {selectedKpi.qualitativeName}
               </h4>
             )}
-            <h4 className="font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">
-              <span className="text-[10px] text-emerald-500 mr-1">{selectedKpi.type === 'KGI' ? 'KGI:' : 'KPI:'}</span>
-              {isPredictionMode && <span className="text-primary-500 mr-1 text-xs">[予測]</span>}
-              {selectedKpi.name}
-            </h4>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <h4 className="font-bold text-slate-800 dark:text-slate-200 break-words flex-1">
+                <span className="text-[10px] text-emerald-500 mr-1">{selectedKpi.type === 'KGI' ? 'KGI:' : 'KPI:'}</span>
+                {isPredictionMode && <span className="text-primary-500 mr-1 text-xs">[予測]</span>}
+                {selectedKpi.name}
+              </h4>
+              <button 
+                onClick={() => navigator.clipboard.writeText(`#{${selectedKpi.id}}`)} 
+                className="text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary-500 hover:bg-primary-50 hover:border-primary-200 dark:hover:text-primary-400 px-1.5 py-0.5 rounded cursor-copy border border-slate-200 dark:border-slate-700 active:bg-slate-200 flex items-center gap-1 shrink-0"
+                title="クリックして計算式用のID（#{id}）をコピー"
+              >
+                IDをコピー
+              </button>
+            </div>
             <div className="flex gap-2 mt-2">
               <span className={`text-xs font-bold ${
                 (isPredictionMode ? selectedKpi.simulatedStatus : selectedKpi.status) === 'danger' ? 'text-rose-500 dark:text-rose-400' : 
@@ -278,7 +293,7 @@ export const ActionPanel = () => {
                           </select>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs text-slate-500">計算式（構造）</span>
+                          <span className="text-xs text-slate-500">計算式（構造メモ）</span>
                           <input 
                             type="text" 
                             value={editCalculationFormula} 
@@ -288,6 +303,35 @@ export const ActionPanel = () => {
                             className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
                           />
                         </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="flex items-center gap-2 cursor-pointer mt-2">
+                            <input 
+                              type="checkbox" 
+                              checked={editIsCalculated} 
+                              onChange={(e) => setEditIsCalculated(e.target.checked)} 
+                              disabled={isPredictionMode}
+                              className="rounded border-slate-300 text-primary-500 focus:ring-primary-500"
+                            />
+                            <span className="text-xs text-slate-500 font-bold flex items-center gap-1">
+                              <Calculator size={12} /> 他のKPIから自動計算する (Formula)
+                            </span>
+                          </label>
+                        </div>
+                        {editIsCalculated && (
+                          <div className="flex flex-col gap-1 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                            <span className="text-xs text-slate-500 flex items-center justify-between">
+                              <span>数式入力</span>
+                            </span>
+                            <textarea 
+                              value={editFormula} 
+                              onChange={(e) => setEditFormula(e.target.value)}
+                              disabled={isPredictionMode}
+                              placeholder="例: #{kpi_123} * #{kpi_456}"
+                              className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 min-h-[40px] font-mono"
+                            />
+                            <div className="text-[10px] text-slate-400 mt-1">※ 他ノードのIDを #&#123;id&#125; 形式で指定し四則演算が可能です。</div>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs text-slate-500 w-12">目標値</span>
@@ -295,8 +339,8 @@ export const ActionPanel = () => {
                           type="number" 
                           value={editTargetValue} 
                           onChange={(e) => setEditTargetValue(e.target.value)}
-                          disabled={isPredictionMode}
-                          className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                          disabled={isPredictionMode || editIsCalculated}
+                          className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                         />
                         <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
                       </div>
@@ -306,7 +350,8 @@ export const ActionPanel = () => {
                       type="number" 
                       value={editActualValue} 
                       onChange={(e) => setEditActualValue(e.target.value)}
-                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      disabled={editIsCalculated}
+                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                     />
                     <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
                   </div>
@@ -331,14 +376,21 @@ export const ActionPanel = () => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400 mt-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
-                    <span className="flex items-center gap-1">
-                      <span className="bg-slate-200 dark:bg-slate-700 px-1 rounded text-slate-600 dark:text-slate-300">
-                        {selectedKpi.updateFrequency === 'daily' ? '日次更新' : selectedKpi.updateFrequency === 'weekly' ? '週次更新' : '月次更新'}
+                  <div className="flex flex-col gap-1 mt-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                    <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
+                      <span className="flex items-center gap-1">
+                        <span className="bg-slate-200 dark:bg-slate-700 px-1 rounded text-slate-600 dark:text-slate-300">
+                          {selectedKpi.updateFrequency === 'daily' ? '日次更新' : selectedKpi.updateFrequency === 'weekly' ? '週次更新' : '月次更新'}
+                        </span>
                       </span>
-                    </span>
-                    {selectedKpi.calculationFormula && (
-                      <span className="truncate" title={selectedKpi.calculationFormula}>式: {selectedKpi.calculationFormula}</span>
+                      {selectedKpi.calculationFormula && (
+                        <span className="truncate" title={selectedKpi.calculationFormula}>メモ: {selectedKpi.calculationFormula}</span>
+                      )}
+                    </div>
+                    {selectedKpi.isCalculated && (
+                      <div className="flex items-center gap-1 text-[10px] text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-1.5 py-0.5 rounded w-fit mt-1 border border-primary-100 dark:border-primary-800/50">
+                        <Calculator size={10} /> 自動計算: <span className="font-mono">{selectedKpi.formula}</span>
+                      </div>
                     )}
                   </div>
                 </div>

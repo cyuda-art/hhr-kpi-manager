@@ -135,22 +135,24 @@ const initialData: Record<string, KpiNodeWithComputedAndInit> = {
 };
 
 // --- 動的計算エンジン ---
-const evaluateFormula = (formula: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue'): number | null => {
-  if (!formula) return null;
-  let parsedFormula = formula;
+const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue'): number | null => {
+  if (!formulaStr) return null;
+  let parsedFormula = formulaStr;
   
-  // 名前の長い順にソートして部分一致の誤爆を防ぐ
-  const nodes = Object.values(kpiData).sort((a, b) => b.name.length - a.name.length);
-  nodes.forEach(node => {
-    if (parsedFormula.includes(node.name)) {
+  // 例: "#{kpi_123} + #{kpi_456}" の形式をパース
+  const regex = /#\{([^}]+)\}/g;
+  parsedFormula = parsedFormula.replace(regex, (match, id) => {
+    const node = kpiData[id];
+    if (node) {
       const val = valueType === 'simulatedValue' && node.simulatedValue !== undefined 
         ? node.simulatedValue 
         : node[valueType === 'simulatedValue' ? 'actualValue' : valueType];
-      parsedFormula = parsedFormula.split(node.name).join(val.toString());
+      return val.toString();
     }
+    return '0';
   });
 
-  // 全角記号を半角に変換
+  // 全角記号も念の為サポート
   parsedFormula = parsedFormula.replace(/×/g, '*').replace(/÷/g, '/').replace(/＋/g, '+').replace(/－/g, '-');
 
   try {
@@ -175,8 +177,8 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
     maxIterations--;
     
     Object.values(draft).forEach(node => {
-      if (node.calculationFormula) {
-        const newValue = evaluateFormula(node.calculationFormula, draft, valueType);
+      if (node.isCalculated && node.formula) {
+        const newValue = evaluateFormula(node.formula, draft, valueType);
         if (newValue !== null && !isNaN(newValue) && isFinite(newValue)) {
           const currentValue = valueType === 'simulatedValue' && node.simulatedValue !== undefined 
             ? node.simulatedValue 
@@ -189,7 +191,7 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
             } else if (valueType === 'targetValue') {
               draft[node.id] = calculateComputed({ ...draft[node.id], targetValue: newValue, isSimulated: true });
             } else {
-              draft[node.id] = calculateComputed({ ...draft[node.id], actualValue: newValue, isSimulated: true });
+              draft[node.id] = calculateComputed({ ...draft[node.id], actualValue: newValue, initialActualValue: newValue, isSimulated: true });
             }
           }
         }

@@ -6,7 +6,7 @@ import { useOrgStore } from '@/store/useOrgStore';
 import { DashboardCard } from './DashboardCard';
 import { DetailDrawer } from '@/components/ui/DetailDrawer';
 import { useState, useEffect } from 'react';
-import { AlertTriangle, TrendingUp, Target, Activity, ChevronDown, ChevronUp, ListChecks } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Target, Activity, ChevronDown, ChevronUp, ListChecks, Sparkles } from 'lucide-react';
 
 interface DashboardSummaryProps {
   isExpanded?: boolean;
@@ -24,6 +24,7 @@ export const DashboardSummary = ({
 
   const [drawerKpiId, setDrawerKpiId] = useState<string | null>(null);
   const [internalIsExpanded, setInternalIsExpanded] = useState(false);
+  const [aiThinking, setAiThinking] = useState<any>(null);
 
   // ローカルステートで入力値を管理（Firestoreへの過剰書き込みを防ぐため）
   const [localName, setLocalName] = useState('');
@@ -39,6 +40,22 @@ export const DashboardSummary = ({
       if (localDescription === '' && currentProject.description) setLocalDescription(currentProject.description);
     }
   }, [currentProject]);
+
+  // AIの推論プロセスを取得
+  useEffect(() => {
+    if (currentProjectId) {
+      const stored = sessionStorage.getItem(`kpi_thinking_${currentProjectId}`);
+      if (stored) {
+        try {
+          setAiThinking(JSON.parse(stored));
+        } catch (e) {
+          console.error('Failed to parse AI thinking', e);
+        }
+      } else {
+        setAiThinking(null);
+      }
+    }
+  }, [currentProjectId]);
 
   // フォーカスが外れた（onBlur）タイミングで確実にFirestoreへ保存する
   const handleSaveToDB = () => {
@@ -187,6 +204,30 @@ export const DashboardSummary = ({
               </div>
             </div>
           </div>
+
+          {/* AIの推論プロセス (存在する場合のみ) */}
+          {aiThinking && (
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 border border-slate-700/50 shadow-lg text-slate-100">
+              <h3 className="text-sm font-bold mb-4 flex items-center gap-2 text-primary-400">
+                <Sparkles className="w-5 h-5" />
+                AI戦略コンサルタントの推論レポート
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div className="bg-slate-800/50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                  <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">1. 環境認識（3Cの要約）</h4>
+                  <p className="text-xs leading-relaxed text-slate-300">{aiThinking.environment_analysis || 'データなし'}</p>
+                </div>
+                <div className="bg-slate-800/50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                  <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">2. クロスSWOT分析の洞察</h4>
+                  <p className="text-xs leading-relaxed text-slate-300">{aiThinking.cross_swot || 'データなし'}</p>
+                </div>
+                <div className="bg-slate-800/50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                  <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">3. KSF・KPI選定の理由</h4>
+                  <p className="text-xs leading-relaxed text-slate-300">{aiThinking.ksf_reasons || 'データなし'}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* サマリーハイライト */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

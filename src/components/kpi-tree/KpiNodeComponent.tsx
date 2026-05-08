@@ -3,7 +3,7 @@ import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2, Calculator } from 'lucide-react';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -122,6 +122,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           )}>
             {isPredictionMode && <Sparkles size={12} />}
             {isPast && !isPredictionMode && <History size={12} />}
+            {data.isCalculated && <span title="自動計算項目"><Calculator size={12} className="text-primary-500" /></span>}
             {displayLabel}
           </span>
           <span className={cn(

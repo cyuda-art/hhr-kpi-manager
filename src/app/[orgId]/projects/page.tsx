@@ -77,9 +77,12 @@ export default function WorkspacePage() {
       
       setCurrentProjectId(newId);
 
-      // 3. 生成されたノード群をセッションストレージに退避して次の画面でロードさせる
+      // 3. 生成されたノード群と推論プロセスをセッションストレージに退避して次の画面でロードさせる
       if (data.nodes && Array.isArray(data.nodes)) {
         sessionStorage.setItem(`kpi_init_${newId}`, JSON.stringify(data.nodes));
+      }
+      if (data.thinkingProcess) {
+        sessionStorage.setItem(`kpi_thinking_${newId}`, JSON.stringify(data.thinkingProcess));
       }
 
       router.push(`/${currentOrgId}/p/${newId}`);

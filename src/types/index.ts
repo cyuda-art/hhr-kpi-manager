@@ -25,6 +25,8 @@ export interface KpiNodeData {
   history?: KpiHistoryEntry[]; // 時系列データ
   updateFrequency?: 'daily' | 'weekly' | 'monthly'; // 更新頻度
   calculationFormula?: string; // 計算式（例: "客数 × 客単価"）
+  isCalculated?: boolean; // 自動計算列かどうか
+  formula?: string; // 自動計算の数式（例: "#{kpi_A} * #{kpi_B}"）
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース

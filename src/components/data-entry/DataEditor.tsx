@@ -2,7 +2,7 @@
 
 import { useKpiStore } from '@/store/useKpiStore';
 import { useState, useMemo } from 'react';
-import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar } from 'lucide-react';
+import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator } from 'lucide-react';
 
 type TableMode = 'master' | 'ksf' | 'history';
 
@@ -234,10 +234,13 @@ export const DataEditor = () => {
                     <input type="text" value={node.businessUnit} onChange={e => handleUpdate(node.id, 'businessUnit', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="number" value={node.targetValue} onChange={e => handleUpdate(node.id, 'targetValue', Number(e.target.value))} className="w-full h-full p-2 bg-transparent outline-none text-right" />
+                    <input type="number" value={node.targetValue} onChange={e => handleUpdate(node.id, 'targetValue', Number(e.target.value))} disabled={node.isCalculated} className={`w-full h-full p-2 bg-transparent outline-none text-right ${node.isCalculated ? 'text-primary-500 font-bold cursor-not-allowed' : ''}`} title={node.isCalculated ? '自動計算項目です' : ''} />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0 bg-slate-50 dark:bg-[#2d2f31] font-medium text-right">
-                    <div className="w-full h-full p-2">{node.actualValue}</div>
+                    <div className="w-full h-full p-2 flex items-center justify-end gap-1" title={node.isCalculated ? `自動計算: ${node.formula}` : ''}>
+                      {node.isCalculated && <Calculator size={12} className="text-primary-500 opacity-70" />}
+                      {node.actualValue}
+                    </div>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <input type="text" value={node.unit} onChange={e => handleUpdate(node.id, 'unit', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none" />
