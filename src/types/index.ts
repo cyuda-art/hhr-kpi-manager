@@ -41,6 +41,7 @@ export interface Action {
   title: string;
   owner: string;
   department?: string;
+  startDate?: string;
   dueDate: string;
   status: 'todo' | 'in_progress' | 'done';
 }

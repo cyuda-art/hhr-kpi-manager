@@ -14,7 +14,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
+  return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#202124] flex w-full overflow-hidden transition-colors duration-300">
       <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out min-w-0">
         <Header />

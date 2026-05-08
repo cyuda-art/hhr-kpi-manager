@@ -62,9 +62,9 @@ export const DataEditor = () => {
         csvContent += `${node.id},${node.type},${node.businessUnit},"${node.name}",${node.targetValue},${node.actualValue},${node.unit},${node.parentId || ''}\n`;
       });
     } else if (activeMode === 'ksf') {
-      csvContent += "ID,KPI_ID,Title,Owner,Dept,DueDate,Status\n";
+      csvContent += "ID,KPI_ID,Title,Owner,Dept,StartDate,DueDate,Status\n";
       actions.forEach(a => {
-        csvContent += `${a.id},${a.kpiId},"${a.title}","${a.owner}","${a.department || ''}",${a.dueDate},${a.status}\n`;
+        csvContent += `${a.id},${a.kpiId},"${a.title}","${a.owner}","${a.department || ''}",${a.startDate || ''},${a.dueDate},${a.status}\n`;
       });
     } else if (activeMode === 'history' && selectedKpi) {
       csvContent += "ID,Date,Target,Actual,Comment\n";
@@ -207,6 +207,7 @@ export const DataEditor = () => {
                     <th className="w-64 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Aa Title</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Owner</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Dept</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">📅 StartDate</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">📅 DueDate</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Status</th>
                   </>
@@ -270,19 +271,26 @@ export const DataEditor = () => {
                 <tr key={action.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
                   <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className="w-full h-full p-2 font-medium">{action.title}</div>
+                    <div className="w-full h-full p-2 font-medium truncate">{action.title}</div>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className="w-full h-full p-2">{action.owner}</div>
+                    <div className="w-full h-full p-2 truncate">{action.owner}</div>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className="w-full h-full p-2">{action.department || '-'}</div>
+                    <div className="w-full h-full p-2 truncate">{action.department || '-'}</div>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className="w-full h-full p-2">{action.dueDate}</div>
+                    <input type="date" value={action.startDate || ''} onChange={e => handleUpdate(action.id, 'startDate', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className={`w-full h-full p-2 ${action.status === 'done' ? 'text-emerald-500' : ''}`}>{action.status}</div>
+                    <input type="date" value={action.dueDate || ''} onChange={e => handleUpdate(action.id, 'dueDate', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <select value={action.status} onChange={e => handleUpdate(action.id, 'status', e.target.value)} className={`w-full h-full p-2 bg-transparent outline-none font-medium ${action.status === 'done' ? 'text-emerald-500' : action.status === 'in_progress' ? 'text-primary-500' : 'text-slate-500'}`}>
+                      <option value="todo">To Do</option>
+                      <option value="in_progress">進行中</option>
+                      <option value="done">完了</option>
+                    </select>
                   </td>
                   <td></td>
                 </tr>
