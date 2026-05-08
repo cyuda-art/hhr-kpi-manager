@@ -47,7 +47,7 @@ export const Sidebar = () => {
   const orgBasePath = currentOrgId ? `/${currentOrgId}` : '';
   const menuItems = [
     { id: 'dashboard', label: 'ダッシュボード', icon: LayoutDashboard, path: currentProjectId ? basePath : orgBasePath },
-    { id: 'trend-report', label: '時系列レポート', icon: Activity, path: currentProjectId ? `${basePath}/trend-report` : `${orgBasePath}/trend-report` },
+    { id: 'kpi-tree', label: 'KPIツリー', icon: Activity, path: currentProjectId ? `${basePath}/kpi-tree` : `${orgBasePath}/kpi-tree` },
     { id: 'my-tasks', label: '私のタスク', icon: CheckSquare, path: currentProjectId ? `${basePath}/my-tasks` : `${orgBasePath}/my-tasks` },
     { id: 'data-entry', label: 'シートエディタ', icon: Database, path: currentProjectId ? `${basePath}/data-entry` : `${orgBasePath}/data-entry` },
   ];
