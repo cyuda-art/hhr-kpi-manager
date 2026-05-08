@@ -185,7 +185,7 @@ export const ActionPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50 relative">
+    <div className="flex flex-col h-full bg-white dark:bg-[#2d2f31] relative">
       {selectedKpi ? (
         <>
           {/* ヘッダー情報（常に表示） */}

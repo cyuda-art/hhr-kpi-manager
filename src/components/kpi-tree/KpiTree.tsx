@@ -304,8 +304,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   }, [selectedNodeId, rfInstance, nodes, autoCenter]);
 
   return (
-    <div className={`w-full min-w-0 flex flex-col lg:flex-row gap-4 ${previewMode ? "h-screen w-screen m-0 p-0 fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950" : isDashboard ? "h-[500px] lg:h-full" : "h-[calc(100vh-6rem)] lg:h-[calc(100vh-8rem)]"}`}>
-      <div className={`w-full flex-1 min-w-0 min-h-0 bg-white dark:bg-slate-900 shadow-sm overflow-hidden transition-colors relative ${previewMode ? 'border-0 rounded-none' : 'border border-slate-200 dark:border-slate-800 rounded-2xl'}`}>
+    <div className={`w-full h-full min-w-0 flex flex-col min-h-0 ${previewMode ? "fixed inset-0 z-50 m-0 p-0" : ""}`}>
+      <div className={`w-full h-full flex-1 min-w-0 min-h-0 bg-white dark:bg-[#2d2f31] overflow-hidden transition-colors relative ${isDashboard ? 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm' : ''}`}>
         {!previewMode && (
           <div className="absolute top-4 left-4 z-10 flex gap-2">
             <button
