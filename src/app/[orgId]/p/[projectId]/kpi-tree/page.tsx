@@ -7,7 +7,6 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { ActionPanel } from '@/components/kpi-tree/ActionPanel';
-import { DashboardSummary } from '@/components/dashboard/DashboardSummary';
 import { useKpiStore } from '@/store/useKpiStore';
 import { GripHorizontal } from 'lucide-react';
 
@@ -47,9 +46,6 @@ export default function KpiTreePage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] p-2 overflow-y-auto overflow-x-hidden flex flex-col gap-2">
-      <div className="shrink-0">
-        <DashboardSummary />
-      </div>
       <div ref={containerRef} className="flex-1 min-h-0">
         <ResponsiveGridLayout
           className="layout"
