@@ -20,6 +20,48 @@ type TreeNode = {
   depth: number;
 };
 
+// --- タスクカードコンポーネント ---
+const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId }: { action: Action, kpiName: string, onDragStart: (e: React.DragEvent, id: string) => void, draggedTaskId: string | null }) => {
+  const isPastDue = action.dueDate && new Date(action.dueDate) < new Date() && action.status !== 'done';
+  
+  const getStatusColor = (status: string) => {
+    if (status === 'done') return 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400';
+    if (status === 'in_progress') return 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400';
+    return 'bg-white border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200';
+  };
+
+  return (
+    <div
+      draggable
+      onDragStart={(e) => onDragStart(e, action.id)}
+      className={`p-3 rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all ${getStatusColor(action.status)} ${draggedTaskId === action.id ? 'opacity-50' : 'opacity-100'}`}
+    >
+      <div className="flex flex-col gap-1.5">
+        <div className="flex justify-between items-start gap-2">
+          <h4 className="font-bold text-[13px] leading-tight">{action.title}</h4>
+          {isPastDue && <span title="期限切れ"><AlertCircle size={14} className="text-rose-500 shrink-0" /></span>}
+        </div>
+        {kpiName && (
+          <div className="text-[10px] flex items-center gap-1 opacity-70 mt-0.5 bg-black/5 dark:bg-white/10 w-fit px-1.5 py-0.5 rounded">
+            <Building size={10} />
+            <span className="truncate max-w-[150px]">{kpiName}</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/5 dark:border-white/5">
+          <div className="flex items-center gap-1 text-[10px] font-bold">
+            <User size={10} className="opacity-70" />
+            <span>{action.owner}</span>
+          </div>
+          <div className={`flex items-center gap-1 text-[10px] font-medium ${isPastDue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'opacity-70'}`}>
+            <CalendarIcon size={10} />
+            <span>{action.dueDate || '-'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function MyTasksPage() {
   const { actions, setActionsBulk, kpiData } = useKpiStore();
   const [filterOwner, setFilterOwner] = useState<string>('all');
@@ -149,48 +191,10 @@ export default function MyTasksPage() {
     setDraggedTaskId(null);
   };
 
-  // --- タスクカードコンポーネント ---
-  const TaskCard = ({ action }: { action: Action }) => {
-    const isPastDue = new Date(action.dueDate) < new Date() && action.status !== 'done';
-    const targetKpiName = kpiData[action.kpiId]?.name || '不明なKPI';
-    
-    // 状態による色
-    const getStatusColor = (status: string) => {
-      if (status === 'done') return 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400';
-      if (status === 'in_progress') return 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400';
-      return 'bg-white border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200';
-    };
-
-    return (
-      <div
-        draggable
-        onDragStart={(e) => handleDragStart(e, action.id)}
-        className={`p-3 rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all ${getStatusColor(action.status)} ${draggedTaskId === action.id ? 'opacity-50' : 'opacity-100'}`}
-      >
-        <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between items-start gap-2">
-            <h4 className="font-bold text-[13px] leading-tight">{action.title}</h4>
-            {isPastDue && <span title="期限切れ"><AlertCircle size={14} className="text-rose-500 shrink-0" /></span>}
-          </div>
-          {!groupByKpi && (
-            <div className="text-[10px] flex items-center gap-1 opacity-70 mt-0.5 bg-black/5 dark:bg-white/10 w-fit px-1.5 py-0.5 rounded">
-              <Building size={10} />
-              <span className="truncate max-w-[150px]">{targetKpiName}</span>
-            </div>
-          )}
-          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/5 dark:border-white/5">
-            <div className="flex items-center gap-1 text-[10px] font-bold">
-              <User size={10} className="opacity-70" />
-              <span>{action.owner}</span>
-            </div>
-            <div className={`flex items-center gap-1 text-[10px] font-medium ${isPastDue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'opacity-70'}`}>
-              <CalendarIcon size={10} />
-              <span>{action.dueDate}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  // --- タスクカードレンダラー（カンバン用） ---
+  const renderTask = (action: Action, showKpiName: boolean = false) => {
+    const kpiName = showKpiName ? (kpiData[action.kpiId]?.name || '不明なKPI') : '';
+    return <TaskCard key={action.id} action={action} kpiName={kpiName} onDragStart={handleDragStart} draggedTaskId={draggedTaskId} />;
   };
 
   // --- Kanban View ---
@@ -218,21 +222,21 @@ export default function MyTasksPage() {
                   <span className="text-xs text-slate-500 ml-auto">{kpiTasks.length} tasks</span>
                 </div>
                 
-                <div className="flex flex-col md:flex-row min-h-[150px]">
+                <div className="flex flex-col md:flex-row min-h-[200px] w-full">
                   {/* To Do */}
-                  <div className="flex-1 p-2 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-2 bg-slate-50/30 dark:bg-slate-900/10" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'todo')}>
+                  <div className="flex-1 p-3 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-slate-50/30 dark:bg-slate-900/10 min-w-[200px]" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'todo')}>
                     <div className="text-[11px] font-bold text-slate-500 mb-1 px-1">To Do ({todo.length})</div>
-                    {todo.map(a => <TaskCard key={a.id} action={a} />)}
+                    {todo.map(a => renderTask(a))}
                   </div>
                   {/* In Progress */}
-                  <div className="flex-1 p-2 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-2 bg-blue-50/10 dark:bg-blue-900/5" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'in_progress')}>
+                  <div className="flex-1 p-3 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-blue-50/10 dark:bg-blue-900/5 min-w-[200px]" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'in_progress')}>
                     <div className="text-[11px] font-bold text-blue-600 mb-1 px-1">In Progress ({inProg.length})</div>
-                    {inProg.map(a => <TaskCard key={a.id} action={a} />)}
+                    {inProg.map(a => renderTask(a))}
                   </div>
                   {/* Done */}
-                  <div className="flex-1 p-2 flex flex-col gap-2 bg-emerald-50/10 dark:bg-emerald-900/5" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'done')}>
+                  <div className="flex-1 p-3 flex flex-col gap-3 bg-emerald-50/10 dark:bg-emerald-900/5 min-w-[200px]" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'done')}>
                     <div className="text-[11px] font-bold text-emerald-600 mb-1 px-1">Done ({done.length})</div>
-                    {done.map(a => <TaskCard key={a.id} action={a} />)}
+                    {done.map(a => renderTask(a))}
                   </div>
                 </div>
               </div>
@@ -260,7 +264,7 @@ export default function MyTasksPage() {
             <span className="bg-white/50 dark:bg-black/20 text-xs px-2 py-0.5 rounded-full font-bold">{list.length}</span>
           </div>
           <div className="flex-1 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-3">
-            {list.map(a => <TaskCard key={a.id} action={a} />)}
+            {list.map(a => renderTask(a, true))}
           </div>
         </div>
       );
