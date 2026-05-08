@@ -1,11 +1,10 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Link2, Check, Settings, Menu, Calendar, Sparkles } from 'lucide-react';
+import { Bell, Search, User, LogOut, Settings, Menu, Sparkles } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { useKpiStore } from '@/store/useKpiStore';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -20,20 +19,8 @@ export const Header = () => {
   const { currentProjectId, projects } = useProjectStore();
   const { currentOrgId } = useOrgStore();
   const { toggleMobileMenu } = useLayoutStore();
-  const { currentPeriod, setPeriod } = useKpiStore();
-  const [isCopied, setIsCopied] = useState(false);
 
   const currentProject = projects.find(p => p.id === currentProjectId);
-
-  const handleCopyInviteLink = () => {
-    if (!currentOrgId) return;
-    // 組織への招待リンクに変更
-    const url = `${window.location.origin}/invite-org/${currentOrgId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    });
-  };
 
   return (
     <header className="h-16 bg-white dark:bg-[#202124] border-b border-slate-200 dark:border-[#3c4043] flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-colors">
@@ -60,7 +47,7 @@ export const Header = () => {
         </Link>
 
         {/* プロジェクト切り替え */}
-        <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-lg px-2 xl:px-3 py-1.5 border border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:hover:border-[#5f6368] transition-colors max-w-[120px] lg:max-w-[160px] xl:max-w-[200px]">
+        <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-lg px-3 py-1.5 border border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:hover:border-[#5f6368] transition-colors max-w-[250px]">
           <FolderGit2 size={16} className="text-primary-500 dark:text-[#8ab4f8] shrink-0" />
           <select 
             value={currentProjectId || ''}
@@ -92,30 +79,8 @@ export const Header = () => {
             <CheckSquare size={16} /> <span className="hidden xl:inline">マイタスク</span>
           </Link>
         </div>
-        <div className="hidden lg:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-[4px] px-3 py-1.5 border border-slate-200 dark:border-[#3c4043]">
-          <Calendar size={16} className="text-slate-500 dark:text-[#9aa0a6]" />
-          <select 
-            value={currentPeriod}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="bg-transparent border-none outline-none text-[13px] font-medium text-slate-800 dark:text-[#e8eaed] cursor-pointer"
-          >
-            <option value="2026-03">2026年3月 (過去)</option>
-            <option value="2026-04">2026年4月 (過去)</option>
-            <option value="2026-05">2026年5月 (現在)</option>
-          </select>
-        </div>
       </div>
       <div className="flex items-center gap-3 md:gap-4 xl:gap-6">
-        {currentProject && (
-          <button 
-            onClick={handleCopyInviteLink}
-            title="共有リンク"
-            className="hidden md:flex items-center gap-2 px-3 xl:px-4 py-1.5 bg-slate-50 dark:bg-[#2d2f31] text-primary-500 dark:text-[#8ab4f8] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px] text-[13px] font-medium transition-colors border border-slate-200 dark:border-[#3c4043]"
-          >
-            {isCopied ? <Check size={16} /> : <Link2 size={16} />}
-            <span className="hidden xl:inline">{isCopied ? 'コピーしました' : '共有リンク'}</span>
-          </button>
-        )}
         <ThemeToggle />
         
         {/* 管理コンソールへのリンク（アイコン） */}
