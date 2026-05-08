@@ -10,8 +10,11 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from './ThemeToggle';
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, Database, Activity, CheckSquare } from 'lucide-react';
 
 export const Header = () => {
+  const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { currentProjectId, projects } = useProjectStore();
   const { currentOrgId } = useOrgStore();
@@ -40,6 +43,20 @@ export const Header = () => {
         >
           <Menu size={24} />
         </button>
+        <div className="hidden md:flex items-center gap-2 overflow-x-auto custom-scrollbar pr-4">
+          <Link href={`/${currentOrgId}/p/${currentProjectId}`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname === `/${currentOrgId}/p/${currentProjectId}` ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <LayoutDashboard size={16} /> ダッシュボード
+          </Link>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/trend-report`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/trend-report') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <Activity size={16} /> KPIツリー
+          </Link>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/data-entry') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <Database size={16} /> シートエディタ
+          </Link>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/my-tasks`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/my-tasks') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <CheckSquare size={16} /> マイタスク
+          </Link>
+        </div>
         <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-[4px] px-3 py-1.5 border border-slate-200 dark:border-[#3c4043]">
           <Calendar size={16} className="text-slate-500 dark:text-[#9aa0a6]" />
           <select 

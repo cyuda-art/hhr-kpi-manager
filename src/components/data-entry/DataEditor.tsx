@@ -1,26 +1,20 @@
 "use client";
 
 import { useKpiStore } from '@/store/useKpiStore';
-import { useState, useMemo, useEffect } from 'react';
-import { Save, Plus, Trash2, Edit, TrendingUp, Calendar, MessageSquare, ChevronRight, Hash, Target, ChevronDown } from 'lucide-react';
-import { TrendChart } from '../dashboard/TrendChart';
+import { useState, useMemo } from 'react';
+import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks } from 'lucide-react';
+
+type TableMode = 'master' | 'ksf' | 'history';
 
 export const DataEditor = () => {
-  const { kpiData, addHistoryRecord, updateHistoryRecord, deleteHistoryRecord, updateKpiNode } = useKpiStore();
+  const { kpiData, actions, addHistoryRecord, updateHistoryRecord, updateKpiNode } = useKpiStore();
   
-  // 初期選択ノードをセット
+  // 表示中のテーブルモード
+  const [activeMode, setActiveMode] = useState<TableMode>('master');
+  // historyモード時の選択中KPI
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null);
-  useEffect(() => {
-    if (!selectedKpiId && Object.keys(kpiData).length > 0) {
-      // 最初にKGIを選ぶ
-      const kgi = Object.values(kpiData).find(k => k.type === 'KGI');
-      setSelectedKpiId(kgi ? kgi.id : Object.keys(kpiData)[0]);
-    }
-  }, [kpiData, selectedKpiId]);
 
-  const selectedKpi = selectedKpiId ? kpiData[selectedKpiId] : null;
-
-  // 階層的なリスト（左ペイン用）を作るための簡易的なソート
+  // TABLESリスト用のKPI
   const kpiList = useMemo(() => {
     return Object.values(kpiData).sort((a, b) => {
       if (a.type === 'KGI') return -1;
@@ -29,277 +23,287 @@ export const DataEditor = () => {
     });
   }, [kpiData]);
 
-  // 新規追加用のローカルステート
+  const selectedKpi = selectedKpiId ? kpiData[selectedKpiId] : null;
+
+  // インライン編集用のステート
+  const [editState, setEditState] = useState<{ id: string, field: string, value: any } | null>(null);
+
+  // 新規行追加用のステート（history用）
   const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
-  const [newActual, setNewActual] = useState('');
-  const [newTarget, setNewTarget] = useState('');
-  const [newComment, setNewComment] = useState('');
 
-  // 編集用のローカルステート
-  const [editingHistId, setEditingHistId] = useState<string | null>(null);
-  const [editDate, setEditDate] = useState('');
-  const [editActual, setEditActual] = useState('');
-  const [editTarget, setEditTarget] = useState('');
-  const [editComment, setEditComment] = useState('');
-
-  // 選択が変わったら新規入力の初期値をリセット
-  useEffect(() => {
-    if (selectedKpi) {
-      setNewTarget(selectedKpi.targetValue.toString());
-      setNewActual('');
-      setNewComment('');
-      setEditingHistId(null);
+  const handleUpdate = (id: string, field: string, value: any) => {
+    if (activeMode === 'master') {
+      updateKpiNode(id, { [field]: value });
+    } else if (activeMode === 'history' && selectedKpi) {
+      updateHistoryRecord(selectedKpi.id, id, { [field]: value });
     }
-  }, [selectedKpiId, selectedKpi?.targetValue]);
+  };
 
-  const handleAddHistory = () => {
+  const handleAddHistoryRow = () => {
     if (!selectedKpi) return;
     addHistoryRecord(selectedKpi.id, {
       date: newDate,
-      actualValue: Number(newActual) || 0,
-      targetValue: Number(newTarget) || selectedKpi.targetValue,
-      comment: newComment
+      actualValue: 0,
+      targetValue: selectedKpi.targetValue,
+      comment: ''
     });
-    setNewActual('');
-    setNewComment('');
+    // 次の日の日付をセットしておく
+    const nextDate = new Date(newDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    setNewDate(nextDate.toISOString().split('T')[0]);
   };
 
-  const startEdit = (hist: any) => {
-    setEditingHistId(hist.id);
-    setEditDate(hist.date);
-    setEditActual(hist.actualValue.toString());
-    setEditTarget(hist.targetValue.toString());
-    setEditComment(hist.comment || '');
-  };
-
-  const handleSaveEdit = () => {
-    if (!selectedKpi || !editingHistId) return;
-    updateHistoryRecord(selectedKpi.id, editingHistId, {
-      date: editDate,
-      actualValue: Number(editActual) || 0,
-      targetValue: Number(editTarget) || 0,
-      comment: editComment
-    });
-    setEditingHistId(null);
-  };
-
-  const handleDeleteHistory = (histId: string) => {
-    if (!selectedKpi) return;
-    if (confirm('この記録を削除しますか？')) {
-      deleteHistoryRecord(selectedKpi.id, histId);
+  const exportToCSV = () => {
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+    
+    if (activeMode === 'master') {
+      csvContent += "ID,Type,BU,Name,Target,Actual,Unit,Parent\n";
+      Object.values(kpiData).forEach(node => {
+        csvContent += `${node.id},${node.type},${node.businessUnit},"${node.name}",${node.targetValue},${node.actualValue},${node.unit},${node.parentId || ''}\n`;
+      });
+    } else if (activeMode === 'ksf') {
+      csvContent += "ID,KPI_ID,Title,Owner,Dept,DueDate,Status\n";
+      actions.forEach(a => {
+        csvContent += `${a.id},${a.kpiId},"${a.title}","${a.owner}","${a.department || ''}",${a.dueDate},${a.status}\n`;
+      });
+    } else if (activeMode === 'history' && selectedKpi) {
+      csvContent += "ID,Date,Target,Actual,Comment\n";
+      (selectedKpi.history || []).forEach(h => {
+        csvContent += `${h.id},${h.date},${h.targetValue},${h.actualValue},"${h.comment || ''}"\n`;
+      });
     }
-  };
 
-  // 目標値やKPI名などの基本情報を更新する関数
-  const handleUpdateKpiInfo = (field: string, value: any) => {
-    if (!selectedKpi) return;
-    updateKpiNode(selectedKpi.id, { [field]: value });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const fileName = activeMode === 'master' ? 'kpi_master.csv' : activeMode === 'ksf' ? 'ksf_list.csv' : `history_${selectedKpi?.name}.csv`;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-slate-50 dark:bg-[#202124]">
+    <div className="flex h-[calc(100vh-4rem)] bg-white dark:bg-[#202124]">
       
-      {/* 左ペイン：KPIエクスプローラー */}
-      <div className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#282a2d] flex flex-col">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-          <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">KPIエクスプローラー</h2>
+      {/* 左ペイン：TABLES リスト */}
+      <div className="w-64 border-r border-slate-200 dark:border-[#3c4043] bg-slate-50 dark:bg-[#282a2d] flex flex-col pt-4">
+        <div className="px-4 mb-2 flex items-center justify-between">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-[#9aa0a6] uppercase tracking-wider">Tables</span>
+          <Plus size={14} className="text-slate-400 cursor-pointer hover:text-slate-600" />
         </div>
-        <div className="flex-1 overflow-y-auto p-2 custom-scrollbar space-y-1">
+        
+        <div className="px-2 space-y-0.5 mb-6">
+          <button
+            onClick={() => setActiveMode('master')}
+            className={`w-full text-left px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors flex items-center gap-2 ${
+              activeMode === 'master' 
+                ? 'bg-[#8ab4f8]/20 text-[#8ab4f8]' 
+                : 'text-slate-600 dark:text-[#e8eaed] hover:bg-slate-200 dark:hover:bg-[#3c4043]'
+            }`}
+          >
+            <Database size={14} className="opacity-70" />
+            KPIマスター
+            <span className="ml-auto text-[10px] text-slate-400">{Object.keys(kpiData).length}</span>
+          </button>
+          <button
+            onClick={() => setActiveMode('ksf')}
+            className={`w-full text-left px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors flex items-center gap-2 ${
+              activeMode === 'ksf' 
+                ? 'bg-[#8ab4f8]/20 text-[#8ab4f8]' 
+                : 'text-slate-600 dark:text-[#e8eaed] hover:bg-slate-200 dark:hover:bg-[#3c4043]'
+            }`}
+          >
+            <ListChecks size={14} className="opacity-70" />
+            KSF一覧
+            <span className="ml-auto text-[10px] text-slate-400">{actions.length}</span>
+          </button>
+        </div>
+
+        <div className="px-4 mb-2 flex items-center justify-between">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-[#9aa0a6] uppercase tracking-wider">時系列データベース</span>
+        </div>
+        <div className="flex-1 overflow-y-auto px-2 space-y-0.5 custom-scrollbar pb-4">
           {kpiList.map(node => (
             <button
               key={node.id}
-              onClick={() => setSelectedKpiId(node.id)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${
-                selectedKpiId === node.id 
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold' 
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              onClick={() => { setActiveMode('history'); setSelectedKpiId(node.id); }}
+              className={`w-full text-left px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors flex items-center gap-2 ${
+                activeMode === 'history' && selectedKpiId === node.id 
+                  ? 'bg-[#8ab4f8]/20 text-[#8ab4f8]' 
+                  : 'text-slate-600 dark:text-[#e8eaed] hover:bg-slate-200 dark:hover:bg-[#3c4043]'
               }`}
             >
-              {node.type === 'KGI' ? <Target size={14} className="text-amber-500" /> : <Hash size={14} className="opacity-50" />}
+              <FileSpreadsheet size={14} className={node.type === 'KGI' ? 'text-amber-500' : 'opacity-50'} />
               <span className="truncate">{node.name}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* 右ペイン：詳細エディター */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-slate-50 dark:bg-[#202124]">
-        {selectedKpi ? (
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+      {/* 右ペイン：Data Grid (スプレッドシートUI) */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#202124]">
+        
+        {/* ツールバー */}
+        <div className="h-14 border-b border-slate-200 dark:border-[#3c4043] flex items-center justify-between px-4">
+          <div className="flex items-center gap-4">
+            <h2 className="text-[15px] font-bold text-slate-800 dark:text-[#e8eaed] flex items-center gap-2">
+              <LayoutGrid size={16} className="text-slate-400" />
+              {activeMode === 'master' ? 'KPIマスター' : activeMode === 'ksf' ? 'KSF一覧' : `${selectedKpi?.name} - 時系列データ`}
+            </h2>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search data..." 
+                className="pl-9 pr-3 py-1.5 bg-slate-100 dark:bg-[#2d2f31] border-none rounded-full text-[13px] focus:outline-none focus:ring-1 focus:ring-[#8ab4f8] w-48 text-slate-800 dark:text-[#e8eaed]"
+              />
+            </div>
+            <div className="h-4 w-px bg-slate-300 dark:bg-[#5f6368]"></div>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px]">
+              <Filter size={14} /> Filter
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px]">
+              <ArrowUpDown size={14} /> Sort
+            </button>
+            <button 
+              onClick={exportToCSV}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-primary-600 dark:text-[#8ab4f8] hover:bg-primary-50 dark:hover:bg-[#8ab4f8]/10 rounded-[4px] ml-2"
+            >
+              <Download size={14} /> Export
+            </button>
+          </div>
+        </div>
+
+        {/* グリッド領域 */}
+        <div className="flex-1 overflow-auto custom-scrollbar relative">
+          <table className="w-full text-left border-collapse whitespace-nowrap table-fixed">
+            <thead className="bg-slate-50 dark:bg-[#282a2d] sticky top-0 z-10 shadow-sm border-b border-slate-200 dark:border-[#3c4043]">
+              <tr>
+                <th className="w-12 border-r border-slate-200 dark:border-[#3c4043] bg-slate-100 dark:bg-[#3c4043]"></th>
+                {activeMode === 'master' && (
+                  <>
+                    <th className="w-48 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Aa Name</th>
+                    <th className="w-24 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Type</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">BU</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono"># Target</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono"># Actual</th>
+                    <th className="w-24 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Unit</th>
+                  </>
+                )}
+                {activeMode === 'history' && selectedKpi && (
+                  <>
+                    <th className="w-40 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">📅 Date</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono"># Target</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono"># Actual</th>
+                    <th className="w-auto p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Aa Comment</th>
+                  </>
+                )}
+                {activeMode === 'ksf' && (
+                  <>
+                    <th className="w-64 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Aa Title</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Owner</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Dept</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">📅 DueDate</th>
+                    <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Status</th>
+                  </>
+                )}
+                <th className="w-auto border-b border-slate-200 dark:border-[#3c4043]"></th>
+              </tr>
+            </thead>
             
-            {/* ヘッダーエリア */}
-            <div className="bg-white dark:bg-[#282a2d] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-xs px-2 py-0.5 rounded font-bold ${selectedKpi.type === 'KGI' ? 'bg-amber-100 text-amber-700' : 'bg-primary-100 text-primary-700'}`}>
-                      {selectedKpi.type}
-                    </span>
-                    <span className="text-xs text-slate-500 uppercase tracking-wider">{selectedKpi.businessUnit}</span>
-                  </div>
-                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2 group cursor-text">
-                    <input 
-                      type="text" 
-                      value={selectedKpi.name}
-                      onChange={(e) => handleUpdateKpiInfo('name', e.target.value)}
-                      className="bg-transparent border-b border-transparent hover:border-slate-300 focus:border-primary-500 focus:outline-none transition-colors w-[400px]"
-                    />
-                  </h1>
-                  {selectedKpi.qualitativeName && (
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{selectedKpi.qualitativeName}</p>
-                  )}
-                </div>
-                
-                <div className="text-right">
-                  <div className="text-sm text-slate-500 mb-1">現在の達成率</div>
-                  <div className={`text-3xl font-bold ${selectedKpi.status === 'danger' ? 'text-rose-500' : selectedKpi.status === 'warning' ? 'text-amber-500' : 'text-emerald-500'}`}>
-                    {selectedKpi.achievementRate.toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/50">
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">目標値 (Target)</label>
-                  <div className="flex items-center">
-                    <input 
-                      type="number" 
-                      value={selectedKpi.targetValue}
-                      onChange={(e) => handleUpdateKpiInfo('targetValue', Number(e.target.value) || 0)}
-                      className="text-lg font-bold bg-transparent focus:outline-none focus:border-b focus:border-primary-500 w-24 text-slate-800 dark:text-slate-200"
-                    />
-                    <span className="text-sm text-slate-500">{selectedKpi.unit}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">最新実績 (Actual)</label>
-                  <div className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                    {selectedKpi.actualValue.toLocaleString()} <span className="text-sm font-normal text-slate-500">{selectedKpi.unit}</span>
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs text-slate-500 mb-1">説明・定義</label>
-                  <input 
-                    type="text" 
-                    value={selectedKpi.description || ''}
-                    onChange={(e) => handleUpdateKpiInfo('description', e.target.value)}
-                    placeholder="このKPIの定義や計算式を記載..."
-                    className="w-full text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-primary-500 focus:outline-none transition-colors text-slate-700 dark:text-slate-300"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* トレンドグラフ */}
-            <div className="bg-white dark:bg-[#282a2d] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <TrendingUp size={16} className="text-primary-500" />
-                トレンド推移
-              </h3>
-              <div className="h-[250px]">
-                <TrendChart 
-                  actualValue={selectedKpi.actualValue}
-                  targetValue={selectedKpi.targetValue}
-                  unit={selectedKpi.unit}
-                  history={selectedKpi.history}
-                />
-              </div>
-            </div>
-
-            {/* 時系列データ（シート） */}
-            <div className="bg-white dark:bg-[#282a2d] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
-              <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  <Calendar size={16} className="text-primary-500" />
-                  時系列データシート (History)
-                </h3>
-              </div>
+            <tbody className="divide-y divide-slate-200 dark:divide-[#3c4043]">
               
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
-                    <tr>
-                      <th className="p-3 font-bold text-slate-500 w-32">日付</th>
-                      <th className="p-3 font-bold text-slate-500 w-32 text-right">目標値</th>
-                      <th className="p-3 font-bold text-slate-500 w-32 text-right">実績値</th>
-                      <th className="p-3 font-bold text-slate-500">コメント / 要因分析</th>
-                      <th className="p-3 font-bold text-slate-500 w-20 text-center">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    
-                    {/* 履歴リスト */}
-                    {(selectedKpi.history || []).map((hist) => (
-                      <tr key={hist.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 group">
-                        {editingHistId === hist.id ? (
-                          <>
-                            <td className="p-2"><input type="date" value={editDate} onChange={e => setEditDate(e.target.value)} className="w-full px-2 py-1 border rounded text-xs dark:bg-slate-800 dark:border-slate-700" /></td>
-                            <td className="p-2"><input type="number" value={editTarget} onChange={e => setEditTarget(e.target.value)} className="w-full px-2 py-1 border rounded text-xs text-right dark:bg-slate-800 dark:border-slate-700" /></td>
-                            <td className="p-2"><input type="number" value={editActual} onChange={e => setEditActual(e.target.value)} className="w-full px-2 py-1 border rounded text-xs text-right dark:bg-slate-800 dark:border-slate-700" /></td>
-                            <td className="p-2"><input type="text" value={editComment} onChange={e => setEditComment(e.target.value)} placeholder="コメント..." className="w-full px-2 py-1 border rounded text-xs dark:bg-slate-800 dark:border-slate-700" /></td>
-                            <td className="p-2 text-center">
-                              <button onClick={handleSaveEdit} className="text-xs bg-primary-500 text-white px-2 py-1 rounded hover:bg-primary-600">保存</button>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td className="p-3 text-slate-700 dark:text-slate-300">{hist.date}</td>
-                            <td className="p-3 text-right text-slate-500">{hist.targetValue.toLocaleString()}</td>
-                            <td className="p-3 text-right font-bold text-slate-800 dark:text-slate-200">{hist.actualValue.toLocaleString()}</td>
-                            <td className="p-3 text-slate-600 dark:text-slate-400 text-xs">
-                              {hist.comment ? (
-                                <span className="flex items-center gap-1.5"><MessageSquare size={12} className="opacity-50"/> {hist.comment}</span>
-                              ) : <span className="opacity-30">-</span>}
-                            </td>
-                            <td className="p-3 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="flex justify-center gap-2">
-                                <button onClick={() => startEdit(hist)} className="text-slate-400 hover:text-primary-500"><Edit size={14} /></button>
-                                <button onClick={() => handleDeleteHistory(hist.id!)} className="text-slate-400 hover:text-rose-500"><Trash2 size={14} /></button>
-                              </div>
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
+              {/* マスターモード */}
+              {activeMode === 'master' && Object.values(kpiData).map((node, index) => (
+                <tr key={node.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
+                  <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="text" value={node.name} onChange={e => handleUpdate(node.id, 'name', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <select value={node.type} onChange={e => handleUpdate(node.id, 'type', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none">
+                      <option value="KGI">KGI</option><option value="KPI">KPI</option>
+                    </select>
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="text" value={node.businessUnit} onChange={e => handleUpdate(node.id, 'businessUnit', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="number" value={node.targetValue} onChange={e => handleUpdate(node.id, 'targetValue', Number(e.target.value))} className="w-full h-full p-2 bg-transparent outline-none text-right" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0 bg-slate-50 dark:bg-[#2d2f31] font-medium text-right">
+                    <div className="w-full h-full p-2">{node.actualValue}</div>
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="text" value={node.unit} onChange={e => handleUpdate(node.id, 'unit', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none" />
+                  </td>
+                  <td></td>
+                </tr>
+              ))}
 
-                    {/* 新規追加行 */}
-                    <tr className="bg-primary-50/30 dark:bg-primary-900/10">
-                      <td className="p-3">
-                        <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-sm focus:border-primary-500 focus:outline-none" />
-                      </td>
-                      <td className="p-3">
-                        <input type="number" value={newTarget} onChange={e => setNewTarget(e.target.value)} placeholder="目標" className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-sm text-right focus:border-primary-500 focus:outline-none" />
-                      </td>
-                      <td className="p-3">
-                        <input type="number" value={newActual} onChange={e => setNewActual(e.target.value)} placeholder="実績" className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-sm text-right font-bold focus:border-primary-500 focus:outline-none" />
-                      </td>
-                      <td className="p-3">
-                        <input type="text" value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="今日の要因や特記事項を入力..." className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-sm focus:border-primary-500 focus:outline-none" />
-                      </td>
-                      <td className="p-3 text-center">
-                        <button 
-                          onClick={handleAddHistory}
-                          disabled={!newActual}
-                          className="flex items-center justify-center w-full gap-1 px-2 py-1.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:hover:bg-primary-600 text-white rounded text-xs font-bold transition-colors"
-                        >
-                          <Plus size={14} /> 追加
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+              {/* ヒストリーモード */}
+              {activeMode === 'history' && selectedKpi && (selectedKpi.history || []).map((hist, index) => (
+                <tr key={hist.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
+                  <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="date" value={hist.date} onChange={e => handleUpdate(hist.id!, 'date', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="number" value={hist.targetValue} onChange={e => handleUpdate(hist.id!, 'targetValue', Number(e.target.value))} className="w-full h-full p-2 bg-transparent outline-none text-right focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="number" value={hist.actualValue} onChange={e => handleUpdate(hist.id!, 'actualValue', Number(e.target.value))} className="w-full h-full p-2 bg-transparent outline-none text-right font-bold focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <input type="text" value={hist.comment || ''} onChange={e => handleUpdate(hist.id!, 'comment', e.target.value)} placeholder="Click to add text..." className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                  </td>
+                  <td></td>
+                </tr>
+              ))}
 
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-              <Hash size={24} className="text-slate-400" />
+              {/* KSFモード */}
+              {activeMode === 'ksf' && actions.map((action, index) => (
+                <tr key={action.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
+                  <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <div className="w-full h-full p-2 font-medium">{action.title}</div>
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <div className="w-full h-full p-2">{action.owner}</div>
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <div className="w-full h-full p-2">{action.department || '-'}</div>
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <div className="w-full h-full p-2">{action.dueDate}</div>
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <div className={`w-full h-full p-2 ${action.status === 'done' ? 'text-emerald-500' : ''}`}>{action.status}</div>
+                  </td>
+                  <td></td>
+                </tr>
+              ))}
+
+            </tbody>
+          </table>
+
+          {/* New Row Button (History mode) */}
+          {activeMode === 'history' && selectedKpi && (
+            <div className="flex border-b border-slate-200 dark:border-[#3c4043]">
+               <div className="w-12 border-r border-slate-200 dark:border-[#3c4043] bg-slate-50 dark:bg-[#282a2d]"></div>
+               <button 
+                 onClick={handleAddHistoryRow}
+                 className="flex-1 text-left p-2 text-[13px] text-slate-500 hover:bg-slate-50 dark:hover:bg-[#2d2f31] transition-colors flex items-center gap-2"
+               >
+                 <Plus size={14} /> New row
+               </button>
             </div>
-            <p>左側のエクスプローラーからKPIを選択してください</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
