@@ -66,7 +66,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-black text-xl tracking-tight text-primary-600 dark:text-primary-500">
             <Network className="w-6 h-6" />
-            HHR-KPI MANAGER
+            LogicTree Pro
           </div>
           <div className="flex items-center gap-6">
             <Link href="/login" className="text-sm font-medium hover:text-primary-600 transition-colors hidden md:block">
@@ -307,7 +307,7 @@ export default function LandingPage() {
         
         <div className="container mx-auto px-6 max-w-6xl relative z-10">
           <div className="text-center mb-24">
-            <h2 className="text-3xl md:text-5xl font-black mb-6">HHR-KPI MANAGER がもたらす<br className="md:hidden" /> 4つの革新</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-6">LogicTree Pro がもたらす<br className="md:hidden" /> 4つの革新</h2>
             <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
               ただのダッシュボードではありません。戦略を描き、シミュレーションし、行動を管理するための統合プラットフォームです。
             </p>
@@ -479,9 +479,9 @@ export default function LandingPage() {
       <footer className="py-12 border-t border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-[#0B0F19] text-center text-slate-500 dark:text-slate-400 text-sm">
         <div className="flex items-center justify-center gap-2 font-black text-lg tracking-tight text-slate-300 dark:text-slate-700 mb-4 grayscale">
           <Network className="w-5 h-5" />
-          HHR-KPI MANAGER
+          LogicTree Pro
         </div>
-        <p>© 2026 HHR-KPI MANAGER. All rights reserved.</p>
+        <p>© 2026 LogicTree Pro. All rights reserved.</p>
       </footer>
     </div>
   );

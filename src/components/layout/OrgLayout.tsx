@@ -21,7 +21,7 @@ export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
               <Hexagon className="text-white" size={20} />
             </div>
             <span className="font-bold text-slate-800 dark:text-slate-200 tracking-tight text-[18px]">
-              {currentOrg ? currentOrg.name : 'HHR-KPI MANAGER'}
+              {currentOrg ? currentOrg.name : 'LogicTree Pro'}
             </span>
           </Link>
         </div>

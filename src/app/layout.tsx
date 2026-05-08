@@ -11,7 +11,7 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "HHR-KPI MANAGER | 複合施設KPI管理",
+  title: "LogicTree Pro | 複合施設KPI管理",
   description: "複合施設向けKPI/KGI管理ツール",
 };
 
