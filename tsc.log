@@ -1,0 +1,29 @@
+next.config.ts(4,3): error TS2353: Object literal may only specify known properties, and 'eslint' does not exist in type 'NextConfig'.
+src/app/(auth)/invite/[id]/page.tsx(53,13): error TS2554: Expected 3 arguments, but got 2.
+src/app/[orgId]/p/[projectId]/my-tasks/page.tsx(6,18): error TS2305: Module '"@/types"' has no exported member 'KpiNode'.
+src/app/[orgId]/p/[projectId]/page.tsx(70,7): error TS2322: Type '({ date: string; actualValue: number; targetValue: number; } | { date: string; id: string; actualValue: number; targetValue: number; comment?: string | undefined; })[]' is not assignable to type 'KpiHistoryEntry[]'.
+  Type '{ date: string; actualValue: number; targetValue: number; } | { date: string; id: string; actualValue: number; targetValue: number; comment?: string | undefined; }' is not assignable to type 'KpiHistoryEntry'.
+    Property 'id' is missing in type '{ date: string; actualValue: number; targetValue: number; }' but required in type 'KpiHistoryEntry'.
+src/components/dashboard/DashboardSummary.tsx(64,39): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/components/kpi-tree/ActionPanel.tsx(33,26): error TS2304: Cannot find name 'aiInsight'.
+src/components/kpi-tree/ActionPanel.tsx(38,13): error TS2304: Cannot find name 'aiInsight'.
+src/components/kpi-tree/ActionPanel.tsx(39,24): error TS2304: Cannot find name 'aiInsight'.
+src/components/kpi-tree/ActionPanel.tsx(43,20): error TS2304: Cannot find name 'aiInsight'.
+src/components/kpi-tree/ActionPanel.tsx(45,13): error TS2304: Cannot find name 'aiInsight'.
+src/components/kpi-tree/ActionPanel.tsx(47,20): error TS2304: Cannot find name 'aiInsight'.
+src/components/kpi-tree/ActionPanel.tsx(50,5): error TS2304: Cannot find name 'setAiInsight'.
+src/store/useKpiStore.ts(269,11): error TS2353: Object literal may only specify known properties, and 'currentOrgId' does not exist in type 'KpiStore | Partial<KpiStore> | ((state: KpiStore) => KpiStore | Partial<KpiStore>)'.
+src/store/useKpiStore.ts(281,78): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(294,73): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(304,73): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(311,73): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(320,76): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(476,68): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(485,68): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(575,72): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(592,70): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(606,68): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(631,68): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(655,68): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.
+src/store/useKpiStore.ts(679,68): error TS2339: Property 'currentOrgId' does not exist on type 'KpiStore'.

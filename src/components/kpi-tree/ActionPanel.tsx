@@ -1,38 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
-import { Sparkles, Trash2, Edit2 } from 'lucide-react';
+import { useAuthStore } from '@/store/useAuthStore';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction } = useKpiStore();
+  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction } = useKpiStore();
   const { currentProjectId, projects } = useProjectStore();
+  const { user } = useAuthStore();
   const currentProject = projects.find(p => p.id === currentProjectId);
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
   const currentWorkflow = selectedNodeId ? workflows[selectedNodeId] : null;
 
-  const handleAddKsfAndKpi = () => {
-    if (!selectedKpi || !aiInsight) return;
-    
-    const kpiId = `kpi_custom_kpi_${Math.random().toString(36).substr(2, 9)}`;
-    addKpiNode({
-      id: kpiId,
-      name: aiInsight.kpiIdea, // 定量名
-      qualitativeName: aiInsight.ksfIdea, // 定性名
-      businessUnit: selectedKpi.businessUnit,
-      type: 'KPI',
-      parentId: selectedKpi.id,
-      targetValue: aiInsight.kpiIdeaTarget || 0,
-      actualValue: 0,
-      unit: aiInsight.kpiIdeaUnit || '件',
-      previousValue: 0,
-      description: aiInsight.ksfReason
+  const selectedKpiTasks = actions.filter(a => a.kpiId === selectedNodeId);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+
+  const handleAddTask = () => {
+    if (!selectedKpi || !newTaskTitle.trim()) return;
+    addAction({
+      kpiId: selectedKpi.id,
+      title: newTaskTitle.trim(),
+      owner: user?.displayName || user?.email?.split('@')[0] || '未定',
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
+      status: 'todo'
     });
-    
-    setAiInsight(null); // 追加後はクリア
+    setNewTaskTitle('');
   };
-  
+
   const [isEditingValue, setIsEditingValue] = useState(false);
   const [editTargetValue, setEditTargetValue] = useState('');
   const [editActualValue, setEditActualValue] = useState('');
@@ -278,6 +274,59 @@ export const ActionPanel = () => {
                   targetValue={selectedKpi.targetValue} 
                   unit={selectedKpi.unit} 
                 />
+              </div>
+            </div>
+
+            {/* 紐づくタスク一覧 */}
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+              <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>関連タスク</span>
+                <span className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded text-[9px]">{selectedKpiTasks.length}</span>
+              </h5>
+              
+              <div className="space-y-2 mb-3 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
+                {selectedKpiTasks.length === 0 ? (
+                  <p className="text-xs text-slate-500 text-center py-2 bg-slate-100 dark:bg-slate-800/50 rounded">タスクはありません</p>
+                ) : (
+                  selectedKpiTasks.map(task => (
+                    <div key={task.id} className="flex items-start gap-2 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700 transition-colors">
+                      <button 
+                        onClick={() => toggleActionStatus(task.id)}
+                        className="mt-0.5 flex-shrink-0 text-slate-400 hover:text-primary-500 transition-colors"
+                      >
+                        {task.status === 'done' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Circle size={16} />}
+                      </button>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className={`text-xs font-medium truncate ${task.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                          {task.title}
+                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded truncate max-w-[80px]">{task.owner || '未設定'}</span>
+                          <span className="text-[9px] text-slate-400">{task.dueDate ? task.dueDate.split('T')[0] : '期限なし'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* 手動タスク追加 */}
+              <div className="flex gap-2">
+                <input 
+                  type="text"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
+                  placeholder="新しいタスクを追加..."
+                  className="flex-1 text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
+                <button 
+                  onClick={handleAddTask}
+                  disabled={!newTaskTitle.trim()}
+                  className="text-[10px] font-bold px-3 py-1.5 bg-slate-800 dark:bg-slate-700 text-white rounded hover:bg-slate-700 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  追加
+                </button>
               </div>
             </div>
           </div>

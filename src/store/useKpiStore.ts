@@ -17,6 +17,7 @@ interface KpiStore {
   workflows: Record<string, AiWorkflow>;
   isDbInitialized: boolean;
   currentProjectId: string | null;
+  currentOrgId: string | null;
   currentProjectInfo: import('@/types').ProjectInfo | null;
   currentPeriod: string;
   isPredictionMode: boolean;
