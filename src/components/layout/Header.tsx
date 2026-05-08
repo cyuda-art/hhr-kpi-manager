@@ -11,7 +11,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
-import { LayoutDashboard, Database, Activity, CheckSquare, FolderGit2 } from 'lucide-react';
+import { LayoutDashboard, Database, Activity, CheckSquare, FolderGit2, FolderKanban } from 'lucide-react';
 
 export const Header = () => {
   const router = useRouter();
