@@ -38,6 +38,10 @@ interface KpiStore {
   setKpiDataBulk: (nodes: KpiNodeData[]) => void;
   toggleNodeCollapse: (id: string) => void;
   setProjectInfo: (info: Partial<import('@/types').ProjectInfo>) => void;
+  // 時系列データ管理
+  addHistoryRecord: (kpiId: string, record: Omit<import('@/types').KpiHistoryEntry, 'id'>) => void;
+  updateHistoryRecord: (kpiId: string, recordId: string, updates: Partial<import('@/types').KpiHistoryEntry>) => void;
+  deleteHistoryRecord: (kpiId: string, recordId: string) => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -90,22 +94,13 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
     }
   }
 
-  const today = new Date().toISOString().split('T')[0];
   let newHistory = node.history ? [...node.history] : [];
   
   // シミュレーション中でなければ履歴を更新
   if (!node.isSimulated && node.simulatedValue === undefined) {
-    const existingIndex = newHistory.findIndex(h => h.date === today);
-    const entry = {
-      date: today,
-      actualValue: actual,
-      targetValue: target
-    };
-    if (existingIndex >= 0) {
-      newHistory[existingIndex] = entry;
-    } else {
-      newHistory.push(entry);
-    }
+    // 既存の自動記録ロジックはコメントアウトするか、IDを付与する形に変更する
+    // ここでは既存の自動追加ロジックは極力無効化し、明示的なHistory管理に任せる。
+    // ただし、historyが存在しない場合のために空配列はセットしておく
   }
 
   return {
@@ -612,6 +607,80 @@ export const useKpiStore = create<KpiStore>()(
       return { kpiData: draft, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
+  
+  addHistoryRecord: (kpiId, record) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      const node = draft[kpiId];
+      if (!node) return state;
+
+      const newRecord = { ...record, id: `hist_${Math.random().toString(36).substr(2, 9)}` };
+      const newHistory = [...(node.history || []), newRecord].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      // 最新の履歴の値をactualValueに反映
+      const latestRecord = newHistory[newHistory.length - 1];
+      const newActualValue = latestRecord ? latestRecord.actualValue : node.actualValue;
+
+      draft[kpiId] = calculateComputed({
+        ...node,
+        history: newHistory,
+        actualValue: newActualValue,
+        initialActualValue: newActualValue
+      });
+
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
+    });
+  },
+
+  updateHistoryRecord: (kpiId, recordId, updates) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      const node = draft[kpiId];
+      if (!node || !node.history) return state;
+
+      const newHistory = node.history.map(h => h.id === recordId ? { ...h, ...updates } : h).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      // 最新の履歴の値をactualValueに反映
+      const latestRecord = newHistory[newHistory.length - 1];
+      const newActualValue = latestRecord ? latestRecord.actualValue : node.actualValue;
+
+      draft[kpiId] = calculateComputed({
+        ...node,
+        history: newHistory,
+        actualValue: newActualValue,
+        initialActualValue: newActualValue
+      });
+
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
+    });
+  },
+
+  deleteHistoryRecord: (kpiId, recordId) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      const node = draft[kpiId];
+      if (!node || !node.history) return state;
+
+      const newHistory = node.history.filter(h => h.id !== recordId).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      // 最新の履歴の値をactualValueに反映
+      const latestRecord = newHistory[newHistory.length - 1];
+      const newActualValue = latestRecord ? latestRecord.actualValue : 0; // 履歴がない場合は0に戻すか維持するか。一旦0に。
+
+      draft[kpiId] = calculateComputed({
+        ...node,
+        history: newHistory,
+        actualValue: newActualValue,
+        initialActualValue: newActualValue
+      });
+
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
+    });
+  },
+
   toggleNodeCollapse: (id) => {
     set((state) => {
       const isCollapsed = state.collapsedNodes.includes(id);

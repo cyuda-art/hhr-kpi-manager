@@ -3,9 +3,11 @@ export type BusinessUnit = 'company' | 'hotel' | 'spa' | 'restaurant' | 'shop' |
 export type Status = 'good' | 'warning' | 'danger';
 
 export interface KpiHistoryEntry {
+  id: string; // 編集・削除用の一意のID
   date: string; // YYYY-MM-DD形式
   actualValue: number;
   targetValue: number;
+  comment?: string; // 特記事項・要因など
 }
 
 export interface KpiNodeData {

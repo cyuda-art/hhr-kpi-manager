@@ -16,6 +16,7 @@ interface Props {
   actualValue: number;
   targetValue: number;
   unit: string;
+  history?: import('@/types').KpiHistoryEntry[];
 }
 
 type Period = '1d' | '1w' | '1m' | '3m' | '6m' | '1y' | '3y' | '5y';
@@ -31,10 +32,21 @@ const periodOptions: { value: Period; label: string }[] = [
   { value: '5y', label: '5年' },
 ];
 
-export const TrendChart = ({ actualValue, targetValue, unit }: Props) => {
+export const TrendChart = ({ actualValue, targetValue, unit, history }: Props) => {
   const [period, setPeriod] = useState<Period>('6m');
 
   const data = useMemo(() => {
+    // historyがある場合はそれを優先して描画する
+    if (history && history.length > 0) {
+      // 履歴データを日付順にソート（念のため）
+      const sortedHistory = [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      return sortedHistory.map(h => ({
+        name: h.date.substring(5).replace('-', '/'), // MM/DD形式
+        実績: h.actualValue,
+        目標: h.targetValue,
+      }));
+    }
     // 期間に応じたデータポイント数とラベル生成
     let points = 6;
     let labelFormatter: (i: number, total: number) => string;
@@ -137,22 +149,24 @@ export const TrendChart = ({ actualValue, targetValue, unit }: Props) => {
   return (
     <div className="w-full flex flex-col gap-2 mt-4 bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
       
-      {/* 期間選択タブ */}
-      <div className="flex gap-1 overflow-x-auto pb-1 custom-scrollbar">
-        {periodOptions.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setPeriod(opt.value)}
-            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors whitespace-nowrap ${
-              period === opt.value
-                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300'
-                : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      {/* 期間選択タブ（historyがないダミーモード時のみ表示、または将来の拡張用に残す） */}
+      {(!history || history.length === 0) && (
+        <div className="flex gap-1 overflow-x-auto pb-1 custom-scrollbar">
+          {periodOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setPeriod(opt.value)}
+              className={`px-3 py-1 text-xs font-bold rounded-full transition-colors whitespace-nowrap ${
+                period === opt.value
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300'
+                  : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="w-full h-56 mt-2">
         <ResponsiveContainer width="100%" height="100%">
