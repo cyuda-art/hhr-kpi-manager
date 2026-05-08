@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { useLayoutStore } from '@/store/useLayoutStore';
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { sidebarWidth, isSidebarCollapsed, themeColor } = useLayoutStore();
   const [isMobile, setIsMobile] = useState(true);
+  const pathname = usePathname();
+
+  const isKpiTreePage = pathname?.endsWith('/kpi-tree');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -14,11 +18,12 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#202124] flex w-full overflow-hidden transition-colors duration-300">
       <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out min-w-0">
         <Header />
-        <main className="flex-1 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] p-4 md:p-8 transition-colors max-w-full overflow-x-hidden relative">
+        <main className={`flex-1 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] transition-colors max-w-full overflow-x-hidden relative ${isKpiTreePage ? 'p-0' : 'p-4 md:p-8'}`}>
           {children}
         </main>
       </div>
