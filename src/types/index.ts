@@ -23,6 +23,8 @@ export interface KpiNodeData {
   previousValue: number;
   description: string;
   history?: KpiHistoryEntry[]; // 時系列データ
+  updateFrequency?: 'daily' | 'weekly' | 'monthly'; // 更新頻度
+  calculationFormula?: string; // 計算式（例: "客数 × 客単価"）
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース

@@ -16,6 +16,7 @@ export const ActionPanel = () => {
 
   const selectedKpiTasks = actions.filter(a => a.kpiId === selectedNodeId);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [activeTab, setActiveTab] = useState<'details' | 'tasks' | 'ai'>('details');
 
   const handleAddTask = () => {
     if (!selectedKpi || !newTaskTitle.trim()) return;
@@ -34,8 +35,12 @@ export const ActionPanel = () => {
   const [editActualValue, setEditActualValue] = useState('');
   const [editName, setEditName] = useState('');
   const [editQualitativeName, setEditQualitativeName] = useState('');
+  const [editUpdateFrequency, setEditUpdateFrequency] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  const [editCalculationFormula, setEditCalculationFormula] = useState('');
 
   const [isGeneratingWorkflow, setIsGeneratingWorkflow] = useState(false);
+  const [isAnalyzingPdca, setIsAnalyzingPdca] = useState(false);
+  const [pdcaResult, setPdcaResult] = useState<string | null>(null);
   const [workflowError, setWorkflowError] = useState('');
 
   // 選択されたKPIが変わったら編集モードなどをリセット
@@ -47,6 +52,8 @@ export const ActionPanel = () => {
       setEditActualValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toString() : selectedKpi.actualValue.toString());
       setEditName(selectedKpi.name);
       setEditQualitativeName(selectedKpi.qualitativeName || '');
+      setEditUpdateFrequency(selectedKpi.updateFrequency || 'monthly');
+      setEditCalculationFormula(selectedKpi.calculationFormula || '');
     }
   }, [selectedNodeId, kpiData, isPredictionMode]); 
 
@@ -61,7 +68,9 @@ export const ActionPanel = () => {
         targetValue: Number(editTargetValue) || 0,
         actualValue: Number(editActualValue) || 0,
         name: editName || selectedKpi?.name,
-        qualitativeName: editQualitativeName || selectedKpi?.qualitativeName
+        qualitativeName: editQualitativeName || selectedKpi?.qualitativeName,
+        updateFrequency: editUpdateFrequency,
+        calculationFormula: editCalculationFormula
       });
     }
     setIsEditingValue(false);
@@ -160,11 +169,27 @@ export const ActionPanel = () => {
     alert('タスクをToDoリストに追加しました！');
   };
 
+  const analyzePdca = () => {
+    if (!selectedKpi) return;
+    setIsAnalyzingPdca(true);
+    setPdcaResult(null);
+    // モックアップ：AIからの返答をシミュレーション
+    setTimeout(() => {
+      const isAchieved = selectedKpi.achievementRate >= 100;
+      setPdcaResult(isAchieved 
+        ? `✅ 【達成要因の分析】\n目標を上回るペースで推移しています。現在のタスク（${selectedKpiTasks.length}件）が有効に機能していると考えられます。\n\n【次の一手】\nこの成功パターンを他の事業部にも横展開するための「ナレッジ共有タスク」の追加を推奨します。`
+        : `⚠️ 【未達要因の分析】\n目標に対して${(100 - selectedKpi.achievementRate).toFixed(1)}%ショートしています。\n計算式「${selectedKpi.calculationFormula || '未設定'}」に照らし合わせると、現在の進捗スピードでは目標達成が困難です。\n\n【次の一手】\nリカバリープランとして以下のタスクを追加することを推奨します。\n・原因究明とボトルネックの特定（担当：マネージャー）\n・今週末までのテコ入れ施策の立案`
+      );
+      setIsAnalyzingPdca(false);
+    }, 2000);
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="mb-4">
-        {selectedKpi ? (
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50 relative">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700/50 relative">
+      {selectedKpi ? (
+        <>
+          {/* ヘッダー情報（常に表示） */}
+          <div className="mb-2">
             {selectedKpi.type !== 'KGI' && (
               <button 
                 onClick={() => removeKpiNode(selectedKpi.id)}
@@ -194,44 +219,87 @@ export const ActionPanel = () => {
                 達成率: {isPredictionMode && selectedKpi.simulatedAchievementRate !== undefined ? selectedKpi.simulatedAchievementRate.toFixed(1) : selectedKpi.achievementRate.toFixed(1)}%
               </span>
             </div>
+          </div>
 
-            {/* 数値編集UI */}
-            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/50">
-              {isEditingValue ? (
-                <div className="space-y-2">
-                  <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-slate-200 dark:border-slate-700/50">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'Goal名 (定性)' : 'KSF名 (定性)'}</span>
-                      <input 
-                        type="text" 
-                        value={editQualitativeName} 
-                        onChange={(e) => setEditQualitativeName(e.target.value)}
-                        disabled={isPredictionMode}
-                        className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'KGI名 (定量)' : 'KPI名 (定量)'}</span>
-                      <input 
-                        type="text" 
-                        value={editName} 
-                        onChange={(e) => setEditName(e.target.value)}
-                        disabled={isPredictionMode}
-                        className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-slate-500 w-12">目標値</span>
-                    <input 
-                      type="number" 
-                      value={editTargetValue} 
-                      onChange={(e) => setEditTargetValue(e.target.value)}
-                      disabled={isPredictionMode}
-                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
-                    />
-                    <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
-                  </div>
+          {/* タブナビゲーション */}
+          <div className="flex border-b border-slate-200 dark:border-slate-700 mt-4 mb-3">
+            <button onClick={() => setActiveTab('details')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'details' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+              詳細・数値
+            </button>
+            <button onClick={() => setActiveTab('tasks')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'tasks' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+              タスク ({selectedKpiTasks.length})
+            </button>
+            <button onClick={() => setActiveTab('ai')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors flex items-center justify-center gap-1 ${activeTab === 'ai' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+              <Sparkles size={12} /> AI・PDCA
+            </button>
+          </div>
+
+          {/* タブコンテンツ */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 pb-4">
+            {/* 1. 詳細・数値タブ */}
+            {activeTab === 'details' && (
+              <div className="space-y-4">
+                {/* 数値編集UI */}
+                <div>
+                  {isEditingValue ? (
+                    <div className="space-y-2 border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-white dark:bg-slate-900">
+                      <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-slate-200 dark:border-slate-700/50">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'Goal名 (定性)' : 'KSF名 (定性)'}</span>
+                          <input 
+                            type="text" 
+                            value={editQualitativeName} 
+                            onChange={(e) => setEditQualitativeName(e.target.value)}
+                            disabled={isPredictionMode}
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'KGI名 (定量)' : 'KPI名 (定量)'}</span>
+                          <input 
+                            type="text" 
+                            value={editName} 
+                            onChange={(e) => setEditName(e.target.value)}
+                            disabled={isPredictionMode}
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-slate-500">更新頻度</span>
+                          <select
+                            value={editUpdateFrequency}
+                            onChange={(e) => setEditUpdateFrequency(e.target.value as any)}
+                            disabled={isPredictionMode}
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                          >
+                            <option value="daily">日次 (Daily)</option>
+                            <option value="weekly">週次 (Weekly)</option>
+                            <option value="monthly">月次 (Monthly)</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-slate-500">計算式（構造）</span>
+                          <input 
+                            type="text" 
+                            value={editCalculationFormula} 
+                            onChange={(e) => setEditCalculationFormula(e.target.value)}
+                            disabled={isPredictionMode}
+                            placeholder="例: 客数 × 客単価"
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-slate-500 w-12">目標値</span>
+                        <input 
+                          type="number" 
+                          value={editTargetValue} 
+                          onChange={(e) => setEditTargetValue(e.target.value)}
+                          disabled={isPredictionMode}
+                          className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                        />
+                        <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
+                      </div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs text-slate-500 w-12">{isPredictionMode ? '予測値' : '実績値'}</span>
                     <input 
@@ -248,27 +316,39 @@ export const ActionPanel = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between group/edit cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 -mx-1.5 rounded transition-colors" onClick={() => setIsEditingValue(true)}>
-                  <div className="flex flex-col gap-1">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      目標: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedKpi.targetValue.toLocaleString()}</span> {selectedKpi.unit}
+                <div className="flex flex-col gap-2 group/edit cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700" onClick={() => setIsEditingValue(true)}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedKpi.targetValue.toLocaleString()}</span> {selectedKpi.unit}
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toLocaleString() : selectedKpi.actualValue.toLocaleString()}</span> {selectedKpi.unit}
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toLocaleString() : selectedKpi.actualValue.toLocaleString()}</span> {selectedKpi.unit}
+                    <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded">
+                      <Edit2 size={12} /> 編集
                     </div>
                   </div>
-                  <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold">
-                    <Edit2 size={12} />
-                    編集
+                  
+                  <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400 mt-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                    <span className="flex items-center gap-1">
+                      <span className="bg-slate-200 dark:bg-slate-700 px-1 rounded text-slate-600 dark:text-slate-300">
+                        {selectedKpi.updateFrequency === 'daily' ? '日次更新' : selectedKpi.updateFrequency === 'weekly' ? '週次更新' : '月次更新'}
+                      </span>
+                    </span>
+                    {selectedKpi.calculationFormula && (
+                      <span className="truncate" title={selectedKpi.calculationFormula}>式: {selectedKpi.calculationFormula}</span>
+                    )}
                   </div>
                 </div>
               )}
             </div>
 
             {/* トレンドチャート */}
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/50">
+            <div className="mt-4">
               <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">トレンド推移</h5>
-              <div className="bg-white dark:bg-slate-900 rounded-lg overflow-hidden">
+              <div className="bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
                 <TrendChart 
                   actualValue={selectedKpi.actualValue} 
                   targetValue={selectedKpi.targetValue} 
@@ -276,17 +356,15 @@ export const ActionPanel = () => {
                 />
               </div>
             </div>
+          </div>
+          )}
 
-            {/* 紐づくタスク一覧 */}
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/50">
-              <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
-                <span>関連タスク</span>
-                <span className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded text-[9px]">{selectedKpiTasks.length}</span>
-              </h5>
-              
-              <div className="space-y-2 mb-3 max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
+          {/* 2. タスクタブ */}
+          {activeTab === 'tasks' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
                 {selectedKpiTasks.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-2 bg-slate-100 dark:bg-slate-800/50 rounded">タスクはありません</p>
+                  <p className="text-xs text-slate-500 text-center py-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">タスクはありません</p>
                 ) : (
                   selectedKpiTasks.map(task => (
                     <div key={task.id} className="flex items-start gap-2 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700 transition-colors">
@@ -311,14 +389,14 @@ export const ActionPanel = () => {
               </div>
 
               {/* 手動タスク追加 */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700">
                 <input 
                   type="text"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
                   placeholder="新しいタスクを追加..."
-                  className="flex-1 text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="flex-1 text-xs px-2 py-1.5 border-none dark:bg-slate-900 dark:text-slate-200 focus:outline-none"
                 />
                 <button 
                   onClick={handleAddTask}
@@ -329,71 +407,92 @@ export const ActionPanel = () => {
                 </button>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-lg border border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400 text-center">
-            ツリーからKPIを選択してください
-          </div>
-        )}
-      </div>
-
-      {/* 統合AIアクション生成ボタン */}
-      {selectedKpi && (
-        <div className="mb-6 border-b border-slate-200 dark:border-[#3c4043] pb-6">
-          {!currentWorkflow && !isGeneratingWorkflow && (
-            <button 
-              onClick={generateWorkflow}
-              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all shadow-md group"
-            >
-              <Sparkles size={16} className="group-hover:animate-pulse" />
-              AIで実行プラン（フェーズとタスク）を自動構築
-            </button>
           )}
 
-          {isGeneratingWorkflow && (
-            <div className="siri-blob-container p-1 rounded-xl">
-              <div className="siri-blob rounded-xl"></div>
-              <div className="relative z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-4">
-                <div className="relative">
-                  <Sparkles size={28} className="text-primary-500 animate-pulse relative" />
-                </div>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 animate-pulse tracking-wide text-center">
-                  戦略を具体的なタスクに分解中...<br/>
-                  <span className="text-[10px] font-normal opacity-70">組織のリソース制約と目標を考慮しています</span>
-                </p>
-              </div>
-            </div>
-          )}
-
-          {workflowError && (
-            <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 p-4 rounded-xl text-rose-600 dark:text-rose-400 text-xs font-medium mt-4">
-              {workflowError}
-            </div>
-          )}
-
-          {currentWorkflow && (
-            <div className="bg-white dark:bg-[#2d2f31] border border-primary-200 dark:border-[#3c4043] p-4 rounded-[8px] shadow-sm">
-              <div className="flex justify-between items-center mb-3">
-                <h5 className="text-[14px] font-bold text-slate-800 dark:text-[#f1f3f4] flex items-center gap-1.5">
-                  <Sparkles size={16} className="text-primary-500" />
-                  生成された戦略見解
+          {/* 3. AI分析・PDCAタブ */}
+          {activeTab === 'ai' && (
+            <div className="space-y-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 rounded-lg">
+                <h5 className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-primary-500" />
+                  実績データをもとにAIがPDCAを回す
                 </h5>
-                <button onClick={generateWorkflow} className="text-[10px] text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] underline">再生成して追加</button>
-              </div>
-              
-              <p className="text-[12px] text-slate-600 dark:text-[#9aa0a6] bg-slate-50 dark:bg-[#202124] p-3 rounded">
-                {currentWorkflow.ksf_analysis}
-              </p>
-              <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#5f6368]">
-                <p className="text-[11px] text-slate-500 dark:text-[#9aa0a6]">
-                  <strong>💡 KPIアドバイス:</strong> {currentWorkflow.kpi_advice}
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                  現在の達成率（{selectedKpi.achievementRate.toFixed(1)}%）と関連タスクの進行状況をAIが分析し、未達の場合はリカバリー策となるタスクを自動提案します。
                 </p>
+                <button 
+                  onClick={analyzePdca}
+                  disabled={isAnalyzingPdca}
+                  className="w-full py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isAnalyzingPdca ? '分析中...' : '現状分析と次の一手を提案'}
+                </button>
+
+                {pdcaResult && (
+                  <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {pdcaResult}
+                  </div>
+                )}
               </div>
-              <p className="text-[10px] text-emerald-600 font-bold mt-4 text-center">
-                ※ 生成された各フェーズはツリーの子ノード（KPI）として、<br/>タスクはマイタスク（ToDo）としてシステムに自動登録されました。
-              </p>
+
+              {!currentWorkflow && !isGeneratingWorkflow && (
+                <button 
+                  onClick={generateWorkflow}
+                  className="w-full py-3 bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-lg flex items-center justify-center gap-2 text-[11px] font-bold transition-all shadow-sm group"
+                >
+                  <Sparkles size={14} className="group-hover:animate-pulse" />
+                  ゼロから実行プラン（フェーズ・タスク）を構築
+                </button>
+              )}
+
+              {isGeneratingWorkflow && (
+                <div className="siri-blob-container p-1 rounded-xl">
+                  <div className="siri-blob rounded-xl"></div>
+                  <div className="relative z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-4">
+                    <div className="relative">
+                      <Sparkles size={28} className="text-primary-500 animate-pulse relative" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200 animate-pulse tracking-wide text-center">
+                      戦略を具体的なタスクに分解中...<br/>
+                      <span className="text-[10px] font-normal opacity-70">組織のリソース制約と目標を考慮しています</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {workflowError && (
+                <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 p-3 rounded-md text-rose-600 dark:text-rose-400 text-[11px] font-medium mt-4">
+                  {workflowError}
+                </div>
+              )}
+
+              {currentWorkflow && (
+                <div className="bg-white dark:bg-slate-900 border border-primary-200 dark:border-slate-700 p-3 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <h5 className="text-[11px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Sparkles size={12} className="text-primary-500" />
+                      生成された戦略見解
+                    </h5>
+                    <button onClick={generateWorkflow} className="text-[9px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline">再生成</button>
+                  </div>
+                  
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-2 rounded leading-relaxed">
+                    {currentWorkflow.ksf_analysis}
+                  </p>
+                  <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      <strong>💡 KPIアドバイス:</strong> {currentWorkflow.kpi_advice}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+          </div>
+        </>
+      ) : (
+        <div className="flex items-center justify-center h-full text-sm text-slate-400 dark:text-slate-500">
+          ツリーからKPIを選択してください
         </div>
       )}
     </div>
