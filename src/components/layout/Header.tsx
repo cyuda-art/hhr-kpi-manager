@@ -20,7 +20,7 @@ export const Header = () => {
   const { currentProjectId, projects } = useProjectStore();
   const { currentOrgId } = useOrgStore();
   const { toggleMobileMenu } = useLayoutStore();
-  const { currentPeriod, setPeriod, isPredictionMode, togglePredictionMode } = useKpiStore();
+  const { currentPeriod, setPeriod } = useKpiStore();
   const [isCopied, setIsCopied] = useState(false);
 
   const currentProject = projects.find(p => p.id === currentProjectId);
@@ -60,7 +60,7 @@ export const Header = () => {
         </Link>
 
         {/* プロジェクト切り替え */}
-        <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-lg px-3 py-1.5 border border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:hover:border-[#5f6368] transition-colors max-w-[200px]">
+        <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-lg px-2 xl:px-3 py-1.5 border border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:hover:border-[#5f6368] transition-colors max-w-[120px] lg:max-w-[160px] xl:max-w-[200px]">
           <FolderGit2 size={16} className="text-primary-500 dark:text-[#8ab4f8] shrink-0" />
           <select 
             value={currentProjectId || ''}
@@ -78,21 +78,21 @@ export const Header = () => {
           </select>
         </div>
 
-        <div className="hidden md:flex items-center gap-1 overflow-x-auto custom-scrollbar pr-4 pl-2 border-l border-slate-200 dark:border-[#3c4043]">
-          <Link href={`/${currentOrgId}/p/${currentProjectId}`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname === `/${currentOrgId}/p/${currentProjectId}` ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
-            <LayoutDashboard size={16} /> ダッシュボード
+        <div className="hidden md:flex items-center gap-1 xl:gap-2 pr-2 xl:pr-4 pl-2 border-l border-slate-200 dark:border-[#3c4043]">
+          <Link href={`/${currentOrgId}/p/${currentProjectId}`} title="ダッシュボード" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname === `/${currentOrgId}/p/${currentProjectId}` ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <LayoutDashboard size={16} /> <span className="hidden xl:inline">ダッシュボード</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/trend-report`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/trend-report') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
-            <Activity size={16} /> KPIツリー
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/trend-report`} title="KPIツリー" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/trend-report') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <Activity size={16} /> <span className="hidden xl:inline">KPIツリー</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/data-entry') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
-            <Database size={16} /> シートエディタ
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} title="シートエディタ" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/data-entry') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <Database size={16} /> <span className="hidden xl:inline">シートエディタ</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/my-tasks`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/my-tasks') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
-            <CheckSquare size={16} /> マイタスク
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/my-tasks`} title="マイタスク" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/my-tasks') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <CheckSquare size={16} /> <span className="hidden xl:inline">マイタスク</span>
           </Link>
         </div>
-        <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-[4px] px-3 py-1.5 border border-slate-200 dark:border-[#3c4043]">
+        <div className="hidden lg:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-[4px] px-3 py-1.5 border border-slate-200 dark:border-[#3c4043]">
           <Calendar size={16} className="text-slate-500 dark:text-[#9aa0a6]" />
           <select 
             value={currentPeriod}
@@ -104,26 +104,16 @@ export const Header = () => {
             <option value="2026-05">2026年5月 (現在)</option>
           </select>
         </div>
-        <button
-          onClick={togglePredictionMode}
-          className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-all border ${
-            isPredictionMode 
-              ? 'bg-[#8ab4f8] text-[#202124] border-[#8ab4f8]' 
-              : 'bg-slate-50 dark:bg-[#2d2f31] text-slate-500 dark:text-[#9aa0a6] border-slate-200 dark:border-[#3c4043] hover:text-slate-800 dark:hover:text-[#e8eaed] hover:border-slate-300 dark:hover:border-[#5f6368]'
-          }`}
-        >
-          <Sparkles size={16} className={isPredictionMode ? "animate-pulse" : ""} />
-          AI未来予測
-        </button>
       </div>
-      <div className="flex items-center gap-3 md:gap-6">
+      <div className="flex items-center gap-3 md:gap-4 xl:gap-6">
         {currentProject && (
           <button 
             onClick={handleCopyInviteLink}
-            className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-slate-50 dark:bg-[#2d2f31] text-primary-500 dark:text-[#8ab4f8] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px] text-[13px] font-medium transition-colors border border-slate-200 dark:border-[#3c4043]"
+            title="共有リンク"
+            className="hidden md:flex items-center gap-2 px-3 xl:px-4 py-1.5 bg-slate-50 dark:bg-[#2d2f31] text-primary-500 dark:text-[#8ab4f8] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px] text-[13px] font-medium transition-colors border border-slate-200 dark:border-[#3c4043]"
           >
             {isCopied ? <Check size={16} /> : <Link2 size={16} />}
-            {isCopied ? 'コピーしました' : '共有リンク'}
+            <span className="hidden xl:inline">{isCopied ? 'コピーしました' : '共有リンク'}</span>
           </button>
         )}
         <ThemeToggle />
@@ -153,7 +143,7 @@ export const Header = () => {
                 <User size={16} className="text-primary-500 dark:text-[#8ab4f8]" />
               )}
             </div>
-            <div className="hidden md:flex flex-col">
+            <div className="hidden xl:flex flex-col">
               <span className="text-[13px] font-medium text-slate-800 dark:text-[#e8eaed] truncate max-w-[100px]">
                 {user.displayName || user.email?.split('@')[0]}
               </span>
