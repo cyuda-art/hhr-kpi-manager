@@ -26,16 +26,8 @@ export default function DashboardRootRedirect() {
     }
 
     if (currentOrgId) {
-      if (currentProjectId) {
-        // 最後に開いていたプロジェクトにリダイレクト
-        router.replace(`/${currentOrgId}/p/${currentProjectId}`);
-      } else if (projects.length > 0) {
-        // プロジェクトがある場合は最初のプロジェクトにリダイレクト
-        router.replace(`/${currentOrgId}/p/${projects[0].id}`);
-      } else {
-        // プロジェクトがない場合は作成画面（プロジェクト一覧）へ
-        router.replace(`/${currentOrgId}/projects`);
-      }
+      // 組織のプロジェクト一覧へ一律リダイレクト
+      router.replace(`/${currentOrgId}/projects`);
     } else {
       // 組織が存在しない場合は組織作成（または初期プロジェクト一覧）へ
       router.replace('/org-setup');
