@@ -45,6 +45,20 @@ export const Header = () => {
           <Menu size={24} />
         </button>
 
+        {/* ロゴ / 管理コンソールへのリンク */}
+        <Link 
+          href={currentOrgId ? `/${currentOrgId}/projects` : '/'} 
+          className="hidden md:flex items-center gap-2 mr-2 group"
+          title="管理コンソールへ戻る"
+        >
+          <div className="w-7 h-7 bg-amber-400 rounded flex items-center justify-center text-slate-900 font-bold shadow-sm transition-transform group-hover:scale-105">
+            H
+          </div>
+          <span className="font-bold text-[15px] text-slate-800 dark:text-slate-200 tracking-tight hidden xl:block group-hover:text-amber-500 transition-colors">
+            HHR-KPI
+          </span>
+        </Link>
+
         {/* プロジェクト切り替え */}
         <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-lg px-3 py-1.5 border border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:hover:border-[#5f6368] transition-colors max-w-[200px]">
           <FolderGit2 size={16} className="text-primary-500 dark:text-[#8ab4f8] shrink-0" />
@@ -113,11 +127,21 @@ export const Header = () => {
           </button>
         )}
         <ThemeToggle />
+        
+        {/* 管理コンソールへのリンク（アイコン） */}
+        <Link 
+          href={currentOrgId ? `/${currentOrgId}/projects` : '/'} 
+          title="管理コンソール（プロジェクト一覧）" 
+          className="text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] transition-colors"
+        >
+          <FolderKanban size={20} />
+        </Link>
+
         <button className="relative text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] transition-colors">
           <Bell size={20} />
           <span className="absolute top-0 right-0 w-2 h-2 bg-[#f28b82] rounded-full border border-white dark:border-[#202124]"></span>
         </button>
-        <Link href={currentOrgId ? `/${currentOrgId}/settings` : '/'} className="text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] transition-colors">
+        <Link href={currentOrgId ? `/${currentOrgId}/settings` : '/'} title="組織設定" className="text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] transition-colors">
           <Settings size={20} />
         </Link>
         {user ? (
