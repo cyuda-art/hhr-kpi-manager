@@ -9,11 +9,12 @@ import { useKpiStore } from '@/store/useKpiStore';
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Database, Activity, CheckSquare } from 'lucide-react';
+import { LayoutDashboard, Database, Activity, CheckSquare, FolderGit2 } from 'lucide-react';
 
 export const Header = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { currentProjectId, projects } = useProjectStore();
@@ -43,7 +44,27 @@ export const Header = () => {
         >
           <Menu size={24} />
         </button>
-        <div className="hidden md:flex items-center gap-2 overflow-x-auto custom-scrollbar pr-4">
+
+        {/* プロジェクト切り替え */}
+        <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-[#2d2f31] rounded-lg px-3 py-1.5 border border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:hover:border-[#5f6368] transition-colors max-w-[200px]">
+          <FolderGit2 size={16} className="text-primary-500 dark:text-[#8ab4f8] shrink-0" />
+          <select 
+            value={currentProjectId || ''}
+            onChange={(e) => {
+              if (e.target.value && currentOrgId && currentProjectId) {
+                const newPath = pathname.replace(`/${currentOrgId}/p/${currentProjectId}`, `/${currentOrgId}/p/${e.target.value}`);
+                router.push(newPath);
+              }
+            }}
+            className="bg-transparent border-none text-[13px] font-bold text-slate-800 dark:text-[#e8eaed] outline-none cursor-pointer truncate w-full"
+          >
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="hidden md:flex items-center gap-1 overflow-x-auto custom-scrollbar pr-4 pl-2 border-l border-slate-200 dark:border-[#3c4043]">
           <Link href={`/${currentOrgId}/p/${currentProjectId}`} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname === `/${currentOrgId}/p/${currentProjectId}` ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <LayoutDashboard size={16} /> ダッシュボード
           </Link>
