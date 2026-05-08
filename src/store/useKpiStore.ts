@@ -129,14 +129,74 @@ const initialData: Record<string, KpiNodeWithComputedAndInit> = {
     description: 'Goalを数値化した全社の営業利益',
     achievementRate: 90,
     status: 'warning',
-    isSimulated: false
+    isSimulated: false,
+    calculationFormula: '宿泊事業売上 ＋ 温浴事業売上 ＋ 飲食事業売上'
   }
 };
 
-// 限界利益率などの仮説パラメータ
-const MARGINAL_PROFIT_RATIO = 0.4;
-// 温浴来館者1人増えた時の飲食への送客割合
-const CROSS_SELL_SPA_TO_REST = 0.25; 
+// --- 動的計算エンジン ---
+const evaluateFormula = (formula: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue'): number | null => {
+  if (!formula) return null;
+  let parsedFormula = formula;
+  
+  // 名前の長い順にソートして部分一致の誤爆を防ぐ
+  const nodes = Object.values(kpiData).sort((a, b) => b.name.length - a.name.length);
+  nodes.forEach(node => {
+    if (parsedFormula.includes(node.name)) {
+      const val = valueType === 'simulatedValue' && node.simulatedValue !== undefined 
+        ? node.simulatedValue 
+        : node[valueType === 'simulatedValue' ? 'actualValue' : valueType];
+      parsedFormula = parsedFormula.split(node.name).join(val.toString());
+    }
+  });
+
+  // 全角記号を半角に変換
+  parsedFormula = parsedFormula.replace(/×/g, '*').replace(/÷/g, '/').replace(/＋/g, '+').replace(/－/g, '-');
+
+  try {
+    // 許可する文字：数字、小数点、四則演算記号、括弧、スペースのみ
+    if (/^[0-9\.\+\-\*\/\(\)\s]+$/.test(parsedFormula)) {
+      // eslint-disable-next-line no-new-func
+      const result = new Function(`return ${parsedFormula}`)();
+      return isNaN(result) ? null : result;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+};
+
+const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue') => {
+  let hasChanged = true;
+  let maxIterations = 5; // ループ上限
+  
+  while (hasChanged && maxIterations > 0) {
+    hasChanged = false;
+    maxIterations--;
+    
+    Object.values(draft).forEach(node => {
+      if (node.calculationFormula) {
+        const newValue = evaluateFormula(node.calculationFormula, draft, valueType);
+        if (newValue !== null && !isNaN(newValue) && isFinite(newValue)) {
+          const currentValue = valueType === 'simulatedValue' && node.simulatedValue !== undefined 
+            ? node.simulatedValue 
+            : node[valueType === 'simulatedValue' ? 'actualValue' : valueType];
+          
+          if (Math.abs(newValue - currentValue) > 0.01) { // 誤差許容
+            hasChanged = true;
+            if (valueType === 'simulatedValue') {
+              draft[node.id] = calculateComputed({ ...draft[node.id], simulatedValue: newValue, isSimulated: true });
+            } else if (valueType === 'targetValue') {
+              draft[node.id] = calculateComputed({ ...draft[node.id], targetValue: newValue, isSimulated: true });
+            } else {
+              draft[node.id] = calculateComputed({ ...draft[node.id], actualValue: newValue, isSimulated: true });
+            }
+          }
+        }
+      }
+    });
+  }
+};
 
 
 const saveToProjectData = (state: any) => {
@@ -332,59 +392,8 @@ export const useKpiStore = create<KpiStore>()(
         draft[id] = calculateComputed({ ...draft[id], actualValue: newValue, isSimulated: true });
       }
 
-      // --- 連動シミュレーションロジック ---
-      
-      // 1. 横断KPI（送客）の計算
-      // 温浴の来館者数が変わったら、飲食・物販の来店数を連動して増やす
-      if (draft['kpi_spa_visitors'] && draft['kpi_restaurant_visitors']) {
-        const spaDelta = draft['kpi_spa_visitors'].actualValue - draft['kpi_spa_visitors'].initialActualValue;
-        
-        // 飲食来店数 = 初期値 + (温浴増分 * 送客率) + (もし飲食来店数自体が手動変更されていればその分も考慮すべきだが今回は簡略化)
-        // 飲食来店数自体がスライダーで変更された場合との競合を避けるため、spaDeltaのみをベースにする簡易計算
-        if (id === 'kpi_spa_visitors') {
-          const newRestVisitors = draft['kpi_restaurant_visitors'].initialActualValue + Math.round(spaDelta * CROSS_SELL_SPA_TO_REST);
-          draft['kpi_restaurant_visitors'] = calculateComputed({ ...draft['kpi_restaurant_visitors'], actualValue: newRestVisitors, isSimulated: true });
-          
-          // (拡張案: 物販の来店数も増やすなどの処理をここに追加可能)
-        }
-      }
-
-      // 2. 各事業の売上（KGI）を計算（ロールアップ）
-      // 宿泊売上 = 部屋数(仮定100室 * 30日) * 稼働率 * ADR
-      if (draft['kpi_hotel_occ'] && draft['kpi_hotel_adr'] && draft['kgi_sales_hotel']) {
-        const roomsSold = 3000 * (draft['kpi_hotel_occ'].actualValue / 100);
-        const newHotelSales = roomsSold * draft['kpi_hotel_adr'].actualValue;
-        draft['kgi_sales_hotel'] = calculateComputed({ ...draft['kgi_sales_hotel'], actualValue: newHotelSales, isSimulated: true });
-      }
-
-      // 温浴売上 = 来館者数 * 客単価
-      if (draft['kpi_spa_visitors'] && draft['kpi_spa_arpu'] && draft['kgi_sales_spa']) {
-        const newSpaSales = draft['kpi_spa_visitors'].actualValue * draft['kpi_spa_arpu'].actualValue;
-        draft['kgi_sales_spa'] = calculateComputed({ ...draft['kgi_sales_spa'], actualValue: newSpaSales, isSimulated: true });
-      }
-
-      // 飲食売上 = 来店数 * 客単価
-      if (draft['kpi_restaurant_visitors'] && draft['kpi_restaurant_arpu'] && draft['kgi_sales_restaurant']) {
-        const newRestSales = draft['kpi_restaurant_visitors'].actualValue * draft['kpi_restaurant_arpu'].actualValue;
-        draft['kgi_sales_restaurant'] = calculateComputed({ ...draft['kgi_sales_restaurant'], actualValue: newRestSales, isSimulated: true });
-      }
-
-      // 3. 全社売上の計算
-      const totalSalesId = 'kgi_sales_total';
-      if (draft[totalSalesId]) {
-        const businessSalesKeys = ['kgi_sales_hotel', 'kgi_sales_spa', 'kgi_sales_restaurant', 'kgi_sales_shop', 'kgi_sales_kitchen'];
-        const newTotalSales = businessSalesKeys.reduce((sum, key) => sum + (draft[key]?.actualValue || 0), 0);
-        draft[totalSalesId] = calculateComputed({ ...draft[totalSalesId], actualValue: newTotalSales, isSimulated: true });
-        
-        // 4. 全社営業利益の計算
-        const profitId = 'kgi_profit';
-        if (draft[profitId]) {
-          const salesDelta = newTotalSales - draft[totalSalesId].initialActualValue;
-          // 売上増加分に対して限界利益率を掛けて利益の増分とする（非常に簡易なモデル）
-          const newProfit = draft[profitId].initialActualValue + (salesDelta * MARGINAL_PROFIT_RATIO);
-          draft[profitId] = calculateComputed({ ...draft[profitId], actualValue: newProfit, isSimulated: true });
-        }
-      }
+      // 動的計算エンジンによる再計算（実績値）
+      recalculateTree(draft, 'actualValue');
 
       // Firestoreにはシミュレーション中の値は送らず、ローカルの状態のみ更新する
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
@@ -400,30 +409,8 @@ export const useKpiStore = create<KpiStore>()(
       draft[id] = calculateComputed({ ...draft[id], simulatedValue: newValue, isSimulated: true });
 
       if (newValue !== oldSimulated) {
-        const delta = newValue - oldSimulated;
-        if (delta !== 0) {
-          const propagateToParent = (childId: string, valueDelta: number) => {
-            const node = draft[childId];
-            if (!node || !node.parentId) return;
-            const parent = draft[node.parentId];
-            if (parent && parent.simulatedValue !== undefined) {
-              let conversionRate = 1;
-              if (node.unit !== parent.unit && node.targetValue > 0 && parent.targetValue > 0) {
-                conversionRate = parent.targetValue / node.targetValue;
-              }
-              const impactValue = valueDelta * conversionRate;
-              const newParentSimulated = parent.simulatedValue + impactValue;
-              
-              draft[parent.id] = calculateComputed({ 
-                ...parent, 
-                simulatedValue: Math.max(0, newParentSimulated),
-                isSimulated: true 
-              });
-              propagateToParent(parent.id, impactValue);
-            }
-          };
-          propagateToParent(id, delta);
-        }
+        // 動的計算エンジンによる再計算（シミュレーション値）
+        recalculateTree(draft, 'simulatedValue');
       }
       return { kpiData: draft }; // シミュレーションはDBやプロジェクトデータには即時保存しない
     });
@@ -440,35 +427,9 @@ export const useKpiStore = create<KpiStore>()(
         }
       });
 
-      // ロールアップ再計算 (全社への波及)
-      // 宿泊
-      if (draft['kgi_sales_hotel']) {
-        const occ = draft['kpi_hotel_occ']?.actualValue || 0;
-        const adr = draft['kpi_hotel_adr']?.actualValue || 0;
-        const sales = 3000 * (occ / 100) * adr;
-        draft['kgi_sales_hotel'] = calculateComputed({ ...draft['kgi_sales_hotel'], actualValue: sales, initialActualValue: sales, isSimulated: false });
-      }
-      // 温浴
-      if (draft['kgi_sales_spa']) {
-        const vis = draft['kpi_spa_visitors']?.actualValue || 0;
-        const arpu = draft['kpi_spa_arpu']?.actualValue || 0;
-        const sales = vis * arpu;
-        draft['kgi_sales_spa'] = calculateComputed({ ...draft['kgi_sales_spa'], actualValue: sales, initialActualValue: sales, isSimulated: false });
-      }
-      // 飲食
-      if (draft['kgi_sales_restaurant']) {
-        const vis = draft['kpi_restaurant_visitors']?.actualValue || 0;
-        const arpu = draft['kpi_restaurant_arpu']?.actualValue || 0;
-        const sales = vis * arpu;
-        draft['kgi_sales_restaurant'] = calculateComputed({ ...draft['kgi_sales_restaurant'], actualValue: sales, initialActualValue: sales, isSimulated: false });
-      }
-      // 全社
-      if (draft['kgi_sales_total']) {
-        const keys = ['kgi_sales_hotel', 'kgi_sales_spa', 'kgi_sales_restaurant', 'kgi_sales_shop', 'kgi_sales_kitchen'];
-        const total = keys.reduce((sum, key) => sum + (draft[key]?.actualValue || 0), 0);
-        draft['kgi_sales_total'] = calculateComputed({ ...draft['kgi_sales_total'], actualValue: total, initialActualValue: total, isSimulated: false });
-      }
-      // 利益（ここでは簡易的に固定費を引く形を想定せず、売上ベースで簡易算出にするため割愛。必要に応じて厳密な計算を入れる）
+      // 動的計算エンジンによる再計算（実績値）
+      recalculateTree(draft, 'actualValue');
+
       // 一旦、全データを isSimulated = false にする
       Object.keys(draft).forEach(key => {
         draft[key] = { ...draft[key], isSimulated: false, initialActualValue: draft[key].actualValue };
@@ -496,81 +457,20 @@ export const useKpiStore = create<KpiStore>()(
           
           draft[id] = calculateComputed({ ...draft[id], ...data });
           
-          // 実績値が更新された場合、汎用シミュレーション（親ノードへの波及）を実行
+          // 実績値が更新された場合
           if (data.actualValue !== undefined && data.actualValue !== oldActual) {
-            const delta = data.actualValue - oldActual;
-            
-            if (delta !== 0) {
-              // 親を辿って数値を更新する関数
-              const propagateToParent = (childId: string, valueDelta: number) => {
-                const node = draft[childId];
-                if (!node || !node.parentId) return;
-                
-                const parent = draft[node.parentId];
-                if (parent) {
-                  // 単位が異なる場合（例：子が「件」、親が「円」）、親子の目標値から「単価（換算レート）」を自動計算して掛ける
-                  let conversionRate = 1;
-                  if (node.unit !== parent.unit && node.targetValue > 0 && parent.targetValue > 0) {
-                    conversionRate = parent.targetValue / node.targetValue;
-                  }
-                  
-                  // 波及させる値（親への影響額/件数など）
-                  const impactValue = valueDelta * conversionRate;
-                  
-                  const newParentActual = parent.actualValue + impactValue;
-                  draft[parent.id] = calculateComputed({ 
-                    ...parent, 
-                    actualValue: Math.max(0, newParentActual), // 0未満にはしない
-                    isSimulated: true // シミュレーションによって動いたことをマーク
-                  });
-                  // さらに上の親へ波及
-                  propagateToParent(parent.id, impactValue);
-                }
-              };
-              
-              propagateToParent(id, delta);
-            }
+            // 動的計算エンジンによる再計算（実績値）
+            recalculateTree(draft, 'actualValue');
           }
 
-          // 目標値が更新された場合、ツリー全体（親方向・子方向）へ目標値を連動波及させる
+          // 目標値が更新された場合
           if (data.targetValue !== undefined && oldTarget > 0 && data.targetValue !== oldTarget) {
-            const ratio = data.targetValue / oldTarget;
-            const visited = new Set<string>();
-            visited.add(id);
-
-            // 上方向（親）への波及
-            const propagateUp = (currentId: string) => {
-              const node = draft[currentId];
-              if (!node || !node.parentId) return;
-              const parent = draft[node.parentId];
-              if (parent && !visited.has(parent.id)) {
-                visited.add(parent.id);
-                draft[parent.id] = calculateComputed({
-                  ...parent,
-                  targetValue: parent.targetValue * ratio,
-                  isSimulated: true
-                });
-                propagateUp(parent.id);
-              }
-            };
-
-            // 下方向（子）への波及
-            const propagateDown = (currentId: string) => {
-              Object.values(draft).forEach(child => {
-                if (child.parentId === currentId && !visited.has(child.id)) {
-                  visited.add(child.id);
-                  draft[child.id] = calculateComputed({
-                    ...child,
-                    targetValue: child.targetValue * ratio,
-                    isSimulated: true
-                  });
-                  propagateDown(child.id);
-                }
-              });
-            };
-
-            propagateUp(id);
-            propagateDown(id);
+            // 動的計算エンジンによる再計算（目標値）
+            recalculateTree(draft, 'targetValue');
+            
+            // 既存の比率ベースの波及（計算式が設定されていないノードのためのフォールバックとして残すか迷うが、Excelライクな挙動を優先するなら不要。
+            // しかしユーザーがすべてのノードに計算式を書くとは限らないため、比率波及は「計算式を持たない子」に対する簡易的な連動として残すのも手だが、
+            // 今回は「計算式に基づく動的連動」がメイン要望なので、一旦古い比率波及は削除してスッキリさせる。
           }
           
           syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
