@@ -11,13 +11,56 @@ import {
   ListChecks,
   ChevronRight,
   Zap,
-  Calculator
+  Calculator,
+  TrendingUp,
+  Clock
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function LandingPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] text-slate-800 dark:text-slate-200 font-sans selection:bg-primary-500/30 overflow-x-hidden">
       
+      {/* Custom Animations defined via inline style */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes drawLine {
+          from { height: 0; opacity: 0; }
+          to { height: 40px; opacity: 1; }
+        }
+        @keyframes drawLineH {
+          from { width: 0; opacity: 0; }
+          to { width: 120px; opacity: 1; }
+        }
+        @keyframes popIn {
+          0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+          100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        @keyframes pulseValue {
+          0%, 100% { color: #f43f5e; }
+          50% { color: #10b981; }
+        }
+        @keyframes progressFill {
+          0% { width: 30%; background-color: #f43f5e; }
+          100% { width: 85%; background-color: #10b981; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .anim-line-v { animation: drawLine 0.5s ease-out forwards; }
+        .anim-line-h { animation: drawLineH 0.5s ease-out forwards; }
+        .anim-pop { animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .anim-pulse-val { animation: pulseValue 4s ease-in-out infinite alternate; }
+        .anim-progress { animation: progressFill 4s ease-in-out infinite alternate; }
+        .anim-float { animation: float 6s ease-in-out infinite; }
+      `}} />
+
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0B0F19]/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -38,14 +81,13 @@ export default function LandingPage() {
 
       {/* 1. Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-40 overflow-hidden">
-        {/* Rich Background Effects */}
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] dark:opacity-[0.05] pointer-events-none"></div>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[600px] opacity-40 dark:opacity-20 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-b from-primary-400 to-indigo-600 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse-slow"></div>
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center max-w-5xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-md text-primary-600 dark:text-primary-400 text-sm font-bold mb-8 border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur-md text-primary-600 dark:text-primary-400 text-sm font-bold mb-8 border border-slate-200/50 dark:border-slate-700/50 shadow-sm anim-pop" style={{ animationDelay: '0s', opacity: 0 }}>
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500"></span>
@@ -53,24 +95,24 @@ export default function LandingPage() {
             Excelからの脱却。次世代のKPIマネジメント
           </div>
           
-          <h1 className="text-5xl md:text-7xl lg:text-[80px] font-black tracking-tight mb-8 leading-[1.1]">
+          <h1 className="text-5xl md:text-7xl lg:text-[80px] font-black tracking-tight mb-8 leading-[1.1] anim-pop" style={{ animationDelay: '0.1s', opacity: 0 }}>
             経営のブラックボックスを破壊する。<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-500 dark:from-primary-400 dark:to-indigo-400">
               「生きた」KPIツリー。
             </span>
           </h1>
           
-          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed anim-pop" style={{ animationDelay: '0.2s', opacity: 0 }}>
             静的なExcel管理はもう限界です。事業構造を可視化するインタラクティブなツリーと、未達を防ぐ「KSF（重要施策）」の実行管理を統合。AIが達成率から次の一手を提案し、会議室の議論を「過去の反省」から「未来の打ち手」へと変革します。
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 anim-pop" style={{ animationDelay: '0.3s', opacity: 0 }}>
             <Link 
               href="/login"
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white rounded-full font-bold text-lg transition-all shadow-xl shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-1 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white rounded-full font-bold text-lg transition-all shadow-xl shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-1 flex items-center justify-center gap-2 group"
             >
               今すぐ無料デモを体験する
-              <ArrowRight size={20} />
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <button className="w-full sm:w-auto px-8 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-sm">
               資料をダウンロード
@@ -78,33 +120,144 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Dashboard Mockup Preview */}
-        <div className="mt-20 container mx-auto px-6 relative z-10 hidden md:block">
-          <div className="relative mx-auto max-w-5xl">
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-[#0B0F19] to-transparent z-10 bottom-0 h-1/2"></div>
-            <div className="rounded-t-2xl border-x border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 p-2 shadow-2xl overflow-hidden">
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e1e20] h-[400px] flex overflow-hidden">
-                <div className="w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
-                  <div className="w-3/4 h-4 bg-slate-200 dark:bg-slate-800 rounded mb-6"></div>
-                  <div className="space-y-3">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-full h-8 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700"></div>
-                    ))}
+        {/* Dynamic Interactive Dashboard Mockup Preview */}
+        {mounted && (
+          <div className="mt-20 container mx-auto px-6 relative z-10 hidden md:block anim-pop" style={{ animationDelay: '0.6s', opacity: 0 }}>
+            <div className="relative mx-auto max-w-5xl anim-float">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-[#0B0F19] to-transparent z-20 bottom-0 h-1/3"></div>
+              
+              <div className="rounded-t-2xl border-x border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 p-2 shadow-2xl overflow-hidden relative z-10">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#1e1e20] h-[450px] flex overflow-hidden">
+                  
+                  {/* Left Sidebar Mock */}
+                  <div className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                    <div className="w-3/4 h-4 bg-slate-200 dark:bg-slate-800 rounded mb-6"></div>
+                    <div className="space-y-3">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="w-full h-8 bg-slate-100 dark:bg-slate-800/50 rounded border border-slate-200/50 dark:border-slate-700/50"></div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1 p-8 relative">
-                  {/* Mock Tree Nodes */}
-                  <div className="absolute top-10 left-1/2 -translate-x-1/2 w-48 h-20 bg-white dark:bg-slate-800 border-2 border-primary-500 rounded-lg shadow-sm"></div>
-                  <div className="absolute top-30 left-1/2 -translate-x-1/2 w-0.5 h-12 bg-slate-300 dark:bg-slate-700"></div>
-                  <div className="absolute top-[168px] left-[30%] w-48 h-20 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm"></div>
-                  <div className="absolute top-[168px] right-[30%] w-48 h-20 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm"></div>
-                </div>
-                <div className="w-80 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-                  <div className="w-1/2 h-4 bg-slate-200 dark:bg-slate-800 rounded mb-6"></div>
-                  <div className="w-full h-32 bg-slate-50 dark:bg-slate-800 rounded mb-4"></div>
-                  <div className="w-full h-32 bg-slate-50 dark:bg-slate-800 rounded"></div>
+
+                  {/* Center Main Tree Canvas */}
+                  <div className="flex-1 relative overflow-hidden bg-slate-50 dark:bg-[#1a1c1e] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px]">
+                    
+                    {/* Node 1: KGI (Top) */}
+                    <div className="absolute top-10 left-1/2 -translate-x-1/2 w-64 bg-white dark:bg-slate-800 border-2 border-primary-500 rounded-xl shadow-lg p-3 z-10 anim-pop" style={{ animationDelay: '1s', opacity: 0 }}>
+                      <div className="text-[10px] font-bold text-primary-500 mb-1">KGI</div>
+                      <div className="font-bold text-sm mb-2 text-slate-800 dark:text-white">全社売上高</div>
+                      <div className="flex justify-between items-end">
+                        <div className="text-xl font-black anim-pulse-val">¥ 1,250,000</div>
+                        <div className="text-[10px] text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded">+15%</div>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-2 overflow-hidden">
+                        <div className="h-full anim-progress"></div>
+                      </div>
+                    </div>
+
+                    {/* Vertical Line from KGI */}
+                    <div className="absolute top-[130px] left-1/2 -translate-x-1/2 w-0.5 bg-primary-300 dark:bg-primary-500/50 anim-line-v" style={{ animationDelay: '1.4s', opacity: 0 }}></div>
+                    
+                    {/* Horizontal Line Split */}
+                    <div className="absolute top-[170px] left-[calc(50%-120px)] h-0.5 bg-primary-300 dark:bg-primary-500/50 anim-line-h" style={{ animationDelay: '1.7s', opacity: 0, width: '240px' }}></div>
+
+                    {/* Left vertical drop */}
+                    <div className="absolute top-[170px] left-[calc(50%-120px)] w-0.5 bg-primary-300 dark:bg-primary-500/50 anim-line-v" style={{ animationDelay: '2.0s', opacity: 0 }}></div>
+                    {/* Right vertical drop */}
+                    <div className="absolute top-[170px] left-[calc(50%+120px)] w-0.5 bg-primary-300 dark:bg-primary-500/50 anim-line-v" style={{ animationDelay: '2.0s', opacity: 0 }}></div>
+
+                    {/* Node 2: KPI Left */}
+                    <div className="absolute top-[210px] left-[calc(50%-120px)] -translate-x-1/2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-md p-3 z-10 anim-pop" style={{ animationDelay: '2.4s', opacity: 0 }}>
+                      <div className="text-[10px] font-bold text-slate-500 mb-1">KPI</div>
+                      <div className="font-bold text-sm mb-2">宿泊事業売上</div>
+                      <div className="text-lg font-black text-slate-700 dark:text-slate-200">¥ 800,000</div>
+                    </div>
+
+                    {/* Node 3: KPI Right */}
+                    <div className="absolute top-[210px] left-[calc(50%+120px)] -translate-x-1/2 w-56 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900/50 rounded-xl shadow-md p-3 z-10 anim-pop relative overflow-hidden" style={{ animationDelay: '2.6s', opacity: 0 }}>
+                      <div className="absolute top-0 right-0 w-2 h-full bg-rose-500"></div>
+                      <div className="text-[10px] font-bold text-rose-500 mb-1 flex items-center gap-1"><AlertTriangle size={10}/> 要注意KPI</div>
+                      <div className="font-bold text-sm mb-2">飲食事業売上</div>
+                      <div className="text-lg font-black text-rose-500">¥ 450,000</div>
+                    </div>
+
+                  </div>
+
+                  {/* Right Action Panel Mock */}
+                  <div className="w-80 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 relative">
+                    <div className="absolute top-4 right-4 flex gap-1">
+                      <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                      <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                    </div>
+                    
+                    <div className="w-1/2 h-4 bg-slate-200 dark:bg-slate-800 rounded mb-6"></div>
+                    
+                    {/* Simulated AI Card */}
+                    <div className="w-full bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-lg p-3 mb-4 anim-pop" style={{ animationDelay: '3.5s', opacity: 0 }}>
+                      <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-2">
+                        <BrainCircuit size={14} /> AI PDCA 分析
+                      </div>
+                      <div className="h-2 bg-indigo-200 dark:bg-indigo-800/50 rounded w-full mb-2"></div>
+                      <div className="h-2 bg-indigo-200 dark:bg-indigo-800/50 rounded w-4/5 mb-4"></div>
+                      <div className="w-full h-8 bg-indigo-600 text-white text-[10px] font-bold rounded flex items-center justify-center">
+                        解決タスクを自動生成
+                      </div>
+                    </div>
+
+                    {/* Task List */}
+                    <div className="space-y-2">
+                      <div className="text-xs font-bold text-slate-500 mb-2">KSF (重要施策)</div>
+                      {[1, 2].map((i) => (
+                        <div key={i} className="w-full h-10 bg-slate-50 dark:bg-slate-800/50 rounded border border-slate-200/50 dark:border-slate-700/50 flex items-center px-2 gap-2 anim-pop" style={{ animationDelay: `${3.8 + i*0.2}s`, opacity: 0 }}>
+                          <div className="w-3 h-3 rounded-full border border-slate-400"></div>
+                          <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* NEW: Business Impact (ROI) Section */}
+      <section className="py-20 bg-primary-600 dark:bg-primary-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[300px] bg-white/10 blur-[100px] rounded-full"></div>
+        
+        <div className="container mx-auto px-6 relative z-10 max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-white/20">
+            <div className="p-6">
+              <div className="flex items-center justify-center gap-2 text-primary-200 font-bold mb-2">
+                <Clock size={20} /> 経営会議の準備時間
+              </div>
+              <div className="text-5xl md:text-6xl font-black mb-2 tracking-tight">
+                -80<span className="text-3xl">%</span>
+              </div>
+              <p className="text-sm text-primary-100/80">各部署からのExcel収集と結合がゼロに。システムを開けば常に最新の全体図が完成。</p>
+            </div>
+            
+            <div className="p-6">
+              <div className="flex items-center justify-center gap-2 text-primary-200 font-bold mb-2">
+                <Zap size={20} /> 意思決定スピード
+              </div>
+              <div className="text-5xl md:text-6xl font-black mb-2 tracking-tight">
+                即時
+              </div>
+              <p className="text-sm text-primary-100/80">シミュレーション機能により、「持ち帰って再計算」がなくなり、会議のその場で打ち手が決まる。</p>
+            </div>
+            
+            <div className="p-6">
+              <div className="flex items-center justify-center gap-2 text-primary-200 font-bold mb-2">
+                <TrendingUp size={20} /> 施策実行率
+              </div>
+              <div className="text-5xl md:text-6xl font-black mb-2 tracking-tight">
+                100<span className="text-3xl">%</span>
+              </div>
+              <p className="text-sm text-primary-100/80">KPIとタスク(KSF)が完全に紐づくため、「決めたけどやらない」が物理的に発生しない。</p>
             </div>
           </div>
         </div>
@@ -290,48 +443,6 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Use Case (Before / After) */}
-      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0B0F19] to-slate-900"></div>
-        <div className="container mx-auto px-6 relative z-10 max-w-5xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-black mb-4">経営会議が、劇的に変わる。</h2>
-            <p className="text-slate-400">過去の報告に1時間を費やすか、未来の打ち手を15分で決めるか。</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-slate-800/50 backdrop-blur-xl p-8 rounded-2xl border border-slate-700">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-700 text-slate-300 text-xs font-bold mb-6 tracking-wider">
-                BEFORE
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-slate-100">従来の報告会</h3>
-              <div className="space-y-4 text-slate-400 leading-relaxed">
-                <p>「今月の売上は未達でした。理由は客数減です。」</p>
-                <p>「なぜ客数が減ったんだ？」</p>
-                <p>「競合の影響かと...来月は広告を頑張ります。」</p>
-                <p className="text-rose-400 font-medium pt-4 border-t border-slate-700/50 mt-4">→ 1時間経過。誰も具体的な行動が決まらないまま解散。</p>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-primary-900/80 to-indigo-900/80 backdrop-blur-xl p-8 rounded-2xl border border-primary-500/30 relative overflow-hidden shadow-2xl shadow-primary-900/20">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-primary-500/20 blur-[50px] rounded-full"></div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-primary-500/20 text-primary-300 text-xs font-bold mb-6 tracking-wider border border-primary-500/30">
-                AFTER
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-white">MANAGER 導入後</h3>
-              <div className="space-y-4 text-indigo-100/90 leading-relaxed relative z-10">
-                <p>「サマリーを見ると、宿泊部の施策完了率が30%で遅れていますね。」</p>
-                <p>「ツリーでシミュレーションしましょう。客単価を200円上げられれば挽回可能です。」</p>
-                <p>「では、AIが提案した単価UPの新規タスクをそのままマーケティング部にアサインします。」</p>
-                <p className="text-primary-300 font-bold pt-4 border-t border-indigo-500/30 mt-4 flex items-center gap-2">
-                  <Zap size={18} /> わずか15分で「次なる打ち手」が決定。
-                </p>
               </div>
             </div>
           </div>
