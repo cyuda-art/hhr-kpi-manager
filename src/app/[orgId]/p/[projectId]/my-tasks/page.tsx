@@ -222,19 +222,19 @@ export default function MyTasksPage() {
                   <span className="text-xs text-slate-500 ml-auto">{kpiTasks.length} tasks</span>
                 </div>
                 
-                <div className="flex flex-col md:flex-row min-h-[200px] w-full">
+                <div className="flex flex-col md:flex-row w-full" style={{ minHeight: '200px' }}>
                   {/* To Do */}
-                  <div className="flex-1 p-3 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-slate-50/30 dark:bg-slate-900/10 min-w-[200px]" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'todo')}>
+                  <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-slate-50/30 dark:bg-slate-900/10" style={{ minWidth: '200px' }} onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'todo')}>
                     <div className="text-[11px] font-bold text-slate-500 mb-1 px-1">To Do ({todo.length})</div>
                     {todo.map(a => renderTask(a))}
                   </div>
                   {/* In Progress */}
-                  <div className="flex-1 p-3 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-blue-50/10 dark:bg-blue-900/5 min-w-[200px]" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'in_progress')}>
+                  <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-blue-50/10 dark:bg-blue-900/5" style={{ minWidth: '200px' }} onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'in_progress')}>
                     <div className="text-[11px] font-bold text-blue-600 mb-1 px-1">In Progress ({inProg.length})</div>
                     {inProg.map(a => renderTask(a))}
                   </div>
                   {/* Done */}
-                  <div className="flex-1 p-3 flex flex-col gap-3 bg-emerald-50/10 dark:bg-emerald-900/5 min-w-[200px]" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'done')}>
+                  <div className="flex-1 p-3 flex flex-col gap-3 bg-emerald-50/10 dark:bg-emerald-900/5" style={{ minWidth: '200px' }} onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'done')}>
                     <div className="text-[11px] font-bold text-emerald-600 mb-1 px-1">Done ({done.length})</div>
                     {done.map(a => renderTask(a))}
                   </div>
