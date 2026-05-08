@@ -2,23 +2,41 @@
 
 import { useKpiStore } from '@/store/useKpiStore';
 import { useState, useMemo, useEffect } from 'react';
-import { CheckSquare, Calendar as CalendarIcon, User, Building, AlertCircle, LayoutGrid, Clock } from 'lucide-react';
-import { Action } from '@/types';
+import { CheckSquare, Calendar as CalendarIcon, User, Building, AlertCircle, LayoutGrid, Clock, ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { Action, KpiNode } from '@/types';
 
 type ViewMode = 'kanban' | 'timeline' | 'calendar';
+
+// ツリー構造用のノード型
+type TreeNode = {
+  id: string;
+  type: 'KGI' | 'KPI' | 'TASK';
+  title: string;
+  nodeData?: KpiNode;
+  taskData?: Action;
+  children: TreeNode[];
+  startDate?: string;
+  endDate?: string;
+  depth: number;
+};
 
 export default function MyTasksPage() {
   const { actions, setActionsBulk, kpiData } = useKpiStore();
   const [filterOwner, setFilterOwner] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('kanban');
+  const [viewMode, setViewMode] = useState<ViewMode>('timeline'); // タイムラインをデフォルトに
   const [isMounted, setIsMounted] = useState(false);
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [groupByKpi, setGroupByKpi] = useState(true);
 
-  // カレンダー・タイムライン用の基準年月（現在は今月固定とするが、拡張可能）
+  // タイムライン・カレンダー用の基準年月
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    // 初期状態でKGIはすべて開く
+    const kgiIds = Object.values(kpiData).filter(n => n.type === 'KGI').map(n => n.id);
+    setExpandedNodes(new Set(kgiIds));
+  }, [kpiData]);
   
   // 担当者のリスト（重複排除）
   const owners = useMemo(() => {
@@ -32,22 +50,88 @@ export default function MyTasksPage() {
     return actions.filter(a => a.owner === filterOwner);
   }, [actions, filterOwner]);
 
-  const todoList = filteredActions.filter(a => a.status === 'todo');
-  const inProgressList = filteredActions.filter(a => a.status === 'in_progress');
-  const doneList = filteredActions.filter(a => a.status === 'done');
+  // --- ツリー構築ロジック ---
+  const treeData = useMemo(() => {
+    const nodes = Object.values(kpiData);
+    
+    // サマリー日付を計算するヘルパー
+    const calcDates = (children: TreeNode[]): { startDate?: string, endDate?: string } => {
+      let minDate: string | undefined;
+      let maxDate: string | undefined;
+      
+      children.forEach(c => {
+        if (c.startDate && (!minDate || c.startDate < minDate)) minDate = c.startDate;
+        if (c.endDate && (!maxDate || c.endDate > maxDate)) maxDate = c.endDate;
+      });
+      return { startDate: minDate, endDate: maxDate };
+    };
 
-  // Drag & Drop (Kanban)
+    const buildNode = (kpiId: string, depth: number): TreeNode => {
+      const kpi = kpiData[kpiId];
+      // このKPIの直下の子KPI
+      const childKpis = nodes.filter(n => n.parentId === kpiId).map(n => buildNode(n.id, depth + 1));
+      // このKPIに直接紐づくタスク
+      const childTasks = filteredActions.filter(a => a.kpiId === kpiId).map(a => ({
+        id: `task-${a.id}`,
+        type: 'TASK' as const,
+        title: a.title,
+        taskData: a,
+        children: [],
+        startDate: a.startDate || a.dueDate,
+        endDate: a.dueDate,
+        depth: depth + 1
+      }));
+
+      const children = [...childKpis, ...childTasks];
+      const dates = calcDates(children);
+
+      return {
+        id: kpiId,
+        type: kpi.type as 'KGI' | 'KPI',
+        title: kpi.name,
+        nodeData: kpi,
+        children,
+        startDate: dates.startDate,
+        endDate: dates.endDate,
+        depth
+      };
+    };
+
+    // ルート（KGI）から構築
+    const rootNodes = nodes.filter(n => !n.parentId).map(n => buildNode(n.id, 0));
+    return rootNodes;
+  }, [kpiData, filteredActions]);
+
+  // タイムライン描画用にツリーをフラット化（開閉状態を反映）
+  const flatVisibleNodes = useMemo(() => {
+    const result: TreeNode[] = [];
+    const flatten = (nodes: TreeNode[]) => {
+      nodes.forEach(node => {
+        // 空のKPI（子もタスクもない）はフィルターなどにより非表示にしてもよいが、今回は表示
+        result.push(node);
+        if (expandedNodes.has(node.id) && node.children.length > 0) {
+          flatten(node.children);
+        }
+      });
+    };
+    flatten(treeData);
+    return result;
+  }, [treeData, expandedNodes]);
+
+  const toggleNode = (id: string) => {
+    const next = new Set(expandedNodes);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setExpandedNodes(next);
+  };
+
+  // --- カンバンボード用のDrag & Dropロジック ---
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDraggedTaskId(taskId);
     e.dataTransfer.setData('text/plain', taskId);
     e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = (e: React.DragEvent, newStatus: 'todo' | 'in_progress' | 'done') => {
@@ -65,40 +149,42 @@ export default function MyTasksPage() {
     setDraggedTaskId(null);
   };
 
-  const getStatusColor = (status: string) => {
-    if (status === 'done') return 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400';
-    if (status === 'in_progress') return 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400';
-    return 'bg-white border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200';
-  };
-
+  // --- タスクカードコンポーネント ---
   const TaskCard = ({ action }: { action: Action }) => {
     const isPastDue = new Date(action.dueDate) < new Date() && action.status !== 'done';
     const targetKpiName = kpiData[action.kpiId]?.name || '不明なKPI';
+    
+    // 状態による色
+    const getStatusColor = (status: string) => {
+      if (status === 'done') return 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400';
+      if (status === 'in_progress') return 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400';
+      return 'bg-white border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200';
+    };
 
     return (
       <div
         draggable
         onDragStart={(e) => handleDragStart(e, action.id)}
-        className={`p-4 rounded-xl border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all ${getStatusColor(action.status)} ${draggedTaskId === action.id ? 'opacity-50' : 'opacity-100'}`}
+        className={`p-3 rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all ${getStatusColor(action.status)} ${draggedTaskId === action.id ? 'opacity-50' : 'opacity-100'}`}
       >
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <div className="flex justify-between items-start gap-2">
-            <h4 className="font-bold text-sm leading-tight">{action.title}</h4>
+            <h4 className="font-bold text-[13px] leading-tight">{action.title}</h4>
             {isPastDue && <span title="期限切れ"><AlertCircle size={14} className="text-rose-500 shrink-0" /></span>}
           </div>
-          
-          <div className="text-xs flex items-center gap-1.5 opacity-80 mt-1">
-            <Building size={12} />
-            <span className="truncate">{targetKpiName}</span>
-          </div>
-          
-          <div className="flex items-center justify-between mt-2 pt-2 border-t border-black/5 dark:border-white/5">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold">
-              <User size={12} className="opacity-70" />
+          {!groupByKpi && (
+            <div className="text-[10px] flex items-center gap-1 opacity-70 mt-0.5 bg-black/5 dark:bg-white/10 w-fit px-1.5 py-0.5 rounded">
+              <Building size={10} />
+              <span className="truncate max-w-[150px]">{targetKpiName}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/5 dark:border-white/5">
+            <div className="flex items-center gap-1 text-[10px] font-bold">
+              <User size={10} className="opacity-70" />
               <span>{action.owner}</span>
             </div>
-            <div className={`flex items-center gap-1 text-[11px] font-medium ${isPastDue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'opacity-70'}`}>
-              <CalendarIcon size={12} />
+            <div className={`flex items-center gap-1 text-[10px] font-medium ${isPastDue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'opacity-70'}`}>
+              <CalendarIcon size={10} />
               <span>{action.dueDate}</span>
             </div>
           </div>
@@ -107,65 +193,93 @@ export default function MyTasksPage() {
     );
   };
 
-  // ----- Calendar View Logic -----
-  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
-  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+  // --- Kanban View ---
+  const renderKanban = () => {
+    if (groupByKpi) {
+      // スイムレーン表示 (KPIごとにグループ化)
+      // タスクが存在するKPIのみを抽出
+      const kpisWithTasks = Object.values(kpiData).filter(kpi => 
+        filteredActions.some(a => a.kpiId === kpi.id)
+      ).sort((a, b) => a.type === 'KGI' ? -1 : 1);
 
-  const renderCalendar = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const daysInMonth = getDaysInMonth(year, month);
-    const firstDay = getFirstDayOfMonth(year, month);
-    const days = [];
+      return (
+        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6 pb-8">
+          {kpisWithTasks.map(kpi => {
+            const kpiTasks = filteredActions.filter(a => a.kpiId === kpi.id);
+            const todo = kpiTasks.filter(a => a.status === 'todo');
+            const inProg = kpiTasks.filter(a => a.status === 'in_progress');
+            const done = kpiTasks.filter(a => a.status === 'done');
 
-    // 空白マス
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="min-h-[100px] bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800/50"></div>);
-    }
-
-    // 日付マス
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const dayTasks = filteredActions.filter(a => a.dueDate === dateStr);
-      const isToday = dateStr === new Date().toISOString().split('T')[0];
-
-      days.push(
-        <div key={d} className={`min-h-[120px] p-2 border border-slate-200 dark:border-slate-800 ${isToday ? 'bg-primary-50/30 dark:bg-primary-900/10' : 'bg-white dark:bg-[#282a2d]'}`}>
-          <div className={`text-xs font-bold mb-1 ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500'}`}>{d}</div>
-          <div className="flex flex-col gap-1 overflow-y-auto max-h-[90px] custom-scrollbar">
-            {dayTasks.map(task => (
-              <div 
-                key={task.id} 
-                className={`text-[10px] p-1 px-1.5 rounded truncate ${task.status === 'done' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' : task.status === 'in_progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}
-                title={task.title}
-              >
-                {task.title}
+            return (
+              <div key={kpi.id} className="flex flex-col bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${kpi.type === 'KGI' ? 'bg-amber-100 text-amber-700' : 'bg-primary-100 text-primary-700'}`}>{kpi.type}</span>
+                  <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{kpi.name}</h3>
+                  <span className="text-xs text-slate-500 ml-auto">{kpiTasks.length} tasks</span>
+                </div>
+                
+                <div className="flex flex-col md:flex-row min-h-[150px]">
+                  {/* To Do */}
+                  <div className="flex-1 p-2 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-2 bg-slate-50/30 dark:bg-slate-900/10" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'todo')}>
+                    <div className="text-[11px] font-bold text-slate-500 mb-1 px-1">To Do ({todo.length})</div>
+                    {todo.map(a => <TaskCard key={a.id} action={a} />)}
+                  </div>
+                  {/* In Progress */}
+                  <div className="flex-1 p-2 border-r border-slate-200 dark:border-slate-800 flex flex-col gap-2 bg-blue-50/10 dark:bg-blue-900/5" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'in_progress')}>
+                    <div className="text-[11px] font-bold text-blue-600 mb-1 px-1">In Progress ({inProg.length})</div>
+                    {inProg.map(a => <TaskCard key={a.id} action={a} />)}
+                  </div>
+                  {/* Done */}
+                  <div className="flex-1 p-2 flex flex-col gap-2 bg-emerald-50/10 dark:bg-emerald-900/5" onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'done')}>
+                    <div className="text-[11px] font-bold text-emerald-600 mb-1 px-1">Done ({done.length})</div>
+                    {done.map(a => <TaskCard key={a.id} action={a} />)}
+                  </div>
+                </div>
               </div>
-            ))}
+            );
+          })}
+          {kpisWithTasks.length === 0 && (
+            <div className="flex items-center justify-center h-full text-slate-500">タスクがありません</div>
+          )}
+        </div>
+      );
+    } else {
+      // 従来のフラットなカンバン
+      const todo = filteredActions.filter(a => a.status === 'todo');
+      const inProg = filteredActions.filter(a => a.status === 'in_progress');
+      const done = filteredActions.filter(a => a.status === 'done');
+      
+      const Column = ({ title, status, list, colorClass }: { title: string, status: any, list: Action[], colorClass: string }) => (
+        <div 
+          className="flex-1 min-w-[280px] flex flex-col bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800/50 overflow-hidden"
+          onDragOver={e => e.preventDefault()}
+          onDrop={e => handleDrop(e, status)}
+        >
+          <div className={`p-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center ${colorClass}`}>
+            <h3 className="font-bold text-[13px]">{title}</h3>
+            <span className="bg-white/50 dark:bg-black/20 text-xs px-2 py-0.5 rounded-full font-bold">{list.length}</span>
+          </div>
+          <div className="flex-1 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-3">
+            {list.map(a => <TaskCard key={a.id} action={a} />)}
           </div>
         </div>
       );
-    }
 
-    return (
-      <div className="flex-1 bg-white dark:bg-[#202124] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
-        <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-          {['日', '月', '火', '水', '木', '金', '土'].map(day => (
-            <div key={day} className="py-2 text-center text-xs font-bold text-slate-500 dark:text-slate-400">{day}</div>
-          ))}
+      return (
+        <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-x-auto custom-scrollbar pb-2">
+          <Column title="To Do (未着手)" status="todo" list={todo} colorClass="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" />
+          <Column title="In Progress (進行中)" status="in_progress" list={inProg} colorClass="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" />
+          <Column title="Done (完了)" status="done" list={done} colorClass="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300" />
         </div>
-        <div className="grid grid-cols-7 grid-rows-5 flex-1 overflow-y-auto">
-          {days}
-        </div>
-      </div>
-    );
+      );
+    }
   };
 
-  // ----- Timeline View Logic -----
+  // --- Timeline View ---
   const renderTimeline = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const daysInMonth = getDaysInMonth(year, month);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     
     const days = Array.from({length: daysInMonth}, (_, i) => {
       const d = new Date(year, month, i + 1);
@@ -177,88 +291,175 @@ export default function MyTasksPage() {
     });
 
     return (
-      <div className="flex-1 bg-white dark:bg-[#202124] rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
+      <div className="flex-1 bg-white dark:bg-[#202124] rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden shadow-sm">
         <div className="flex overflow-x-auto flex-1 custom-scrollbar">
-          {/* 左側のタスクリスト */}
-          <div className="w-64 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#282a2d] sticky left-0 z-10 flex flex-col">
-            <div className="h-12 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 bg-slate-50 dark:bg-slate-900 font-bold text-xs text-slate-500">
-              タスク名
+          
+          {/* 左側の階層ツリーリスト */}
+          <div className="w-80 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#282a2d] sticky left-0 z-20 flex flex-col">
+            <div className="h-10 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 bg-slate-50 dark:bg-slate-900 font-bold text-xs text-slate-500 shadow-sm z-10">
+              目標・タスク階層
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {filteredActions.map(action => (
-                <div key={action.id} className="h-12 border-b border-slate-100 dark:border-slate-800/50 flex flex-col justify-center px-4">
-                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">{action.title}</span>
-                  <span className="text-[9px] text-slate-500 truncate">{action.owner}</span>
+            <div className="flex-1 overflow-y-auto custom-scrollbar pb-10">
+              {flatVisibleNodes.map(node => (
+                <div 
+                  key={node.id} 
+                  className={`h-10 border-b border-slate-100 dark:border-slate-800/50 flex items-center pr-2 transition-colors ${node.type === 'TASK' ? 'bg-white dark:bg-[#202124] hover:bg-slate-50 dark:hover:bg-[#2a2d31]' : 'bg-slate-50 dark:bg-[#2d2f31] hover:bg-slate-100 dark:hover:bg-[#3c4043]'}`}
+                >
+                  <div className="flex items-center w-full" style={{ paddingLeft: `${node.depth * 16 + 8}px` }}>
+                    {/* 開閉トグルアイコン */}
+                    <div 
+                      className={`w-5 h-5 flex items-center justify-center shrink-0 cursor-pointer text-slate-400 hover:text-slate-600 ${node.children.length === 0 ? 'invisible' : ''}`}
+                      onClick={() => toggleNode(node.id)}
+                    >
+                      {expandedNodes.has(node.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    </div>
+                    
+                    {/* アイコン */}
+                    <div className="w-5 flex justify-center shrink-0 mr-1.5">
+                      {node.type === 'KGI' && <span className="w-2 h-2 rounded-full bg-amber-500"></span>}
+                      {node.type === 'KPI' && <span className="w-2 h-2 rounded-full bg-primary-500"></span>}
+                      {node.type === 'TASK' && (
+                        <span className={`w-2 h-2 rounded-sm ${node.taskData?.status === 'done' ? 'bg-emerald-500' : node.taskData?.status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-300'}`}></span>
+                      )}
+                    </div>
+
+                    {/* テキスト */}
+                    <span className={`text-[12px] truncate ${node.type !== 'TASK' ? 'font-bold text-slate-800 dark:text-slate-200' : 'text-slate-700 dark:text-slate-300'}`}>
+                      {node.title}
+                    </span>
+                    
+                    {/* 担当者（タスクのみ） */}
+                    {node.type === 'TASK' && node.taskData?.owner && (
+                      <span className="ml-auto text-[10px] text-slate-400 shrink-0 bg-slate-100 dark:bg-slate-800 px-1.5 rounded">{node.taskData.owner}</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* 右側のガントチャート */}
-          <div className="flex flex-col flex-1 min-w-max">
-            <div className="h-12 flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 sticky top-0">
+          <div className="flex flex-col flex-1 min-w-max bg-white dark:bg-[#202124]">
+            <div className="h-10 flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
               {days.map(d => (
-                <div key={d.date} className={`w-10 shrink-0 flex flex-col items-center justify-center border-r border-slate-200 dark:border-slate-800/50 ${d.dayOfWeek === 0 || d.dayOfWeek === 6 ? 'bg-slate-100/50 dark:bg-slate-800/30' : ''}`}>
-                  <span className="text-[9px] text-slate-400">{['日','月','火','水','木','金','土'][d.dayOfWeek]}</span>
-                  <span className={`text-[11px] font-bold ${d.dateStr === new Date().toISOString().split('T')[0] ? 'text-primary-500' : 'text-slate-700 dark:text-slate-300'}`}>{d.date}</span>
+                <div key={d.date} className={`w-8 shrink-0 flex flex-col items-center justify-center border-r border-slate-200 dark:border-slate-800/50 ${d.dayOfWeek === 0 || d.dayOfWeek === 6 ? 'bg-slate-100/80 dark:bg-slate-800/50' : ''}`}>
+                  <span className="text-[8px] text-slate-400 leading-none mb-0.5">{['日','月','火','水','木','金','土'][d.dayOfWeek]}</span>
+                  <span className={`text-[10px] font-bold leading-none ${d.dateStr === new Date().toISOString().split('T')[0] ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/30 w-5 h-5 rounded-full flex items-center justify-center' : 'text-slate-700 dark:text-slate-300'}`}>{d.date}</span>
                 </div>
               ))}
             </div>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+            <div className="flex-1 overflow-y-auto custom-scrollbar relative pb-10">
               {/* 背景のグリッド線 */}
               <div className="absolute inset-0 flex pointer-events-none">
                 {days.map(d => (
-                  <div key={d.date} className={`w-10 shrink-0 border-r border-slate-100 dark:border-slate-800/30 ${d.dayOfWeek === 0 || d.dayOfWeek === 6 ? 'bg-slate-50/50 dark:bg-slate-800/10' : ''}`}></div>
+                  <div key={d.date} className={`w-8 shrink-0 border-r border-slate-100 dark:border-slate-800/30 ${d.dayOfWeek === 0 || d.dayOfWeek === 6 ? 'bg-slate-50/50 dark:bg-slate-800/10' : ''}`}></div>
                 ))}
               </div>
 
-              {/* タスクバー */}
-              {filteredActions.map(action => {
-                const startStr = action.startDate || action.dueDate; // startDateがなければdueDateのみ
-                const endStr = action.dueDate;
-                
-                // 開始日が今月内かどうか
-                const startMonth = new Date(startStr).getMonth();
-                const endMonth = new Date(endStr).getMonth();
-                
-                // ガントチャート描画用の簡易的な計算（本来は厳密な日付計算が必要だが今回は月のインデックスで処理）
-                let startIdx = days.findIndex(d => d.dateStr === startStr);
-                let endIdx = days.findIndex(d => d.dateStr === endStr);
-                
-                // 月をまたぐ場合の補正
-                if (startIdx === -1 && startMonth < month) startIdx = 0;
-                if (endIdx === -1 && endMonth > month) endIdx = days.length - 1;
-                
-                if (startIdx === -1 && endIdx === -1) {
-                   // 完全に月外の場合は描画しない（本来は前月・次月へのスクロール対応が必要）
-                }
+              {/* チャート本体 */}
+              <div className="relative">
+                {flatVisibleNodes.map(node => {
+                  const startStr = node.startDate;
+                  const endStr = node.endDate;
+                  
+                  let startIdx = -1;
+                  let endIdx = -1;
 
-                // fallback
-                if (startIdx === -1) startIdx = endIdx;
-                if (endIdx === -1) endIdx = startIdx;
+                  if (startStr && endStr) {
+                    const startMonth = new Date(startStr).getMonth();
+                    const endMonth = new Date(endStr).getMonth();
+                    
+                    startIdx = days.findIndex(d => d.dateStr === startStr);
+                    endIdx = days.findIndex(d => d.dateStr === endStr);
+                    
+                    if (startIdx === -1 && startMonth < month) startIdx = 0;
+                    if (endIdx === -1 && endMonth > month) endIdx = days.length - 1;
+                    if (startIdx === -1) startIdx = endIdx;
+                    if (endIdx === -1) endIdx = startIdx;
+                  }
 
-                const left = startIdx * 40; // 1日40px (w-10)
-                const width = ((endIdx - startIdx) + 1) * 40;
-                
-                const barColor = action.status === 'done' ? 'bg-emerald-500' : action.status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400';
+                  const left = startIdx !== -1 ? startIdx * 32 : 0; // w-8 = 32px
+                  const width = (endIdx !== -1 && startIdx !== -1) ? ((endIdx - startIdx) + 1) * 32 : 0;
+                  
+                  // バーのスタイル
+                  let barClass = "";
+                  if (node.type === 'KGI') barClass = "bg-amber-400/80 dark:bg-amber-600/50 h-2 top-[14px]"; // サマリー細線
+                  else if (node.type === 'KPI') barClass = "bg-primary-400/80 dark:bg-primary-600/50 h-2 top-[14px]"; // サマリー細線
+                  else {
+                    const status = node.taskData?.status;
+                    barClass = `h-5 top-[6px] ${status === 'done' ? 'bg-emerald-500' : status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400'}`;
+                  }
 
-                return (
-                  <div key={action.id} className="h-12 border-b border-transparent relative flex items-center group">
-                    {(startIdx !== -1 && endIdx !== -1) && (
-                      <div 
-                        className={`absolute h-6 rounded-full shadow-sm ${barColor} opacity-90 group-hover:opacity-100 transition-opacity z-10 flex items-center px-2 cursor-pointer`}
-                        style={{ left: `${left + 4}px`, width: `${Math.max(width - 8, 24)}px` }}
-                        title={`${action.title} (${startStr} ~ ${endStr})`}
-                      >
-                        {width > 60 && <span className="text-[10px] text-white font-bold truncate">{action.title}</span>}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  return (
+                    <div key={node.id} className={`h-10 border-b border-transparent relative group ${node.type === 'TASK' ? 'hover:bg-slate-50/50 dark:hover:bg-white/5' : ''}`}>
+                      {(startIdx !== -1 && endIdx !== -1 && width > 0) && (
+                        <div 
+                          className={`absolute rounded-sm shadow-sm transition-all z-10 cursor-pointer ${barClass}`}
+                          style={{ left: `${left + 4}px`, width: `${Math.max(width - 8, 8)}px` }}
+                          title={`${node.title} (${startStr} ~ ${endStr})`}
+                        >
+                          {/* ツリー側のテキストがあるため、バーの中のテキストはタスクの進行中など長い場合のみ表示 */}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- Calendar View ---
+  const renderCalendar = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const days = [];
+
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} className="min-h-[120px] bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800/50"></div>);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const dayTasks = filteredActions.filter(a => a.dueDate === dateStr);
+      const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+      days.push(
+        <div key={d} className={`min-h-[120px] p-2 border border-slate-200 dark:border-slate-800 ${isToday ? 'bg-primary-50/30 dark:bg-primary-900/10' : 'bg-white dark:bg-[#282a2d]'}`}>
+          <div className={`text-xs font-bold mb-1 ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500'}`}>{d}</div>
+          <div className="flex flex-col gap-1 overflow-y-auto max-h-[100px] custom-scrollbar">
+            {dayTasks.map(task => {
+              const kpi = kpiData[task.kpiId];
+              return (
+                <div 
+                  key={task.id} 
+                  className={`text-[10px] p-1 px-1.5 rounded truncate flex items-center gap-1 border-l-2 ${task.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-300' : task.status === 'in_progress' ? 'bg-blue-50 text-blue-700 border-blue-500 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-slate-50 text-slate-700 border-slate-400 dark:bg-slate-800 dark:text-slate-300'}`}
+                  title={`${task.title} (${kpi?.name})`}
+                >
+                  <span className="font-bold truncate">{task.title}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex-1 bg-white dark:bg-[#202124] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col shadow-sm">
+        <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+          {['日', '月', '火', '水', '木', '金', '土'].map(day => (
+            <div key={day} className="py-2 text-center text-[11px] font-bold text-slate-500 dark:text-slate-400">{day}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 grid-rows-5 flex-1 overflow-y-auto custom-scrollbar bg-slate-100 dark:bg-[#202124] gap-[1px]">
+          {days}
         </div>
       </div>
     );
@@ -270,55 +471,65 @@ export default function MyTasksPage() {
     <div className="flex flex-col h-[calc(100vh-4rem)] p-4 max-w-7xl mx-auto w-full">
       
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm shrink-0 gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm shrink-0 gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-lg">
             <CheckSquare size={24} />
           </div>
           <div>
             <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              マイタスク 
+              プロジェクト・タスク管理
               <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-normal text-slate-500">{currentDate.getFullYear()}年{currentDate.getMonth() + 1}月</span>
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">担当している施策（KSF）のステータスやスケジュールを管理します。</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">KGI/KPIのツリー階層と連動したタスクのステータスやスケジュールを管理します。</p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
           
           {/* View Toggle */}
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
             <button 
-              onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-            >
-              <LayoutGrid size={14} /> カンバン
-            </button>
-            <button 
               onClick={() => setViewMode('timeline')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'timeline' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'timeline' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               <Clock size={14} /> タイムライン
             </button>
             <button 
+              onClick={() => setViewMode('kanban')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            >
+              <LayoutGrid size={14} /> カンバン
+            </button>
+            <button 
               onClick={() => setViewMode('calendar')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               <CalendarIcon size={14} /> カレンダー
             </button>
           </div>
 
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+          <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
+
+          {/* Grouping Toggle (Kanban Only) */}
+          {viewMode === 'kanban' && (
+            <button 
+              onClick={() => setGroupByKpi(!groupByKpi)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-bold transition-colors border ${groupByKpi ? 'bg-primary-50 border-primary-200 text-primary-700 dark:bg-primary-900/30 dark:border-primary-800 dark:text-primary-400' : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}
+            >
+              <Layers size={14} /> KPIでグループ化
+            </button>
+          )}
 
           {/* Filter */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full md:w-auto bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
             <User size={14} className="text-slate-400" />
             <select 
               value={filterOwner}
               onChange={(e) => setFilterOwner(e.target.value)}
-              className="flex-1 sm:w-36 px-2 py-1.5 bg-transparent border-b border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-indigo-500 transition-colors"
+              className="flex-1 md:w-32 bg-transparent text-[11px] font-bold text-slate-700 dark:text-slate-200 outline-none"
             >
-              <option value="all">すべての担当者</option>
+              <option value="all">全担当者</option>
               {owners.map(owner => (
                 <option key={owner} value={owner}>{owner}</option>
               ))}
@@ -329,81 +540,9 @@ export default function MyTasksPage() {
       </div>
 
       {/* Main Content Area */}
-      {viewMode === 'kanban' && (
-        <div className="flex-1 flex flex-col md:flex-row gap-4 min-h-0 overflow-x-auto pb-2 custom-scrollbar">
-          {/* To Do Column */}
-          <div 
-            className="flex-1 min-w-[280px] flex flex-col bg-slate-100 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800/50 overflow-hidden"
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'todo')}
-          >
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-              <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                To Do (未着手)
-              </h3>
-              <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs px-2 py-0.5 rounded-full font-bold">{todoList.length}</span>
-            </div>
-            <div className="flex-1 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-3">
-              {todoList.map(action => <TaskCard key={action.id} action={action} />)}
-              {todoList.length === 0 && (
-                <div className="h-24 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-xs text-slate-400 font-bold">
-                  タスクがありません
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* In Progress Column */}
-          <div 
-            className="flex-1 min-w-[280px] flex flex-col bg-slate-100 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800/50 overflow-hidden"
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'in_progress')}
-          >
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0 flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/10">
-              <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                In Progress (進行中)
-              </h3>
-              <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full font-bold">{inProgressList.length}</span>
-            </div>
-            <div className="flex-1 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-3">
-              {inProgressList.map(action => <TaskCard key={action.id} action={action} />)}
-              {inProgressList.length === 0 && (
-                <div className="h-24 border-2 border-dashed border-blue-200/50 dark:border-blue-900/50 rounded-xl flex items-center justify-center text-xs text-blue-400 font-bold">
-                  ドロップして進行中にする
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Done Column */}
-          <div 
-            className="flex-1 min-w-[280px] flex flex-col bg-slate-100 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800/50 overflow-hidden"
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'done')}
-          >
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0 flex justify-between items-center bg-emerald-50/50 dark:bg-emerald-900/10">
-              <h3 className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                Done (完了)
-              </h3>
-              <span className="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full font-bold">{doneList.length}</span>
-            </div>
-            <div className="flex-1 p-3 overflow-y-auto custom-scrollbar flex flex-col gap-3">
-              {doneList.map(action => <TaskCard key={action.id} action={action} />)}
-              {doneList.length === 0 && (
-                <div className="h-24 border-2 border-dashed border-emerald-200/50 dark:border-emerald-900/50 rounded-xl flex items-center justify-center text-xs text-emerald-400 font-bold">
-                  ドロップして完了にする
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {viewMode === 'calendar' && renderCalendar()}
+      {viewMode === 'kanban' && renderKanban()}
       {viewMode === 'timeline' && renderTimeline()}
+      {viewMode === 'calendar' && renderCalendar()}
 
     </div>
   );
