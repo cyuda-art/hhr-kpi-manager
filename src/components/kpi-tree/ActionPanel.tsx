@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Sparkles, Trash2, Edit2, CheckCircle2, Circle } from 'lucide-react';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 
@@ -40,7 +40,7 @@ export const ActionPanel = () => {
 
   const [isGeneratingWorkflow, setIsGeneratingWorkflow] = useState(false);
   const [isAnalyzingPdca, setIsAnalyzingPdca] = useState(false);
-  const [pdcaResult, setPdcaResult] = useState<string | null>(null);
+  const [pdcaResult, setPdcaResult] = useState<React.ReactNode | null>(null);
   const [workflowError, setWorkflowError] = useState('');
 
   // 選択されたKPIが変わったら編集モードなどをリセット
@@ -176,9 +176,9 @@ export const ActionPanel = () => {
     // モックアップ：AIからの返答をシミュレーション
     setTimeout(() => {
       const isAchieved = selectedKpi.achievementRate >= 100;
-      setPdcaResult(isAchieved 
-        ? `✅ 【達成要因の分析】\n目標を上回るペースで推移しています。現在のタスク（${selectedKpiTasks.length}件）が有効に機能していると考えられます。\n\n【次の一手】\nこの成功パターンを他の事業部にも横展開するための「ナレッジ共有タスク」の追加を推奨します。`
-        : `⚠️ 【未達要因の分析】\n目標に対して${(100 - selectedKpi.achievementRate).toFixed(1)}%ショートしています。\n計算式「${selectedKpi.calculationFormula || '未設定'}」に照らし合わせると、現在の進捗スピードでは目標達成が困難です。\n\n【次の一手】\nリカバリープランとして以下のタスクを追加することを推奨します。\n・原因究明とボトルネックの特定（担当：マネージャー）\n・今週末までのテコ入れ施策の立案`
+      setPdcaResult(isAchieved  
+        ? <><div className="flex items-center gap-1 text-emerald-500 font-bold"><CheckCircle2 size={16} /> 【達成要因の分析】</div>目標を上回るペースで推移しています。現在のタスク（{selectedKpiTasks.length}件）が有効に機能していると考えられます。<br/><br/><div className="font-bold">【次の一手】</div>この成功パターンを他の事業部にも横展開するための「ナレッジ共有タスク」の追加を推奨します。</>
+        : <><div className="flex items-center gap-1 text-rose-500 font-bold"><AlertTriangle size={16} /> 【未達要因の分析】</div>目標に対して{(100 - selectedKpi.achievementRate).toFixed(1)}%ショートしています。<br/>計算式「{selectedKpi.calculationFormula || '未設定'}」に照らし合わせると、現在の進捗スピードでは目標達成が困難です。<br/><br/><div className="font-bold">【次の一手】</div>リカバリープランとして以下のタスクを追加することを推奨します。<br/>・原因究明とボトルネックの特定（担当：マネージャー）<br/>・今週末までのテコ入れ施策の立案</>
       );
       setIsAnalyzingPdca(false);
     }, 2000);
@@ -481,7 +481,7 @@ export const ActionPanel = () => {
                   </p>
                   <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      <strong>💡 KPIアドバイス:</strong> {currentWorkflow.kpi_advice}
+                      <strong className="flex items-center gap-1"><Lightbulb size={12} className="text-amber-500" /> KPIアドバイス:</strong> {currentWorkflow.kpi_advice}
                     </p>
                   </div>
                 </div>

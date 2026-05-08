@@ -432,7 +432,7 @@ export default function LandingPage() {
                       <span className="font-bold text-sm">AI PDCA 分析結果</span>
                     </div>
                     <div className="space-y-4 text-slate-300 text-sm leading-relaxed">
-                      <p>⚠️ <strong className="text-white">【未達要因の分析】</strong><br/>目標に対して15.0%ショートしています。現在の進捗スピードでは目標達成が困難です。</p>
+                      <p><AlertTriangle className="inline w-4 h-4 mr-1 text-rose-500" /> <strong className="text-white">【未達要因の分析】</strong><br/>目標に対して15.0%ショートしています。現在の進捗スピードでは目標達成が困難です。</p>
                       <div className="bg-indigo-950/50 border border-indigo-500/30 p-4 rounded-lg">
                         <strong className="text-white block mb-2">【次の一手のご提案】</strong>
                         <ul className="list-disc pl-4 space-y-1 text-indigo-200">

@@ -8,13 +8,14 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { TEMPLATES } from '@/lib/templates';
-import { Sparkles, Bot, User, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Bot, User, CheckCircle2, Building2, UserCircle, Hotel, Utensils, ShoppingBag, Monitor, Box } from 'lucide-react';
+import React from 'react';
 
 interface ChatMessage {
   id: string;
   sender: 'ai' | 'user';
   text: string;
-  options?: { label: string; value: string; type?: 'userType' | 'industry' }[];
+  options?: { label: string; value: string; type?: 'userType' | 'industry', icon?: React.ReactNode }[];
   isTyping?: boolean;
 }
 
@@ -37,10 +38,10 @@ export default function OnboardingChatPage() {
       {
         id: 'msg-1',
         sender: 'ai',
-        text: 'はじめまして！K-Navigatorへようこそ。まずはあなたのプロファイルを設定し、最適な環境をご用意します。\\nあなたは法人としてご利用ですか？それとも個人ですか？',
+        text: 'はじめまして！LogicTree Pro へようこそ。まずはあなたのプロファイルを設定し、最適な環境をご用意します。\\nあなたは法人としてご利用ですか？それとも個人ですか？',
         options: [
-          { label: '🏢 法人・チーム', value: 'company', type: 'userType' },
-          { label: '👤 個人・フリーランス', value: 'personal', type: 'userType' }
+          { label: '法人・チーム', value: 'company', type: 'userType', icon: <Building2 size={16} /> },
+          { label: '個人・フリーランス', value: 'personal', type: 'userType', icon: <UserCircle size={16} /> }
         ]
       }
     ]);
@@ -76,11 +77,11 @@ export default function OnboardingChatPage() {
             sender: 'ai',
             text: 'ありがとうございます。次に、あなたの業種や事業モデルを教えてください。\\nこれに基づき、AIが最適なKPIツリーを自動生成します。',
             options: [
-              { label: '🏨 ホテル・宿泊', value: 'hotel', type: 'industry' },
-              { label: '🍽️ 飲食・レストラン', value: 'restaurant', type: 'industry' },
-              { label: '🛍️ 小売・店舗', value: 'retail', type: 'industry' },
-              { label: '💻 B2B SaaS', value: 'saas', type: 'industry' },
-              { label: '📦 その他', value: 'retail', type: 'industry' } // フォールバックとしてretail
+              { label: 'ホテル・宿泊', value: 'hotel', type: 'industry', icon: <Hotel size={16} /> },
+              { label: '飲食・レストラン', value: 'restaurant', type: 'industry', icon: <Utensils size={16} /> },
+              { label: '小売・店舗', value: 'retail', type: 'industry', icon: <ShoppingBag size={16} /> },
+              { label: 'B2B SaaS', value: 'saas', type: 'industry', icon: <Monitor size={16} /> },
+              { label: 'その他', value: 'retail', type: 'industry', icon: <Box size={16} /> } // フォールバックとしてretail
             ]
           }
         ]);
@@ -183,7 +184,7 @@ export default function OnboardingChatPage() {
       <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-6 sticky top-0 z-10">
         <div className="font-bold text-primary-600 dark:text-primary-400 flex items-center gap-2">
           <Sparkles size={20} />
-          <span>K-Navigator Setup AI</span>
+          <span>Setup AI</span>
         </div>
       </header>
 
@@ -228,8 +229,9 @@ export default function OnboardingChatPage() {
                         key={i}
                         onClick={() => handleOptionClick(opt)}
                         disabled={isCreating}
-                        className="px-4 py-2 bg-white dark:bg-slate-800 border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 rounded-full text-sm font-bold hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors shadow-sm disabled:opacity-50"
+                        className="px-4 py-2 flex items-center gap-2 bg-white dark:bg-slate-800 border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 rounded-full text-sm font-bold hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors shadow-sm disabled:opacity-50"
                       >
+                        {opt.icon && opt.icon}
                         {opt.label}
                       </button>
                     ))}

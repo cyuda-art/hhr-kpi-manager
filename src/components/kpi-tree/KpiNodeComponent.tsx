@@ -3,7 +3,7 @@ import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { ChevronDown, ChevronRight, Sparkles, History } from 'lucide-react';
+import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2 } from 'lucide-react';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -97,14 +97,14 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {/* 定性（Goal/KSF）部分 */}
             {(data.qualitativeName || data.type === 'KGI') && (
               <div>
-                <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '🎯 Goal (定性目標)' : '🎯 KSF (重要成功要因)'}</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5 flex items-center gap-1">{data.type === 'KGI' ? <><Target size={10} /> Goal (定性目標)</> : <><Target size={10} /> KSF (重要成功要因)</>}</p>
                 <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[14px] leading-tight break-words">{data.qualitativeName || '未設定'}</p>
               </div>
             )}
             
             {/* 定量（KGI/KPI）部分 */}
             <div>
-              <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5">{data.type === 'KGI' ? '📊 KGI (定量指標)' : '📊 KPI (定量指標)'}</p>
+              <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5 flex items-center gap-1">{data.type === 'KGI' ? <><BarChart2 size={10} /> KGI (定量指標)</> : <><BarChart2 size={10} /> KPI (定量指標)</>}</p>
               <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[13px] leading-tight break-words">{data.name}</p>
             </div>
           </div>
