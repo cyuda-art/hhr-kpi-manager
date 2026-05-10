@@ -152,7 +152,9 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
                 <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5 flex items-center gap-1">
                   <Target size={10} /> {getQualitativeLabel()}
                 </p>
-                <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[14px] leading-tight break-words">{data.qualitativeName || '未設定'}</p>
+                <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[14px] leading-tight break-words">
+                  {(data.qualitativeName || '未設定').replace(/^(KSF|プロセス|Goal|Process)[:：\s]*/i, '')}
+                </p>
               </div>
             )}
             
@@ -169,7 +171,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           </div>
           {displayTarget > 0 && (displayActual - displayTarget) < 0 && (
             <div className="text-[10px] font-bold text-[#f43f5e] bg-[#f43f5e]/10 px-1.5 py-0.5 rounded">
-              不足: {(displayActual - displayTarget).toLocaleString()}
+              不足: {Math.round(displayActual - displayTarget).toLocaleString()}
             </div>
           )}
         </div>

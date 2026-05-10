@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 - "nodes" 配列内のノードは合計で10個〜15個程度作成してください。
 - 階層構造と数式に関する【絶対ルール】（MECEとロジックツリーの完全連動）:
   - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main"、nameは "${kgiType}"、targetValueは ${kgiTargetValue || 100000000} としてください。
-  - KSFノード（qualitativeNameにKSF名を設定）を作り、その下にKPIノードを繋げてください（parentIdで指定）。
+  - 各ノードの qualitativeName には、目標達成のための定性的な成功要因やプロセス名を設定してください（重要: 「KSF:」や「プロセス:」といった接頭辞は絶対に付けないこと）。
   - IDはユニークな半角英数字にしてください。
   - ツリー構造（親子の依存関係）は「数式による分解（要素還元）」と完全に一致しなければなりません。
   - 親ノード（例: 売上高）は、その直下の子ノードたちの四則演算（主に掛け算または足し算）によって【必ず100%過不足なく構成】されるようにしてください。
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     {
       "id": "kgi_main",
       "name": "KGIの名前 (定量)",
-      "qualitativeName": "目指す方向性 (定性)",
+      "qualitativeName": "目指す方向性（※接頭辞なし）",
       "businessUnit": "company",
       "type": "KGI",
       "parentId": null,
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     {
       "id": "kpi_child_1",
       "name": "末端KPIの名前",
-      "qualitativeName": "KSFやプロセス名",
+      "qualitativeName": "新規顧客の獲得と初期単価向上（※接頭辞なし）",
       "businessUnit": "company",
       "type": "KPI",
       "parentId": "kgi_main",

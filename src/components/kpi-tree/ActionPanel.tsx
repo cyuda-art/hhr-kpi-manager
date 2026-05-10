@@ -239,7 +239,7 @@ export const ActionPanel = () => {
             {selectedKpi.qualitativeName && (
               <h4 className="font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">
                 <span className="text-[10px] text-primary-500 mr-1">{getQualitativeLabel()}:</span>
-                {selectedKpi.qualitativeName}
+                {selectedKpi.qualitativeName.replace(/^(KSF|プロセス|Goal|Process)[:：\s]*/i, '')}
               </h4>
             )}
             <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -401,10 +401,10 @@ export const ActionPanel = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod).toLocaleString()}</span> {selectedKpi.unit}
+                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round(getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod)).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod).toLocaleString()}</span> {selectedKpi.unit}
+                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{Math.round(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod)).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
                     </div>
                     <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded">

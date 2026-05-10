@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
 {
   "issue": "課題の要約（簡潔に）",
-  "ksfIdea": "目標達成に不可欠な定性的な重要成功要因（KSF）の名称",
+  "ksfIdea": "目標達成に不可欠な定性的な重要成功要因（KSF）やプロセス名（※「KSF:」などの接頭辞は付けないこと）",
   "ksfReason": "なぜこのKSFが重要なのか、全体の事業内容や上位KGIとどうリンクしているかの理由",
   "kpiIdea": "そのKSFの達成度を測るための定量的なKPIの名称",
   "kpiIdeaTarget": 1000,
