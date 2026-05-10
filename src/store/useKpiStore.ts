@@ -37,6 +37,7 @@ interface KpiStore {
   removeKpiNode: (id: string) => void;
   updateKpiNode: (id: string, data: Partial<KpiNodeData>) => void;
   updateKpiNodePosition: (id: string, position: { x: number; y: number }) => void;
+  updateKpiNodePositionsBulk: (positions: { id: string; position: { x: number; y: number } }[]) => void;
   setKpiDataBulk: (nodes: KpiNodeData[]) => void;
   toggleNodeCollapse: (id: string) => void;
   setProjectInfo: (info: Partial<import('@/types').ProjectInfo>) => void;
@@ -518,6 +519,22 @@ export const useKpiStore = create<KpiStore>()(
       if (draft[id]) {
         draft[id] = { ...draft[id], position };
         // positionの変更はDBに即時保存するが、不要な再計算は行わない
+        syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
+      }
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
+    });
+  },
+  updateKpiNodePositionsBulk: (positions) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      let hasChanges = false;
+      positions.forEach(({ id, position }) => {
+        if (draft[id]) {
+          draft[id] = { ...draft[id], position };
+          hasChanges = true;
+        }
+      });
+      if (hasChanges) {
         syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
       }
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };

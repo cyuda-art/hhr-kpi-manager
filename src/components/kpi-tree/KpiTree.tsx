@@ -193,6 +193,13 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
     
+    // 自動レイアウトの結果をストアとFirestoreに保存
+    const positionsToSave = layoutedNodes.map(n => ({
+      id: n.id,
+      position: n.position
+    }));
+    useKpiStore.getState().updateKpiNodePositionsBulk(positionsToSave);
+    
     if (rfInstance) {
       setTimeout(() => rfInstance.fitView({ padding: 0.2, duration: 800 }), 50);
     }
