@@ -461,8 +461,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 <span className="text-[10px] text-rose-500 font-mono">〜79%</span>
               </div>
               <div className="flex items-center gap-2.5 pt-1 mt-0.5 border-t border-slate-100 dark:border-slate-800/50">
-                <div className="w-6 h-[2px] bg-[#8ab4f8] rounded-full animate-pulse"></div>
-                <span className="text-slate-500 dark:text-slate-500 text-[10px]">AI予測・シミュレーション中</span>
+                <div className="w-6 h-[2px] bg-[#8ab4f8] rounded-full"></div>
+                <span className="text-slate-500 dark:text-slate-500 text-[10px]">AI予測モードON時のみ青く発光</span>
               </div>
             </div>
           </div>
