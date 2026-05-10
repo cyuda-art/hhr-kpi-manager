@@ -24,7 +24,6 @@ interface KpiStore {
   setPeriod: (period: string) => void;
   togglePredictionMode: () => void;
   initializeDB: (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => Promise<void>;
-  updateActualValue: (id: string, newValue: number) => void;
   updateSimulatedValue: (id: string, newValue: number) => void;
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
@@ -448,53 +447,6 @@ export const useKpiStore = create<KpiStore>()(
     });
   },
 
-  updateActualValue: (id: string, newValue: number) => {
-    set((state) => {
-      const draft = { ...state.kpiData };
-      
-      // 直接変更されたノードを更新
-      if (draft[id]) {
-        draft[id] = calculateComputed({ ...draft[id], actualValue: newValue, initialActualValue: newValue });
-      }
-
-      // 動的計算エンジンによる再計算（実績値）
-      recalculateTree(draft, 'actualValue');
-
-      // 再計算後、全てのノードの今日の履歴(history)を更新・追加する
-      const today = new Date().toISOString().split('T')[0];
-      Object.keys(draft).forEach(key => {
-        const node = draft[key];
-        const newHistory = [...(node.history || [])];
-        const todayRecordIndex = newHistory.findIndex(h => h.date === today);
-        
-        if (todayRecordIndex >= 0) {
-          newHistory[todayRecordIndex] = { 
-            ...newHistory[todayRecordIndex], 
-            actualValue: node.actualValue, 
-            targetValue: node.targetValue 
-          };
-        } else {
-          newHistory.push({
-            id: `hist_${Math.random().toString(36).substr(2, 9)}`,
-            date: today,
-            targetValue: node.targetValue,
-            actualValue: node.actualValue,
-            comment: ''
-          });
-        }
-        draft[key] = { 
-          ...node, 
-          history: newHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) 
-        };
-      });
-
-      // 実績値の更新なのでDBへ同期する
-      syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
-      
-      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
-    });
-  },
-
   updateSimulatedValue: (id: string, newValue: number) => {
     set((state) => {
       const draft = { ...state.kpiData };
@@ -552,16 +504,50 @@ export const useKpiStore = create<KpiStore>()(
           
           draft[id] = calculateComputed({ ...draft[id], ...data });
           
+          let valueChanged = false;
+
           // 実績値が更新された場合
           if (data.actualValue !== undefined && data.actualValue !== oldActual) {
             // 動的計算エンジンによる再計算（実績値）
             recalculateTree(draft, 'actualValue');
+            valueChanged = true;
           }
 
           // 目標値が更新された場合
           if (data.targetValue !== undefined && oldTarget > 0 && data.targetValue !== oldTarget) {
             // 動的計算エンジンによる再計算（目標値）
             recalculateTree(draft, 'targetValue');
+            valueChanged = true;
+          }
+
+          // 実績や目標値が変更された場合、関連する全ノード（再計算されたノード含む）の今日の履歴を更新する
+          if (valueChanged) {
+            const today = new Date().toISOString().split('T')[0];
+            Object.keys(draft).forEach(key => {
+              const node = draft[key];
+              const newHistory = [...(node.history || [])];
+              const todayRecordIndex = newHistory.findIndex(h => h.date === today);
+              
+              if (todayRecordIndex >= 0) {
+                newHistory[todayRecordIndex] = { 
+                  ...newHistory[todayRecordIndex], 
+                  actualValue: node.actualValue, 
+                  targetValue: node.targetValue 
+                };
+              } else {
+                newHistory.push({
+                  id: `hist_${Math.random().toString(36).substr(2, 9)}`,
+                  date: today,
+                  targetValue: node.targetValue,
+                  actualValue: node.actualValue,
+                  comment: ''
+                });
+              }
+              draft[key] = { 
+                ...node, 
+                history: newHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) 
+              };
+            });
           }
           
           syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });

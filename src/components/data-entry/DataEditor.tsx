@@ -2,13 +2,13 @@
 
 import { useKpiStore } from '@/store/useKpiStore';
 import { useState, useMemo } from 'react';
-import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator } from 'lucide-react';
+import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator, Code2 } from 'lucide-react';
 import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 
-type TableMode = 'master' | 'ksf' | 'history';
+type TableMode = 'master' | 'ksf' | 'history' | 'database';
 
 export const DataEditor = () => {
-  const { kpiData, actions, addHistoryRecord, updateHistoryRecord, updateKpiNode, currentPeriod, isPredictionMode } = useKpiStore();
+  const { kpiData, actions, currentProjectInfo, addHistoryRecord, updateHistoryRecord, updateKpiNode, currentPeriod, isPredictionMode } = useKpiStore();
   
   // 表示中のテーブルモード
   const [activeMode, setActiveMode] = useState<TableMode>('master');
@@ -128,6 +128,19 @@ export const DataEditor = () => {
             KSF一覧
             <span className="ml-auto text-[10px] text-slate-400">{actions.length}</span>
           </button>
+          
+          {/* Database (Raw) */}
+          <button
+            onClick={() => setActiveMode('database')}
+            className={`w-full text-left px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors flex items-center gap-2 mt-4 ${
+              activeMode === 'database' 
+                ? 'bg-[#fbbc04]/20 text-[#fbbc04]' 
+                : 'text-slate-600 dark:text-[#e8eaed] hover:bg-slate-200 dark:hover:bg-[#3c4043]'
+            }`}
+          >
+            <Code2 size={14} className="opacity-70" />
+            Database (Raw JSON)
+          </button>
         </div>
 
         <div className="px-4 mb-2 flex items-center justify-between">
@@ -159,7 +172,7 @@ export const DataEditor = () => {
           <div className="flex items-center gap-4">
             <h2 className="text-[15px] font-bold text-slate-800 dark:text-[#e8eaed] flex items-center gap-2">
               <LayoutGrid size={16} className="text-slate-400" />
-              {activeMode === 'master' ? 'KPIマスター' : activeMode === 'ksf' ? 'KSF一覧' : `${selectedKpi?.name} - 時系列データ`}
+              {activeMode === 'master' ? 'KPIマスター' : activeMode === 'ksf' ? 'KSF一覧' : activeMode === 'database' ? 'Database (Raw JSON)' : `${selectedKpi?.name || ''} - 時系列データ`}
             </h2>
           </div>
           
@@ -188,10 +201,27 @@ export const DataEditor = () => {
           </div>
         </div>
 
-        {/* グリッド領域 */}
+        {/* グリッド領域 / データベース領域 */}
         <div className="flex-1 overflow-auto custom-scrollbar relative">
-          <table className="w-full text-left border-collapse whitespace-nowrap table-fixed">
-            <thead className="bg-slate-50 dark:bg-[#282a2d] sticky top-0 z-10 shadow-sm border-b border-slate-200 dark:border-[#3c4043]">
+          {activeMode === 'database' ? (
+            <div className="p-4 bg-[#1e1e1e] text-[#d4d4d4] font-mono text-[13px] min-h-full leading-relaxed">
+              <div className="mb-4 text-emerald-400 font-bold">// Current State in Firestore (Read-only)</div>
+              <pre className="whitespace-pre-wrap">
+                {JSON.stringify(
+                  {
+                    projectInfo: currentProjectInfo,
+                    kpiData: kpiData,
+                    actions: actions
+                  },
+                  null,
+                  2
+                )}
+              </pre>
+            </div>
+          ) : (
+            <>
+              <table className="w-full text-left border-collapse whitespace-nowrap table-fixed">
+                <thead className="bg-slate-50 dark:bg-[#282a2d] sticky top-0 z-10 shadow-sm border-b border-slate-200 dark:border-[#3c4043]">
               <tr>
                 <th className="w-12 border-r border-slate-200 dark:border-[#3c4043] bg-slate-100 dark:bg-[#3c4043]"></th>
                 {activeMode === 'master' && (
@@ -323,6 +353,8 @@ export const DataEditor = () => {
                  <Plus size={14} /> New row
                </button>
             </div>
+          )}
+          </>
           )}
         </div>
       </div>
