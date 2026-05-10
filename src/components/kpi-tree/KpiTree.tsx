@@ -236,13 +236,15 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const isCollapsed = collapsedNodes.includes(node.id);
           const hidden = isNodeHidden(node.id);
 
+          const kpiNode = kpiData[node.id];
           return {
             ...node,
+            position: kpiNode.position || node.position,
             hidden,
             targetPosition: (isHorizontal ? 'left' : 'top') as any,
             sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
             data: {
-              ...kpiData[node.id],
+              ...kpiNode,
               hasChildren,
               isCollapsed,
             } as any,
