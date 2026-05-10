@@ -81,16 +81,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   let displayActual = getDisplayValue(displayActualRaw, data, currentPeriod);
   let displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod);
 
-  // 過去データのモック表現（既存ロジック）
-  if (currentPeriod === '2026-03') {
-    displayActual = Math.round(displayActualRaw * 0.8);
-    displayTarget = Math.round(displayTargetRaw * 0.9);
-    isPast = true;
-  } else if (currentPeriod === '2026-04') {
-    displayActual = Math.round(displayActualRaw * 0.9);
-    displayTarget = Math.round(displayTargetRaw * 0.95);
-    isPast = true;
-  }
+  // 過去データの判定（ここでは一旦シンプルにfalseとする。必要に応じて実際の日付比較を追加）
+  isPast = false;
 
   const displayAchievementRate = isPredictionMode && data.simulatedAchievementRate !== undefined 
     ? data.simulatedAchievementRate 

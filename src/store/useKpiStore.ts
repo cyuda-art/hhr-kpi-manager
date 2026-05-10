@@ -448,6 +448,34 @@ export const useKpiStore = create<KpiStore>()(
       // 動的計算エンジンによる再計算（実績値）
       recalculateTree(draft, 'actualValue');
 
+      // 再計算後、全てのノードの今日の履歴(history)を更新・追加する
+      const today = new Date().toISOString().split('T')[0];
+      Object.keys(draft).forEach(key => {
+        const node = draft[key];
+        const newHistory = [...(node.history || [])];
+        const todayRecordIndex = newHistory.findIndex(h => h.date === today);
+        
+        if (todayRecordIndex >= 0) {
+          newHistory[todayRecordIndex] = { 
+            ...newHistory[todayRecordIndex], 
+            actualValue: node.actualValue, 
+            targetValue: node.targetValue 
+          };
+        } else {
+          newHistory.push({
+            id: `hist_${Math.random().toString(36).substr(2, 9)}`,
+            date: today,
+            targetValue: node.targetValue,
+            actualValue: node.actualValue,
+            comment: ''
+          });
+        }
+        draft[key] = { 
+          ...node, 
+          history: newHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) 
+        };
+      });
+
       // 実績値の更新なのでDBへ同期する
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
       

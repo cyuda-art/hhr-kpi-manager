@@ -3,11 +3,12 @@
 import { useKpiStore } from '@/store/useKpiStore';
 import { useState, useMemo } from 'react';
 import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator } from 'lucide-react';
+import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 
 type TableMode = 'master' | 'ksf' | 'history';
 
 export const DataEditor = () => {
-  const { kpiData, actions, addHistoryRecord, updateHistoryRecord, updateKpiNode } = useKpiStore();
+  const { kpiData, actions, addHistoryRecord, updateHistoryRecord, updateKpiNode, currentPeriod, isPredictionMode } = useKpiStore();
   
   // 表示中のテーブルモード
   const [activeMode, setActiveMode] = useState<TableMode>('master');
@@ -33,9 +34,18 @@ export const DataEditor = () => {
 
   const handleUpdate = (id: string, field: string, value: any) => {
     if (activeMode === 'master') {
-      updateKpiNode(id, { [field]: value });
+      let finalValue = value;
+      if (field === 'targetValue' || field === 'actualValue') {
+        const node = kpiData[id];
+        finalValue = getStorageValue(Number(value) || 0, node, currentPeriod);
+      }
+      updateKpiNode(id, { [field]: finalValue });
     } else if (activeMode === 'history' && selectedKpi) {
-      updateHistoryRecord(selectedKpi.id, id, { [field]: value });
+      let finalValue = value;
+      if (field === 'targetValue' || field === 'actualValue') {
+        finalValue = getStorageValue(Number(value) || 0, selectedKpi, currentPeriod);
+      }
+      updateHistoryRecord(selectedKpi.id, id, { [field]: finalValue });
     }
   };
 
@@ -234,12 +244,12 @@ export const DataEditor = () => {
                     <input type="text" value={node.businessUnit} onChange={e => handleUpdate(node.id, 'businessUnit', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="number" value={node.targetValue} onChange={e => handleUpdate(node.id, 'targetValue', Number(e.target.value))} disabled={node.isCalculated} className={`w-full h-full p-2 bg-transparent outline-none text-right ${node.isCalculated ? 'text-primary-500 font-bold cursor-not-allowed' : ''}`} title={node.isCalculated ? '自動計算項目です' : ''} />
+                    <input type="number" value={getDisplayValue(node.targetValue, node, currentPeriod)} onChange={e => handleUpdate(node.id, 'targetValue', e.target.value)} disabled={node.isCalculated} className={`w-full h-full p-2 bg-transparent outline-none text-right ${node.isCalculated ? 'text-primary-500 font-bold cursor-not-allowed' : ''}`} title={node.isCalculated ? '自動計算項目です' : ''} />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0 bg-slate-50 dark:bg-[#2d2f31] font-medium text-right">
                     <div className="w-full h-full p-2 flex items-center justify-end gap-1" title={node.isCalculated ? `自動計算: ${node.formula}` : ''}>
                       {node.isCalculated && <Calculator size={12} className="text-primary-500 opacity-70" />}
-                      {node.actualValue}
+                      {isPredictionMode && node.simulatedValue !== undefined ? getDisplayValue(node.simulatedValue, node, currentPeriod) : getDisplayValue(node.actualValue, node, currentPeriod)}
                     </div>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
@@ -257,10 +267,10 @@ export const DataEditor = () => {
                     <input type="date" value={hist.date} onChange={e => handleUpdate(hist.id!, 'date', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="number" value={hist.targetValue} onChange={e => handleUpdate(hist.id!, 'targetValue', Number(e.target.value))} className="w-full h-full p-2 bg-transparent outline-none text-right focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="number" value={getDisplayValue(hist.targetValue, selectedKpi, currentPeriod)} onChange={e => handleUpdate(hist.id!, 'targetValue', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none text-right focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="number" value={hist.actualValue} onChange={e => handleUpdate(hist.id!, 'actualValue', Number(e.target.value))} className="w-full h-full p-2 bg-transparent outline-none text-right font-bold focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="number" value={getDisplayValue(hist.actualValue, selectedKpi, currentPeriod)} onChange={e => handleUpdate(hist.id!, 'actualValue', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none text-right font-bold focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <input type="text" value={hist.comment || ''} onChange={e => handleUpdate(hist.id!, 'comment', e.target.value)} placeholder="Click to add text..." className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
