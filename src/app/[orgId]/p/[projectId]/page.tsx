@@ -34,46 +34,18 @@ export default function DashboardPage() {
 
   // グラフ用のデータを生成
   const chartData = useMemo(() => {
-    if (!selectedNode) return [];
-    
-    let baseData = selectedNode.history && selectedNode.history.length > 0 
-      ? [...selectedNode.history] 
-      : [];
-
-    const months = periodFilter === '1m' ? 1 : periodFilter === '3m' ? 3 : periodFilter === '6m' ? 6 : periodFilter === '1y' ? 12 : periodFilter === '3y' ? 36 : 120;
-    
-    if (baseData.length < months) {
-      const generated = [];
-      const currentActual = selectedNode.actualValue || 100;
-      const currentTarget = selectedNode.targetValue || 100;
-      
-      for (let i = months; i >= 1; i--) {
-        const d = new Date();
-        d.setMonth(d.getMonth() - i);
-        const dateStr = d.toISOString().split('T')[0].substring(0, 7);
-        
-        const randomFactor = 0.8 + (Math.random() * 0.4);
-        const progress = (months - i) / months;
-        
-        generated.push({
-          id: `gen_${Math.random().toString(36).substring(2, 9)}`,
-          date: dateStr,
-          actualValue: Math.max(0, Math.round(currentActual * (0.5 + progress * 0.5) * randomFactor)),
-          targetValue: Math.max(0, Math.round(currentTarget * (0.6 + progress * 0.4))),
-        });
-      }
-      
-      const historyFormatted = baseData.map(h => ({
-        ...h,
-        date: h.date.substring(0, 7)
-      }));
-      
-      baseData = [...generated, ...historyFormatted];
+    if (!selectedNode || !selectedNode.history || selectedNode.history.length === 0) {
+      return [];
     }
+    
+    // 実データのみを使用する
+    const baseData = [...selectedNode.history];
 
     const uniqueMap = new Map();
     baseData.forEach(item => {
-      uniqueMap.set(item.date, {
+      // MM/DD ではなく、ダッシュボード用に YYYY-MM などのフォーマットを維持するか、そのまま使う
+      const dateKey = item.date;
+      uniqueMap.set(dateKey, {
         ...item,
         achievementRate: item.targetValue > 0 ? (item.actualValue / item.targetValue) * 100 : 0
       });
@@ -167,84 +139,92 @@ export default function DashboardPage() {
               </div>
 
               {/* Chart */}
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3c4043" />
-                    <XAxis 
-                      dataKey="date" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#9aa0a6', fontSize: 12 }}
-                      dy={10}
-                    />
-                    <YAxis 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#9aa0a6', fontSize: 12 }}
-                      tickFormatter={(val) => viewMode === 'actual' ? `${val.toLocaleString()}` : `${val}%`}
-                    />
-                    <RechartsTooltip 
-                      contentStyle={{ backgroundColor: '#282a2d', borderRadius: '4px', border: '1px solid #3c4043', color: '#e8eaed' }}
-                      formatter={(value: any, name: any) => [
-                        viewMode === 'actual' ? `${value.toLocaleString()} ${selectedNode.unit}` : `${value.toFixed(1)}%`,
-                        name
-                      ]}
-                      labelStyle={{ color: '#9aa0a6', marginBottom: '4px' }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                    <Line 
-                      type="monotone" 
-                      dataKey={viewMode === 'actual' ? 'actualValue' : 'achievementRate'} 
-                      name="実績" 
-                      stroke="#8ab4f8" 
-                      strokeWidth={3}
-                      dot={{ r: 4, fill: '#2d2f31', strokeWidth: 2 }}
-                      activeDot={{ r: 6, strokeWidth: 0 }}
-                    />
-                    {viewMode === 'actual' && (
+              <div className="h-[400px] w-full relative">
+                {chartData.length === 0 ? (
+                  <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                    履歴データがありません。シートエディタからデータを追加するか、ツリーで実績を更新してください。
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3c4043" />
+                      <XAxis 
+                        dataKey="date" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#9aa0a6', fontSize: 12 }}
+                        dy={10}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#9aa0a6', fontSize: 12 }}
+                        tickFormatter={(val) => viewMode === 'actual' ? `${val.toLocaleString()}` : `${val}%`}
+                      />
+                      <RechartsTooltip 
+                        contentStyle={{ backgroundColor: '#282a2d', borderRadius: '4px', border: '1px solid #3c4043', color: '#e8eaed' }}
+                        formatter={(value: any, name: any) => [
+                          viewMode === 'actual' ? `${value.toLocaleString()} ${selectedNode.unit}` : `${value.toFixed(1)}%`,
+                          name
+                        ]}
+                        labelStyle={{ color: '#9aa0a6', marginBottom: '4px' }}
+                      />
+                      <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                       <Line 
                         type="monotone" 
-                        dataKey="targetValue" 
-                        name="目標" 
-                        stroke="#9aa0a6" 
-                        strokeWidth={2}
-                        strokeDasharray="5 5"
-                        dot={false}
-                        activeDot={{ r: 4 }}
+                        dataKey={viewMode === 'actual' ? 'actualValue' : 'achievementRate'} 
+                        name="実績" 
+                        stroke="#8ab4f8" 
+                        strokeWidth={3}
+                        dot={{ r: 4, fill: '#2d2f31', strokeWidth: 2 }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
                       />
-                    )}
-                  </LineChart>
-                </ResponsiveContainer>
+                      {viewMode === 'actual' && (
+                        <Line 
+                          type="monotone" 
+                          dataKey="targetValue" 
+                          name="目標" 
+                          stroke="#9aa0a6" 
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={false}
+                          activeDot={{ r: 4 }}
+                        />
+                      )}
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
 
               {/* Data Table */}
-              <div className="mt-8 overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="text-[12px] text-slate-500 dark:text-[#9aa0a6] uppercase bg-white dark:bg-[#282a2d] border-y border-slate-200 dark:border-[#3c4043]">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">期間 (日付)</th>
-                      <th className="px-4 py-3 font-medium">目標値</th>
-                      <th className="px-4 py-3 font-medium">実績値</th>
-                      <th className="px-4 py-3 font-medium">達成率</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {chartData.map((row, i) => (
-                      <tr key={i} className="border-b border-slate-200 dark:border-[#3c4043] last:border-0 hover:bg-slate-100 dark:bg-[#323639] transition-colors text-[13px]">
-                        <td className="px-4 py-3 text-slate-800 dark:text-[#e8eaed]">{row.date}</td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-[#9aa0a6]">{row.targetValue.toLocaleString()} {selectedNode.unit}</td>
-                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-[#f1f3f4]">{row.actualValue.toLocaleString()} {selectedNode.unit}</td>
-                        <td className="px-4 py-3">
-                          <span className={`font-medium ${row.achievementRate >= 100 ? 'text-[#81c995]' : row.achievementRate >= 80 ? 'text-[#fbbc04]' : 'text-rose-500 dark:text-[#f28b82]'}`}>
-                            {row.achievementRate.toFixed(1)}%
-                          </span>
-                        </td>
+              {chartData.length > 0 && (
+                <div className="mt-8 overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="text-[12px] text-slate-500 dark:text-[#9aa0a6] uppercase bg-white dark:bg-[#282a2d] border-y border-slate-200 dark:border-[#3c4043]">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">期間 (日付)</th>
+                        <th className="px-4 py-3 font-medium">目標値</th>
+                        <th className="px-4 py-3 font-medium">実績値</th>
+                        <th className="px-4 py-3 font-medium">達成率</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {chartData.map((row, i) => (
+                        <tr key={i} className="border-b border-slate-200 dark:border-[#3c4043] last:border-0 hover:bg-slate-100 dark:bg-[#323639] transition-colors text-[13px]">
+                          <td className="px-4 py-3 text-slate-800 dark:text-[#e8eaed]">{row.date}</td>
+                          <td className="px-4 py-3 text-slate-500 dark:text-[#9aa0a6]">{row.targetValue.toLocaleString()} {selectedNode.unit}</td>
+                          <td className="px-4 py-3 font-medium text-slate-900 dark:text-[#f1f3f4]">{row.actualValue.toLocaleString()} {selectedNode.unit}</td>
+                          <td className="px-4 py-3">
+                            <span className={`font-medium ${row.achievementRate >= 100 ? 'text-[#81c995]' : row.achievementRate >= 80 ? 'text-[#fbbc04]' : 'text-rose-500 dark:text-[#f28b82]'}`}>
+                              {row.achievementRate.toFixed(1)}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
             </div>
           ) : (
