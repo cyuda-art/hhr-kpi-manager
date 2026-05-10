@@ -15,6 +15,7 @@ export const ActionPanel = () => {
   const currentWorkflow = selectedNodeId ? workflows[selectedNodeId] : null;
 
   const selectedKpiTasks = actions.filter(a => a.kpiId === selectedNodeId);
+  const hasChildren = selectedKpi ? Object.values(kpiData).some(node => node.parentId === selectedKpi.id) : false;
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [activeTab, setActiveTab] = useState<'details' | 'tasks' | 'ai'>('details');
 
@@ -56,10 +57,10 @@ export const ActionPanel = () => {
       setEditQualitativeName(selectedKpi.qualitativeName || '');
       setEditUpdateFrequency(selectedKpi.updateFrequency || 'monthly');
       setEditCalculationFormula(selectedKpi.calculationFormula || '');
-      setEditIsCalculated(selectedKpi.isCalculated || false);
+      setEditIsCalculated(hasChildren ? true : (selectedKpi.isCalculated || false));
       setEditFormula(selectedKpi.formula || '');
     }
-  }, [selectedNodeId, kpiData, isPredictionMode]); 
+  }, [selectedNodeId, kpiData, isPredictionMode, hasChildren]);
 
   const handleSaveValues = () => {
     if (!selectedNodeId) return;
@@ -309,13 +310,16 @@ export const ActionPanel = () => {
                               type="checkbox" 
                               checked={editIsCalculated} 
                               onChange={(e) => setEditIsCalculated(e.target.checked)} 
-                              disabled={isPredictionMode}
-                              className="rounded border-slate-300 text-primary-500 focus:ring-primary-500"
+                              disabled={isPredictionMode || hasChildren}
+                              className="rounded border-slate-300 text-primary-500 focus:ring-primary-500 disabled:opacity-50"
                             />
                             <span className="text-xs text-slate-500 font-bold flex items-center gap-1">
                               <Calculator size={12} /> 他のKPIから自動計算する (Formula)
                             </span>
                           </label>
+                          {hasChildren && (
+                            <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">※ 子ノードを持つ中間KPIは自動計算が必須です。</div>
+                          )}
                         </div>
                         {editIsCalculated && (
                           <div className="flex flex-col gap-1 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
@@ -350,11 +354,14 @@ export const ActionPanel = () => {
                       type="number" 
                       value={editActualValue} 
                       onChange={(e) => setEditActualValue(e.target.value)}
-                      disabled={editIsCalculated}
+                      disabled={editIsCalculated || hasChildren}
                       className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                     />
                     <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
                   </div>
+                  {editIsCalculated && !isPredictionMode && (
+                    <div className="text-[10px] text-slate-400 text-right mt-1">※ 自動計算ノードの実績は手動入力できません。</div>
+                  )}
                   <div className="flex justify-end gap-2 mt-2">
                     <button onClick={() => setIsEditingValue(false)} className="text-[10px] px-2 py-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">キャンセル</button>
                     <button onClick={handleSaveValues} className="text-[10px] px-2 py-1 bg-primary-500 text-white rounded hover:bg-primary-600 font-bold">保存して反映</button>
