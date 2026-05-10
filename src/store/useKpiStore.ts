@@ -196,9 +196,9 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
             if (valueType === 'simulatedValue') {
               draft[node.id] = calculateComputed({ ...draft[node.id], simulatedValue: newValue, isSimulated: true });
             } else if (valueType === 'targetValue') {
-              draft[node.id] = calculateComputed({ ...draft[node.id], targetValue: newValue, isSimulated: true });
+              draft[node.id] = calculateComputed({ ...draft[node.id], targetValue: newValue });
             } else {
-              draft[node.id] = calculateComputed({ ...draft[node.id], actualValue: newValue, initialActualValue: newValue, isSimulated: true });
+              draft[node.id] = calculateComputed({ ...draft[node.id], actualValue: newValue, initialActualValue: newValue });
             }
           }
         }
@@ -405,13 +405,15 @@ export const useKpiStore = create<KpiStore>()(
       
       // 直接変更されたノードを更新
       if (draft[id]) {
-        draft[id] = calculateComputed({ ...draft[id], actualValue: newValue, isSimulated: true });
+        draft[id] = calculateComputed({ ...draft[id], actualValue: newValue, initialActualValue: newValue });
       }
 
       // 動的計算エンジンによる再計算（実績値）
       recalculateTree(draft, 'actualValue');
 
-      // Firestoreにはシミュレーション中の値は送らず、ローカルの状態のみ更新する
+      // 実績値の更新なのでDBへ同期する
+      syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
+      
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
