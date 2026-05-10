@@ -96,8 +96,8 @@ export async function POST(req: Request) {
       "unit": "円",
       "previousValue": 75000000,
       "description": "KGIの詳細説明",
-      "isCalculated": false,
-      "formula": ""
+      "isCalculated": true,
+      "formula": "#{kpi_child_1} * #{kpi_child_2}"
     },
     {
       "id": "kpi_child_1",
@@ -111,8 +111,8 @@ export async function POST(req: Request) {
       "unit": "件",
       "previousValue": 0,
       "description": "KPIの詳細",
-      "isCalculated": true,
-      "formula": "#{kpi_grandchild_1} * #{kpi_grandchild_2}",
+      "isCalculated": false,
+      "formula": "",
       "tasks": [
         {
           "task_name": "具体的なタスク名",

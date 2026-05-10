@@ -416,11 +416,15 @@ export const ActionPanel = () => {
                         <span className="truncate" title={selectedKpi.calculationFormula}>メモ: {selectedKpi.calculationFormula}</span>
                       )}
                     </div>
-                    {selectedKpi.isCalculated && (
+                    {selectedKpi.isCalculated ? (
                       <div className="flex items-center gap-1 text-[10px] text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-1.5 py-0.5 rounded w-fit mt-1 border border-primary-100 dark:border-primary-800/50">
-                        <Calculator size={10} /> 自動計算: <span className="font-mono">{selectedKpi.formula}</span>
+                        <Calculator size={10} /> 自動計算: <span className="font-mono">{selectedKpi.formula || '（数式が空です）'}</span>
                       </div>
-                    )}
+                    ) : hasChildren ? (
+                      <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded w-fit mt-1 border border-amber-200 dark:border-amber-800/50">
+                        <AlertTriangle size={10} /> 計算式が未設定です（クリックして編集）
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}
