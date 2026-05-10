@@ -36,6 +36,7 @@ interface KpiStore {
   addKpiNode: (node: KpiNodeData) => void;
   removeKpiNode: (id: string) => void;
   updateKpiNode: (id: string, data: Partial<KpiNodeData>) => void;
+  updateKpiNodePosition: (id: string, position: { x: number; y: number }) => void;
   setKpiDataBulk: (nodes: KpiNodeData[]) => void;
   toggleNodeCollapse: (id: string) => void;
   setProjectInfo: (info: Partial<import('@/types').ProjectInfo>) => void;
@@ -511,6 +512,17 @@ export const useKpiStore = create<KpiStore>()(
         return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
       });
     },
+  updateKpiNodePosition: (id, position) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      if (draft[id]) {
+        draft[id] = { ...draft[id], position };
+        // positionの変更はDBに即時保存するが、不要な再計算は行わない
+        syncToDB(draft, state.actions, state.currentProjectId, state.currentOrgId, state.currentProjectInfo);
+      }
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
+    });
+  },
   setKpiDataBulk: (nodes) => {
     set((state) => {
       const newData: Record<string, KpiNodeWithComputedAndInit> = {};
@@ -640,7 +652,11 @@ export const useKpiStore = create<KpiStore>()(
     }),
     {
       name: 'kpi-storage',
-      partialize: (state) => ({ projectData: state.projectData, collapsedNodes: state.collapsedNodes }),
+      partialize: (state) => ({ 
+        projectData: state.projectData, 
+        collapsedNodes: state.collapsedNodes,
+        currentPeriod: state.currentPeriod
+      }),
     }
   )
 );

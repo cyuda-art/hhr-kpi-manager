@@ -71,7 +71,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
     nodes.push({
       id,
       type: 'kpiNode',
-      position: { x: 0, y: 0 },
+      position: data.position || { x: 0, y: 0 },
       data,
     });
 
@@ -92,7 +92,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
   const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode } = useKpiStore();
-  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter } = useLayoutStore();
+  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection } = useLayoutStore();
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -101,7 +101,6 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   const [rfInstance, setRfInstance] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
 
   // 検索結果の計算
   const searchResults = useMemo(() => {
@@ -174,7 +173,15 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData);
-    // 初期状態で自動レイアウトを適用
+    
+    // 全てのノード（少なくともKGIなど）が有効なpositionを持っているかチェック
+    const hasPositions = genNodes.some(n => n.position.x !== 0 || n.position.y !== 0);
+    
+    if (hasPositions) {
+      return { nodes: genNodes, edges: genEdges };
+    }
+    
+    // 初期状態で位置情報がない場合のみ自動レイアウトを適用
     return getLayoutedElements(genNodes, genEdges, layoutDirection);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -488,6 +495,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeDragStop={(_, node) => {
+            useKpiStore.getState().updateKpiNodePosition(node.id, node.position);
+          }}
           onNodeClick={(_, node) => setSelectedNodeId(node.id)}
           onPaneClick={() => setSelectedNodeId(null)}
           onInit={setRfInstance}

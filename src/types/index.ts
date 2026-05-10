@@ -27,6 +27,7 @@ export interface KpiNodeData {
   calculationFormula?: string; // 計算式（例: "客数 × 客単価"）
   isCalculated?: boolean; // 自動計算列かどうか
   formula?: string; // 自動計算の数式（例: "#{kpi_A} * #{kpi_B}"）
+  position?: { x: number; y: number }; // React Flow上の座標
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース
