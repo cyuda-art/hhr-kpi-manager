@@ -282,6 +282,8 @@ export const useKpiStore = create<KpiStore>()(
                   unit: node.unit,
                   previousValue: node.previousValue,
                   description: node.description,
+                  isCalculated: node.isCalculated,
+                  formula: node.formula,
                   initialActualValue: node.actualValue || 0
                 });
                 
