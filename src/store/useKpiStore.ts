@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { KpiNodeData, KpiNodeWithComputed, Status, Action, AiWorkflow } from '@/types';
 import { db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
   initialActualValue: number;
@@ -259,7 +259,22 @@ export const useKpiStore = create<KpiStore>()(
         const pData = state.projectData[projectId] || { kpiData: {}, actions: [], workflows: {}, projectInfo: undefined };
         
         let kpiData = { ...pData.kpiData };
+        let actions = [...pData.actions];
+        let workflows = { ...(pData.workflows || {}) };
         
+        // --- Firestore から最新データを取得 (Read) ---
+        try {
+          const kpiDataDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main'));
+          if (kpiDataDoc.exists()) {
+            const data = kpiDataDoc.data();
+            if (data.kpiData && Object.keys(data.kpiData).length > 0) kpiData = data.kpiData;
+            if (data.actions) actions = data.actions;
+            if (data.workflows) workflows = data.workflows;
+          }
+        } catch (error) {
+          console.error("Failed to load KPI Data from Firestore", error);
+        }
+
         // SessionStorageにAI生成された初期データがあるかチェック
         const initDataStr = typeof window !== 'undefined' ? sessionStorage.getItem(`kpi_init_${projectId}`) : null;
         
@@ -346,8 +361,8 @@ export const useKpiStore = create<KpiStore>()(
           currentOrgId: orgId,
           currentProjectInfo: pData.projectInfo || { name: projectName || '新規プロジェクト', description: projectDesc || '' },
           kpiData: kpiData,
-          actions: pData.actions,
-          workflows: pData.workflows || {},
+          actions: actions,
+          workflows: workflows,
           isDbInitialized: true 
         });
       },
