@@ -56,6 +56,7 @@ export default function DashboardPage() {
         const progress = (months - i) / months;
         
         generated.push({
+          id: `gen_${Math.random().toString(36).substring(2, 9)}`,
           date: dateStr,
           actualValue: Math.max(0, Math.round(currentActual * (0.5 + progress * 0.5) * randomFactor)),
           targetValue: Math.max(0, Math.round(currentTarget * (0.6 + progress * 0.4))),

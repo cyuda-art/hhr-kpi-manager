@@ -59,7 +59,7 @@ export const DashboardSummary = ({
 
   // フォーカスが外れた（onBlur）タイミングで確実にFirestoreへ保存する
   const handleSaveToDB = () => {
-    if (!currentProjectId || !currentProject) return;
+    if (!currentProjectId || !currentProject || !currentOrgId) return;
     
     const updates: Partial<typeof currentProject> = {};
     let hasChanges = false;

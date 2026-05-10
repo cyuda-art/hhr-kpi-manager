@@ -17,6 +17,7 @@ export default function InvitePage() {
   const { joinProject, setCurrentProjectId } = useProjectStore();
   
   const [projectName, setProjectName] = useState<string>('');
+  const [orgId, setOrgId] = useState<string>('');
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +29,7 @@ export default function InvitePage() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setProjectName(docSnap.data().name);
+          setOrgId(docSnap.data().organizationId || '');
         } else {
           setError("プロジェクトが見つかりません。リンクが無効か、削除された可能性があります。");
         }
@@ -50,7 +52,8 @@ export default function InvitePage() {
 
     setIsJoining(true);
     try {
-      await joinProject(projectId, user.uid);
+      if (!orgId) throw new Error('Organization ID not found');
+      await joinProject(projectId, user.uid, orgId);
       setCurrentProjectId(projectId);
       router.push('/');
     } catch (err) {

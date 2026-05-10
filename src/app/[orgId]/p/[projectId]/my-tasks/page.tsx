@@ -3,7 +3,7 @@
 import { useKpiStore } from '@/store/useKpiStore';
 import { useState, useMemo, useEffect } from 'react';
 import { CheckSquare, Calendar as CalendarIcon, User, Building, AlertCircle, LayoutGrid, Clock, ChevronDown, ChevronRight, Layers } from 'lucide-react';
-import { Action, KpiNode } from '@/types';
+import { Action, KpiNodeData } from '@/types';
 
 type ViewMode = 'kanban' | 'timeline' | 'calendar';
 
@@ -12,7 +12,7 @@ type TreeNode = {
   id: string;
   type: 'KGI' | 'KPI' | 'TASK';
   title: string;
-  nodeData?: KpiNode;
+  nodeData?: KpiNodeData;
   taskData?: Action;
   children: TreeNode[];
   startDate?: string;
