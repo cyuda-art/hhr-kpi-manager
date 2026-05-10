@@ -431,6 +431,43 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
 
 
+        {/* 凡例（Legend） */}
+        {!previewMode && (
+          <div className="absolute bottom-4 left-4 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg text-[10px] sm:text-xs min-w-[200px]">
+            <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2.5 border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
+              <span>ステータスと線の意味</span>
+              <span className="text-[9px] font-normal text-slate-400">達成率</span>
+            </h4>
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-[3px] bg-[#34d399] rounded-full"></div>
+                  <span className="text-slate-600 dark:text-slate-400 font-medium">順調</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">100%〜</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-[2.5px] bg-[#fbbf24] rounded-full"></div>
+                  <span className="text-slate-600 dark:text-slate-400 font-medium">注意</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">80%〜99%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-0 border-t-[3px] border-dotted border-[#f43f5e]"></div>
+                  <span className="text-rose-600 dark:text-rose-400 font-bold">ボトルネック / 不足</span>
+                </div>
+                <span className="text-[10px] text-rose-500 font-mono">〜79%</span>
+              </div>
+              <div className="flex items-center gap-2.5 pt-1 mt-0.5 border-t border-slate-100 dark:border-slate-800/50">
+                <div className="w-6 h-[2px] bg-[#8ab4f8] rounded-full animate-pulse"></div>
+                <span className="text-slate-500 dark:text-slate-500 text-[10px]">AI予測・シミュレーション中</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <ReactFlow
           nodes={nodes}
           edges={edges}
