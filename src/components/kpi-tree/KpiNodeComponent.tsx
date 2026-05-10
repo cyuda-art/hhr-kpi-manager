@@ -75,13 +75,19 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   // フォーミュラを可読な文字列に変換
   const getReadableFormula = () => {
-    if (!data.isCalculated || !data.formula) return null;
-    
-    // #{id} を正規表現で抽出して名前に置換
-    return data.formula.replace(/#\{([^}]+)\}/g, (match, id) => {
-      const refNode = kpiData[id];
-      return refNode ? `[${refNode.name}]` : match;
-    });
+    try {
+      if (!data || !data.isCalculated || typeof data.formula !== 'string') return null;
+      
+      // #{id} を正規表現で抽出して名前に置換
+      return data.formula.replace(/#\{([^}]+)\}/g, (match, id) => {
+        if (!kpiData) return match;
+        const refNode = kpiData[id];
+        return refNode ? `[${refNode.name || '不明'}]` : match;
+      });
+    } catch (e) {
+      console.error("Formula parsing error", e);
+      return null;
+    }
   };
 
   const readableFormula = getReadableFormula();
