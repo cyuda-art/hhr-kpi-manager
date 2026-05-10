@@ -2,13 +2,13 @@
 
 import { useKpiStore } from '@/store/useKpiStore';
 import { useState, useMemo } from 'react';
-import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator, Code2 } from 'lucide-react';
+import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator, Code2, Trash2 } from 'lucide-react';
 import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 
 type TableMode = 'master' | 'ksf' | 'history' | 'database';
 
 export const DataEditor = () => {
-  const { kpiData, actions, currentProjectInfo, addHistoryRecord, updateHistoryRecord, updateKpiNode, currentPeriod, isPredictionMode } = useKpiStore();
+  const { kpiData, actions, currentProjectInfo, addHistoryRecord, updateHistoryRecord, deleteHistoryRecord, updateKpiNode, currentPeriod, isPredictionMode } = useKpiStore();
   
   // 表示中のテーブルモード
   const [activeMode, setActiveMode] = useState<TableMode>('master');
@@ -291,7 +291,7 @@ export const DataEditor = () => {
 
               {/* ヒストリーモード */}
               {activeMode === 'history' && selectedKpi && (selectedKpi.history || []).map((hist, index) => (
-                <tr key={hist.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
+                <tr key={hist.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed] group">
                   <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <input type="date" value={hist.date} onChange={e => handleUpdate(hist.id!, 'date', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
@@ -305,7 +305,15 @@ export const DataEditor = () => {
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <input type="text" value={hist.comment || ''} onChange={e => handleUpdate(hist.id!, 'comment', e.target.value)} placeholder="Click to add text..." className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
-                  <td></td>
+                  <td className="p-0 align-middle">
+                    <button 
+                      onClick={() => deleteHistoryRecord(selectedKpi.id, hist.id!)}
+                      className="w-full h-full flex items-center justify-center text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="この行を削除"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
                 </tr>
               ))}
 
