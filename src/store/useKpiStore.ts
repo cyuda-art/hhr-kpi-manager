@@ -64,12 +64,15 @@ const syncToDB = async (kpiData: Record<string, KpiNodeWithComputedAndInit>, act
 };
 
 const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWithComputedAndInit => {
-  const actual = node.actualValue || 0;
-  const target = node.targetValue || 1;
-  let achievementRate = (actual / target) * 100;
+  const actualValue = node.actualValue !== undefined && node.actualValue !== null ? node.actualValue : 0;
+  const targetValue = node.targetValue !== undefined && node.targetValue !== null ? node.targetValue : 1;
+  const initialActualValue = node.initialActualValue !== undefined && node.initialActualValue !== null ? node.initialActualValue : actualValue;
+  const previousValue = node.previousValue !== undefined && node.previousValue !== null ? node.previousValue : actualValue;
+  
+  let achievementRate = targetValue === 0 ? 0 : (actualValue / targetValue) * 100;
   
   if (node.name?.includes('原価率') || node.name?.includes('キャンセル率') || node.name?.includes('コスト')) {
-    achievementRate = (target / actual) * 100;
+    achievementRate = actualValue === 0 ? 0 : (targetValue / actualValue) * 100;
   }
 
   let status: Status = 'good';
@@ -83,9 +86,9 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
   let simulatedAchievementRate = undefined;
   let simulatedStatus = undefined;
   if (node.simulatedValue !== undefined) {
-    simulatedAchievementRate = (node.simulatedValue / target) * 100;
+    simulatedAchievementRate = targetValue === 0 ? 0 : (node.simulatedValue / targetValue) * 100;
     if (node.name?.includes('原価率') || node.name?.includes('キャンセル率') || node.name?.includes('コスト')) {
-      simulatedAchievementRate = (target / node.simulatedValue) * 100;
+      simulatedAchievementRate = node.simulatedValue === 0 ? 0 : (targetValue / node.simulatedValue) * 100;
     }
     simulatedStatus = 'good' as Status;
     if (simulatedAchievementRate < 80) {
@@ -106,6 +109,10 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
 
   return {
     ...node,
+    actualValue,
+    targetValue,
+    initialActualValue,
+    previousValue,
     achievementRate,
     status,
     history: newHistory,
