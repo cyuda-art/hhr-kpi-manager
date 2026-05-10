@@ -32,10 +32,19 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
     dagreGraph.setEdge(edge.source, edge.target);
   });
 
-  dagre.layout(dagreGraph);
+  try {
+    dagre.layout(dagreGraph);
+  } catch (e) {
+    console.error("Dagre layout error (possible cycle or missing node)", e);
+    // エラー時は元のnodesをそのまま返す（クラッシュ回避）
+    return { nodes, edges };
+  }
 
   const newNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
+    // 万が一dagreがノード位置を計算できなかった場合のフォールバック
+    if (!nodeWithPosition) return node;
+
     const newNode = {
       ...node,
       targetPosition: isHorizontal ? 'left' : 'top',
@@ -66,7 +75,8 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
       data,
     });
 
-    if (data.parentId) {
+    // 親ノードが存在する場合のみエッジを追加（AI生成ミスによる存在しない親への参照を防ぐ）
+    if (data.parentId && kpiData[data.parentId]) {
       edges.push({
         id: `e-${data.parentId}-${id}`,
         source: data.parentId,
