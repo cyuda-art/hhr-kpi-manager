@@ -297,6 +297,34 @@ export const useKpiStore = create<KpiStore>()(
                 pData.actions = [...pData.actions, ...initialActions];
               }
 
+              // --- Auto-Formula Healing (自動数式補完と初期計算) ---
+              const parentToChildren: Record<string, string[]> = {};
+              Object.values(kpiData).forEach(node => {
+                if (node.parentId) {
+                  if (!parentToChildren[node.parentId]) parentToChildren[node.parentId] = [];
+                  parentToChildren[node.parentId].push(node.id);
+                }
+              });
+
+              // 子を持つ親ノードで、数式がないものに自動で足し算の数式をセット
+              Object.keys(parentToChildren).forEach(parentId => {
+                const parentNode = kpiData[parentId];
+                if (parentNode && (!parentNode.isCalculated || !parentNode.formula)) {
+                  const childrenIds = parentToChildren[parentId];
+                  // デフォルトで子ノードすべての合算式をセットする
+                  const autoFormula = childrenIds.map(id => `#{${id}}`).join(' + ');
+                  kpiData[parentId] = calculateComputed({
+                    ...parentNode,
+                    isCalculated: true,
+                    formula: autoFormula
+                  });
+                }
+              });
+
+              // 数式セット後、ツリー全体の数値を再計算して整合性を取る
+              recalculateTree(kpiData, 'targetValue');
+              recalculateTree(kpiData, 'actualValue');
+
               // ロード完了したらストレージから削除
               sessionStorage.removeItem(`kpi_init_${projectId}`);
               
