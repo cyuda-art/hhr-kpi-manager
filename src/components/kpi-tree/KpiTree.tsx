@@ -91,7 +91,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
 };
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter } = useLayoutStore();
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
@@ -263,18 +263,53 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       return newNodes;
     });
 
+    const getEdgeStyle = (targetId: string) => {
+      const targetData = kpiData[targetId];
+      const isSimulated = targetData?.isSimulated || false;
+      const targetStatus = isPredictionMode 
+        ? (targetData?.simulatedStatus || targetData?.status) 
+        : targetData?.status;
+
+      let strokeColor = '#cbd5e1'; // default slate-300
+      let strokeWidth = 2;
+      let strokeDasharray = undefined as string | undefined;
+      let animated = isSimulated;
+
+      if (targetStatus === 'danger') {
+        strokeColor = '#f43f5e'; // rose-500
+        strokeWidth = 3;
+        strokeDasharray = '5, 5';
+      } else if (targetStatus === 'warning') {
+        strokeColor = '#fbbf24'; // amber-400
+        strokeWidth = 2.5;
+      } else if (targetStatus === 'good') {
+        strokeColor = '#34d399'; // emerald-400
+        strokeWidth = 3;
+      }
+
+      if (isSimulated) {
+        strokeColor = '#8ab4f8';
+        animated = true;
+      }
+
+      const style: any = { stroke: strokeColor, strokeWidth };
+      if (strokeDasharray) style.strokeDasharray = strokeDasharray;
+
+      return { style, animated };
+    };
+
     setEdges((eds) => {
       const newEdges = eds
         .filter((edge) => kpiData[edge.target] && kpiData[edge.source])
         .map((edge) => {
-          const targetData = kpiData[edge.target];
-          const isSimulated = targetData?.isSimulated || false;
           const hidden = isNodeHidden(edge.target);
+          const { style, animated } = getEdgeStyle(edge.target);
+
           return {
             ...edge,
             hidden,
-            animated: isSimulated,
-            style: { stroke: isSimulated ? '#6366f1' : '#cbd5e1', strokeWidth: 2 },
+            animated,
+            style,
           };
         });
 
@@ -285,13 +320,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const edgeId = `e-${parentId}-${id}`;
           if (!existingEdgeIds.has(edgeId)) {
             const hidden = isNodeHidden(id);
+            const { style, animated } = getEdgeStyle(id);
             newEdges.push({
               id: edgeId,
               source: parentId,
               target: id,
               hidden,
-              animated: kpiData[id].isSimulated || false,
-              style: { stroke: kpiData[id].isSimulated ? '#6366f1' : '#cbd5e1', strokeWidth: 2 },
+              animated,
+              style,
             });
           }
         }

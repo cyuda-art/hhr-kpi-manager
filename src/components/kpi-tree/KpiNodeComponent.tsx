@@ -155,8 +155,15 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             </div>
           </div>
         </div>
-        <div className={cn("px-2 py-0.5 rounded-[4px] text-[11px] font-bold text-[#202124]", getStatusBg(displayStatus))}>
-          {displayAchievementRate.toFixed(1)}%
+        <div className="flex flex-col items-end gap-1">
+          <div className={cn("px-2 py-0.5 rounded-[4px] text-[11px] font-bold text-[#202124]", getStatusBg(displayStatus))}>
+            {displayAchievementRate.toFixed(1)}%
+          </div>
+          {displayTarget > 0 && (displayActual - displayTarget) < 0 && (
+            <div className="text-[10px] font-bold text-[#f43f5e] bg-[#f43f5e]/10 px-1.5 py-0.5 rounded">
+              不足: {(displayActual - displayTarget).toLocaleString()}
+            </div>
+          )}
         </div>
       </div>
 
