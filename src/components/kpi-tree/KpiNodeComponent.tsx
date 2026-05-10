@@ -42,6 +42,27 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   const kpiData = useKpiStore((state) => state.kpiData);
 
+  // 階層(深さ)の計算
+  const getLevel = (nodeId: string | null): number => {
+    let currentId = nodeId;
+    let level = 0;
+    while (currentId && kpiData[currentId]) {
+      const parentId = kpiData[currentId].parentId;
+      if (!parentId) break; // KGI (ルート)
+      currentId = parentId;
+      level++;
+    }
+    return level;
+  };
+  const level = getLevel(data.id);
+
+  // 定性ラベルの決定
+  const getQualitativeLabel = () => {
+    if (data.type === 'KGI') return 'Goal';
+    if (level === 1) return 'KSF';
+    return 'Process';
+  };
+
   // モック用の時系列・予測ロジック
   let displayActual = data.actualValue;
   let displayTarget = data.targetValue;
@@ -109,8 +130,10 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             <span className="text-[10px] font-bold text-[#8ab4f8] uppercase tracking-wider">{data.businessUnit}</span>
             {data.type === 'KGI' ? (
               <span className="text-[9px] bg-[#c58af9]/20 text-[#c58af9] px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0">Goal & KGI</span>
-            ) : (
+            ) : level === 1 ? (
               <span className="text-[9px] bg-[#fbbc04]/20 text-[#fbbc04] px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0">KSF & KPI</span>
+            ) : (
+              <span className="text-[9px] bg-[#8ab4f8]/20 text-[#8ab4f8] px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0">Process & KPI</span>
             )}
           </div>
           
@@ -118,7 +141,9 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {/* 定性（Goal/KSF）部分 */}
             {(data.qualitativeName || data.type === 'KGI') && (
               <div>
-                <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5 flex items-center gap-1">{data.type === 'KGI' ? <><Target size={10} /> Goal (定性目標)</> : <><Target size={10} /> KSF (重要成功要因)</>}</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5 flex items-center gap-1">
+                  <Target size={10} /> {getQualitativeLabel()}
+                </p>
                 <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[14px] leading-tight break-words">{data.qualitativeName || '未設定'}</p>
               </div>
             )}

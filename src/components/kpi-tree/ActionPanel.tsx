@@ -16,6 +16,28 @@ export const ActionPanel = () => {
 
   const selectedKpiTasks = actions.filter(a => a.kpiId === selectedNodeId);
   const hasChildren = selectedKpi ? Object.values(kpiData).some(node => node.parentId === selectedKpi.id) : false;
+  
+  // 階層(深さ)の計算
+  const getLevel = (nodeId: string | null): number => {
+    let currentId = nodeId;
+    let level = 0;
+    while (currentId && kpiData[currentId]) {
+      const parentId = kpiData[currentId].parentId;
+      if (!parentId) break; // KGI
+      currentId = parentId;
+      level++;
+    }
+    return level;
+  };
+  const level = getLevel(selectedNodeId);
+
+  // 定性ラベルの決定
+  const getQualitativeLabel = () => {
+    if (selectedKpi?.type === 'KGI') return 'Goal';
+    if (level === 1) return 'KSF';
+    return 'Process';
+  };
+
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [activeTab, setActiveTab] = useState<'details' | 'tasks' | 'ai'>('details');
 
@@ -209,7 +231,7 @@ export const ActionPanel = () => {
             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
             {selectedKpi.qualitativeName && (
               <h4 className="font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">
-                <span className="text-[10px] text-primary-500 mr-1">{selectedKpi.type === 'KGI' ? 'Goal:' : 'KSF:'}</span>
+                <span className="text-[10px] text-primary-500 mr-1">{getQualitativeLabel()}:</span>
                 {selectedKpi.qualitativeName}
               </h4>
             )}
@@ -261,7 +283,7 @@ export const ActionPanel = () => {
                     <div className="space-y-2 border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-white dark:bg-slate-900">
                       <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-slate-200 dark:border-slate-700/50">
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'Goal名 (定性)' : 'KSF名 (定性)'}</span>
+                          <span className="text-xs text-slate-500">{getQualitativeLabel()}名 (定性)</span>
                           <input 
                             type="text" 
                             value={editQualitativeName} 
