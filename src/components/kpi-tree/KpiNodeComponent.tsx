@@ -40,6 +40,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   const isPredictionMode = useKpiStore((state) => state.isPredictionMode);
   const isSelected = selectedNodeId === data.id;
 
+  const kpiData = useKpiStore((state) => state.kpiData);
+
   // モック用の時系列・予測ロジック
   let displayActual = data.actualValue;
   let displayTarget = data.targetValue;
@@ -70,6 +72,19 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
     : displayAchievementRate >= 100 ? 'good' : displayAchievementRate >= 80 ? 'warning' : 'danger';
 
   const isAlert = displayTarget > 0 && displayAchievementRate < 50;
+
+  // フォーミュラを可読な文字列に変換
+  const getReadableFormula = () => {
+    if (!data.isCalculated || !data.formula) return null;
+    
+    // #{id} を正規表現で抽出して名前に置換
+    return data.formula.replace(/#\{([^}]+)\}/g, (match, id) => {
+      const refNode = kpiData[id];
+      return refNode ? `[${refNode.name}]` : match;
+    });
+  };
+
+  const readableFormula = getReadableFormula();
 
   return (
     <div className={cn(
@@ -136,6 +151,19 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           <span className="text-slate-500 dark:text-[#9aa0a6]">目標</span>
           <span className="text-slate-500 dark:text-[#9aa0a6]">{displayTarget.toLocaleString()} {data.unit}</span>
         </div>
+
+        {readableFormula && (
+          <div className="mt-2 pt-2 border-t border-dashed border-slate-200 dark:border-[#5f6368]/50">
+            <div className="text-[10px] text-slate-500 dark:text-[#9aa0a6] bg-slate-50 dark:bg-[#202124] p-1.5 rounded border border-slate-100 dark:border-slate-700/50 break-words">
+              <div className="flex items-center gap-1 mb-0.5 text-primary-600 dark:text-primary-400 font-bold">
+                <Calculator size={10} /> 計算式
+              </div>
+              <div className="font-mono leading-tight text-[9px] text-slate-700 dark:text-slate-300">
+                = {readableFormula}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       {data.hasChildren && (
