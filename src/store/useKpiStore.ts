@@ -121,11 +121,15 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
 
   let newHistory = node.history ? [...node.history] : [];
   
-  // シミュレーション中でなければ履歴を更新
-  if (!node.isSimulated && node.simulatedValue === undefined) {
-    // 既存の自動記録ロジックはコメントアウトするか、IDを付与する形に変更する
-    // ここでは既存の自動追加ロジックは極力無効化し、明示的なHistory管理に任せる。
-    // ただし、historyが存在しない場合のために空配列はセットしておく
+  // 履歴データが空の場合（プロジェクト作成時など）、初期値として今日の履歴を1行追加する
+  if (newHistory.length === 0 && !node.isSimulated && node.simulatedValue === undefined) {
+    newHistory.push({
+      id: `hist_init_${Math.random().toString(36).substr(2, 9)}`,
+      date: new Date().toISOString().split('T')[0],
+      targetValue: targetValue,
+      actualValue: actualValue,
+      comment: '初期データ作成'
+    });
   }
 
   return {
