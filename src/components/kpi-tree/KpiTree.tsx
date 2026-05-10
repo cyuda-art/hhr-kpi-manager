@@ -47,8 +47,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
 
     const newNode = {
       ...node,
-      targetPosition: isHorizontal ? 'left' : 'top',
-      sourcePosition: isHorizontal ? 'right' : 'bottom',
+      targetPosition: (isHorizontal ? 'left' : 'top') as any,
+      sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
       position: {
         x: nodeWithPosition.x - nodeWidth / 2,
         y: nodeWithPosition.y - nodeHeight / 2,
@@ -60,9 +60,10 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
   return { nodes: newNodes, edges };
 };
 
-const generateNodesAndEdges = (kpiData: Record<string, any>) => {
+const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | 'LR' = 'TB') => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
+  const isHorizontal = direction === 'LR';
 
   Object.keys(kpiData).forEach(id => {
     const data = kpiData[id];
@@ -72,6 +73,8 @@ const generateNodesAndEdges = (kpiData: Record<string, any>) => {
       id,
       type: 'kpiNode',
       position: data.position || { x: 0, y: 0 },
+      targetPosition: (isHorizontal ? 'left' : 'top') as any,
+      sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
       data,
     });
 
@@ -172,7 +175,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   }, [isResizingPanel, setActionPanelWidth]);
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData);
+    const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData, layoutDirection);
     
     // 全てのノード（少なくともKGIなど）が有効なpositionを持っているかチェック
     const hasPositions = genNodes.some(n => n.position.x !== 0 || n.position.y !== 0);
@@ -183,7 +186,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     
     // 初期状態で位置情報がない場合のみ自動レイアウトを適用
     return getLayoutedElements(genNodes, genEdges, layoutDirection);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [layoutDirection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -225,6 +228,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     };
 
     setNodes((nds) => {
+      const isHorizontal = layoutDirection === 'LR';
       const newNodes = nds
         .filter((node) => kpiData[node.id])
         .map((node) => {
@@ -235,6 +239,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           return {
             ...node,
             hidden,
+            targetPosition: (isHorizontal ? 'left' : 'top') as any,
+            sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
             data: {
               ...kpiData[node.id],
               hasChildren,
@@ -261,10 +267,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const isCollapsed = collapsedNodes.includes(id);
           const hidden = isNodeHidden(id);
 
+          const isHorizontal = layoutDirection === 'LR';
+
           newNodes.push({
             id,
             type: 'kpiNode',
             position: { x, y },
+            targetPosition: (isHorizontal ? 'left' : 'top') as any,
+            sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
             hidden,
             data: {
               ...kpiData[id],
