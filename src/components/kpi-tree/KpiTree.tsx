@@ -384,6 +384,21 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             >
               <Map size={16} />
             </button>
+
+            {/* 期間切替ドロップダウン */}
+            <div className="flex items-center ml-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+              <select
+                value={useKpiStore((state) => state.currentPeriod)}
+                onChange={(e) => useKpiStore.getState().setPeriod(e.target.value)}
+                className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 dark:text-slate-300 px-3 py-1.5 focus:ring-0 cursor-pointer"
+              >
+                <option value="year">年次 (1年)</option>
+                <option value="half">半期 (6ヶ月)</option>
+                <option value="quarter">四半期 (3ヶ月)</option>
+                <option value="month">月次 (1ヶ月)</option>
+                <option value="day">日次 (1日)</option>
+              </select>
+            </div>
             
             {/* スマート検索バー */}
             <div className="relative ml-2" ref={searchContainerRef}>

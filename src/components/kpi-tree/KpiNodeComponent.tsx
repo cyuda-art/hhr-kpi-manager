@@ -3,6 +3,7 @@ import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getDisplayValue } from '@/lib/kpi-utils';
 import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2, Calculator } from 'lucide-react';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -64,24 +65,31 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   };
 
   // モック用の時系列・予測ロジック
-  let displayActual = data.actualValue;
-  let displayTarget = data.targetValue;
-  let displayLabel = "実績";
   let isPast = false;
-
-  if (currentPeriod === '2026-03') {
-    displayActual = Math.round(data.actualValue * 0.8);
-    displayTarget = Math.round(data.targetValue * 0.9);
-    isPast = true;
-  } else if (currentPeriod === '2026-04') {
-    displayActual = Math.round(data.actualValue * 0.9);
-    displayTarget = Math.round(data.targetValue * 0.95);
-    isPast = true;
-  }
-
+  let displayLabel = isPast ? "過去実績" : "実績";
+  
+  // 期間換算（year基準をベースとする）
+  let displayActualRaw = data.actualValue;
+  let displayTargetRaw = data.targetValue;
+  
   if (isPredictionMode) {
     displayLabel = "AI予測";
-    displayActual = data.simulatedValue !== undefined ? data.simulatedValue : data.actualValue;
+    displayActualRaw = data.simulatedValue !== undefined ? data.simulatedValue : data.actualValue;
+  }
+
+  // kpi-utilsを用いてUI表示用に換算する
+  let displayActual = getDisplayValue(displayActualRaw, data, currentPeriod);
+  let displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod);
+
+  // 過去データのモック表現（既存ロジック）
+  if (currentPeriod === '2026-03') {
+    displayActual = Math.round(displayActualRaw * 0.8);
+    displayTarget = Math.round(displayTargetRaw * 0.9);
+    isPast = true;
+  } else if (currentPeriod === '2026-04') {
+    displayActual = Math.round(displayActualRaw * 0.9);
+    displayTarget = Math.round(displayTargetRaw * 0.95);
+    isPast = true;
   }
 
   const displayAchievementRate = isPredictionMode && data.simulatedAchievementRate !== undefined 

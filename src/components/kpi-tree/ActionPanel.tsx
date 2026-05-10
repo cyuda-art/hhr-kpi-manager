@@ -5,9 +5,10 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
+import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction } = useKpiStore();
+  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction, currentPeriod } = useKpiStore();
   const { currentProjectId, projects } = useProjectStore();
   const { user } = useAuthStore();
   const currentProject = projects.find(p => p.id === currentProjectId);
@@ -29,13 +30,12 @@ export const ActionPanel = () => {
     }
     return level;
   };
-  const level = getLevel(selectedNodeId);
 
   // 定性ラベルの決定
   const getQualitativeLabel = () => {
-    if (selectedKpi?.type === 'KGI') return 'Goal';
-    if (level === 1) return 'KSF';
-    return 'Process';
+    if (!selectedKpi) return '';
+    if (selectedKpi.type === 'KGI') return 'Goal';
+    return getLevel(selectedKpi.id) === 1 ? 'KSF' : 'Process';
   };
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -73,8 +73,11 @@ export const ActionPanel = () => {
     setWorkflowError('');
     setIsEditingValue(false);
     if (selectedKpi) {
-      setEditTargetValue(selectedKpi.targetValue.toString());
-      setEditActualValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toString() : selectedKpi.actualValue.toString());
+      const displayTarget = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod);
+      const displayActual = getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod);
+      
+      setEditTargetValue(displayTarget.toString());
+      setEditActualValue(displayActual.toString());
       setEditName(selectedKpi.name);
       setEditQualitativeName(selectedKpi.qualitativeName || '');
       setEditUpdateFrequency(selectedKpi.updateFrequency || 'monthly');
@@ -82,20 +85,24 @@ export const ActionPanel = () => {
       setEditIsCalculated(hasChildren ? true : (selectedKpi.isCalculated || false));
       setEditFormula(selectedKpi.formula || '');
     }
-  }, [selectedNodeId, kpiData, isPredictionMode, hasChildren]);
+  }, [selectedNodeId, kpiData, isPredictionMode, hasChildren, currentPeriod]);
 
   const handleSaveValues = () => {
-    if (!selectedNodeId) return;
+    if (!selectedNodeId || !selectedKpi) return;
     
+    // 入力値(UI上の表示スケール)をDB保存用のベーススケール(year基準等)に戻す
+    const storedTarget = getStorageValue(Number(editTargetValue) || 0, selectedKpi, currentPeriod);
+    const storedActual = getStorageValue(Number(editActualValue) || 0, selectedKpi, currentPeriod);
+
     if (isPredictionMode) {
-      updateSimulatedValue(selectedNodeId, Number(editActualValue) || 0);
+      updateSimulatedValue(selectedNodeId, storedActual);
       // 目標値のシミュレーション編集は一旦省略（実績のシミュレーションのみ）
     } else {
       updateKpiNode(selectedNodeId, {
-        targetValue: Number(editTargetValue) || 0,
-        actualValue: Number(editActualValue) || 0,
-        name: editName || selectedKpi?.name,
-        qualitativeName: editQualitativeName || selectedKpi?.qualitativeName,
+        targetValue: storedTarget,
+        actualValue: storedActual,
+        name: editName || selectedKpi.name,
+        qualitativeName: editQualitativeName || selectedKpi.qualitativeName,
         updateFrequency: editUpdateFrequency,
         calculationFormula: editCalculationFormula,
         isCalculated: editIsCalculated,
@@ -394,10 +401,10 @@ export const ActionPanel = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedKpi.targetValue.toLocaleString()}</span> {selectedKpi.unit}
+                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue.toLocaleString() : selectedKpi.actualValue.toLocaleString()}</span> {selectedKpi.unit}
+                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
                     </div>
                     <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded">
