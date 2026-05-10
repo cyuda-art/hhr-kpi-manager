@@ -26,7 +26,6 @@ interface KpiStore {
   initializeDB: (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => Promise<void>;
   updateActualValue: (id: string, newValue: number) => void;
   updateSimulatedValue: (id: string, newValue: number) => void;
-  resetSimulations: () => void;
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
   toggleActionStatus: (actionId: string) => void;
@@ -563,10 +562,6 @@ export const useKpiStore = create<KpiStore>()(
           if (data.targetValue !== undefined && oldTarget > 0 && data.targetValue !== oldTarget) {
             // 動的計算エンジンによる再計算（目標値）
             recalculateTree(draft, 'targetValue');
-            
-            // 既存の比率ベースの波及（計算式が設定されていないノードのためのフォールバックとして残すか迷うが、Excelライクな挙動を優先するなら不要。
-            // しかしユーザーがすべてのノードに計算式を書くとは限らないため、比率波及は「計算式を持たない子」に対する簡易的な連動として残すのも手だが、
-            // 今回は「計算式に基づく動的連動」がメイン要望なので、一旦古い比率波及は削除してスッキリさせる。
           }
           
           syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
@@ -718,23 +713,10 @@ export const useKpiStore = create<KpiStore>()(
       return { collapsedNodes: newCollapsedNodes };
     });
   },
-  resetSimulations: () => {
-    set((state) => {
-      // isSimulatedがtrueのものだけを元に戻す
-      const draft = { ...state.kpiData };
-      Object.keys(draft).forEach(key => {
-        if (draft[key].isSimulated) {
-          draft[key] = calculateComputed({ ...draft[key], actualValue: draft[key].initialActualValue, isSimulated: false });
-        }
-      });
-      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
-    });
-  },
     }),
     {
       name: 'kpi-storage',
       partialize: (state) => ({ 
-        projectData: state.projectData, 
         collapsedNodes: state.collapsedNodes,
         currentPeriod: state.currentPeriod
       }),
