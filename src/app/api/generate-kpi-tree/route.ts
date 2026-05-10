@@ -35,14 +35,20 @@ export async function POST(req: Request) {
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
 - markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
 - "nodes" 配列内のノードは合計で10個〜15個程度作成してください。
-- 階層構造:
+- 階層構造と数式に関する【絶対ルール】（MECEとロジックツリーの完全連動）:
   - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main" としてください。
   - KSFノード（qualitativeNameにKSF名を設定）を作り、その下にKPIノードを繋げてください（parentIdで指定）。
-  - IDはユニークな半角英数字（例: ksf_sales, kpi_cpa_1 など）にしてください。
+  - IDはユニークな半角英数字にしてください。
+  - ツリー構造（親子の依存関係）は「数式による分解（要素還元）」と完全に一致しなければなりません。
+  - 親ノード（例: 売上高）は、その直下の子ノードたちの四則演算（主に掛け算または足し算）によって【必ず100%過不足なく構成】されるようにしてください。
+  - 良い例1（掛け算）: 「売上高 (kgi_main)」の直下には「顧客数 (kpi_1)」と「平均客単価 (kpi_2)」の2つのみを置き、売上高の formula を "#{kpi_1} * #{kpi_2}" としてください。
+  - 良い例2（足し算）: 「新規リード数」の直下に「Web広告経由」と「自然検索経由」を置き、formula を "#{kpi_ad} + #{kpi_organic}" としてください。
+  - 悪い例: 「売上高」の直下に「顧客数」「客単価」「従業員満足度」が並んでいる（数式で繋がらない要素が混ざっているのはNG）。
+  - 子ノードを持つすべての親ノードは、必ず isCalculated: true とし、子ノードのIDを用いた正しい formula (例: "#{id1} * #{id2}") を設定してください。
+  - 末端のノード（これ以上分解しない最下層）のみ isCalculated: false とし、formula は空文字 "" にしてください。
 - businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。
 - 数値（targetValue, actualValue, previousValue）は、売上規模から推測してリアリティのある数値を設定してください（単位に注意）。
 - 末端のKPIノードには、現場が実行すべき具体的な「タスク（ToDo）」を1〜3個程度、"tasks" 配列として付与してください。
-- Glideライクな自動計算機能（Formula）を活用するため、計算で求まるKPIには isCalculated: true と formula: "#{参照元ID} * #{参照元ID}" のような計算式を可能な限り含めてください。
 
 【JSONフォーマット例】
 {
