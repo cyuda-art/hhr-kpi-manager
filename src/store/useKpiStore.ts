@@ -61,12 +61,25 @@ const syncToDB = async (
   }
 ) => {
   if (!projectId || !orgId) return;
+  
+  // 初期化完了前にUI側のイベント(ReactFlowのonNodesChangeなど)で
+  // 意図せずsyncToDBが発火し、空データで上書きされるのを防ぐ
+  // （forceフラグがある場合＝initializeDB内からの初回保存時のみ許可）
+  const isForce = (updates as any)._forceSync === true;
+  if (!isForce && !useKpiStore.getState().isDbInitialized) {
+    console.log("syncToDB aborted: DB is not initialized yet.");
+    return;
+  }
+  
+  // 保存データから_forceSyncフラグを取り除く
+  const dataToSave: any = {
+    ...updates,
+    updatedAt: Date.now()
+  };
+  delete dataToSave._forceSync;
+
   try {
     const kpiDataRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main');
-    const dataToSave: any = {
-      ...updates,
-      updatedAt: Date.now()
-    };
     await setDoc(kpiDataRef, dataToSave, { merge: true });
   } catch (error) {
     console.error("Firestore Sync Error:", error);
@@ -350,7 +363,7 @@ export const useKpiStore = create<KpiStore>()(
               sessionStorage.removeItem(`kpi_init_${projectId}`);
               
               // この段階でFirestoreへ保存する
-              syncToDB(projectId, orgId, { kpiData: kpiData, actions: pData.actions, projectInfo: pData.projectInfo });
+              syncToDB(projectId, orgId, { kpiData: kpiData, actions: pData.actions, projectInfo: pData.projectInfo, _forceSync: true } as any);
             } catch (e) {
               console.error("Failed to parse init KPI data", e);
             }
