@@ -15,13 +15,11 @@ export default function WorkspacePage() {
   const { organizations, currentOrgId } = useOrgStore();
   
   const [isCreating, setIsCreating] = useState(false);
-  const [step, setStep] = useState(1);
-  const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDesc, setNewProjectDesc] = useState('');
+  const [projectUrl, setProjectUrl] = useState('');
+  const [kgiType, setKgiType] = useState('売上高');
+  const [kgiTargetValue, setKgiTargetValue] = useState('');
+  const [businessModelType, setBusinessModelType] = useState('B2B SaaS（継続課金）');
   const [mvv, setMvv] = useState('');
-  const [industry, setIndustry] = useState('');
-  const [revenueScale, setRevenueScale] = useState('');
-  const [currentIssues, setCurrentIssues] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
@@ -47,7 +45,10 @@ export default function WorkspacePage() {
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !newProjectName) return;
+    if (!user || !projectUrl) return;
+
+    // 自動生成するプロジェクト名
+    const projectName = `${kgiType} ${kgiTargetValue ? Number(kgiTargetValue).toLocaleString() : ''}達成プロジェクト`;
 
     try {
       setIsGenerating(true);
@@ -58,12 +59,11 @@ export default function WorkspacePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectName: newProjectName,
-          description: newProjectDesc,
-          mvv,
-          industry,
-          revenueScale,
-          currentIssues
+          projectUrl,
+          kgiType,
+          kgiTargetValue: Number(kgiTargetValue) || 0,
+          businessModelType,
+          mvv
         })
       });
 
@@ -71,8 +71,12 @@ export default function WorkspacePage() {
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
 
       // 2. プロジェクト作成
-      const newId = await createProject(newProjectName, newProjectDesc, user.uid, currentOrgId, {
-        mvv, industry, revenueScale, currentIssues
+      const newId = await createProject(projectName, projectUrl, user.uid, currentOrgId, {
+        description: projectUrl,
+        mvv, 
+        kgiType, 
+        kgiTargetValue: Number(kgiTargetValue) || 0, 
+        businessModelType
       });
       
       setCurrentProjectId(newId);
@@ -264,96 +268,84 @@ export default function WorkspacePage() {
               <>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4]">新しいKGIツリーの作成</h2>
-                  <div className="flex gap-2 text-sm font-medium">
-                    <span className={step === 1 ? 'text-primary-600 dark:text-[#8ab4f8]' : 'text-slate-400'}>Step 1: 基本情報</span>
-                    <span className="text-slate-300">/</span>
-                    <span className={step === 2 ? 'text-primary-600 dark:text-[#8ab4f8]' : 'text-slate-400'}>Step 2: 課題のヒアリング</span>
-                  </div>
                 </div>
 
-                <form onSubmit={(e) => { e.preventDefault(); if (step === 1) setStep(2); else handleCreateProject(e); }} className="space-y-5">
-                  {step === 1 ? (
-                    <div className="space-y-4 animate-in slide-in-from-right-4">
+                <form onSubmit={handleCreateProject} className="space-y-5">
+                  <div className="space-y-4 animate-in slide-in-from-right-4">
+                    <div>
+                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">1. 企業のURL（または事業概要のテキスト） <span className="text-rose-500">*</span></label>
+                      <input
+                        type="text" required autoFocus value={projectUrl} onChange={(e) => setProjectUrl(e.target.value)}
+                        placeholder="例：https://example.com または ホテル5施設と飲食10店舗の運営"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none"
+                      />
+                      <p className="text-[11px] text-slate-400 mt-1">AIがURLから事業ポートフォリオを解読し、マトリョーシカ構造の基本パラメータを自動抽出します。</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">KGI名称（プロジェクト名） <span className="text-rose-500">*</span></label>
+                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">2. KGI（最終目標）</label>
+                        <select 
+                          value={kgiType} onChange={(e) => setKgiType(e.target.value)}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none"
+                        >
+                          <option value="売上高">売上高</option>
+                          <option value="営業利益">営業利益</option>
+                          <option value="ARR">ARR</option>
+                          <option value="MAU">MAU</option>
+                          <option value="その他">その他</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">目標数値 (円/人など) <span className="text-rose-500">*</span></label>
                         <input
-                          type="text" required autoFocus value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)}
-                          placeholder="例：株式会社HHRグループ KGI達成"
+                          type="number" required value={kgiTargetValue} onChange={(e) => setKgiTargetValue(e.target.value)}
+                          placeholder="例：500000000"
                           className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">事業・業種</label>
-                          <input
-                            type="text" value={industry} onChange={(e) => setIndustry(e.target.value)}
-                            placeholder="例：ITコンサルティング、飲食業"
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">現在の売上規模</label>
-                          <input
-                            type="text" value={revenueScale} onChange={(e) => setRevenueScale(e.target.value)}
-                            placeholder="例：年商10億円"
-                            className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">MVV (ミッション・ビジョン・バリュー)</label>
-                        <textarea
-                          value={mvv} onChange={(e) => setMvv(e.target.value)} rows={2}
-                          placeholder="企業の目指す姿を入力すると、より本質的なKPIが生成されます"
-                          className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none resize-none"
-                        />
-                      </div>
                     </div>
-                  ) : (
-                    <div className="space-y-4 animate-in slide-in-from-right-4">
-                      <div>
-                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">現状の最大の悩み・課題 <span className="text-rose-500">*</span></label>
-                        <textarea
-                          required value={currentIssues} onChange={(e) => setCurrentIssues(e.target.value)} rows={3} autoFocus
-                          placeholder="例：新規リードの獲得コストが高騰している。既存顧客の離脱率が高い。等"
-                          className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none resize-none"
-                        />
-                        <p className="text-xs text-slate-400 mt-1">この課題を解決するための具体的なKPI指標がツリーに組み込まれます。</p>
-                      </div>
-                      <div>
-                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">プロジェクトの補足説明 (任意)</label>
-                        <textarea
-                          value={newProjectDesc} onChange={(e) => setNewProjectDesc(e.target.value)} rows={2}
-                          className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none resize-none"
-                        />
-                      </div>
+
+                    <div>
+                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">3. 主力となるビジネスモデルの型</label>
+                      <select 
+                        value={businessModelType} onChange={(e) => setBusinessModelType(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none"
+                      >
+                        <option value="B2B SaaS（継続課金）">B2B SaaS（継続課金）</option>
+                        <option value="店舗・施設（客数×単価）">店舗・施設（客数×単価）</option>
+                        <option value="EC・物販">EC・物販</option>
+                        <option value="その他">その他</option>
+                      </select>
+                      <p className="text-[11px] text-slate-400 mt-1">第1階層の計算式（足し算型か掛け算型か）のテンプレートを決定します。</p>
                     </div>
-                  )}
+
+                    <div>
+                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">4. MVV（特に「NG行動・制約条件」）</label>
+                      <textarea
+                        value={mvv} onChange={(e) => setMvv(e.target.value)} rows={3}
+                        placeholder="顧客に提供したい価値や、目標達成のためであっても絶対にやりたくない営業・接客手法など"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none resize-none"
+                      />
+                      <p className="text-[11px] text-slate-400 mt-1">スパム的な解決策を弾き、ブランド価値を守るための制約パラメータとしてAIにセットされます。</p>
+                    </div>
+                  </div>
 
                   <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-[#3c4043]">
                     <button
                       type="button"
-                      onClick={() => { setIsCreating(false); setStep(1); }}
+                      onClick={() => setIsCreating(false)}
                       className="px-4 py-2 text-[14px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px] transition-colors"
                     >
                       キャンセル
                     </button>
-                    {step === 1 ? (
-                      <button
-                        type="submit" disabled={!newProjectName}
-                        className="px-4 py-2 text-[14px] font-medium bg-primary-600 dark:bg-[#8ab4f8] text-white dark:text-[#202124] hover:bg-primary-700 rounded-[4px] transition-colors disabled:opacity-50"
-                      >
-                        次へ進む
-                      </button>
-                    ) : (
-                      <button
-                        type="submit" disabled={!currentIssues}
-                        className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-[4px] transition-all flex items-center gap-2 disabled:opacity-50"
-                      >
-                        <Sparkles size={16} />
-                        AIでKPIツリーを生成して作成
-                      </button>
-                    )}
+                    <button
+                      type="submit" disabled={!projectUrl || !kgiTargetValue || isGenerating}
+                      className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-[4px] transition-all flex items-center gap-2 disabled:opacity-50"
+                    >
+                      <Sparkles size={16} />
+                      AIでKPIツリーを自動生成
+                    </button>
                   </div>
                 </form>
               </>

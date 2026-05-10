@@ -5,10 +5,37 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { projectName, description, mvv, industry, revenueScale, currentIssues } = await req.json();
+    const { projectUrl, kgiType, kgiTargetValue, businessModelType, mvv } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
+    }
+
+    // URLからのテキスト抽出 (簡易スクレイピング)
+    let extractedText = projectUrl;
+    if (projectUrl && projectUrl.startsWith('http')) {
+      try {
+        const fetchRes = await fetch(projectUrl, { 
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, 
+          signal: AbortSignal.timeout(5000) 
+        });
+        if (fetchRes.ok) {
+          const html = await fetchRes.text();
+          const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+          if (bodyMatch) {
+            const cleanText = bodyMatch[1]
+              .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .substring(0, 3000); // トークン節約のため3000文字
+            extractedText = `【URLからの抽出テキスト】\n${cleanText}`;
+          }
+        }
+      } catch (e) {
+        console.warn("URL fetch failed, falling back to raw input:", e);
+      }
     }
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -18,25 +45,24 @@ export async function POST(req: Request) {
 以下のユーザー提供情報を元に、論理的で実行可能性の高い「KGI・KSF・KPIツリー」を構築してください。
 
 【ユーザー入力情報】
-- プロジェクト名 (KGI候補): ${projectName}
-- 事業概要: ${description || '未設定'}
-- MVV (Mission, Vision, Value): ${mvv || '未設定'}
-- 業種・ターゲット顧客: ${industry || '未設定'}
-- 売上規模: ${revenueScale || '未設定'}
-- 競合情報・自社の強み弱み・現状の課題: ${currentIssues || '未設定'}
+- 事業概要・URLテキスト: ${extractedText}
+- KGI（最終目標）: ${kgiType}
+- KGIの目標数値: ${kgiTargetValue}
+- ビジネスモデルの型: ${businessModelType}
+- MVV・制約条件 (目標達成のためであっても絶対にやりたくないNG行動など): ${mvv || '未設定'}
 
 【思考プロセス（内部推論のステップ）】
 以下のステップ1〜3の推論を行い、その結果をJSONの "thinking_process" キーに出力してください。
-ステップ1: 環境分析（3C分析・PEST）- マクロ要因から前提を明確化。
-ステップ2: 戦略方針とKSFの抽出（クロスSWOT分析）- 強み×機会などから決定的に重要な成功要因（KSF）を2〜3つ抽出。
-ステップ3: プロセス分解とKPIの設定（バリューチェーン・4P分析）- 各KSFを業務プロセスに分解し、計測可能な定量指標（KPI）に落とし込む。
+ステップ1: 環境分析と解読 - 事業概要テキストから事業ポートフォリオ（例：ホテル5施設、飲食10店舗など）やマトリョーシカ構造を解読。
+ステップ2: 第1階層の数式設計 - ユーザー指定のビジネスモデル（${businessModelType}）に基づき、KGI直下の第1階層を決定（例: SaaSなら「顧客数×単価」、店舗展開なら「各店舗売上の合算」または「客数×単価」）。
+ステップ3: プロセス分解と制約の適用 - MVVやNG行動（${mvv}）に抵触しない、ブランド価値を守る具体的な末端KPIとタスク（ToDo）に落とし込む。
 
 【出力要件】
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
 - markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
 - "nodes" 配列内のノードは合計で10個〜15個程度作成してください。
 - 階層構造と数式に関する【絶対ルール】（MECEとロジックツリーの完全連動）:
-  - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main" としてください。
+  - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main"、nameは "${kgiType}"、targetValueは ${kgiTargetValue || 100000000} としてください。
   - KSFノード（qualitativeNameにKSF名を設定）を作り、その下にKPIノードを繋げてください（parentIdで指定）。
   - IDはユニークな半角英数字にしてください。
   - ツリー構造（親子の依存関係）は「数式による分解（要素還元）」と完全に一致しなければなりません。

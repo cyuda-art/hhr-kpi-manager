@@ -52,8 +52,12 @@ export interface Action {
 
 export interface ProjectInfo {
   name: string;
-  description: string;
-  mvv?: string;
+  description: string; // URLまたは事業概要テキスト
+  mvv?: string; // NG行動・制約条件
+  kgiType?: string; // KGIの種類（売上高、ARRなど）
+  kgiTargetValue?: number; // KGIの目標数値
+  businessModelType?: string; // ビジネスモデルの型（SaaS、店舗など）
+  // 過去バージョンとの互換性用
   industry?: string;
   revenueScale?: string;
   currentIssues?: string;
