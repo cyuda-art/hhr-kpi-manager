@@ -76,6 +76,7 @@ export async function POST(req: Request) {
 - businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。
 - 数値（targetValue, actualValue, previousValue）は、売上規模から推測してリアリティのある数値を設定してください（単位に注意）。
 - 【重要】単位（unit）が「%」の指標（商談化率、利益率など）の場合、数値は0.2のような小数ではなく、必ず100倍した数値（例: 20%の場合は「20」）で設定してください。
+- 1年間のダミーデータをフロントエンドで生成するため、各ノードに事業特性を表す "trend_type" (steady_growth, seasonal_summer, seasonal_winter, flat_random のいずれか) と、日々の数値のブレ幅を表す "volatility" (0.05〜0.3の数値) を必ず含めてください。
 - 末端のKPIノードには、現場が実行すべき具体的な「タスク（ToDo）」を1〜3個程度、"tasks" 配列として付与してください。
 
 【JSONフォーマット例】
@@ -115,6 +116,8 @@ export async function POST(req: Request) {
       "description": "KPIの詳細",
       "isCalculated": false,
       "formula": "",
+      "trend_type": "steady_growth", // steady_growth | seasonal_summer | seasonal_winter | flat_random のいずれか
+      "volatility": 0.1, // 日々のブレ幅（0.05〜0.3）
       "tasks": [
         {
           "task_name": "具体的なタスク名",

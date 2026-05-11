@@ -25,6 +25,8 @@ export default function WorkspacePage() {
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
+  const [hasSampleData, setHasSampleData] = useState(false);
+
   useEffect(() => {
     if (user && currentOrgId) {
       const unsubscribe = initializeProjects(currentOrgId);
@@ -71,6 +73,77 @@ export default function WorkspacePage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
+
+      // サンプルデータを生成する場合、全ノードに1年分の履歴データを追加する
+      if (hasSampleData && data.nodes && Array.isArray(data.nodes)) {
+        const today = new Date();
+        data.nodes = data.nodes.map((node: any) => {
+          const history = [];
+          const trendType = node.trend_type || 'steady_growth';
+          const volatility = node.volatility || 0.1;
+          const isPercentage = node.unit === '%' || node.unit === '％';
+          const startRatio = 0.3; // 1年前は目標の30%からスタートと仮定
+
+          for (let i = 365; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            const dateString = date.toISOString().split('T')[0];
+            
+            // 進行度 (0.0 〜 1.0)
+            const progress = (365 - i) / 365;
+            
+            // ベース値の計算
+            let baseValue = (node.targetValue || 0) * (startRatio + (1 - startRatio) * progress);
+            
+            // 季節変動（サイン波）の加味
+            const month = date.getMonth(); // 0-11
+            if (trendType === 'seasonal_summer') {
+              // 夏(7,8月付近)がピーク
+              const seasonFactor = Math.sin((month - 4) * Math.PI / 6) * 0.3; // ±30%
+              baseValue = baseValue * (1 + seasonFactor);
+            } else if (trendType === 'seasonal_winter') {
+              // 冬(12,1月付近)がピーク
+              const seasonFactor = Math.sin((month + 2) * Math.PI / 6) * 0.3; // ±30%
+              baseValue = baseValue * (1 + seasonFactor);
+            } else if (trendType === 'flat_random') {
+              // 成長せず常に目標付近で推移
+              baseValue = node.targetValue || 0;
+            }
+
+            // 日々のノイズ（ボラティリティ）
+            const randomNoise = 1 + (Math.random() * volatility * 2 - volatility); // (1 - vol) ~ (1 + vol)
+            let actualVal = baseValue * randomNoise;
+            
+            // 丸め処理（%の場合は小数点第1位まで、それ以外は整数）
+            if (isPercentage) {
+              actualVal = Math.round(actualVal * 10) / 10;
+              if (actualVal < 0) actualVal = 0;
+              if (actualVal > 100) actualVal = 100;
+            } else {
+              actualVal = Math.round(actualVal);
+              if (actualVal < 0) actualVal = 0;
+            }
+            
+            history.push({
+              id: Math.random().toString(36).substr(2, 9),
+              date: dateString,
+              targetValue: node.targetValue || 0,
+              actualValue: actualVal,
+              comment: i === 0 ? '現在' : i % 30 === 0 ? '月次まとめ' : ''
+            });
+          }
+          // 現時点の値を最新の履歴に合わせる
+          node.actualValue = history[history.length - 1].actualValue;
+          node.history = history;
+          return node;
+        });
+      } else if (!hasSampleData && data.nodes && Array.isArray(data.nodes)) {
+        // 空の場合、actualValue を 0 に初期化
+        data.nodes = data.nodes.map((node: any) => {
+          node.actualValue = 0;
+          return node;
+        });
+      }
 
       // 2. プロジェクト作成
       const newId = await createProject(projectName, projectUrl, user.uid, currentOrgId, {
@@ -344,6 +417,20 @@ export default function WorkspacePage() {
                         className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none resize-none"
                       />
                       <p className="text-[11px] text-slate-400 mt-1">スパム的な解決策を弾き、ブランド価値を守るための制約パラメータとしてAIにセットされます。</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">5. 初期データの生成</label>
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-[#e8eaed] cursor-pointer">
+                          <input type="radio" checked={!hasSampleData} onChange={() => setHasSampleData(false)} className="text-primary-500 focus:ring-primary-500" />
+                          空で作成（実績0からスタート）
+                        </label>
+                        <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-[#e8eaed] cursor-pointer">
+                          <input type="radio" checked={hasSampleData} onChange={() => setHasSampleData(true)} className="text-primary-500 focus:ring-primary-500" />
+                          サンプルデータあり（過去1年分のダミー履歴を生成）
+                        </label>
+                      </div>
                     </div>
                   </div>
 
