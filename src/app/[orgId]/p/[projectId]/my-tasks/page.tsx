@@ -20,8 +20,7 @@ type TreeNode = {
   depth: number;
 };
 
-// --- タスクカードコンポーネント ---
-const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId }: { action: Action, kpiName: string, onDragStart: (e: React.DragEvent, id: string) => void, draggedTaskId: string | null }) => {
+const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId, onClick }: { action: Action, kpiName: string, onDragStart: (e: React.DragEvent, id: string) => void, draggedTaskId: string | null, onClick?: () => void }) => {
   const isPastDue = action.dueDate && new Date(action.dueDate) < new Date() && action.status !== 'done';
   
   const getStatusColor = (status: string) => {
@@ -34,13 +33,31 @@ const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId }: { action: Act
     <div
       draggable
       onDragStart={(e) => onDragStart(e, action.id)}
-      className={`p-3 rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all ${getStatusColor(action.status)} ${draggedTaskId === action.id ? 'opacity-50' : 'opacity-100'}`}
+      onClick={onClick}
+      className={`p-3 rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all ${getStatusColor(action.status)} ${draggedTaskId === action.id ? 'opacity-50' : 'opacity-100'} ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex flex-col gap-1.5">
         <div className="flex justify-between items-start gap-2">
           <h4 className="font-bold text-[13px] leading-tight">{action.title}</h4>
           {isPastDue && <span title="期限切れ"><AlertCircle size={14} className="text-rose-500 shrink-0" /></span>}
         </div>
+        {action.priority && (
+          <div className="flex">
+            <span className={`text-[9px] px-1 rounded ${
+              action.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+              action.priority === 'not_urgent_important' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+              action.priority === 'urgent_not_important' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+              'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+            }`}>
+              {action.priority === 'urgent_important' ? '第1領域(必須・急)' :
+               action.priority === 'not_urgent_important' ? '第2領域(重要・仕込)' :
+               action.priority === 'urgent_not_important' ? '第3領域(錯覚・振分)' : '第4領域(無駄)'}
+            </span>
+          </div>
+        )}
+        {action.description && (
+          <p className="text-[10px] opacity-80 line-clamp-2 mt-0.5">{action.description}</p>
+        )}
         {kpiName && (
           <div className="text-[10px] flex items-center gap-1 opacity-70 mt-0.5 bg-black/5 dark:bg-white/10 w-fit px-1.5 py-0.5 rounded">
             <Building size={10} />
@@ -50,7 +67,8 @@ const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId }: { action: Act
         <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/5 dark:border-white/5">
           <div className="flex items-center gap-1 text-[10px] font-bold">
             <User size={10} className="opacity-70" />
-            <span>{action.owner}</span>
+            <span className="truncate max-w-[80px]">{action.owner}</span>
+            {action.department && <span className="opacity-70 ml-1 bg-black/5 dark:bg-white/10 px-1 rounded">{action.department}</span>}
           </div>
           <div className={`flex items-center gap-1 text-[10px] font-medium ${isPastDue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'opacity-70'}`}>
             <CalendarIcon size={10} />
@@ -169,6 +187,7 @@ export default function MyTasksPage() {
 
   // --- カンバンボード用のDrag & Dropロジック ---
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [editingTask, setEditingTask] = useState<Action | null>(null);
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDraggedTaskId(taskId);
@@ -191,10 +210,16 @@ export default function MyTasksPage() {
     setDraggedTaskId(null);
   };
 
+  const handleUpdateTask = (updates: Partial<Action>) => {
+    if (!editingTask) return;
+    useKpiStore.getState().updateAction(editingTask.id, updates);
+    setEditingTask({ ...editingTask, ...updates });
+  };
+
   // --- タスクカードレンダラー（カンバン用） ---
   const renderTask = (action: Action, showKpiName: boolean = false) => {
     const kpiName = showKpiName ? (kpiData[action.kpiId]?.name || '不明なKPI') : '';
-    return <TaskCard key={action.id} action={action} kpiName={kpiName} onDragStart={handleDragStart} draggedTaskId={draggedTaskId} />;
+    return <TaskCard key={action.id} action={action} kpiName={kpiName} onDragStart={handleDragStart} draggedTaskId={draggedTaskId} onClick={() => setEditingTask(action)} />;
   };
 
   // --- Kanban View ---
@@ -548,6 +573,62 @@ export default function MyTasksPage() {
       {viewMode === 'timeline' && renderTimeline()}
       {viewMode === 'calendar' && renderCalendar()}
 
+      {/* Task Edit Modal */}
+      {editingTask && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+              <h2 className="font-bold text-slate-800 dark:text-slate-200 text-lg">タスクの編集</h2>
+              <button onClick={() => setEditingTask(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">タイトル <span className="text-rose-500">*</span></label>
+                <input type="text" value={editingTask.title} onChange={(e) => handleUpdateTask({ title: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">詳細説明</label>
+                <textarea value={editingTask.description || ''} onChange={(e) => handleUpdateTask({ description: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-24" placeholder="タスクの具体的な内容や前提条件など..." />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">担当者 <span className="text-rose-500">*</span></label>
+                  <input type="text" value={editingTask.owner} onChange={(e) => handleUpdateTask({ owner: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">部署</label>
+                  <input type="text" value={editingTask.department || ''} onChange={(e) => handleUpdateTask({ department: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="例: 営業部" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">優先度 (重要度×緊急度)</label>
+                  <select value={editingTask.priority || 'unassigned'} onChange={(e) => handleUpdateTask({ priority: e.target.value as any })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none">
+                    <option value="unassigned">未設定</option>
+                    <option value="urgent_important">第1領域(必須・緊急)</option>
+                    <option value="not_urgent_important">第2領域(重要・仕込)</option>
+                    <option value="urgent_not_important">第3領域(錯覚・振分)</option>
+                    <option value="not_urgent_not_important">第4領域(無駄・削除)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">期限</label>
+                  <input type="date" value={editingTask.dueDate?.split('T')[0] || ''} onChange={(e) => handleUpdateTask({ dueDate: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between bg-slate-50 dark:bg-slate-900/50">
+              <button onClick={() => {
+                if(window.confirm('このタスクを削除しますか？')) {
+                  useKpiStore.getState().removeAction(editingTask.id);
+                  setEditingTask(null);
+                }
+              }} className="text-sm font-bold text-rose-500 hover:text-rose-600 px-4 py-2">削除</button>
+              <button onClick={() => setEditingTask(null)} className="text-sm font-bold bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg transition-colors shadow-sm">完了</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -27,6 +27,8 @@ interface KpiStore {
   updateSimulatedValue: (id: string, newValue: number) => void;
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
+  updateAction: (id: string, updates: Partial<Action>) => void;
+  removeAction: (id: string) => void;
   toggleActionStatus: (actionId: string) => void;
   setActionsBulk: (actions: Action[]) => void;
   setAiWorkflow: (kpiId: string, workflow: AiWorkflow) => void;
@@ -344,7 +346,9 @@ export const useKpiStore = create<KpiStore>()(
                       id: Math.random().toString(36).substr(2, 9),
                       kpiId: node.id,
                       title: task.task_name,
+                      description: `【期待インパクト】${task.expected_impact || '不明'} 【工数感】${task.effort_level || '不明'}\n${task.description || ''}\n留意点: ${task.focus_point || ''}`.trim(),
                       owner: '未定',
+                      priority: task.expected_impact === 'High' && task.effort_level === 'Low' ? 'urgent_important' : 'unassigned',
                       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
                       status: 'todo'
                     });
@@ -426,6 +430,20 @@ export const useKpiStore = create<KpiStore>()(
     });
   },
 
+  updateAction: (id, updates) => {
+    set((state) => {
+      const newActions = state.actions.map(a => a.id === id ? { ...a, ...updates } : a);
+      syncToDB(state.currentProjectId, state.currentOrgId, { actions: newActions });
+      return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
+    });
+  },
+  removeAction: (id) => {
+    set((state) => {
+      const newActions = state.actions.filter(a => a.id !== id);
+      syncToDB(state.currentProjectId, state.currentOrgId, { actions: newActions });
+      return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
+    });
+  },
   toggleActionStatus: (actionId) => {
     set((state) => {
       const newActions = state.actions.map(a => 

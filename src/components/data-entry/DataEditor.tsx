@@ -8,7 +8,7 @@ import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 type TableMode = 'master' | 'ksf' | 'history' | 'database';
 
 export const DataEditor = () => {
-  const { kpiData, actions, currentProjectInfo, addHistoryRecord, updateHistoryRecord, deleteHistoryRecord, updateKpiNode, currentPeriod, isPredictionMode } = useKpiStore();
+  const { kpiData, actions, currentProjectInfo, addHistoryRecord, updateHistoryRecord, deleteHistoryRecord, updateKpiNode, updateAction, currentPeriod, isPredictionMode } = useKpiStore();
   
   // 表示中のテーブルモード
   const [activeMode, setActiveMode] = useState<TableMode>('master');
@@ -46,6 +46,8 @@ export const DataEditor = () => {
         finalValue = getStorageValue(Number(value) || 0, selectedKpi, currentPeriod);
       }
       updateHistoryRecord(selectedKpi.id, id, { [field]: finalValue });
+    } else if (activeMode === 'ksf') {
+      updateAction(id, { [field]: value });
     }
   };
 
@@ -247,6 +249,7 @@ export const DataEditor = () => {
                     <th className="w-64 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Aa Title</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Owner</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Dept</th>
+                    <th className="w-40 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Priority</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono flex items-center gap-1"><Calendar size={12} /> StartDate</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono flex items-center gap-1"><Calendar size={12} /> DueDate</th>
                     <th className="w-32 p-2 text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] border-r border-slate-200 dark:border-[#3c4043] font-mono">Status</th>
@@ -322,13 +325,22 @@ export const DataEditor = () => {
                 <tr key={action.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
                   <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className="w-full h-full p-2 font-medium truncate">{action.title}</div>
+                    <input type="text" value={action.title} onChange={e => handleUpdate(action.id, 'title', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className="w-full h-full p-2 truncate">{action.owner}</div>
+                    <input type="text" value={action.owner} onChange={e => handleUpdate(action.id, 'owner', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <div className="w-full h-full p-2 truncate">{action.department || '-'}</div>
+                    <input type="text" value={action.department || ''} onChange={e => handleUpdate(action.id, 'department', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                  </td>
+                  <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
+                    <select value={action.priority || 'unassigned'} onChange={e => handleUpdate(action.id, 'priority', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500">
+                      <option value="unassigned">未設定</option>
+                      <option value="urgent_important">第1領域(必須・急)</option>
+                      <option value="not_urgent_important">第2領域(重要・仕込)</option>
+                      <option value="urgent_not_important">第3領域(錯覚・振分)</option>
+                      <option value="not_urgent_not_important">第4領域(無駄)</option>
+                    </select>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <input type="date" value={action.startDate || ''} onChange={e => handleUpdate(action.id, 'startDate', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />

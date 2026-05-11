@@ -40,15 +40,19 @@ export interface KpiNodeWithComputed extends KpiNodeData {
   simulatedStatus?: Status; // シミュレーションモード中の仮想ステータス
 }
 
+export type TaskPriority = 'urgent_important' | 'not_urgent_important' | 'urgent_not_important' | 'not_urgent_not_important' | 'unassigned';
+
 export interface Action {
   id: string;
   kpiId: string;
   title: string;
+  description?: string;
   owner: string;
   department?: string;
   startDate?: string;
   dueDate: string;
   status: 'todo' | 'in_progress' | 'done';
+  priority?: TaskPriority;
 }
 
 export interface ProjectInfo {

@@ -40,6 +40,7 @@ export const ActionPanel = () => {
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [activeTab, setActiveTab] = useState<'details' | 'tasks' | 'ai'>('details');
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
   const handleAddTask = () => {
     if (!selectedKpi || !newTaskTitle.trim()) return;
@@ -459,22 +460,91 @@ export const ActionPanel = () => {
                   <p className="text-xs text-slate-500 text-center py-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">タスクはありません</p>
                 ) : (
                   selectedKpiTasks.map(task => (
-                    <div key={task.id} className="flex items-start gap-2 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700 transition-colors">
-                      <button 
-                        onClick={() => toggleActionStatus(task.id)}
-                        className="mt-0.5 flex-shrink-0 text-slate-400 hover:text-primary-500 transition-colors"
-                      >
-                        {task.status === 'done' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Circle size={16} />}
-                      </button>
-                      <div className="flex flex-col flex-1 min-w-0">
-                        <span className={`text-xs font-medium truncate ${task.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
-                          {task.title}
-                        </span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded truncate max-w-[80px]">{task.owner || '未設定'}</span>
-                          <span className="text-[9px] text-slate-400">{task.dueDate ? task.dueDate.split('T')[0] : '期限なし'}</span>
+                    <div key={task.id} className="flex flex-col bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700 transition-colors group/task">
+                      <div className="flex items-start gap-2 p-2">
+                        <button 
+                          onClick={() => toggleActionStatus(task.id)}
+                          className="mt-0.5 flex-shrink-0 text-slate-400 hover:text-primary-500 transition-colors"
+                        >
+                          {task.status === 'done' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Circle size={16} />}
+                        </button>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <span className={`text-xs font-medium truncate ${task.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                            {task.title}
+                          </span>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded truncate max-w-[80px]">{task.owner || '未設定'}</span>
+                            {task.department && <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded">{task.department}</span>}
+                            <span className="text-[9px] text-slate-400">{task.dueDate ? task.dueDate.split('T')[0] : '期限なし'}</span>
+                            {task.priority && (
+                              <span className={`text-[9px] px-1 rounded ${
+                                task.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                                task.priority === 'not_urgent_important' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                task.priority === 'urgent_not_important' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                              }`}>
+                                {task.priority === 'urgent_important' ? '第1領域(必須・急)' :
+                                 task.priority === 'not_urgent_important' ? '第2領域(重要・仕込)' :
+                                 task.priority === 'urgent_not_important' ? '第3領域(錯覚・振分)' : '第4領域(無駄)'}
+                              </span>
+                            )}
+                          </div>
+                          {task.description && (
+                            <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{task.description}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover/task:opacity-100 transition-opacity">
+                          <button onClick={() => setEditingTaskId(editingTaskId === task.id ? null : task.id)} className="text-slate-400 hover:text-primary-500 p-1">
+                            <Edit2 size={12} />
+                          </button>
+                          <button onClick={() => { if(window.confirm('このタスクを削除しますか？')) useKpiStore.getState().removeAction(task.id) }} className="text-slate-400 hover:text-rose-500 p-1">
+                            <Trash2 size={12} />
+                          </button>
                         </div>
                       </div>
+                      
+                      {/* インライン編集フォーム */}
+                      {editingTaskId === task.id && (
+                        <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 space-y-2">
+                          <div>
+                            <label className="text-[10px] text-slate-500">タイトル</label>
+                            <input type="text" defaultValue={task.title} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { title: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-slate-500">詳細</label>
+                            <textarea defaultValue={task.description} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" rows={2} onBlur={(e) => useKpiStore.getState().updateAction(task.id, { description: e.target.value })} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] text-slate-500">担当者</label>
+                              <input type="text" defaultValue={task.owner} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { owner: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-slate-500">部署</label>
+                              <input type="text" defaultValue={task.department || ''} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { department: e.target.value })} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] text-slate-500">優先度 (重要度×緊急度)</label>
+                              <select defaultValue={task.priority || 'unassigned'} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { priority: e.target.value as any })}>
+                                <option value="unassigned">未設定</option>
+                                <option value="urgent_important">第1領域(必須・緊急)</option>
+                                <option value="not_urgent_important">第2領域(重要・仕込)</option>
+                                <option value="urgent_not_important">第3領域(錯覚・振分)</option>
+                                <option value="not_urgent_not_important">第4領域(無駄・削除)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-slate-500">期限</label>
+                              <input type="date" defaultValue={task.dueDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { dueDate: e.target.value })} />
+                            </div>
+                          </div>
+                          <div className="flex justify-end pt-1">
+                            <button onClick={() => setEditingTaskId(null)} className="text-[10px] bg-primary-500 text-white px-3 py-1 rounded">完了</button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
