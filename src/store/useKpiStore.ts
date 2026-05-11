@@ -349,7 +349,8 @@ export const useKpiStore = create<KpiStore>()(
                       description: `【期待インパクト】${task.expected_impact || '不明'} 【工数感】${task.effort_level || '不明'}\n${task.description || ''}\n留意点: ${task.focus_point || ''}`.trim(),
                       owner: '未定',
                       priority: task.expected_impact === 'High' && task.effort_level === 'Low' ? 'urgent_important' : 'unassigned',
-                      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
+                      startDate: task.start_date && task.start_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.start_date : new Date().toISOString().split('T')[0],
+                      dueDate: task.due_date && task.due_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.due_date : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                       status: 'todo'
                     });
                   });

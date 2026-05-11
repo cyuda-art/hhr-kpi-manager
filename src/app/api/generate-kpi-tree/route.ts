@@ -118,7 +118,9 @@ export async function POST(req: Request) {
       "tasks": [
         {
           "task_name": "具体的なタスク名",
-          "description": "タスクの手順",
+          "description": "タスクの詳細な手順や前提条件など",
+          "start_date": "YYYY-MM-DD",
+          "due_date": "YYYY-MM-DD",
           "expected_impact": "High",
           "effort_level": "Medium",
           "focus_point": "注意点"

@@ -600,7 +600,7 @@ export default function MyTasksPage() {
                   <input type="text" value={editingTask.department || ''} onChange={(e) => handleUpdateTask({ department: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="例: 営業部" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">優先度 (重要度×緊急度)</label>
                   <select value={editingTask.priority || 'unassigned'} onChange={(e) => handleUpdateTask({ priority: e.target.value as any })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none">
@@ -610,6 +610,10 @@ export default function MyTasksPage() {
                     <option value="urgent_not_important">第3領域(錯覚・振分)</option>
                     <option value="not_urgent_not_important">第4領域(無駄・削除)</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">開始日</label>
+                  <input type="date" value={editingTask.startDate?.split('T')[0] || ''} onChange={(e) => handleUpdateTask({ startDate: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">期限</label>

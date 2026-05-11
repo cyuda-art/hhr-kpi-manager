@@ -59,6 +59,8 @@ export async function POST(req: Request) {
         {
           "task_name": "具体的なタスク名",
           "description": "タスクの具体的な実行内容と手順",
+          "start_date": "YYYY-MM-DD",
+          "due_date": "YYYY-MM-DD",
           "expected_impact": "High", // High | Medium | Low
           "effort_level": "Medium", // Small | Medium | Large
           "focus_point": "このタスクを実行する上でKPIを落とさないための注意点"

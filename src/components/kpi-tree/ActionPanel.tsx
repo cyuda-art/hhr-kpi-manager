@@ -48,6 +48,7 @@ export const ActionPanel = () => {
       kpiId: selectedKpi.id,
       title: newTaskTitle.trim(),
       owner: user?.displayName || user?.email?.split('@')[0] || '未定',
+      startDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
       status: 'todo'
     });
@@ -169,8 +170,11 @@ export const ActionPanel = () => {
               addAction({
                 kpiId: newKpiId,
                 title: task.task_name,
+                description: `【期待インパクト】${task.expected_impact || '不明'} 【工数感】${task.effort_level || '不明'}\n${task.description || ''}\n留意点: ${task.focus_point || ''}`.trim(),
                 owner: '未定', // 自動アサイン用に仮置き（後でユーザー名に変えやすい）
-                dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                priority: task.expected_impact === 'High' && task.effort_level === 'Low' ? 'urgent_important' : 'unassigned',
+                startDate: task.start_date && task.start_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.start_date : new Date().toISOString().split('T')[0],
+                dueDate: task.due_date && task.due_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.due_date : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                 status: 'todo'
               });
               taskCount++;
@@ -475,7 +479,11 @@ export const ActionPanel = () => {
                           <div className="flex flex-wrap items-center gap-2 mt-1">
                             <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded truncate max-w-[80px]">{task.owner || '未設定'}</span>
                             {task.department && <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded">{task.department}</span>}
-                            <span className="text-[9px] text-slate-400">{task.dueDate ? task.dueDate.split('T')[0] : '期限なし'}</span>
+                            <span className="text-[9px] text-slate-400">
+                              {task.startDate ? task.startDate.split('T')[0] : ''} 
+                              {task.startDate || task.dueDate ? ' 〜 ' : '期限なし'}
+                              {task.dueDate ? task.dueDate.split('T')[0] : ''}
+                            </span>
                             {task.priority && (
                               <span className={`text-[9px] px-1 rounded ${
                                 task.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
@@ -535,9 +543,15 @@ export const ActionPanel = () => {
                                 <option value="not_urgent_not_important">第4領域(無駄・削除)</option>
                               </select>
                             </div>
-                            <div>
-                              <label className="text-[10px] text-slate-500">期限</label>
-                              <input type="date" defaultValue={task.dueDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { dueDate: e.target.value })} />
+                            <div className="flex gap-1">
+                              <div className="flex-1">
+                                <label className="text-[10px] text-slate-500">開始日</label>
+                                <input type="date" defaultValue={task.startDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { startDate: e.target.value })} />
+                              </div>
+                              <div className="flex-1">
+                                <label className="text-[10px] text-slate-500">期限</label>
+                                <input type="date" defaultValue={task.dueDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { dueDate: e.target.value })} />
+                              </div>
                             </div>
                           </div>
                           <div className="flex justify-end pt-1">
