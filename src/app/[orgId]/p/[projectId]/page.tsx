@@ -100,6 +100,32 @@ export default function DashboardPage() {
 
   }, [selectedNode, periodFilter]);
 
+  // 選択された期間全体のサマリー数値を計算（グラフに連動）
+  const periodSummary = useMemo(() => {
+    if (!selectedNode) return null;
+    if (chartData.length === 0) {
+      return {
+        actualValue: selectedNode.actualValue,
+        targetValue: selectedNode.targetValue,
+        achievementRate: selectedNode.targetValue > 0 ? (selectedNode.actualValue / selectedNode.targetValue) * 100 : 0
+      };
+    }
+    
+    const totalActual = chartData.reduce((sum, item) => sum + item.actualValue, 0);
+    const totalTarget = chartData.reduce((sum, item) => sum + item.targetValue, 0);
+    const count = chartData.length;
+    
+    const avgActual = totalActual / count;
+    const avgTarget = totalTarget / count;
+    const achievementRate = avgTarget > 0 ? (avgActual / avgTarget) * 100 : 0;
+    
+    return {
+      actualValue: Math.round(avgActual * 10) / 10,
+      targetValue: Math.round(avgTarget * 10) / 10,
+      achievementRate
+    };
+  }, [chartData, selectedNode]);
+
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <div className="flex justify-between items-end">
@@ -149,7 +175,14 @@ export default function DashboardPage() {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                   <h2 className="text-[16px] font-medium text-slate-900 dark:text-[#f1f3f4]">{selectedNode.name}</h2>
-                  <p className="text-[13px] text-slate-500 dark:text-[#9aa0a6] mt-1">現在の実績: {selectedNode.actualValue.toLocaleString()}{selectedNode.unit} / 目標: {selectedNode.targetValue.toLocaleString()}{selectedNode.unit}</p>
+                  <div className="text-[13px] text-slate-500 dark:text-[#9aa0a6] mt-1 flex items-center gap-2">
+                    <span>期間内実績: <strong className="text-slate-800 dark:text-[#e8eaed]">{periodSummary?.actualValue.toLocaleString()}{selectedNode.unit}</strong></span>
+                    <span>/</span>
+                    <span>目標: {periodSummary?.targetValue.toLocaleString()}{selectedNode.unit}</span>
+                    <span className={`ml-2 px-1.5 py-0.5 rounded-[2px] font-medium text-[11px] ${(periodSummary?.achievementRate || 0) >= 100 ? 'bg-[#81c995]/20 text-[#81c995]' : (periodSummary?.achievementRate || 0) >= 80 ? 'bg-[#fbbc04]/20 text-[#fbbc04]' : 'bg-rose-500/20 text-rose-500'}`}>
+                      達成率: {periodSummary?.achievementRate.toFixed(1)}%
+                    </span>
+                  </div>
                 </div>
                 
                 <div className="flex flex-wrap gap-3">
