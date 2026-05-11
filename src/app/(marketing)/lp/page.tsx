@@ -13,7 +13,8 @@ import {
   Zap,
   Calculator,
   TrendingUp,
-  Clock
+  Clock,
+  Database
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -314,19 +315,57 @@ export default function LandingPage() {
           </div>
 
           <div className="space-y-32">
-            {/* Feature 1: Dynamic Calculation */}
+            {/* Feature 1: AI Onboarding */}
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="flex-1 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-sm">
-                  <Calculator size={16} />
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-600 dark:text-fuchsia-400 font-bold text-sm">
+                  <BrainCircuit size={16} />
                   Feature 01
                 </div>
-                <h3 className="text-3xl md:text-4xl font-black leading-tight">計算式を入力するだけ。<br />リアルタイム連動エンジン。</h3>
+                <h3 className="text-3xl md:text-4xl font-black leading-tight">自然言語から数秒で。<br />魔法のような初期構築。</h3>
                 <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Excelのような「計算式（例: 客数 × 客単価）」を設定するだけで、ツリー全体が動的に連動。下位KPIの数値を変更した瞬間に、上位KPIや全社利益へ即座に波及し、会議室でのシミュレーションを圧倒的に加速させます。
+                  「自社の事業に合ったKPI設定が分からない」「初期設定が面倒で使わなくなった」。SaaS最大の課題をAIが解決します。自社のビジネスモデルや目標を自然言語で入力するだけで、AIが最適なKPIツリー構造と初期データベースを数秒で完全自動生成します。
                 </p>
                 <ul className="space-y-3 pt-4">
-                  {['四則演算による高度な自動計算', '目標・実績・シミュレーションの完全連動', 'ドラッグ＆ドロップの直感的なUI'].map((point, i) => (
+                  {['自然言語から事業構造を自動解析', 'KGIから現場指標までの数珠つなぎツリーを生成', '初期の実績・目標値もデータベースへ自動セット'].map((point, i) => (
+                    <li key={i} className="flex items-center gap-3 font-medium text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 className="text-fuchsia-500" size={20} />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex-1 w-full relative">
+                <div className="aspect-[4/3] bg-gradient-to-br from-fuchsia-50 to-purple-100 dark:from-fuchsia-900/20 dark:to-purple-900/20 rounded-2xl border border-fuchsia-200 dark:border-fuchsia-800/50 shadow-2xl overflow-hidden flex items-center justify-center p-8">
+                  <div className="w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+                    <div className="text-xs text-slate-500 mb-2 font-bold flex items-center gap-2"><SparklesIcon className="w-4 h-4 text-fuchsia-500" /> AI アシスタント</div>
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg text-sm text-slate-700 dark:text-slate-300 mb-4 border border-slate-200 dark:border-slate-700">
+                      「B2BのSaaS企業です。月額課金で、エンタープライズ向けのプランを売り出したいのでKPIツリーを作って。」
+                    </div>
+                    <div className="flex justify-center my-4">
+                      <div className="w-6 h-6 border-2 border-fuchsia-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <div className="bg-fuchsia-50 dark:bg-fuchsia-900/20 p-4 rounded-lg text-sm text-fuchsia-800 dark:text-fuchsia-200 border border-fuchsia-200 dark:border-fuchsia-800/50">
+                      <strong>生成完了：</strong><br/>MRR、チャーン率、商談化率などを結ぶツリー構造と、データベースの初期履歴を作成しました。
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 2: Single Source of Truth / Dynamic Engine */}
+            <div className="flex flex-col md:flex-row-reverse items-center gap-12">
+              <div className="flex-1 space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-sm">
+                  <Database size={16} />
+                  Feature 02
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black leading-tight">「単一の真実」を描画する。<br />データベース完全同期。</h3>
+                <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+                  静的なダッシュボード特有の「更新待ち」は存在しません。ツリー画面でのシミュレーション、ダッシュボードでの分析、エディターでの履歴データ編集。どこを操作しても即座に裏側のデータベースと連動し、常に「単一の真実（Single Source of Truth）」を全画面へリアルタイムに映し出します。
+                </p>
+                <ul className="space-y-3 pt-4">
+                  {['四則演算による高度な自動計算エンジン', '画面間での完全なリアルタイムデータ同期', 'エディターから過去の履歴データも柔軟に編集可能'].map((point, i) => (
                     <li key={i} className="flex items-center gap-3 font-medium text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="text-blue-500" size={20} />
                       {point}
@@ -336,18 +375,28 @@ export default function LandingPage() {
               </div>
               <div className="flex-1 w-full relative">
                 <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-blue-50 dark:from-slate-800 dark:to-blue-900/20 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden flex items-center justify-center p-8">
-                  <div className="w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-                    <div className="text-xs text-slate-500 mb-2">計算式（構造）</div>
-                    <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700 font-mono text-sm mb-6 flex items-center gap-2">
-                      <span className="text-blue-500 font-bold">宿泊事業売上</span> <span className="text-slate-400">＋</span> <span className="text-emerald-500 font-bold">飲食事業売上</span>
+                  <div className="w-full h-full bg-slate-900 rounded-xl shadow-lg border border-slate-700 p-4 font-mono text-xs overflow-hidden flex flex-col relative">
+                    <div className="absolute top-2 right-2 text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">Syncing...</div>
+                    <div className="text-slate-400 mb-2">// Raw Database State</div>
+                    <div className="text-blue-400">"kpiData" <span className="text-slate-500">:</span> {'{'}</div>
+                    <div className="pl-4 text-slate-300">
+                      <span className="text-blue-300">"actualValue"</span><span className="text-slate-500">:</span> <span className="text-orange-400 anim-pulse-val">1250000</span>,
                     </div>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-600 dark:text-slate-400">実績値</span>
-                        <span className="font-bold text-lg">¥ 12,500,000</span>
-                      </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 w-[65%] h-full"></div>
+                    <div className="pl-4 text-slate-300">
+                      <span className="text-blue-300">"history"</span><span className="text-slate-500">:</span> {'['}
+                    </div>
+                    <div className="pl-8 text-slate-300">
+                      {'{'} <span className="text-blue-300">"date"</span><span className="text-slate-500">:</span> <span className="text-green-400">"2026-05-11"</span>, <span className="text-blue-300">"actual"</span><span className="text-slate-500">:</span> <span className="text-orange-400">1250000</span> {'}'}
+                    </div>
+                    <div className="pl-4 text-slate-300">{']'}</div>
+                    <div className="text-blue-400">{'}'}</div>
+                    
+                    {/* Floating Overlay Card */}
+                    <div className="absolute bottom-4 right-4 bg-white dark:bg-slate-800 p-3 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 w-48 anim-float">
+                      <div className="text-[10px] text-slate-500 mb-1">UI Update</div>
+                      <div className="font-bold text-sm text-slate-800 dark:text-slate-200 flex justify-between">
+                        <span>全社売上</span>
+                        <span className="text-blue-500">¥1.25M</span>
                       </div>
                     </div>
                   </div>
@@ -355,19 +404,19 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 2: Task Management */}
-            <div className="flex flex-col md:flex-row-reverse items-center gap-12">
+            {/* Feature 3: Task Management */}
+            <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="flex-1 space-y-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
                   <Target size={16} />
-                  Feature 02
+                  Feature 03
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black leading-tight">「数字」の責任と、<br />「行動」の責任を分離する。</h3>
                 <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                  KPIはあくまで「数値の箱」。それを動かすための具体的な行動を「KSF (重要施策)」として定義し、担当部署・担当者をアサイン。サイドバーのアクションパネルから、タスクの進捗を直接管理できます。
+                  KPIはあくまで「数値の箱」。それを動かすための具体的な行動を「重要施策」として定義し、担当部署・担当者をアサイン。ツリー上のポップアップやアクションパネルから、誰がどの数字に対してアクションを起こしているかを一元管理できます。
                 </p>
                 <ul className="space-y-3 pt-4">
-                  {['フルハイトのプロパティサイドバー', 'KPIごとのタスク紐付け', '担当者・期限の設定と進捗追跡'].map((point, i) => (
+                  {['指標に直接紐づくタスク管理', '担当者・期限の設定と進捗追跡', '未完了タスクの早期発見'].map((point, i) => (
                     <li key={i} className="flex items-center gap-3 font-medium text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="text-emerald-500" size={20} />
                       {point}
@@ -381,7 +430,6 @@ export default function LandingPage() {
                     <div className="flex gap-4 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">
                       <div className="text-sm font-bold text-slate-400">詳細</div>
                       <div className="text-sm font-bold text-emerald-500 border-b-2 border-emerald-500 pb-2">タスク (3)</div>
-                      <div className="text-sm font-bold text-slate-400">AI・PDCA</div>
                     </div>
                     <div className="space-y-3">
                       {[
@@ -403,19 +451,19 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 3: AI PDCA */}
-            <div className="flex flex-col md:flex-row items-center gap-12">
+            {/* Feature 4: AI Forecast & PDCA */}
+            <div className="flex flex-col md:flex-row-reverse items-center gap-12">
               <div className="flex-1 space-y-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
-                  <BrainCircuit size={16} />
-                  Feature 03
+                  <TrendingUp size={16} />
+                  Feature 04
                 </div>
-                <h3 className="text-3xl md:text-4xl font-black leading-tight">AIが未達要因を分析し、<br />リカバリー策を自動提案。</h3>
+                <h3 className="text-3xl md:text-4xl font-black leading-tight">未来予測と、<br />先回りの打ち手提案。</h3>
                 <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                  現在の達成率と関連タスクの進行状況をAIが分析。目標に対して未達の場合は、その要因を特定し、リカバリーのための「次の一手（タスク）」を自動で生成・提案します。
+                  過去の実績トレンドから、AIが期末の「着地予測値」を自動算出。「手遅れになってから気付く」事態を防ぎます。さらに、未達見込みの指標に対しては、AIがボトルネックを分析し、即効性のあるリカバリータスクを自動提案します。
                 </p>
                 <ul className="space-y-3 pt-4">
-                  {['ワンクリックでの現状分析', '達成要因・未達要因の言語化', 'リカバリータスクの自動アサイン'].map((point, i) => (
+                  {['過去の実績トレンドに基づく未来予測', '未達要因の言語化とボトルネック特定', 'リカバリータスクの自動アサイン'].map((point, i) => (
                     <li key={i} className="flex items-center gap-3 font-medium text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="text-indigo-500" size={20} />
                       {point}
@@ -432,12 +480,12 @@ export default function LandingPage() {
                       <span className="font-bold text-sm">AI PDCA 分析結果</span>
                     </div>
                     <div className="space-y-4 text-slate-300 text-sm leading-relaxed">
-                      <p><AlertTriangle className="inline w-4 h-4 mr-1 text-rose-500" /> <strong className="text-white">【未達要因の分析】</strong><br/>目標に対して15.0%ショートしています。現在の進捗スピードでは目標達成が困難です。</p>
+                      <p><AlertTriangle className="inline w-4 h-4 mr-1 text-rose-500" /> <strong className="text-white">【着地予測アラート】</strong><br/>過去3ヶ月のトレンドから、期末目標に対して15.0%ショートする予測です。</p>
                       <div className="bg-indigo-950/50 border border-indigo-500/30 p-4 rounded-lg">
                         <strong className="text-white block mb-2">【次の一手のご提案】</strong>
                         <ul className="list-disc pl-4 space-y-1 text-indigo-200">
-                          <li>原因究明とボトルネックの特定（担当：マネージャー）</li>
-                          <li>今週末までのテコ入れ施策の立案</li>
+                          <li>リード獲得単価の見直し（即時）</li>
+                          <li>休眠顧客リストへのアプローチ開始</li>
                         </ul>
                       </div>
                     </div>
