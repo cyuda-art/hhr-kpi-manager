@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { KpiNodeData, KpiNodeWithComputed, Status, Action, AiWorkflow } from '@/types';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs } from 'firebase/firestore';
 
 export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
   initialActualValue: number;
@@ -79,8 +79,31 @@ const syncToDB = async (
   delete dataToSave._forceSync;
 
   try {
+    // kpiDataからhistoryを分離してデータサイズを圧縮する（1MB制限の回避）
+    const historyData: Record<string, any[]> = {};
+    if (dataToSave.kpiData) {
+      // コピーを作って元のstateを破壊しないようにする
+      const kpiDataCopy = JSON.parse(JSON.stringify(dataToSave.kpiData));
+      Object.keys(kpiDataCopy).forEach(kpiId => {
+        if (kpiDataCopy[kpiId].history) {
+          historyData[kpiId] = kpiDataCopy[kpiId].history;
+          delete kpiDataCopy[kpiId].history; // mainドキュメントからは除外
+        }
+      });
+      dataToSave.kpiData = kpiDataCopy;
+    }
+
     const kpiDataRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main');
     await setDoc(kpiDataRef, dataToSave, { merge: true });
+
+    // historyをサブコレクション(kpi_history)に各KPIごとに分離して保存
+    if (Object.keys(historyData).length > 0) {
+      const historyPromises = Object.keys(historyData).map(kpiId => {
+        const historyRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpi_history', kpiId);
+        return setDoc(historyRef, { history: historyData[kpiId] }, { merge: true });
+      });
+      await Promise.all(historyPromises);
+    }
   } catch (error) {
     console.error("Firestore Sync Error:", error);
   }
@@ -299,14 +322,23 @@ export const useKpiStore = create<KpiStore>()(
             if (data.actions) actions = data.actions;
             if (data.workflows) workflows = data.workflows;
             
-            // set関数でそのままステートを上書きするため、ローカル変数ではなく直接取得した値をsetへ渡せるよう状態に持たせるか、
-            // let変数として保持して後でsetする。
             const newCollapsedNodes = data.collapsedNodes !== undefined ? data.collapsedNodes : get().collapsedNodes;
             const newPredictionMode = data.isPredictionMode !== undefined ? data.isPredictionMode : get().isPredictionMode;
             
-            // initializeDBの最後のsetで反映できるようにするために、変数に退避しておく
             (pData as any)._tempCollapsedNodes = newCollapsedNodes;
             (pData as any)._tempPredictionMode = newPredictionMode;
+
+            // 各KPIのhistoryをサブコレクションから取得して結合する
+            if (Object.keys(kpiData).length > 0) {
+              const historySnapshot = await getDocs(collection(db, 'organizations', orgId, 'projects', projectId, 'kpi_history'));
+              historySnapshot.forEach(docSnap => {
+                const kpiId = docSnap.id;
+                const historyData = docSnap.data().history;
+                if (kpiData[kpiId] && historyData) {
+                  kpiData[kpiId].history = historyData;
+                }
+              });
+            }
           }
         } catch (error) {
           console.error("Failed to load KPI Data from Firestore", error);

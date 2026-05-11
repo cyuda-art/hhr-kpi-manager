@@ -74,8 +74,8 @@ export default function WorkspacePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
 
-      // サンプルデータを生成する場合、全ノードに半年分(180日)の履歴データを追加する
-      // （※Firestoreの1ドキュメント1MB制限を回避するため365日ではなく180日に調整）
+      // サンプルデータを生成する場合、全ノードに1年分の履歴データを追加する
+      // （※Firestoreのサブコレクション化により1MB制限を回避できたため365日に復元）
       if (hasSampleData && data.nodes && Array.isArray(data.nodes)) {
         const today = new Date();
         data.nodes = data.nodes.map((node: any) => {
@@ -83,15 +83,15 @@ export default function WorkspacePage() {
           const trendType = node.trend_type || 'steady_growth';
           const volatility = node.volatility || 0.1;
           const isPercentage = node.unit === '%' || node.unit === '％';
-          const startRatio = 0.5; // 半年前は目標の50%からスタートと仮定
+          const startRatio = 0.3; // 1年前は目標の30%からスタートと仮定
 
-          for (let i = 180; i >= 0; i--) {
+          for (let i = 365; i >= 0; i--) {
             const date = new Date(today);
             date.setDate(today.getDate() - i);
             const dateString = date.toISOString().split('T')[0];
             
             // 進行度 (0.0 〜 1.0)
-            const progress = (180 - i) / 180;
+            const progress = (365 - i) / 365;
             
             // ベース値の計算
             let baseValue = (node.targetValue || 0) * (startRatio + (1 - startRatio) * progress);
