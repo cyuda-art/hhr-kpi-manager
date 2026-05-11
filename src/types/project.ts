@@ -8,6 +8,7 @@ export interface Project {
   targetAudience?: string;
   mvv?: string;
   kgiType?: string;
+  kgiPeriod?: string;
   kgiTargetValue?: number;
   businessModelType?: string;
   industry?: string;

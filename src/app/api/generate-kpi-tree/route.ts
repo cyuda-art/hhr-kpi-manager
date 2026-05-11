@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { projectUrl, kgiType, kgiTargetValue, businessModelType, mvv } = await req.json();
+    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, mvv } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
@@ -47,15 +47,16 @@ export async function POST(req: Request) {
 【ユーザー入力情報】
 - 事業概要・URLテキスト: ${extractedText}
 - KGI（最終目標）: ${kgiType}
+- KGIの目標期間: ${kgiPeriod}
 - KGIの目標数値: ${kgiTargetValue}
 - ビジネスモデルの型: ${businessModelType}
-- MVV・制約条件 (目標達成のためであっても絶対にやりたくないNG行動など): ${mvv || '未設定'}
+- MVV・制約条件 (企業の理念、提供価値、NG行動など): ${mvv || '未設定'}
 
 【思考プロセス（内部推論のステップ）】
 以下のステップ1〜3の推論を行い、その結果をJSONの "thinking_process" キーに出力してください。
-ステップ1: 環境分析と解読 - 事業概要テキストから事業ポートフォリオ（例：ホテル5施設、飲食10店舗など）やマトリョーシカ構造を解読。
-ステップ2: 第1階層の数式設計 - ユーザー指定のビジネスモデル（${businessModelType}）に基づき、KGI直下の第1階層を決定（例: SaaSなら「顧客数×単価」、店舗展開なら「各店舗売上の合算」または「客数×単価」）。
-ステップ3: プロセス分解と制約の適用 - MVVやNG行動（${mvv}）に抵触しない、ブランド価値を守る具体的な末端KPIとタスク（ToDo）に落とし込む。
+ステップ1: 環境分析と解読 - 事業概要テキストから事業ポートフォリオを解読。目標期間（${kgiPeriod}）に達成可能な規模感と現実的な数値を想定する。
+ステップ2: 第1階層の数式設計 - ユーザー指定のビジネスモデル（${businessModelType}）に基づき、KGI直下の第1階層を決定。
+ステップ3: プロセス分解とMVVの適用 - MVV（${mvv}）の理念をKPIの名称（qualitativeName）や、末端KPIのタスク（ToDo）に色濃く反映させる。顧客への提供価値を高めるアクションをタスク化し、MVVに反するスパム的な行動は排除する。
 
 【出力要件】
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。

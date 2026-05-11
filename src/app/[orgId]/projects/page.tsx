@@ -17,6 +17,7 @@ export default function WorkspacePage() {
   const [isCreating, setIsCreating] = useState(false);
   const [projectUrl, setProjectUrl] = useState('');
   const [kgiType, setKgiType] = useState('売上高');
+  const [kgiPeriod, setKgiPeriod] = useState('年間');
   const [kgiTargetValue, setKgiTargetValue] = useState('');
   const [businessModelType, setBusinessModelType] = useState('B2B SaaS（継続課金）');
   const [mvv, setMvv] = useState('');
@@ -61,6 +62,7 @@ export default function WorkspacePage() {
         body: JSON.stringify({
           projectUrl,
           kgiType,
+          kgiPeriod,
           kgiTargetValue: Number(kgiTargetValue) || 0,
           businessModelType,
           mvv
@@ -75,6 +77,7 @@ export default function WorkspacePage() {
         description: projectUrl,
         mvv, 
         kgiType, 
+        kgiPeriod,
         kgiTargetValue: Number(kgiTargetValue) || 0, 
         businessModelType
       });
@@ -282,7 +285,7 @@ export default function WorkspacePage() {
                       <p className="text-[11px] text-slate-400 mt-1">AIがURLから事業ポートフォリオを解読し、マトリョーシカ構造の基本パラメータを自動抽出します。</p>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">2. KGI（最終目標）</label>
                         <select 
@@ -294,6 +297,19 @@ export default function WorkspacePage() {
                           <option value="ARR">ARR</option>
                           <option value="MAU">MAU</option>
                           <option value="その他">その他</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">目標期間</label>
+                        <select 
+                          value={kgiPeriod} onChange={(e) => setKgiPeriod(e.target.value)}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none"
+                        >
+                          <option value="年間">年間</option>
+                          <option value="半期">半期</option>
+                          <option value="四半期">四半期</option>
+                          <option value="月間">月間</option>
+                          <option value="1日あたり">1日あたり</option>
                         </select>
                       </div>
                       <div>

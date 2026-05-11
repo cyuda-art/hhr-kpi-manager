@@ -13,9 +13,43 @@ export default function SettingsPage() {
   const { projects } = useProjectStore();
   
   const [isCopied, setIsCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'members' | 'projects' | 'theme'>('members');
-
+  const [activeTab, setActiveTab] = useState<'project-info' | 'members' | 'theme'>('project-info');
+  
   const currentOrg = organizations.find(org => org.id === currentOrgId);
+  const { currentProjectId, updateProject } = useProjectStore();
+  const currentProject = projects.find(p => p.id === currentProjectId);
+
+  const [projectName, setProjectName] = useState('');
+  const [projectDesc, setProjectDesc] = useState('');
+  const [projectMvv, setProjectMvv] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (currentProject) {
+      setProjectName(currentProject.name || '');
+      setProjectDesc(currentProject.description || '');
+      setProjectMvv(currentProject.mvv || '');
+    }
+  }, [currentProject]);
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentProjectId || !currentOrgId) return;
+    setIsUpdating(true);
+    try {
+      await updateProject(currentProjectId, currentOrgId, {
+        name: projectName,
+        description: projectDesc,
+        mvv: projectMvv
+      });
+      alert('プロジェクト情報を更新しました');
+    } catch (error) {
+      console.error(error);
+      alert('更新に失敗しました');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
   const { themeColor, setThemeColor } = useLayoutStore();
 
   const themes = [
@@ -46,26 +80,70 @@ export default function SettingsPage() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">「{currentOrg.name}」のメンバーと権限を管理します</p>
       </div>
 
-      <div className="flex gap-4 mb-8 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex gap-4 mb-8 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('project-info')}
+          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'project-info' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+        >
+          プロジェクト基本情報
+        </button>
         <button
           onClick={() => setActiveTab('members')}
-          className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 ${activeTab === 'members' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'members' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
         >
           メンバー管理
         </button>
         <button
-          onClick={() => setActiveTab('projects')}
-          className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 ${activeTab === 'projects' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
-        >
-          プロジェクト権限設定
-        </button>
-        <button
           onClick={() => setActiveTab('theme')}
-          className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 ${activeTab === 'theme' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'theme' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
         >
           テーマカラー
         </button>
       </div>
+
+      {activeTab === 'project-info' && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-6 md:p-8">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6">プロジェクト基本情報の更新</h2>
+          <form onSubmit={handleUpdateProject} className="space-y-6 max-w-2xl">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">プロジェクト名</label>
+              <input
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">説明（任意）</label>
+              <textarea
+                value={projectDesc}
+                onChange={(e) => setProjectDesc(e.target.value)}
+                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none h-24"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">MVV・制約条件</label>
+              <textarea
+                value={projectMvv}
+                onChange={(e) => setProjectMvv(e.target.value)}
+                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none h-24"
+              />
+              <p className="text-xs text-slate-500 mt-2">※ここを変更しても、すでに生成されたKPIツリーには反映されません。今後新しくKPIをAI生成する際の基準として保存されます。</p>
+            </div>
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="submit"
+                disabled={isUpdating}
+                className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-all disabled:opacity-50"
+              >
+                {isUpdating ? '保存中...' : '変更を保存'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {activeTab === 'members' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -123,18 +201,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === 'projects' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 text-center">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-slate-400" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">プロジェクト単位の詳細権限設定</h3>
-          <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-            現在、組織メンバー全員がすべてのプロジェクトにアクセス可能です。
-            特定のメンバーのみをプロジェクトに割り当てる機能（RBAC）は、今後のアップデートで提供されます。
-          </p>
-        </div>
-      )}
+
 
       {activeTab === 'theme' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

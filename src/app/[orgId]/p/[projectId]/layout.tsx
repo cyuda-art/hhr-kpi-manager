@@ -14,7 +14,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
   const orgId = params.orgId as string;
   
   const { currentProjectId, setCurrentProjectId, projects, isLoading } = useProjectStore();
-  const { setSelectedNodeId, initializeDB } = useKpiStore();
+  const { setSelectedNodeId, initializeDB, isDbInitialized, currentProjectId: kpiProjectId } = useKpiStore();
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
@@ -33,12 +33,14 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
       return;
     }
 
-    // URLのIDと現在のIDが違う場合は同期する
-    if (currentProjectId !== projectId) {
-      setCurrentProjectId(projectId);
+    // URLのIDと現在のIDが違う、またはKPIのDBが初期化されていない場合は初期化する
+    if (currentProjectId !== projectId || !isDbInitialized || kpiProjectId !== projectId) {
+      if (currentProjectId !== projectId) {
+        setCurrentProjectId(projectId);
+      }
       setSelectedNodeId(null);
       
-      // KPIのDB（Firestore）からの読み込み・初期化もこのタイミングで行う
+      // KPIのDB（Firestore）からの読み込み・初期化
       const currentProjectData = projects.find(p => p.id === projectId);
       initializeDB(projectId, orgId, currentProjectData?.name, currentProjectData?.description).then(() => {
         setIsInitializing(false);
@@ -46,7 +48,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
     } else {
       setIsInitializing(false);
     }
-  }, [projectId, orgId, currentProjectId, projects, isLoading, router, setCurrentProjectId, setSelectedNodeId, initializeDB]);
+  }, [projectId, orgId, currentProjectId, projects, isLoading, router, setCurrentProjectId, setSelectedNodeId, initializeDB, isDbInitialized, kpiProjectId]);
 
   if (isLoading || isInitializing) {
     return (
