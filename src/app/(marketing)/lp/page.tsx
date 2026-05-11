@@ -14,12 +14,19 @@ import {
   Calculator,
   TrendingUp,
   Clock,
-  Database
+  Database,
+  X,
+  FileText,
+  Building2,
+  Sparkles
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalStep, setModalStep] = useState<'input' | 'loading' | 'success'>('input');
+  const [businessModel, setBusinessModel] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -115,7 +122,13 @@ export default function LandingPage() {
               今すぐ無料デモを体験する
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <button className="w-full sm:w-auto px-8 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-sm">
+            <button 
+              onClick={() => {
+                setModalStep('input');
+                setIsModalOpen(true);
+              }}
+              className="w-full sm:w-auto px-8 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-sm"
+            >
               資料をダウンロード
             </button>
           </div>
@@ -531,6 +544,124 @@ export default function LandingPage() {
         </div>
         <p>© 2026 LogicTree Pro. All rights reserved.</p>
       </footer>
+
+      {/* Lead Generation & AI Onboarding Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700 relative animate-in fade-in zoom-in duration-200">
+            {/* Close Button */}
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors z-10"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="p-8">
+              {modalStep === 'input' && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 text-primary-600 dark:text-primary-400 mb-2">
+                    <FileText size={28} />
+                    <h2 className="text-2xl font-black">資料ダウンロード</h2>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                    最新の機能紹介と導入事例をまとめたPDF資料をお送りします。
+                    また、入力いただいた業種をもとに、貴社専用のデモ環境をその場で自動生成します。
+                  </p>
+                  
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">会社名</label>
+                      <input type="text" placeholder="株式会社〇〇" className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">メールアドレス</label>
+                      <input type="email" placeholder="example@company.com" className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">貴社の主なビジネスモデル</label>
+                      <select 
+                        value={businessModel}
+                        onChange={(e) => setBusinessModel(e.target.value)}
+                        className="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        <option value="">選択してください</option>
+                        <option value="B2B SaaS">B2B SaaS</option>
+                        <option value="飲食・小売チェーン">飲食・小売チェーン</option>
+                        <option value="宿泊・ホテル">宿泊・ホテル</option>
+                        <option value="Eコマース">Eコマース</option>
+                        <option value="その他">その他</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setModalStep('loading');
+                      setTimeout(() => setModalStep('success'), 3000);
+                    }}
+                    className="w-full py-4 mt-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  >
+                    資料をダウンロードする
+                  </button>
+                </div>
+              )}
+
+              {modalStep === 'loading' && (
+                <div className="py-12 flex flex-col items-center justify-center text-center space-y-6">
+                  <div className="relative w-20 h-20">
+                    <div className="absolute inset-0 border-4 border-slate-100 dark:border-slate-800 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-primary-500 rounded-full border-t-transparent animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-primary-500">
+                      <BrainCircuit size={28} className="animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-white">専用のデモ環境を生成中...</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                      AIが「{businessModel || '貴社の業種'}」に最適なKPIツリーの構造と、初期のデータベースを組み立てています。
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {modalStep === 'success' && (
+                <div className="py-8 flex flex-col items-center text-center space-y-6">
+                  <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 rounded-full flex items-center justify-center mb-2">
+                    <CheckCircle2 size={40} />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-slate-800 dark:text-white">準備が完了しました！</h3>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm max-w-sm mx-auto">
+                      ご入力いただいたメールアドレスに資料（PDF）をお送りしました。<br />
+                      さらに、貴社専用のプロトタイプ環境の準備が完了しています。
+                    </p>
+                  </div>
+                  
+                  <div className="w-full bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50 p-6 rounded-xl mt-4">
+                    <div className="flex justify-center mb-3">
+                      <Sparkles className="text-indigo-500" size={24} />
+                    </div>
+                    <h4 className="font-bold text-lg mb-2 text-indigo-900 dark:text-indigo-300">
+                      いますぐブラウザで触ってみませんか？
+                    </h4>
+                    <p className="text-xs text-indigo-700/70 dark:text-indigo-400/70 mb-6">
+                      SaaS向けの「MRR」や「チャーン率」を組み込んだツリー構造がセットアップされています。
+                    </p>
+                    <Link 
+                      href="/org-setup"
+                      className="w-full py-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    >
+                      無料でプロトタイプを操作する
+                      <ArrowRight size={18} />
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
