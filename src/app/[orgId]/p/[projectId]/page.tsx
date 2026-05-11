@@ -39,19 +39,64 @@ export default function DashboardPage() {
     }
     
     // 実データのみを使用する
-    const baseData = [...selectedNode.history];
+    const baseData = [...selectedNode.history].sort((a, b) => a.date.localeCompare(b.date));
 
-    const uniqueMap = new Map();
-    baseData.forEach(item => {
-      // MM/DD ではなく、ダッシュボード用に YYYY-MM などのフォーマットを維持するか、そのまま使う
-      const dateKey = item.date;
-      uniqueMap.set(dateKey, {
-        ...item,
-        achievementRate: item.targetValue > 0 ? (item.actualValue / item.targetValue) * 100 : 0
-      });
+    // 期間の計算とグルーピング単位の決定
+    const now = new Date();
+    let startDate = new Date();
+    let groupMode: 'day' | 'week' | 'month' | 'year' = 'day';
+
+    switch (periodFilter) {
+      case '1m': startDate.setMonth(now.getMonth() - 1); groupMode = 'day'; break;
+      case '3m': startDate.setMonth(now.getMonth() - 3); groupMode = 'day'; break;
+      case '6m': startDate.setMonth(now.getMonth() - 6); groupMode = 'week'; break;
+      case '1y': startDate.setFullYear(now.getFullYear() - 1); groupMode = 'month'; break;
+      case '3y': startDate.setFullYear(now.getFullYear() - 3); groupMode = 'month'; break;
+      case '10y': startDate.setFullYear(now.getFullYear() - 10); groupMode = 'year'; break;
+    }
+
+    // フィルタリング
+    const filtered = baseData.filter(item => new Date(item.date) >= startDate);
+
+    // グルーピング（集計）
+    const grouped = new Map<string, { totalActual: number; totalTarget: number; count: number }>();
+    
+    filtered.forEach(item => {
+      const d = new Date(item.date);
+      let key = item.date; // day
+      if (groupMode === 'week') {
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // 月曜始まり
+        const firstDay = new Date(d.setDate(diff));
+        key = firstDay.toISOString().split('T')[0];
+      } else if (groupMode === 'month') {
+        key = item.date.substring(0, 7); // YYYY-MM
+      } else if (groupMode === 'year') {
+        key = item.date.substring(0, 4); // YYYY
+      }
+
+      if (!grouped.has(key)) {
+        grouped.set(key, { totalActual: 0, totalTarget: 0, count: 0 });
+      }
+      const g = grouped.get(key)!;
+      g.totalActual += item.actualValue;
+      g.totalTarget += item.targetValue;
+      g.count += 1;
+    });
+
+    const result = Array.from(grouped.entries()).map(([date, vals]) => {
+      // 期間内の平均値を採用
+      const actualValue = vals.totalActual / vals.count;
+      const targetValue = vals.totalTarget / vals.count;
+      return {
+        date,
+        actualValue: Math.round(actualValue * 10) / 10,
+        targetValue: Math.round(targetValue * 10) / 10,
+        achievementRate: targetValue > 0 ? (actualValue / targetValue) * 100 : 0
+      };
     });
     
-    return Array.from(uniqueMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+    return result.sort((a, b) => a.date.localeCompare(b.date));
 
   }, [selectedNode, periodFilter]);
 
