@@ -40,7 +40,7 @@ export default function WorkspacePage() {
 
   const handleSelectProject = (projectId: string) => {
     setCurrentProjectId(projectId);
-    router.push(`/${currentOrgId}/p/${projectId}`);
+    router.push(`/${currentOrgId}/p/${projectId}/kpi-tree`);
   };
 
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -89,7 +89,7 @@ export default function WorkspacePage() {
         sessionStorage.setItem(`kpi_thinking_${newId}`, JSON.stringify(data.thinkingProcess));
       }
 
-      router.push(`/${currentOrgId}/p/${newId}`);
+      router.push(`/${currentOrgId}/p/${newId}/kpi-tree`);
     } catch (error) {
       console.error("Failed to create project", error);
       alert('プロジェクトとKPIツリーのAI生成に失敗しました。時間をおいて再試行してください。');

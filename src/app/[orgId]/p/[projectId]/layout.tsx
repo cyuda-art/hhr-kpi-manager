@@ -25,7 +25,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
     
     if (!projectExists && projects.length > 0) {
       // 存在しないプロジェクトIDの場合は最初のプロジェクトにリダイレクト
-      router.replace(`/p/${projects[0].id}`);
+      router.replace(`/${orgId}/p/${projects[0].id}/kpi-tree`);
       return;
     } else if (!projectExists && projects.length === 0) {
       // プロジェクトが1つもない場合は作成画面へ
