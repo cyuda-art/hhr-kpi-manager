@@ -354,6 +354,7 @@ export const useKpiStore = create<KpiStore>()(
 
               if (initialActions.length > 0) {
                 pData.actions = [...pData.actions, ...initialActions];
+                actions = [...actions, ...initialActions];
               }
 
               // --- 初期計算 ---
