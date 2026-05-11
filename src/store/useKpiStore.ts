@@ -339,6 +339,11 @@ export const useKpiStore = create<KpiStore>()(
                   initialActualValue: node.actualValue || 0
                 });
                 
+                // AI初期生成時に作成されたダミー履歴データをセット
+                if (node.history && Array.isArray(node.history)) {
+                  kpiData[node.id].history = node.history;
+                }
+                
                 // AIが生成したタスクがあれば抽出
                 if (node.tasks && Array.isArray(node.tasks)) {
                   node.tasks.forEach((task: any) => {
