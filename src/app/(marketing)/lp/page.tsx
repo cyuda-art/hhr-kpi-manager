@@ -18,7 +18,8 @@ import {
   X,
   FileText,
   Building2,
-  Sparkles
+  Sparkles,
+  Download
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -633,10 +634,23 @@ export default function LandingPage() {
                   <div className="space-y-2">
                     <h3 className="text-2xl font-black text-slate-800 dark:text-white">準備が完了しました！</h3>
                     <p className="text-slate-600 dark:text-slate-400 text-sm max-w-sm mx-auto">
-                      ご入力いただいたメールアドレスに資料（PDF）をお送りしました。<br />
+                      以下のボタンから資料（PDF）をダウンロードいただけます。<br />
                       さらに、貴社専用のプロトタイプ環境の準備が完了しています。
                     </p>
                   </div>
+                  
+                  <a 
+                    href="#" 
+                    download="LogicTreePro_Introduction.pdf"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-sm transition-colors border border-slate-200 dark:border-slate-700"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert("※デモ用のため実際のPDFはダウンロードされません");
+                    }}
+                  >
+                    <Download size={16} />
+                    資料 (PDF) をダウンロード
+                  </a>
                   
                   <div className="w-full bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50 p-6 rounded-xl mt-4">
                     <div className="flex justify-center mb-3">
