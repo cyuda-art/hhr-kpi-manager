@@ -78,34 +78,47 @@ const syncToDB = async (
   };
   delete dataToSave._forceSync;
 
+  console.log("🚀 [syncToDB] Start syncing. updates keys:", Object.keys(updates));
+
   try {
     // kpiDataからhistoryを分離してデータサイズを圧縮する（1MB制限の回避）
     const historyData: Record<string, any[]> = {};
     if (dataToSave.kpiData) {
-      // コピーを作って元のstateを破壊しないようにする
-      const kpiDataCopy = JSON.parse(JSON.stringify(dataToSave.kpiData));
-      Object.keys(kpiDataCopy).forEach(kpiId => {
-        if (kpiDataCopy[kpiId].history) {
-          historyData[kpiId] = kpiDataCopy[kpiId].history;
-          delete kpiDataCopy[kpiId].history; // mainドキュメントからは除外
-        }
-      });
-      dataToSave.kpiData = kpiDataCopy;
+      console.log("📦 [syncToDB] Starting deep copy of kpiData...");
+      try {
+        // コピーを作って元のstateを破壊しないようにする
+        const kpiDataCopy = JSON.parse(JSON.stringify(dataToSave.kpiData));
+        Object.keys(kpiDataCopy).forEach(kpiId => {
+          if (kpiDataCopy[kpiId].history) {
+            historyData[kpiId] = kpiDataCopy[kpiId].history;
+            delete kpiDataCopy[kpiId].history; // mainドキュメントからは除外
+          }
+        });
+        dataToSave.kpiData = kpiDataCopy;
+        console.log("✅ [syncToDB] Deep copy & separation successful. Extracted history for nodes:", Object.keys(historyData).length);
+      } catch (parseError) {
+        console.error("❌ [syncToDB] Deep copy failed. JSON stringify error?", parseError);
+        // フォールバック：ディープコピーが失敗した場合は分離せずそのまま保存を試みる
+      }
     }
 
+    console.log("🌐 [syncToDB] Saving main document to Firestore...");
     const kpiDataRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main');
     await setDoc(kpiDataRef, dataToSave, { merge: true });
+    console.log("✅ [syncToDB] Main document saved.");
 
     // historyをサブコレクション(kpi_history)に各KPIごとに分離して保存
     if (Object.keys(historyData).length > 0) {
+      console.log(`🌐 [syncToDB] Saving ${Object.keys(historyData).length} history subcollections...`);
       const historyPromises = Object.keys(historyData).map(kpiId => {
         const historyRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpi_history', kpiId);
         return setDoc(historyRef, { history: historyData[kpiId] }, { merge: true });
       });
       await Promise.all(historyPromises);
+      console.log("✅ [syncToDB] All subcollections saved.");
     }
   } catch (error) {
-    console.error("Firestore Sync Error:", error);
+    console.error("❌ [syncToDB] Firestore Sync Error:", error);
   }
 };
 
@@ -305,8 +318,8 @@ export const useKpiStore = create<KpiStore>()(
       initializeDB: async (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => {
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
         
+        console.log(`🔄 [initializeDB] Starting load for project: ${projectId}`);
         const state = get();
-        // プロジェクトごとのデータがあればそれをロード、なければ空にする
         const pData = state.projectData[projectId] || { kpiData: {}, actions: [], workflows: {}, projectInfo: undefined };
         
         let kpiData = { ...pData.kpiData };
@@ -315,8 +328,10 @@ export const useKpiStore = create<KpiStore>()(
         
         // --- Firestore から最新データを取得 (Read) ---
         try {
+          console.log("🌐 [initializeDB] Fetching main document...");
           const kpiDataDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main'));
           if (kpiDataDoc.exists()) {
+            console.log("✅ [initializeDB] Main document found. Parsing data...");
             const data = kpiDataDoc.data();
             if (data.kpiData && Object.keys(data.kpiData).length > 0) kpiData = data.kpiData;
             if (data.actions) actions = data.actions;
@@ -329,8 +344,9 @@ export const useKpiStore = create<KpiStore>()(
             (pData as any)._tempPredictionMode = newPredictionMode;
 
             // 各KPIのhistoryをサブコレクションから取得して結合する
-            // （※Firestoreルールによるlist権限エラーを回避するため、個別のgetDocを並列で実行）
             if (Object.keys(kpiData).length > 0) {
+              console.log(`🌐 [initializeDB] Fetching history for ${Object.keys(kpiData).length} KPIs...`);
+              let loadedHistoryCount = 0;
               const historyPromises = Object.keys(kpiData).map(async (kpiId) => {
                 try {
                   const historyRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpi_history', kpiId);
@@ -339,17 +355,21 @@ export const useKpiStore = create<KpiStore>()(
                     const historyData = historySnap.data().history;
                     if (historyData) {
                       kpiData[kpiId].history = historyData;
+                      loadedHistoryCount++;
                     }
                   }
                 } catch (err) {
-                  console.error(`Failed to load history for ${kpiId}:`, err);
+                  console.error(`❌ [initializeDB] Failed to load history for ${kpiId}:`, err);
                 }
               });
               await Promise.all(historyPromises);
+              console.log(`✅ [initializeDB] Successfully loaded history for ${loadedHistoryCount} KPIs.`);
             }
+          } else {
+            console.log("⚠️ [initializeDB] Main document NOT found.");
           }
         } catch (error) {
-          console.error("Failed to load KPI Data from Firestore", error);
+          console.error("❌ [initializeDB] Failed to load KPI Data from Firestore", error);
         }
 
         // SessionStorageにAI生成された初期データがあるかチェック
@@ -415,10 +435,12 @@ export const useKpiStore = create<KpiStore>()(
               // ロード完了したらストレージから削除
               sessionStorage.removeItem(`kpi_init_${projectId}`);
               
+              console.log("🚀 [initializeDB] Calling syncToDB to save AI generated data...");
               // この段階でFirestoreへ保存する
               syncToDB(projectId, orgId, { kpiData: kpiData, actions: pData.actions, projectInfo: pData.projectInfo, _forceSync: true } as any);
+              console.log("✅ [initializeDB] syncToDB called.");
             } catch (e) {
-              console.error("Failed to parse init KPI data", e);
+              console.error("❌ [initializeDB] Failed to parse init KPI data", e);
             }
           }
 
