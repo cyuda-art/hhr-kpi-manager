@@ -329,15 +329,23 @@ export const useKpiStore = create<KpiStore>()(
             (pData as any)._tempPredictionMode = newPredictionMode;
 
             // 各KPIのhistoryをサブコレクションから取得して結合する
+            // （※Firestoreルールによるlist権限エラーを回避するため、個別のgetDocを並列で実行）
             if (Object.keys(kpiData).length > 0) {
-              const historySnapshot = await getDocs(collection(db, 'organizations', orgId, 'projects', projectId, 'kpi_history'));
-              historySnapshot.forEach(docSnap => {
-                const kpiId = docSnap.id;
-                const historyData = docSnap.data().history;
-                if (kpiData[kpiId] && historyData) {
-                  kpiData[kpiId].history = historyData;
+              const historyPromises = Object.keys(kpiData).map(async (kpiId) => {
+                try {
+                  const historyRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpi_history', kpiId);
+                  const historySnap = await getDoc(historyRef);
+                  if (historySnap.exists()) {
+                    const historyData = historySnap.data().history;
+                    if (historyData) {
+                      kpiData[kpiId].history = historyData;
+                    }
+                  }
+                } catch (err) {
+                  console.error(`Failed to load history for ${kpiId}:`, err);
                 }
               });
+              await Promise.all(historyPromises);
             }
           }
         } catch (error) {
