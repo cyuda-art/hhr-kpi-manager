@@ -70,8 +70,6 @@ ${masterMvv || '特に指定なし'}
 ]
 `;
 
-`;
-
     const promptParts: any[] = [prompt];
 
     // アップロードされたファイル（URL）を取得し、Base64に変換してGeminiに渡す
