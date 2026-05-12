@@ -422,12 +422,9 @@ export default function WorkspacePage() {
       </div>
 
       {/* 新規作成AIウィザード */}
-      {isCreating && (
+      {isCreating && !isGenerating && (
         <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#282a2d] rounded-[8px] p-6 w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-[#3c4043] relative overflow-hidden">
-            
-            {!isGenerating && (
-              <>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4]">新しいKGIツリーの作成</h2>
                 </div>
@@ -603,8 +600,6 @@ export default function WorkspacePage() {
                     </button>
                   </div>
                 </form>
-              </>
-            )}
           </div>
         </div>
       )}
