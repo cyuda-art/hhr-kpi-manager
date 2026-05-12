@@ -9,7 +9,7 @@ import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 import { LinkKpiModal } from './LinkKpiModal';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction, currentPeriod } = useKpiStore();
+  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction, currentPeriod, saveHistory } = useKpiStore();
   const { currentProjectId, projects } = useProjectStore();
   const { user } = useAuthStore();
   const currentProject = projects.find(p => p.id === currentProjectId);
@@ -102,6 +102,7 @@ export const ActionPanel = () => {
       updateSimulatedValue(selectedNodeId, storedActual);
       // 目標値のシミュレーション編集は一旦省略（実績のシミュレーションのみ）
     } else {
+      saveHistory(); // 値や数式の変更を履歴に積む
       updateKpiNode(selectedNodeId, {
         targetValue: storedTarget,
         actualValue: storedActual,
@@ -110,7 +111,8 @@ export const ActionPanel = () => {
         updateFrequency: editUpdateFrequency,
         calculationFormula: editCalculationFormula,
         isCalculated: editIsCalculated,
-        formula: editFormula
+        formula: editFormula,
+        warning: undefined // 編集して保存したら警告を解除
       });
     }
     setIsEditingValue(false);
@@ -143,6 +145,7 @@ export const ActionPanel = () => {
       if (!response.ok) throw new Error(data.error || 'Failed to generate workflow');
 
       if (data.data && data.data.workflow) {
+        saveHistory(); // AIによる構造変更前に履歴を積む
         let taskCount = 0;
         let currentParentId = selectedKpi.id; // 最初は選択されたノードを親とする
         
@@ -447,6 +450,13 @@ export const ActionPanel = () => {
                         <AlertTriangle size={10} /> 計算式が未設定です（クリックして編集）
                       </div>
                     ) : null}
+
+                    {selectedKpi.warning && (
+                      <div className="flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 p-2 rounded w-full mt-1 border border-amber-200 dark:border-amber-800/50 animate-pulse">
+                        <AlertTriangle size={14} className="shrink-0 mt-0.5" /> 
+                        <span className="leading-tight">{selectedKpi.warning}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

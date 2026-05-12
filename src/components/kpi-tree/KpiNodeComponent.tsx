@@ -120,6 +120,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       data.isSimulated && "shadow-[#8ab4f8]/20",
       isSelected && "ring-2 ring-[#8ab4f8] border-[#8ab4f8]",
       isAlert && "animate-pulse shadow-red-900/30 border-[#f28b82]",
+      data.warning && "border-amber-500 shadow-amber-500/20 ring-1 ring-amber-500",
       isPredictionMode && "bg-slate-50 dark:bg-[#202124] border-[#8ab4f8]"
     )}>
       <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none" />
@@ -131,6 +132,11 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {data.linkedSource && (
               <span className="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 flex items-center gap-0.5" title="他プロジェクトから同期中の指標">
                 <Link2 size={10} /> LINKED
+              </span>
+            )}
+            {data.warning && (
+              <span className="text-[9px] bg-amber-500/20 text-amber-600 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 animate-pulse" title={data.warning}>
+                ⚠️ 数式リセット
               </span>
             )}
             {data.type === 'KGI' ? (

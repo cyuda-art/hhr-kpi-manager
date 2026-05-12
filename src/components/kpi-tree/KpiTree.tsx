@@ -7,7 +7,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import dagre from 'dagre';
-import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2 } from 'lucide-react';
 
 
 const nodeTypes = {
@@ -94,7 +94,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 };
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, undo, redo, pastStates, futureStates } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection } = useLayoutStore();
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
@@ -131,6 +131,29 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isResizingPanel, setActionPanelWidth]);
+
+  // Undo / Redo のキーボードショートカット
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // フォーム入力中は無視
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) return;
+      if (e.metaKey || e.ctrlKey) {
+        if (e.key === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
+        } else if (e.key === 'y') {
+          e.preventDefault();
+          redo();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData, layoutDirection);
@@ -338,6 +361,25 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       <div className={`w-full h-full flex-1 min-w-0 min-h-0 bg-white dark:bg-[#2d2f31] overflow-hidden transition-colors relative ${isDashboard ? 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm' : ''}`}>
         {!previewMode && (
           <div className="absolute top-4 left-4 z-10 flex gap-2">
+            <div className="flex bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden">
+              <button
+                onClick={undo}
+                disabled={pastStates.length === 0}
+                className="flex items-center justify-center w-8 h-8 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                title="元に戻す (Cmd+Z)"
+              >
+                <Undo2 size={16} />
+              </button>
+              <div className="w-[1px] bg-slate-200 dark:bg-slate-700"></div>
+              <button
+                onClick={redo}
+                disabled={futureStates.length === 0}
+                className="flex items-center justify-center w-8 h-8 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                title="やり直す (Cmd+Shift+Z)"
+              >
+                <Redo2 size={16} />
+              </button>
+            </div>
             <button
               onClick={() => handleAutoLayout()}
               className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-xs font-bold"

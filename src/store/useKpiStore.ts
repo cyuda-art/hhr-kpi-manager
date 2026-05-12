@@ -45,6 +45,12 @@ interface KpiStore {
   addHistoryRecord: (kpiId: string, record: Omit<import('@/types').KpiHistoryEntry, 'id'>) => void;
   updateHistoryRecord: (kpiId: string, recordId: string, updates: Partial<import('@/types').KpiHistoryEntry>) => void;
   deleteHistoryRecord: (kpiId: string, recordId: string) => void;
+  // 履歴管理（Undo/Redo用）
+  pastStates: Record<string, KpiNodeWithComputedAndInit>[];
+  futureStates: Record<string, KpiNodeWithComputedAndInit>[];
+  saveHistory: () => void;
+  undo: () => void;
+  redo: () => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -299,6 +305,31 @@ export const useKpiStore = create<KpiStore>()(
       currentProjectInfo: null,
       currentPeriod: '2026-05',
       isPredictionMode: false,
+      pastStates: [],
+      futureStates: [],
+
+      saveHistory: () => set((state) => {
+        const newPast = [...state.pastStates, state.kpiData].slice(-30); // 最大30件保持
+        return { pastStates: newPast, futureStates: [] };
+      }),
+
+      undo: () => set((state) => {
+        if (state.pastStates.length === 0) return state;
+        const previous = state.pastStates[state.pastStates.length - 1];
+        const newPast = state.pastStates.slice(0, -1);
+        const newFuture = [state.kpiData, ...state.futureStates];
+        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: previous, actions: state.actions, projectInfo: state.currentProjectInfo });
+        return { kpiData: previous, pastStates: newPast, futureStates: newFuture, projectData: saveToProjectData({ ...state, kpiData: previous }) };
+      }),
+
+      redo: () => set((state) => {
+        if (state.futureStates.length === 0) return state;
+        const next = state.futureStates[0];
+        const newFuture = state.futureStates.slice(1);
+        const newPast = [...state.pastStates, state.kpiData];
+        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: next, actions: state.actions, projectInfo: state.currentProjectInfo });
+        return { kpiData: next, pastStates: newPast, futureStates: newFuture, projectData: saveToProjectData({ ...state, kpiData: next }) };
+      }),
 
       setPeriod: (period) => set({ currentPeriod: period }),
       togglePredictionMode: () => set((state) => {
@@ -737,8 +768,42 @@ export const useKpiStore = create<KpiStore>()(
         alert('KGI（ゴール）は削除できません。');
         return state;
       }
-      delete draft[id];
+      
+      // 履歴に現在の状態を保存
+      state.saveHistory();
+
+      // 親ノードの数式チェックとフォールバック
+      const parentId = draft[id]?.parentId;
+      if (parentId && draft[parentId]) {
+        const parent = draft[parentId];
+        if (parent.formula && parent.formula.includes(`#{${id}}`)) {
+          // 数式が壊れるため、手動モードへフォールバックしアラート文言をセット
+          draft[parentId] = {
+            ...parent,
+            isCalculated: false,
+            formula: '',
+            warning: '子要素が削除されたため、計算連携が解除されました。新しいKPIを追加するか手入力してください。'
+          };
+        }
+      }
+
+      // 再帰的な子ノードの削除処理
+      const deleteRecursive = (nodeId: string) => {
+        Object.keys(draft).forEach(key => {
+          if (draft[key].parentId === nodeId) {
+            deleteRecursive(key);
+          }
+        });
+        delete draft[nodeId];
+      };
+      
+      deleteRecursive(id);
+      
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
+      
+      // 再計算をトリガー
+      recalculateTree(draft, 'actualValue');
+      recalculateTree(draft, 'targetValue');
       
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
       return { kpiData: draft, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft }) };

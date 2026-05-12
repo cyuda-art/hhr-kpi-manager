@@ -32,6 +32,7 @@ export interface KpiNodeData {
     projectId: string;
     kpiId: string;
   }; // 他プロジェクトからの同期用リンク情報
+  warning?: string; // アラートメッセージ（例: 子要素削除による数式エラーなど）
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース
