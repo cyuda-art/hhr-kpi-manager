@@ -278,8 +278,9 @@ export default function WorkspacePage() {
       // 2. プロジェクト作成
       const newId = await createProject(projectName, projectUrl, user.uid, currentOrgId, {
         description: projectUrl,
-        manifesto: editableManifesto ? `${editableManifesto.title}
-${editableManifesto.description}` : '', 
+        manifesto: editableManifesto ? `${editableManifesto.title}\n${editableManifesto.description}` : '', 
+        swot: sessionStorage.getItem('temp_swot') || '',
+        crossSwot: sessionStorage.getItem('temp_crossSwot') || '',
         kgiType: finalKgiType, 
         kgiPeriod,
         kgiTargetValue: Number(kgiTargetValue) || 0, 
