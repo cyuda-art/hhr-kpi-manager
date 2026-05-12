@@ -10,9 +10,10 @@ import { Settings, Users, Link as LinkIcon, Check, Copy, Save, Building2 } from 
 export default function SettingsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { organizations, currentOrgId, updateOrganizationName, isLoading } = useOrgStore();
+  const { organizations, currentOrgId, updateOrganizationName, updateOrganizationMvv, isLoading } = useOrgStore();
   
   const [orgName, setOrgName] = useState('');
+  const [masterMvv, setMasterMvv] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -21,6 +22,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (currentOrg) {
       setOrgName(currentOrg.name);
+      setMasterMvv(currentOrg.masterMvv || '');
     }
   }, [currentOrg]);
 
@@ -42,10 +44,11 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       await updateOrganizationName(currentOrgId, orgName.trim());
-      // 成功のフィードバック表示などは省略
+      await updateOrganizationMvv(currentOrgId, masterMvv.trim());
+      alert("組織設定を更新しました");
     } catch (error) {
-      console.error("Failed to update organization name:", error);
-      alert("組織名の更新に失敗しました");
+      console.error("Failed to update organization settings:", error);
+      alert("組織設定の更新に失敗しました");
     } finally {
       setIsSaving(false);
     }
@@ -84,7 +87,7 @@ export default function SettingsPage() {
             </h2>
           </div>
           <div className="p-6">
-            <form onSubmit={handleSave} className="max-w-md space-y-4">
+            <form onSubmit={handleSave} className="max-w-2xl space-y-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   組織名
@@ -93,13 +96,30 @@ export default function SettingsPage() {
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                  className="w-full max-w-md px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
                   required
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Master MVV（組織全体のミッション・ビジョン・バリュー・制約条件）
+                </label>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                  この組織配下で作成される全てのプロジェクト（部門KPIツリー）に、AIの推論時の「絶対的な制約・行動指針」として自動的に継承されます。
+                </p>
+                <textarea
+                  value={masterMvv}
+                  onChange={(e) => setMasterMvv(e.target.value)}
+                  rows={6}
+                  placeholder="例:&#13;&#10;【Mission】世界中の人々を笑顔にする&#13;&#10;【絶対の制約】短期的な利益のために顧客体験を犠牲にしてはならない。"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all resize-y"
+                />
+              </div>
+
               <button
                 type="submit"
-                disabled={isSaving || orgName.trim() === currentOrg.name}
+                disabled={isSaving || (orgName.trim() === currentOrg.name && masterMvv.trim() === (currentOrg.masterMvv || ''))}
                 className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
               >
                 <Save size={18} />

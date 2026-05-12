@@ -12,6 +12,7 @@ interface OrgStore {
   createOrganization: (name: string, userId: string) => Promise<string>;
   joinOrganization: (orgId: string, userId: string) => Promise<void>;
   updateOrganizationName: (orgId: string, name: string) => Promise<void>;
+  updateOrganizationMvv: (orgId: string, masterMvv: string) => Promise<void>;
 }
 
 export const useOrgStore = create<OrgStore>((set, get) => ({
@@ -114,6 +115,16 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       await setDoc(orgRef, { name }, { merge: true });
     } catch (error) {
       console.error("Error updating organization name:", error);
+      throw error;
+    }
+  },
+
+  updateOrganizationMvv: async (orgId: string, masterMvv: string) => {
+    try {
+      const orgRef = doc(db, 'organizations', orgId);
+      await setDoc(orgRef, { masterMvv }, { merge: true });
+    } catch (error) {
+      console.error("Error updating organization MVV:", error);
       throw error;
     }
   }
