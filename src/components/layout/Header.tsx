@@ -72,6 +72,9 @@ export const Header = () => {
           <Link href={`/${currentOrgId}/p/${currentProjectId}/kpi-tree`} title="KPIツリー" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/kpi-tree') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Activity size={16} /> <span className="hidden xl:inline">KPIツリー</span>
           </Link>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/manifesto`} title="マニフェスト" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/manifesto') ? 'bg-primary-50 dark:bg-primary-900/20 text-amber-600 dark:text-amber-500' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <Sparkles size={16} className={pathname.includes('/manifesto') ? 'text-amber-500' : ''} /> <span className="hidden xl:inline">マニフェスト</span>
+          </Link>
           <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} title="シートエディタ" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/data-entry') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Database size={16} /> <span className="hidden xl:inline">シートエディタ</span>
           </Link>
