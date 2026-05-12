@@ -283,14 +283,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       let animated = isSimulated;
 
       if (targetStatus === 'danger') {
-        strokeColor = '#f43f5e'; // rose-500
+        strokeColor = 'url(#edge-gradient-danger)'; // rose-500
         strokeWidth = 3;
         strokeDasharray = '5, 5';
       } else if (targetStatus === 'warning') {
-        strokeColor = '#fbbf24'; // amber-400
+        strokeColor = 'url(#edge-gradient-warning)'; // amber-400
         strokeWidth = 2.5;
       } else if (targetStatus === 'good') {
-        strokeColor = '#34d399'; // emerald-400
+        strokeColor = 'url(#edge-gradient-good)'; // emerald-400
         strokeWidth = 3;
       }
 
@@ -485,6 +485,23 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           fitView
           className="bg-slate-50 dark:bg-slate-950 transition-colors"
         >
+          
+          <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+            <defs>
+              <linearGradient id="edge-gradient-good" x1="0%" y1="0%" x2={layoutDirection === 'LR' ? '100%' : '0%'} y2={layoutDirection === 'LR' ? '0%' : '100%'}>
+                <stop offset="0%" stopColor="#cbd5e1" />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+              <linearGradient id="edge-gradient-warning" x1="0%" y1="0%" x2={layoutDirection === 'LR' ? '100%' : '0%'} y2={layoutDirection === 'LR' ? '0%' : '100%'}>
+                <stop offset="0%" stopColor="#cbd5e1" />
+                <stop offset="100%" stopColor="#fbbf24" />
+              </linearGradient>
+              <linearGradient id="edge-gradient-danger" x1="0%" y1="0%" x2={layoutDirection === 'LR' ? '100%' : '0%'} y2={layoutDirection === 'LR' ? '0%' : '100%'}>
+                <stop offset="0%" stopColor="#cbd5e1" />
+                <stop offset="100%" stopColor="#f43f5e" />
+              </linearGradient>
+            </defs>
+          </svg>
           <Background color="#94a3b8" gap={16} />
           <Controls className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-slate-200 dark:border-slate-700 fill-slate-700 dark:fill-slate-300 shadow-lg" />
           {showMiniMap && (
