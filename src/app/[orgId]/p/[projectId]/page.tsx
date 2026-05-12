@@ -10,17 +10,21 @@ export default function DashboardPage() {
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<'1m' | '3m' | '6m' | '1y' | '3y' | '10y'>('6m');
   const [viewMode, setViewMode] = useState<'actual' | 'rate'>('actual');
+  const [showArchived, setShowArchived] = useState(false);
 
   // KPIリストをフラット化してセレクトボックス用に準備
   const kpiList = useMemo(() => {
-    return Object.values(kpiData).map(node => ({
-      id: node.id,
-      name: node.name,
-      type: node.type,
-      unit: node.unit,
-      depth: node.parentId ? 1 : 0
-    }));
-  }, [kpiData]);
+    return Object.values(kpiData)
+      .filter(node => showArchived || !node.isArchived)
+      .map(node => ({
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        unit: node.unit,
+        depth: node.parentId ? 1 : 0,
+        isArchived: node.isArchived
+      }));
+  }, [kpiData, showArchived]);
 
   // 初期選択（KGI優先）
   useEffect(() => {
@@ -160,9 +164,23 @@ export default function DashboardPage() {
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-[2px] font-bold ${kpi.type === 'KGI' ? 'bg-[#fbbc04]/20 text-[#fbbc04]' : 'bg-[#5f6368] text-slate-800 dark:text-[#e8eaed]'}`}>
                     {kpi.type}
                   </span>
-                  <span className="truncate">{kpi.name}</span>
+                  <span className={`truncate ${kpi.isArchived ? 'opacity-50 line-through' : ''}`}>{kpi.name}</span>
+                  {kpi.isArchived && <span className="text-[9px] bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1 rounded ml-auto">アーカイブ</span>}
                 </button>
               ))}
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[#3c4043]">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <div className="relative">
+                  <input type="checkbox" className="sr-only" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+                  <div className={`block w-8 h-5 rounded-full transition-colors ${showArchived ? 'bg-primary-500' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform ${showArchived ? 'translate-x-3' : ''}`}></div>
+                </div>
+                <span className="text-[12px] text-slate-500 dark:text-[#9aa0a6] group-hover:text-slate-700 dark:group-hover:text-[#e8eaed] transition-colors">
+                  🗑️ アーカイブ済みのKPIも表示する
+                </span>
+              </label>
             </div>
           </div>
         </div>
@@ -174,7 +192,12 @@ export default function DashboardPage() {
               
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                  <h2 className="text-[16px] font-medium text-slate-900 dark:text-[#f1f3f4]">{selectedNode.name}</h2>
+                  <h2 className="text-[16px] font-medium text-slate-900 dark:text-[#f1f3f4] flex items-center gap-2">
+                    {selectedNode.name}
+                    {selectedNode.isArchived && (
+                      <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-normal">アーカイブ済み</span>
+                    )}
+                  </h2>
                   <div className="text-[13px] text-slate-500 dark:text-[#9aa0a6] mt-1 flex items-center gap-2">
                     <span>期間内実績: <strong className="text-slate-800 dark:text-[#e8eaed]">{periodSummary?.actualValue.toLocaleString()}{selectedNode.unit}</strong></span>
                     <span>/</span>

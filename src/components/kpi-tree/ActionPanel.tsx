@@ -2,19 +2,19 @@ import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2 } from 'lucide-react';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 import { LinkKpiModal } from './LinkKpiModal';
+import { ReviveKpiModal } from './ReviveKpiModal';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction, currentPeriod, saveHistory } = useKpiStore();
+  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, addAction, currentPeriod, saveHistory } = useKpiStore();
   const { currentProjectId, projects } = useProjectStore();
   const { user } = useAuthStore();
   const currentProject = projects.find(p => p.id === currentProjectId);
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
-  const currentWorkflow = selectedNodeId ? workflows[selectedNodeId] : null;
 
   const selectedKpiTasks = actions.filter(a => a.kpiId === selectedNodeId);
   const hasChildren = selectedKpi ? Object.values(kpiData).some(node => node.parentId === selectedKpi.id) : false;
@@ -40,9 +40,10 @@ export const ActionPanel = () => {
   };
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [activeTab, setActiveTab] = useState<'details' | 'tasks' | 'ai'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'tasks'>('details');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isReviveModalOpen, setIsReviveModalOpen] = useState(false);
 
   const handleAddTask = () => {
     if (!selectedKpi || !newTaskTitle.trim()) return;
@@ -67,14 +68,8 @@ export const ActionPanel = () => {
   const [editIsCalculated, setEditIsCalculated] = useState(false);
   const [editFormula, setEditFormula] = useState('');
 
-  const [isGeneratingWorkflow, setIsGeneratingWorkflow] = useState(false);
-  const [isAnalyzingPdca, setIsAnalyzingPdca] = useState(false);
-  const [pdcaResult, setPdcaResult] = useState<React.ReactNode | null>(null);
-  const [workflowError, setWorkflowError] = useState('');
-
   // 選択されたKPIが変わったら編集モードなどをリセット
   useEffect(() => {
-    setWorkflowError('');
     setIsEditingValue(false);
     if (selectedKpi) {
       const displayTarget = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod);
@@ -119,116 +114,6 @@ export const ActionPanel = () => {
   };
 
 
-
-  const generateWorkflow = async () => {
-    if (!selectedKpi) return;
-    setIsGeneratingWorkflow(true);
-    setWorkflowError('');
-    
-    try {
-      const kgiNode = Object.values(kpiData).find(k => k.type === 'KGI');
-      const companyInfo = currentProject ? `業種: ${currentProject.industry || '未設定'}, 売上規模: ${currentProject.revenueScale || '未設定'}, MVV: ${currentProject.mvv || '未設定'}` : '';
-
-      const response = await fetch('/api/generate-workflow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          company_info: companyInfo,
-          kgi: kgiNode?.name || '',
-          ksf: selectedKpi.qualitativeName || selectedKpi.name,
-          kpi: `${selectedKpi.name} (目標: ${selectedKpi.targetValue}${selectedKpi.unit})`,
-          current_status: `現在の達成率: ${selectedKpi.achievementRate.toFixed(1)}%`
-        })
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to generate workflow');
-
-      if (data.data && data.data.workflow) {
-        saveHistory(); // AIによる構造変更前に履歴を積む
-        let taskCount = 0;
-        let currentParentId = selectedKpi.id; // 最初は選択されたノードを親とする
-        
-        // フェーズ（KSF）ごとに子ノードを作成し、そこにタスクをぶら下げる
-        data.data.workflow.forEach((phase: any) => {
-          const newKpiId = `kpi_ai_${Math.random().toString(36).substr(2, 9)}`;
-          addKpiNode({
-            id: newKpiId,
-            name: phase.kpi_name || '新規KPI',
-            qualitativeName: phase.phase_name,
-            businessUnit: selectedKpi.businessUnit,
-            type: 'KPI',
-            parentId: currentParentId, // 直前のノードを親に設定して直列（一本道）に繋ぐ
-            targetValue: phase.target_value || 0,
-            actualValue: 0,
-            unit: phase.unit || '件',
-            previousValue: 0,
-            description: phase.objective || ''
-          });
-
-          // 次のPhaseは、このPhaseの「下位」として繋ぐためにIDを更新する
-          currentParentId = newKpiId;
-
-          // 各タスクをToDo（actions）に追加
-          if (Array.isArray(phase.tasks)) {
-            phase.tasks.forEach((task: any) => {
-              addAction({
-                kpiId: newKpiId,
-                title: task.task_name,
-                description: `【期待インパクト】${task.expected_impact || '不明'} 【工数感】${task.effort_level || '不明'}\n${task.description || ''}\n留意点: ${task.focus_point || ''}`.trim(),
-                owner: '未定', // 自動アサイン用に仮置き（後でユーザー名に変えやすい）
-                priority: task.expected_impact === 'High' && task.effort_level === 'Low' ? 'urgent_important' : 'unassigned',
-                startDate: task.start_date && task.start_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.start_date : new Date().toISOString().split('T')[0],
-                dueDate: task.due_date && task.due_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.due_date : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                status: 'todo'
-              });
-              taskCount++;
-            });
-          }
-        });
-
-        // プレビュー表示用にも保存
-        setAiWorkflow(selectedKpi.id, {
-          ...data.data,
-          generatedAt: Date.now()
-        });
-
-        alert(`ツリーの細分化と、全フェーズにおける計${taskCount}個のタスクの自動アサインが完了しました！`);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setWorkflowError(`ワークフロー生成エラー: ${err.message || '予期せぬエラーが発生しました'}`);
-    } finally {
-      setIsGeneratingWorkflow(false);
-    }
-  };
-
-  const handleAddTaskToTodo = (task: WorkflowTask) => {
-    if (!selectedKpi) return;
-    addAction({
-      kpiId: selectedKpi.id,
-      title: task.task_name,
-      owner: '未定',
-      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1週間後
-      status: 'todo'
-    });
-    alert('タスクをToDoリストに追加しました！');
-  };
-
-  const analyzePdca = () => {
-    if (!selectedKpi) return;
-    setIsAnalyzingPdca(true);
-    setPdcaResult(null);
-    // モックアップ：AIからの返答をシミュレーション
-    setTimeout(() => {
-      const isAchieved = selectedKpi.achievementRate >= 100;
-      setPdcaResult(isAchieved  
-        ? <><div className="flex items-center gap-1 text-emerald-500 font-bold"><CheckCircle2 size={16} /> 【達成要因の分析】</div>目標を上回るペースで推移しています。現在のタスク（{selectedKpiTasks.length}件）が有効に機能していると考えられます。<br/><br/><div className="font-bold">【次の一手】</div>この成功パターンを他の事業部にも横展開するための「ナレッジ共有タスク」の追加を推奨します。</>
-        : <><div className="flex items-center gap-1 text-rose-500 font-bold"><AlertTriangle size={16} /> 【未達要因の分析】</div>目標に対して{(100 - selectedKpi.achievementRate).toFixed(1)}%ショートしています。<br/>計算式「{selectedKpi.calculationFormula || '未設定'}」に照らし合わせると、現在の進捗スピードでは目標達成が困難です。<br/><br/><div className="font-bold">【次の一手】</div>リカバリープランとして以下のタスクを追加することを推奨します。<br/>・原因究明とボトルネックの特定（担当：マネージャー）<br/>・今週末までのテコ入れ施策の立案</>
-      );
-      setIsAnalyzingPdca(false);
-    }, 2000);
-  };
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#2d2f31] relative">
@@ -283,9 +168,6 @@ export const ActionPanel = () => {
             </button>
             <button onClick={() => setActiveTab('tasks')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'tasks' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
               タスク ({selectedKpiTasks.length})
-            </button>
-            <button onClick={() => setActiveTab('ai')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors flex items-center justify-center gap-1 ${activeTab === 'ai' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-              <Sparkles size={12} /> AI・PDCA
             </button>
           </div>
 
@@ -477,12 +359,18 @@ export const ActionPanel = () => {
             {/* 子ノード追加・リンク機能 */}
             <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
               <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">子要素 (KPI/プロセス)</h5>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <button 
                   onClick={() => setIsLinkModalOpen(true)}
-                  className="flex-1 text-[11px] py-2 border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
+                  className="w-full text-[11px] py-2 border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
                 >
                   <Link2 size={14} /> 他プロジェクトから同期して追加
+                </button>
+                <button 
+                  onClick={() => setIsReviveModalOpen(true)}
+                  className="w-full text-[11px] py-2 border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
+                >
+                  <ArchiveRestore size={14} /> アーカイブデータ（履歴）を引き継いで追加
                 </button>
               </div>
               <p className="text-[10px] text-slate-400 mt-2">
@@ -620,87 +508,7 @@ export const ActionPanel = () => {
               </div>
             </div>
           )}
-
-          {/* 3. AI分析・PDCAタブ */}
-          {activeTab === 'ai' && (
-            <div className="space-y-4">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 rounded-lg">
-                <h5 className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1.5">
-                  <Sparkles size={14} className="text-primary-500" />
-                  実績データをもとにAIがPDCAを回す
-                </h5>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
-                  現在の達成率（{selectedKpi.achievementRate.toFixed(1)}%）と関連タスクの進行状況をAIが分析し、未達の場合はリカバリー策となるタスクを自動提案します。
-                </p>
-                <button 
-                  onClick={analyzePdca}
-                  disabled={isAnalyzingPdca}
-                  className="w-full py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {isAnalyzingPdca ? '分析中...' : '現状分析と次の一手を提案'}
-                </button>
-
-                {pdcaResult && (
-                  <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                    {pdcaResult}
-                  </div>
-                )}
-              </div>
-
-              {!currentWorkflow && !isGeneratingWorkflow && (
-                <button 
-                  onClick={generateWorkflow}
-                  className="w-full py-3 bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-lg flex items-center justify-center gap-2 text-[11px] font-bold transition-all shadow-sm group"
-                >
-                  <Sparkles size={14} className="group-hover:animate-pulse" />
-                  ゼロから実行プラン（フェーズ・タスク）を構築
-                </button>
-              )}
-
-              {isGeneratingWorkflow && (
-                <div className="siri-blob-container p-1 rounded-xl">
-                  <div className="siri-blob rounded-xl"></div>
-                  <div className="relative z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-white/20 dark:border-slate-700/50 p-6 rounded-xl flex flex-col items-center justify-center gap-4">
-                    <div className="relative">
-                      <Sparkles size={28} className="text-primary-500 animate-pulse relative" />
-                    </div>
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200 animate-pulse tracking-wide text-center">
-                      戦略を具体的なタスクに分解中...<br/>
-                      <span className="text-[10px] font-normal opacity-70">組織のリソース制約と目標を考慮しています</span>
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {workflowError && (
-                <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 p-3 rounded-md text-rose-600 dark:text-rose-400 text-[11px] font-medium mt-4">
-                  {workflowError}
-                </div>
-              )}
-
-              {currentWorkflow && (
-                <div className="bg-white dark:bg-slate-900 border border-primary-200 dark:border-slate-700 p-3 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-center mb-2">
-                    <h5 className="text-[11px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <Sparkles size={12} className="text-primary-500" />
-                      生成された戦略見解
-                    </h5>
-                    <button onClick={generateWorkflow} className="text-[9px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline">再生成</button>
-                  </div>
-                  
-                  <p className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-2 rounded leading-relaxed">
-                    {currentWorkflow.ksf_analysis}
-                  </p>
-                  <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      <strong className="flex items-center gap-1"><Lightbulb size={12} className="text-amber-500" /> KPIアドバイス:</strong> {currentWorkflow.kpi_advice}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          </div>
+        </div>
         </>
       ) : (
         <div className="flex items-center justify-center h-full text-sm text-slate-400 dark:text-slate-500">
@@ -709,11 +517,18 @@ export const ActionPanel = () => {
       )}
 
       {selectedKpi && (
-        <LinkKpiModal 
-          isOpen={isLinkModalOpen} 
-          onClose={() => setIsLinkModalOpen(false)} 
-          targetParentId={selectedKpi.id} 
-        />
+        <>
+          <LinkKpiModal 
+            isOpen={isLinkModalOpen} 
+            onClose={() => setIsLinkModalOpen(false)} 
+            targetParentId={selectedKpi.id} 
+          />
+          <ReviveKpiModal 
+            isOpen={isReviveModalOpen} 
+            onClose={() => setIsReviveModalOpen(false)} 
+            targetParentId={selectedKpi.id} 
+          />
+        </>
       )}
     </div>
   );

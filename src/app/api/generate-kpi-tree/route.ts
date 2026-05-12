@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, mvv, customInstructions, fileUrls } = await req.json();
+    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, mvv, customInstructions, fileUrls, archivedKpis } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
@@ -58,7 +58,11 @@ export async function POST(req: Request) {
 ステップ1: 添付ファイル（もしあれば）の解析 - 画像、PDF、CSVなどの参照資料から、事業特性や既存の数値を読み解く。
 ステップ2: 環境分析と解読 - 事業概要テキストから事業ポートフォリオを解読。目標期間（${kgiPeriod}）に達成可能な規模感と現実的な数値を想定する。
 ステップ3: 第1階層の数式設計 - ユーザー指定のビジネスモデル（${businessModelType}）に基づき、KGI直下の第1階層を決定。追加指示（${customInstructions}）があれば優先して反映させる。
-ステップ4: プロセス分解とMVVの適用 - MVV（${mvv}）の理念をKPIの名称（qualitativeName）や、末端KPIのタスク（ToDo）に色濃く反映させる。顧客への提供価値を高めるアクションをタスク化し、MVVに反するスパム的な行動は排除する。
+ステップ4: アーカイブ資産の引き継ぎ判定 - 【アーカイブ済みKPIカタログ】が提供されている場合、新しく作成しようとしているKPIの意味（プロセス）と完全に合致する過去のKPIが存在するかを判定し、存在する場合はゼロから作らずにそのIDを mappedSourceId として出力する。
+ステップ5: プロセス分解とMVVの適用 - MVV（${mvv}）の理念をKPIの名称（qualitativeName）や、末端KPIのタスク（ToDo）に色濃く反映させる。顧客への提供価値を高めるアクションをタスク化し、MVVに反するスパム的な行動は排除する。
+
+【アーカイブ済みKPIカタログ（再利用候補）】
+${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: any) => ({ id: k.id, name: k.name, qualitativeName: k.qualitativeName })), null, 2) : '再利用可能なアーカイブKPIはありません。'}
 
 【出力要件】
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
@@ -78,6 +82,7 @@ export async function POST(req: Request) {
 - businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。
 - 数値（targetValue, actualValue, previousValue）は、売上規模から推測してリアリティのある数値を設定してください（単位に注意）。
 - 【重要】単位（unit）が「%」の指標（商談化率、利益率など）の場合、数値は0.2のような小数ではなく、必ず100倍した数値（例: 20%の場合は「20」）で設定してください。
+- アーカイブKPIと文脈が完全に合致すると判断した場合のみ、そのアーカイブKPIのIDを "mappedSourceId" に指定してください。合致しない場合は指定しないでください（nullまたは省略）。
 - 1年間のダミーデータをフロントエンドで生成するため、各ノードに事業特性を表す "trend_type" (steady_growth, seasonal_summer, seasonal_winter, flat_random のいずれか) と、日々の数値のブレ幅を表す "volatility" (0.05〜0.3の数値) を必ず含めてください。
 - 末端のKPIノードには、現場が実行すべき具体的な「タスク（ToDo）」を1〜3個程度、"tasks" 配列として付与してください。
 
@@ -102,7 +107,8 @@ export async function POST(req: Request) {
       "previousValue": 75000000,
       "description": "KGIの詳細説明",
       "isCalculated": true,
-      "formula": "#{kpi_child_1} * #{kpi_child_2}"
+      "formula": "#{kpi_child_1} * #{kpi_child_2}",
+      "mappedSourceId": "kpi_xxx" // 合致するアーカイブKPIがある場合のみ指定
     },
     {
       "id": "kpi_child_1",

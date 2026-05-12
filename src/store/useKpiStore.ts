@@ -46,11 +46,12 @@ interface KpiStore {
   updateHistoryRecord: (kpiId: string, recordId: string, updates: Partial<import('@/types').KpiHistoryEntry>) => void;
   deleteHistoryRecord: (kpiId: string, recordId: string) => void;
   // 履歴管理（Undo/Redo用）
-  pastStates: Record<string, KpiNodeWithComputedAndInit>[];
-  futureStates: Record<string, KpiNodeWithComputedAndInit>[];
+  pastStates: { kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[] }[];
+  futureStates: { kpiData: Record<string, KpiNodeWithComputedAndInit>, actions: Action[] }[];
   saveHistory: () => void;
   undo: () => void;
   redo: () => void;
+  reviveKpiNode: (id: string, newParentId: string | null) => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -189,26 +190,7 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
   } as KpiNodeWithComputedAndInit;
 };
 
-const initialData: Record<string, KpiNodeWithComputedAndInit> = {
-  kgi_profit: {
-    id: 'kgi_profit',
-    name: '全社営業利益',
-    qualitativeName: '全社の持続的な成長と利益最大化',
-    businessUnit: 'company',
-    type: 'KGI',
-    parentId: null,
-    targetValue: 50000000,
-    actualValue: 45000000,
-    initialActualValue: 45000000,
-    unit: '円',
-    previousValue: 40000000,
-    description: 'Goalを数値化した全社の営業利益',
-    achievementRate: 90,
-    status: 'warning',
-    isSimulated: false,
-    calculationFormula: '宿泊事業売上 ＋ 温浴事業売上 ＋ 飲食事業売上'
-  }
-};
+const initialData: Record<string, KpiNodeWithComputedAndInit> = {};
 
 // --- 動的計算エンジン ---
 const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue'): number | null => {
@@ -309,7 +291,8 @@ export const useKpiStore = create<KpiStore>()(
       futureStates: [],
 
       saveHistory: () => set((state) => {
-        const newPast = [...state.pastStates, state.kpiData].slice(-30); // 最大30件保持
+        const snapshot = { kpiData: state.kpiData, actions: state.actions };
+        const newPast = [...state.pastStates, snapshot].slice(-30); // 最大30件保持
         return { pastStates: newPast, futureStates: [] };
       }),
 
@@ -317,18 +300,18 @@ export const useKpiStore = create<KpiStore>()(
         if (state.pastStates.length === 0) return state;
         const previous = state.pastStates[state.pastStates.length - 1];
         const newPast = state.pastStates.slice(0, -1);
-        const newFuture = [state.kpiData, ...state.futureStates];
-        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: previous, actions: state.actions, projectInfo: state.currentProjectInfo });
-        return { kpiData: previous, pastStates: newPast, futureStates: newFuture, projectData: saveToProjectData({ ...state, kpiData: previous }) };
+        const newFuture = [{ kpiData: state.kpiData, actions: state.actions }, ...state.futureStates];
+        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: previous.kpiData, actions: previous.actions, projectInfo: state.currentProjectInfo });
+        return { kpiData: previous.kpiData, actions: previous.actions, pastStates: newPast, futureStates: newFuture, projectData: saveToProjectData({ ...state, kpiData: previous.kpiData, actions: previous.actions }) };
       }),
 
       redo: () => set((state) => {
         if (state.futureStates.length === 0) return state;
         const next = state.futureStates[0];
         const newFuture = state.futureStates.slice(1);
-        const newPast = [...state.pastStates, state.kpiData];
-        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: next, actions: state.actions, projectInfo: state.currentProjectInfo });
-        return { kpiData: next, pastStates: newPast, futureStates: newFuture, projectData: saveToProjectData({ ...state, kpiData: next }) };
+        const newPast = [...state.pastStates, { kpiData: state.kpiData, actions: state.actions }];
+        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: next.kpiData, actions: next.actions, projectInfo: state.currentProjectInfo });
+        return { kpiData: next.kpiData, actions: next.actions, pastStates: newPast, futureStates: newFuture, projectData: saveToProjectData({ ...state, kpiData: next.kpiData, actions: next.actions }) };
       }),
 
       setPeriod: (period) => set({ currentPeriod: period }),
@@ -787,17 +770,26 @@ export const useKpiStore = create<KpiStore>()(
         }
       }
 
-      // 再帰的な子ノードの削除処理
-      const deleteRecursive = (nodeId: string) => {
+      // 再帰的な子ノードのアーカイブ処理と、関連するタスク（Action）のアーカイブ処理
+      let archivedNodeIds = new Set<string>();
+      
+      const archiveRecursive = (nodeId: string) => {
+        archivedNodeIds.add(nodeId);
         Object.keys(draft).forEach(key => {
-          if (draft[key].parentId === nodeId) {
-            deleteRecursive(key);
+          if (draft[key].parentId === nodeId && !draft[key].isArchived) {
+            archiveRecursive(key);
           }
         });
-        delete draft[nodeId];
+        // 物理削除ではなく、論理削除（アーカイブ）フラグを立てる
+        draft[nodeId] = { ...draft[nodeId], isArchived: true };
       };
       
-      deleteRecursive(id);
+      archiveRecursive(id);
+      
+      // アーカイブされたノードに紐づくタスクも論理削除（アーカイブ）とする
+      const newActions = state.actions.map(a => 
+        archivedNodeIds.has(a.kpiId) ? { ...a, isArchived: true } : a
+      );
       
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
@@ -805,8 +797,32 @@ export const useKpiStore = create<KpiStore>()(
       recalculateTree(draft, 'actualValue');
       recalculateTree(draft, 'targetValue');
       
-      syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
-      return { kpiData: draft, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft }) };
+      syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: newActions, projectInfo: state.currentProjectInfo });
+      return { kpiData: draft, actions: newActions, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft, actions: newActions }) };
+    });
+  },
+
+  reviveKpiNode: (id, newParentId) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      if (!draft[id]) return state;
+
+      state.saveHistory();
+
+      // アーカイブ状態を解除し、新しい親に紐付ける
+      draft[id] = { ...draft[id], isArchived: false, parentId: newParentId, warning: undefined };
+
+      // 紐づいていたタスクのアーカイブ状態も解除する
+      const newActions = state.actions.map(a => 
+        a.kpiId === id ? { ...a, isArchived: false } : a
+      );
+
+      // 再計算をトリガー
+      recalculateTree(draft, 'actualValue');
+      recalculateTree(draft, 'targetValue');
+
+      syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: newActions, projectInfo: state.currentProjectInfo });
+      return { kpiData: draft, actions: newActions, projectData: saveToProjectData({ ...state, kpiData: draft, actions: newActions }) };
     });
   },
   

@@ -7,8 +7,11 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { OrgLayout } from '@/components/layout/OrgLayout';
 import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical, Sparkles, Upload, X } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { AiLoadingOverlay } from '@/components/ui/AiLoadingOverlay';
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -82,6 +85,34 @@ export default function WorkspacePage() {
         uploadedFiles.push({ url, path: fileRef.fullPath, mimeType: file.type });
       }
 
+      setUploadStatus('過去のアーカイブ資産を走査中...');
+      const archivedKpis: any[] = [];
+      try {
+        // 全プロジェクトの kpiData をフェッチしてアーカイブ済みKPIを収集
+        for (const project of projects) {
+          const kpiDataDoc = await getDoc(doc(db, 'organizations', currentOrgId, 'projects', project.id, 'kpiData', 'main'));
+          if (kpiDataDoc.exists()) {
+            const data = kpiDataDoc.data();
+            if (data.kpiData) {
+              Object.values(data.kpiData).forEach((k: any) => {
+                if (k.isArchived) {
+                  archivedKpis.push({
+                    id: k.id,
+                    projectId: project.id,
+                    name: k.name,
+                    qualitativeName: k.qualitativeName,
+                    unit: k.unit,
+                    type: k.type
+                  });
+                }
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch archived KPIs', e);
+      }
+
       setUploadStatus('AIが最適なKPIツリーを構築中...');
 
       // 2. APIを呼んでKPIツリーをAI生成
@@ -96,7 +127,8 @@ export default function WorkspacePage() {
           businessModelType,
           mvv,
           customInstructions,
-          fileUrls: uploadedFiles.map(f => f.url)
+          fileUrls: uploadedFiles.map(f => f.url),
+          archivedKpis // 集めたアーカイブKPIをコンテキストとして渡す
         })
       });
 
@@ -108,11 +140,30 @@ export default function WorkspacePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
 
+      // AIからの返答に mappedSourceId があれば linkedSource に変換する
+      if (data.nodes && Array.isArray(data.nodes)) {
+        data.nodes = data.nodes.map((node: any) => {
+          if (node.mappedSourceId) {
+            const source = archivedKpis.find(k => k.id === node.mappedSourceId);
+            if (source) {
+              node.linkedSource = { projectId: source.projectId, kpiId: source.id, orgId: currentOrgId };
+              node.isCalculated = false; // リンク元から引っ張るため
+              node.formula = '';
+              node.targetValue = 0;
+              node.actualValue = 0;
+            }
+          }
+          return node;
+        });
+      }
+
       // サンプルデータを生成する場合、全ノードに1年分の履歴データを追加する
       // （※Firestoreのサブコレクション化により1MB制限を回避できたため365日に復元）
       if (hasSampleData && data.nodes && Array.isArray(data.nodes)) {
         const today = new Date();
         data.nodes = data.nodes.map((node: any) => {
+          if (node.linkedSource) return node; // リンク元のデータを使用するためダミーデータ生成はスキップ
+
           const history = [];
           const trendType = node.trend_type || 'steady_growth';
           const volatility = node.volatility || 0.1;
@@ -175,7 +226,9 @@ export default function WorkspacePage() {
       } else if (!hasSampleData && data.nodes && Array.isArray(data.nodes)) {
         // 空の場合、actualValue を 0 に初期化
         data.nodes = data.nodes.map((node: any) => {
-          node.actualValue = 0;
+          if (!node.linkedSource) {
+            node.actualValue = 0;
+          }
           return node;
         });
       }
@@ -251,8 +304,14 @@ export default function WorkspacePage() {
   }
 
   return (
-    <OrgLayout>
-      <div className="min-h-screen bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] p-6 md:p-12 font-sans selection:bg-[#8ab4f8]/30">
+    <>
+      <AiLoadingOverlay 
+        isVisible={isGenerating} 
+        statusText={uploadStatus || 'AIが最適なKPIツリーを構築中...'} 
+        subText="ヒアリング内容に基づき、事業特性に合わせたKGIとKPIの分解ツリー、および目標数値を自動生成しています。（最大10〜15秒かかります）" 
+      />
+      <OrgLayout>
+        <div className="min-h-screen bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] p-6 md:p-12 font-sans selection:bg-[#8ab4f8]/30">
         <div className="max-w-7xl mx-auto">
         
         {/* Header Section */}
@@ -367,15 +426,7 @@ export default function WorkspacePage() {
         <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#282a2d] rounded-[8px] p-6 w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-[#3c4043] relative overflow-hidden">
             
-            {isGenerating ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-[#e8eaed] mb-2">{uploadStatus || 'AIが最適なKPIツリーを構築中...'}</h3>
-                <p className="text-slate-500 dark:text-[#9aa0a6] text-center max-w-md">
-                  ヒアリング内容に基づき、事業特性に合わせたKGIとKPIの分解ツリー、および目標数値を自動生成しています。（最大10〜15秒かかります）
-                </p>
-              </div>
-            ) : (
+            {!isGenerating && (
               <>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4]">新しいKGIツリーの作成</h2>
@@ -558,6 +609,6 @@ export default function WorkspacePage() {
         </div>
       )}
       </div>
-    </OrgLayout>
+    </>
   );
 }

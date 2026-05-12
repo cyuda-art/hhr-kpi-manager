@@ -15,14 +15,23 @@ export const DataEditor = () => {
   // historyモード時の選択中KPI
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null);
 
+  // アーカイブ表示のトグル
+  const [showArchived, setShowArchived] = useState(false);
+
   // TABLESリスト用のKPI
   const kpiList = useMemo(() => {
-    return Object.values(kpiData).sort((a, b) => {
-      if (a.type === 'KGI') return -1;
-      if (b.type === 'KGI') return 1;
-      return a.name.localeCompare(b.name);
-    });
-  }, [kpiData]);
+    return Object.values(kpiData)
+      .filter(node => showArchived || !node.isArchived)
+      .sort((a, b) => {
+        if (a.type === 'KGI') return -1;
+        if (b.type === 'KGI') return 1;
+        return a.name.localeCompare(b.name);
+      });
+  }, [kpiData, showArchived]);
+
+  const filteredActions = useMemo(() => {
+    return actions.filter(action => showArchived || !action.isArchived);
+  }, [actions, showArchived]);
 
   const selectedKpi = selectedKpiId ? kpiData[selectedKpiId] : null;
 
@@ -116,7 +125,7 @@ export const DataEditor = () => {
           >
             <Database size={14} className="opacity-70" />
             KPIマスター
-            <span className="ml-auto text-[10px] text-slate-400">{Object.keys(kpiData).length}</span>
+            <span className="ml-auto text-[10px] text-slate-400">{kpiList.length}</span>
           </button>
           <button
             onClick={() => setActiveMode('ksf')}
@@ -128,7 +137,7 @@ export const DataEditor = () => {
           >
             <ListChecks size={14} className="opacity-70" />
             KSF一覧
-            <span className="ml-auto text-[10px] text-slate-400">{actions.length}</span>
+            <span className="ml-auto text-[10px] text-slate-400">{filteredActions.length}</span>
           </button>
           
           {/* Database (Raw) */}
@@ -160,7 +169,8 @@ export const DataEditor = () => {
               }`}
             >
               <FileSpreadsheet size={14} className={node.type === 'KGI' ? 'text-amber-500' : 'opacity-50'} />
-              <span className="truncate">{node.name}</span>
+              <span className={`truncate ${node.isArchived ? 'opacity-50 line-through' : ''}`}>{node.name}</span>
+              {node.isArchived && <span className="ml-auto text-[9px] bg-slate-300 dark:bg-slate-700 px-1 rounded text-slate-500 dark:text-slate-400">済</span>}
             </button>
           ))}
         </div>
@@ -191,6 +201,16 @@ export const DataEditor = () => {
             <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px]">
               <Filter size={14} /> Filter
             </button>
+            <label className="flex items-center gap-2 cursor-pointer group px-2">
+              <div className="relative">
+                <input type="checkbox" className="sr-only" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+                <div className={`block w-7 h-4 rounded-full transition-colors ${showArchived ? 'bg-primary-500' : 'bg-slate-300 dark:bg-[#5f6368]'}`}></div>
+                <div className={`absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full transition-transform ${showArchived ? 'translate-x-3' : ''}`}></div>
+              </div>
+              <span className="text-[12px] font-medium text-slate-500 dark:text-[#9aa0a6] group-hover:text-slate-700 dark:group-hover:text-[#e8eaed] transition-colors">
+                🗑️ アーカイブ表示
+              </span>
+            </label>
             <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px]">
               <ArrowUpDown size={14} /> Sort
             </button>
@@ -262,9 +282,12 @@ export const DataEditor = () => {
             <tbody className="divide-y divide-slate-200 dark:divide-[#3c4043]">
               
               {/* マスターモード */}
-              {activeMode === 'master' && Object.values(kpiData).map((node, index) => (
-                <tr key={node.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
-                  <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
+              {activeMode === 'master' && kpiList.map((node, index) => (
+                <tr key={node.id} className={`hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed] ${node.isArchived ? 'opacity-60 bg-slate-100 dark:bg-[#323639]' : ''}`}>
+                  <td className="p-2 text-center text-slate-400 border-r border-slate-200 dark:border-[#3c4043]">
+                    {index + 1}
+                    {node.isArchived && <div className="text-[8px] text-amber-600 dark:text-amber-500 mt-1">アーカイブ</div>}
+                  </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <input type="text" value={node.name} onChange={e => handleUpdate(node.id, 'name', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
@@ -321,9 +344,12 @@ export const DataEditor = () => {
               ))}
 
               {/* KSFモード */}
-              {activeMode === 'ksf' && actions.map((action, index) => (
-                <tr key={action.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed]">
-                  <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
+              {activeMode === 'ksf' && filteredActions.map((action, index) => (
+                <tr key={action.id} className={`hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed] ${action.isArchived ? 'opacity-60 bg-slate-100 dark:bg-[#323639]' : ''}`}>
+                  <td className="p-2 text-center text-slate-400 border-r border-slate-200 dark:border-[#3c4043]">
+                    {index + 1}
+                    {action.isArchived && <div className="text-[8px] text-amber-600 dark:text-amber-500 mt-1">アーカイブ</div>}
+                  </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <input type="text" value={action.title} onChange={e => handleUpdate(action.id, 'title', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
                   </td>
