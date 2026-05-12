@@ -121,7 +121,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       isSelected && "ring-2 ring-[#8ab4f8] border-[#8ab4f8]",
       isAlert && "animate-pulse shadow-red-900/30 border-[#f28b82]",
       data.warning && "border-amber-500 shadow-amber-500/20 ring-1 ring-amber-500",
-      isPredictionMode && "bg-slate-50 dark:bg-[#202124] border-[#8ab4f8]"
+      isPredictionMode && "bg-slate-50 dark:bg-[#202124] border-[#8ab4f8]",
+      data.isKsf && "ring-2 ring-amber-400 dark:ring-amber-500 shadow-[0_0_15px_rgba(251,191,36,0.4)] dark:shadow-[0_0_15px_rgba(245,158,11,0.2)]"
     )}>
       <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none" />
       
@@ -152,10 +153,18 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {/* 定性（Goal/KSF）部分 */}
             {(data.qualitativeName || data.type === 'KGI') && (
               <div>
-                <p className="text-[10px] text-slate-500 dark:text-[#9aa0a6] font-bold mb-0.5 flex items-center gap-1">
-                  <Target size={10} /> {getQualitativeLabel()}
+                <p className={cn(
+                  "text-[10px] font-bold mb-0.5 flex items-center gap-1",
+                  data.isKsf ? "text-amber-600 dark:text-amber-400" : "text-slate-500 dark:text-[#9aa0a6]"
+                )}>
+                  <Target size={10} /> 
+                  {data.isKsf ? "Key Success Factor" : getQualitativeLabel()}
+                  {data.isKsf && <Sparkles size={10} className="text-amber-500 animate-pulse ml-0.5" />}
                 </p>
-                <p className="font-bold text-slate-800 dark:text-[#e8eaed] text-[14px] leading-tight break-words">
+                <p className={cn(
+                  "font-bold text-[14px] leading-tight break-words",
+                  data.isKsf ? "text-amber-700 dark:text-amber-300" : "text-slate-800 dark:text-[#e8eaed]"
+                )}>
                   {(data.qualitativeName || '未設定').replace(/^(KSF|プロセス|Goal|Process)[:：\s]*/i, '')}
                 </p>
               </div>

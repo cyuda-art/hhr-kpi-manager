@@ -32,6 +32,7 @@ export interface KpiNodeData {
   warning?: string; // アラートメッセージ（例: 子要素削除による数式エラーなど）
   isArchived?: boolean; // 論理削除（アーカイブ）フラグ
   mappedSourceId?: string; // AI生成時に既存のアーカイブKPIを復活させた場合の元ID
+  isKsf?: boolean; // AI戦略においてKey Success Factor（最重要ノード）と判定されたか
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース
