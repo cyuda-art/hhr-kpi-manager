@@ -115,7 +115,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   return (
     <div className={cn(
-      "w-64 bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border border-slate-200 dark:border-slate-600 p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300",
+      "w-64 bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border border-slate-200 dark:border-slate-600 p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300 relative overflow-hidden",
       getStatusBorder(displayStatus),
       data.isSimulated && "shadow-[#8ab4f8]/20",
       isSelected && "ring-2 ring-[#8ab4f8] border-[#8ab4f8]",
@@ -124,9 +124,20 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       isPredictionMode && "bg-slate-50 dark:bg-[#202124] border-[#8ab4f8]",
       data.isKsf && "ring-2 ring-amber-400 dark:ring-amber-500 shadow-[0_0_15px_rgba(251,191,36,0.4)] dark:shadow-[0_0_15px_rgba(245,158,11,0.2)]"
     )}>
-      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none" />
+      {/* Background Progress Bar */}
+      <div 
+        className={cn(
+          "absolute top-0 left-0 h-full opacity-[0.15] dark:opacity-[0.25] transition-all duration-1000 ease-out",
+          displayStatus === 'good' ? "bg-gradient-to-r from-emerald-100 to-emerald-500 dark:from-emerald-900 dark:to-emerald-500" :
+          displayStatus === 'warning' ? "bg-gradient-to-r from-amber-100 to-amber-500 dark:from-amber-900 dark:to-amber-500" :
+          "bg-gradient-to-r from-rose-100 to-rose-500 dark:from-rose-900 dark:to-rose-500"
+        )}
+        style={{ width: `${Math.min(100, Math.max(0, displayAchievementRate))}%` }}
+      />
+
+      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none relative z-10" />
       
-      <div className="flex justify-between items-start mb-2">
+      <div className="relative z-10 flex justify-between items-start mb-2">
         <div className="flex flex-col flex-1 min-w-0 pr-2">
           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             <span className="text-[10px] font-bold text-[#8ab4f8] uppercase tracking-wider">{data.businessUnit}</span>
@@ -189,7 +200,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         </div>
       </div>
 
-      <div className="space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043]">
+      <div className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043]">
         <div className="flex justify-between text-[12px] items-center">
           <span className={cn(
             "flex items-center gap-1",
