@@ -90,7 +90,14 @@ export default function WorkspacePage() {
 
       const orgRef = doc(db, 'organizations', currentOrgId);
       const orgSnap = await getDoc(orgRef);
-      const masterMvv = orgSnap.exists() ? orgSnap.data().masterMvv : '';
+      const orgData = orgSnap.exists() ? orgSnap.data() : {};
+      const masterMvv = orgData.masterMvv || '';
+      const orgContext = {
+        pest: orgData.pest || '',
+        fiveForces: orgData.fiveForces || '',
+        vrio: orgData.vrio || '',
+        industry: orgData.industry || ''
+      };
 
       const finalKgiType = kgiType === 'その他' && customKgiType.trim() !== '' ? customKgiType : kgiType;
 
@@ -99,6 +106,7 @@ export default function WorkspacePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           masterMvv,
+          orgContext,
           kgiType: finalKgiType,
           kgiTargetValue: Number(kgiTargetValue) || 0,
           projectUrl,
@@ -113,6 +121,9 @@ export default function WorkspacePage() {
       if (data.manifestos && data.manifestos.length > 0) {
         setManifestos(data.manifestos);
         setEditableManifesto(data.manifestos[0]);
+        // SWOT/CrossSWOTのデータを保存
+        if (data.swot) sessionStorage.setItem('temp_swot', data.swot);
+        if (data.crossSwot) sessionStorage.setItem('temp_crossSwot', data.crossSwot);
         setWizardStep('select_manifesto');
       } else {
         throw new Error('マニフェストが生成されませんでした');
