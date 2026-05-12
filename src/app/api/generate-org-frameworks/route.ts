@@ -102,10 +102,10 @@ ${extractedText}
     
     // 型に合わせて、オブジェクトをJSON文字列化して返却する
     const formattedData = {
-      pest: typeof data.pest === 'object' ? JSON.stringify(data.pest) : data.pest,
-      fiveForces: typeof data.fiveForces === 'object' ? JSON.stringify(data.fiveForces) : data.fiveForces,
-      vrio: typeof data.vrio === 'object' ? JSON.stringify(data.vrio) : data.vrio,
-      industry: data.industry
+      pest: typeof data.pest === 'object' ? JSON.stringify(data.pest) : (data.pest || "{}"),
+      fiveForces: typeof data.fiveForces === 'object' ? JSON.stringify(data.fiveForces) : (data.fiveForces || "{}"),
+      vrio: typeof data.vrio === 'object' ? JSON.stringify(data.vrio) : (data.vrio || "{}"),
+      industry: data.industry || "不明"
     };
 
     return NextResponse.json(formattedData);
