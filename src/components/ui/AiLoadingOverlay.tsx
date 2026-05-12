@@ -27,7 +27,7 @@ export const AiLoadingOverlay: React.FC<AiLoadingOverlayProps> = ({ isVisible, s
   return (
     <div 
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} 
+      style={{ backgroundColor: 'transparent' }} 
     >
       {/* ATLAS AI Agent風の全画面発光ボーダーと光彩とドットグリッド */}
       <div className="atlas-dot-grid"></div>
