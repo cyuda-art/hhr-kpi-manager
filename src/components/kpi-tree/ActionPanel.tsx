@@ -182,7 +182,7 @@ export const ActionPanel = () => {
               </h4>
               <button 
                 onClick={() => navigator.clipboard.writeText(`#{${selectedKpi.id}}`)} 
-                className="text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary-500 hover:bg-primary-50 hover:border-primary-200 dark:hover:text-primary-400 px-1.5 py-0.5 rounded cursor-copy border border-slate-200 dark:border-slate-700 active:bg-slate-200 flex items-center gap-1 shrink-0"
+                className="text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary-500 hover:bg-primary-50 hover:border-primary-200 dark:hover:text-primary-400 px-1.5 py-0.5 rounded cursor-copy border border-slate-200 dark:border-slate-800 dark:border-slate-700 active:bg-slate-200 flex items-center gap-1 shrink-0"
                 title="クリックして計算式用のID（#{id}）をコピー"
               >
                 IDをコピー
@@ -199,7 +199,7 @@ export const ActionPanel = () => {
           </div>
 
           {/* タブナビゲーション */}
-          <div className="flex border-b border-slate-200 dark:border-slate-700 mt-4 mb-3">
+          <div className="flex border-b border-slate-200 dark:border-slate-800 dark:border-slate-700 mt-4 mb-3">
             <button onClick={() => setActiveTab('details')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'details' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
               詳細・数値
             </button>
@@ -233,7 +233,7 @@ export const ActionPanel = () => {
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 placeholder="AIへの指示を記述してください..."
-                className="w-full h-32 p-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"
+                className="w-full h-32 p-3 text-sm border border-slate-200 dark:border-slate-800 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"
               />
               <button
                 onClick={handleAiReconstruct}
@@ -249,7 +249,7 @@ export const ActionPanel = () => {
         {activeTab === 'details' && (
               <div className="space-y-4">
                 {selectedKpi.linkedSource && (
-                  <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-md flex items-start gap-2 animate-in fade-in zoom-in-95">
+                  <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 dark:border-slate-700 p-2 rounded-md flex items-start gap-2 animate-in fade-in zoom-in-95">
                     <Link2 size={14} className="text-slate-500 mt-0.5 shrink-0" />
                     <p className="text-[10px] text-slate-600 dark:text-slate-400">
                       この指標は他プロジェクトから同期されています。目標値・実績値はリンク元から自動取得されるため手動編集できません。
@@ -259,8 +259,8 @@ export const ActionPanel = () => {
                 {/* 数値編集UI */}
                 <div>
                   {isEditingValue ? (
-                    <div className="space-y-2 border border-slate-200 dark:border-slate-700 rounded-md p-3 bg-white dark:bg-slate-900">
-                      <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-slate-200 dark:border-slate-700/50">
+                    <div className="space-y-2 border border-slate-200 dark:border-slate-800 dark:border-slate-700 rounded-md p-3 bg-white dark:bg-slate-900">
+                      <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-slate-200 dark:border-slate-800 dark:border-slate-700/50">
                         <div className="flex flex-col gap-1">
                           <span className="text-xs text-slate-500">{getQualitativeLabel()}名 (定性)</span>
                           <input 
@@ -323,7 +323,7 @@ export const ActionPanel = () => {
                           )}
                         </div>
                         {editIsCalculated && (
-                          <div className="flex flex-col gap-1 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                          <div className="flex flex-col gap-1 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">
                             <span className="text-xs text-slate-500 flex items-center justify-between">
                               <span>数式入力</span>
                             </span>
@@ -369,7 +369,7 @@ export const ActionPanel = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2 group/edit cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700" onClick={() => setIsEditingValue(true)}>
+                <div className="flex flex-col gap-2 group/edit cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded transition-colors border border-transparent hover:border-slate-200 dark:border-slate-800 dark:hover:border-slate-700" onClick={() => setIsEditingValue(true)}>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="text-xs text-slate-500 dark:text-slate-400">
@@ -419,7 +419,7 @@ export const ActionPanel = () => {
             {/* トレンドチャート */}
             <div className="mt-4">
               <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">トレンド推移</h5>
-              <div className="bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+              <div className="bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 dark:border-slate-700">
                 <TrendChart 
                   actualValue={selectedKpi.actualValue} 
                   targetValue={selectedKpi.targetValue} 
@@ -429,7 +429,7 @@ export const ActionPanel = () => {
             </div>
 
             {/* 子ノード追加・リンク機能 */}
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 dark:border-slate-700">
               <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">子要素 (KPI/プロセス)</h5>
               <div className="flex flex-col gap-2">
                 <button 
@@ -457,10 +457,10 @@ export const ActionPanel = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 {selectedKpiTasks.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">タスクはありません</p>
+                  <p className="text-xs text-slate-500 text-center py-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">タスクはありません</p>
                 ) : (
                   selectedKpiTasks.map(task => (
-                    <div key={task.id} className="flex flex-col bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700 transition-colors group/task">
+                    <div key={task.id} className="flex flex-col bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700 transition-colors group/task">
                       <div className="flex items-start gap-2 p-2">
                         <button 
                           onClick={() => toggleActionStatus(task.id)}
@@ -561,7 +561,7 @@ export const ActionPanel = () => {
               </div>
 
               {/* 手動タスク追加 */}
-              <div className="flex gap-2 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-700">
+              <div className="flex gap-2 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">
                 <input 
                   type="text"
                   value={newTaskTitle}

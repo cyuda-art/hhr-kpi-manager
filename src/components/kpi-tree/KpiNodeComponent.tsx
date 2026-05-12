@@ -115,10 +115,10 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   return (
     <div className={cn(
-      "w-64 bg-white rounded-lg shadow-sm border p-4 transition-all duration-300 relative overflow-hidden",
+      "w-64 bg-white dark:bg-slate-800 rounded-lg dark:border-slate-700 shadow-sm border p-4 transition-all duration-300 relative overflow-hidden",
       getStatusBorder(displayStatus),
       isAlert ? "bg-red-50/50 border-red-600" : "",
-      isSelected && "ring-2 ring-oxford-navy border-oxford-navy shadow-md",
+      isSelected && "ring-2 ring-oxford-navy border-oxford-navy dark:ring-blue-400 dark:border-blue-400 shadow-md",
       data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20"
     )}>
       {/* Background Progress Bar Wrapper (Refined Gradient) */}
@@ -141,7 +141,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           <div className="flex items-center gap-1.5 mb-2 flex-wrap font-poppins">
             <span className="text-[9px] font-bold text-strategic-teal uppercase tracking-widest">{data.businessUnit}</span>
             {data.linkedSource && (
-              <span className="text-[8px] bg-logic-slate/10 text-logic-slate px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 flex items-center gap-0.5 tracking-wider">
+              <span className="text-[8px] bg-logic-slate/10 dark:bg-slate-700 text-logic-slate dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 flex items-center gap-0.5 tracking-wider">
                 <Link2 size={10} /> LINKED
               </span>
             )}
@@ -150,7 +150,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
                 ⚠️ RESET
               </span>
             )}
-            <span className="text-[8px] bg-logic-slate/5 text-logic-slate px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 tracking-wider">
+            <span className="text-[8px] bg-logic-slate/5 dark:bg-slate-700 text-logic-slate dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 tracking-wider">
               {data.type === 'KGI' ? 'GOAL / KGI' : level === 1 ? 'KSF / KPI' : 'PROCESS / KPI'}
             </span>
           </div>
@@ -161,14 +161,14 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
               <div>
                 <p className={cn(
                   "text-[9px] font-bold mb-0.5 flex items-center gap-1 font-poppins tracking-wider uppercase",
-                  data.isKsf ? "text-strategic-teal" : "text-logic-slate/70"
+                  data.isKsf ? "text-strategic-teal" : "text-logic-slate dark:text-slate-300/70 dark:text-slate-400"
                 )}>
                   <Target size={10} /> 
                   {data.isKsf ? "Key Success Factor" : getQualitativeLabel()}
                 </p>
                 <p className={cn(
                   "font-bold text-[13px] leading-snug break-words font-sans",
-                  data.isKsf ? "text-oxford-navy" : "text-oxford-navy/90"
+                  data.isKsf ? "text-oxford-navy dark:text-slate-100" : "text-oxford-navy dark:text-slate-100/90 dark:text-slate-200"
                 )}>
                   {(data.qualitativeName || '未設定').replace(/^(KSF|プロセス|Goal|Process)[:：\s]*/i, '')}
                 </p>
@@ -177,8 +177,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             
             {/* 定量（KGI/KPI）部分 */}
             <div>
-              <p className="text-[9px] text-logic-slate/70 font-bold mb-0.5 flex items-center gap-1 font-poppins tracking-wider uppercase"><BarChart2 size={10} /> {data.type === 'KGI' ? 'Quantitative KGI' : 'Quantitative KPI'}</p>
-              <p className="font-bold text-oxford-navy text-[12px] leading-snug break-words font-sans">{data.name}</p>
+              <p className="text-[9px] text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold mb-0.5 flex items-center gap-1 font-poppins tracking-wider uppercase"><BarChart2 size={10} /> {data.type === 'KGI' ? 'Quantitative KGI' : 'Quantitative KPI'}</p>
+              <p className="font-bold text-oxford-navy dark:text-slate-100 text-[12px] leading-snug break-words font-sans">{data.name}</p>
             </div>
           </div>
         </div>
@@ -196,22 +196,22 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
       <div className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043]">
         <div className="flex justify-between text-[11px] items-center font-lato">
-          <span className="flex items-center gap-1 text-logic-slate font-bold">
+          <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
             {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}
             {displayLabel}
           </span>
-          <span className="font-bold text-oxford-navy">
+          <span className="font-bold text-oxford-navy dark:text-slate-100">
             {displayActual.toLocaleString()} {data.unit}
           </span>
         </div>
         <div className="flex justify-between text-[11px] font-lato">
-          <span className="text-logic-slate/70 font-bold">目標</span>
-          <span className="text-logic-slate/70 font-bold">{displayTarget.toLocaleString()} {data.unit}</span>
+          <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
+          <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{displayTarget.toLocaleString()} {data.unit}</span>
         </div>
 
         {readableFormula && (
-          <div className="mt-2 pt-2 border-t border-slate-100">
-            <div className="text-[10px] bg-clean-canvas p-1.5 rounded-md border border-slate-100 break-words font-formula italic text-logic-slate">
+          <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+            <div className="text-[10px] bg-clean-canvas dark:bg-slate-900 p-1.5 rounded-md border border-slate-100 dark:border-slate-700 break-words font-formula italic text-logic-slate dark:text-slate-300">
               {readableFormula}
             </div>
           </div>
@@ -225,7 +225,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             toggleNodeCollapse(data.id);
           }}
           className={cn(
-            "absolute w-5 h-5 bg-white border rounded-full flex items-center justify-center text-logic-slate hover:text-oxford-navy hover:border-oxford-navy transition-all z-20 shadow-sm",
+            "absolute w-5 h-5 bg-white border rounded-full flex items-center justify-center text-logic-slate dark:text-slate-300 hover:text-oxford-navy dark:text-slate-100 hover:border-oxford-navy transition-all z-20 shadow-sm",
             getStatusBorder(displayStatus),
             sourcePosition === Position.Right ? "-right-2.5 top-1/2 -translate-y-1/2" : "-bottom-2.5 left-1/2 -translate-x-1/2"
           )}
