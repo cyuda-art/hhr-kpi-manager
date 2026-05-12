@@ -609,6 +609,7 @@ export default function WorkspacePage() {
         </div>
       )}
       </div>
+      </OrgLayout>
     </>
   );
 }
