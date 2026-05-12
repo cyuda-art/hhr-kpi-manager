@@ -145,6 +145,10 @@ export const AiLoadingOverlay: React.FC<AiLoadingOverlayProps> = ({ isVisible, s
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       style={{ backgroundColor: 'rgba(15, 23, 42, 0.85)' }} // 濃いslate系の半透明オーバーレイ
     >
+      {/* ATLAS AI Agent風の全画面発光ボーダーと光彩 */}
+      <div className="atlas-border-glow"></div>
+      <div className="atlas-inner-glow"></div>
+
       {/* Canvasを最背面に配置 */}
       <canvas 
         ref={canvasRef} 
