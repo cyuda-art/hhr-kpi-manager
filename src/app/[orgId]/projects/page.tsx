@@ -59,15 +59,36 @@ export default function WorkspacePage() {
     router.push(`/${currentOrgId}/p/${projectId}/kpi-tree`);
   };
 
+  const [uploadedFileUrls, setUploadedFileUrls] = useState<string[]>([]);
+
   const handleGenerateManifestos = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectUrl || !kgiTargetValue) return;
 
     try {
       setWizardStep('generating_manifestos');
+      if (!currentOrgId) throw new Error("No organization selected");
+
+      setUploadStatus('ファイルをアップロード中...');
+      const urls: string[] = [];
+      
+      // ファイルのアップロード処理（マニフェスト推論とツリー推論の両方で使う）
+      for (const file of selectedFiles) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`${file.name}は5MBを超えているためアップロードできません。`);
+          setWizardStep('input');
+          return;
+        }
+        const fileRef = ref(storage, `organizations/${currentOrgId}/temp_uploads/${Date.now()}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        urls.push(url);
+      }
+      setUploadedFileUrls(urls);
+
       setUploadStatus('Master MVVと事業特性に基づく戦略アプローチを推論中...');
 
-      const orgRef = doc(db, 'organizations', currentOrgId!);
+      const orgRef = doc(db, 'organizations', currentOrgId);
       const orgSnap = await getDoc(orgRef);
       const masterMvv = orgSnap.exists() ? orgSnap.data().masterMvv : '';
 
@@ -80,7 +101,9 @@ export default function WorkspacePage() {
           masterMvv,
           kgiType: finalKgiType,
           kgiTargetValue: Number(kgiTargetValue) || 0,
-          projectUrl
+          projectUrl,
+          customInstructions, // 追加指示
+          fileUrls: urls // アップロードファイル
         })
       });
 
@@ -110,22 +133,6 @@ export default function WorkspacePage() {
     try {
       setWizardStep('generating_tree');
       if (!currentOrgId) throw new Error("No organization selected");
-
-      setUploadStatus('ファイルをアップロード中...');
-      const uploadedFiles: { url: string; path: string; mimeType: string }[] = [];
-      
-      // 1. ファイルのアップロード処理
-      for (const file of selectedFiles) {
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`${file.name}は5MBを超えているためアップロードできません。`);
-          setWizardStep('select_manifesto');
-          return;
-        }
-        const fileRef = ref(storage, `organizations/${currentOrgId}/temp_uploads/${Date.now()}_${file.name}`);
-        await uploadBytes(fileRef, file);
-        const url = await getDownloadURL(fileRef);
-        uploadedFiles.push({ url, path: fileRef.fullPath, mimeType: file.type });
-      }
 
       setUploadStatus('過去のアーカイブ資産を走査中...');
       const archivedKpis: any[] = [];
@@ -169,15 +176,10 @@ export default function WorkspacePage() {
           businessModelType,
           selectedManifesto: editableManifesto,
           customInstructions,
-          fileUrls: uploadedFiles.map(f => f.url),
+          fileUrls: uploadedFileUrls, // 事前アップロード済みのURLを使用
           archivedKpis // 集めたアーカイブKPIをコンテキストとして渡す
         })
       });
-
-      // 後処理：一時ファイルを削除（非同期でバックグラウンド実行）
-      for (const f of uploadedFiles) {
-        deleteObject(ref(storage, f.path)).catch(console.error);
-      }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate');

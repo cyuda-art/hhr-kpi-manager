@@ -7,6 +7,7 @@ export interface Project {
   businessModel?: string;
   targetAudience?: string;
   mvv?: string;
+  manifesto?: string; // AI生成ウィザードで選択された作戦シナリオ
   kgiType?: string;
   kgiPeriod?: string;
   kgiTargetValue?: number;

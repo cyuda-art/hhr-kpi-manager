@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { masterMvv, kgiType, kgiTargetValue, projectUrl } = await req.json();
+    const { masterMvv, kgiType, kgiTargetValue, projectUrl, customInstructions, fileUrls } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
@@ -51,10 +51,12 @@ ${masterMvv || '特に指定なし'}
 - 対象事業: ${extractedText}
 - 自部門のKGI: ${kgiType}
 - 目標数値: ${kgiTargetValue}
+- 追加指示・前提条件: ${customInstructions || '特になし'}
 
 【タスク】
 該当部門がKGIを達成するための「具体的な戦略シナリオ（Project Manifesto）」を3パターン考案してください。
 例えば、顧客満足度がKGIの場合、「プロダクト改善主導」「サポート対応スピード特化」「コミュニティ形成主導」など、異なるアプローチの戦略を3つ作成してください。
+※ 添付ファイル（もしあれば）の内容も考慮して、最も実現可能性とインパクトの高い作戦を提示してください。
 
 【出力要件】
 以下のJSONフォーマットの配列で出力してください。Markdownのコードブロック（\`\`\`json）は含めないでください。
@@ -68,7 +70,32 @@ ${masterMvv || '特に指定なし'}
 ]
 `;
 
-    const result = await model.generateContent(prompt);
+`;
+
+    const promptParts: any[] = [prompt];
+
+    // アップロードされたファイル（URL）を取得し、Base64に変換してGeminiに渡す
+    if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
+      for (const url of fileUrls) {
+        try {
+          const fileRes = await fetch(url);
+          if (fileRes.ok) {
+            const arrayBuffer = await fileRes.arrayBuffer();
+            const mimeType = fileRes.headers.get('content-type') || 'application/octet-stream';
+            promptParts.push({
+              inlineData: {
+                data: Buffer.from(arrayBuffer).toString('base64'),
+                mimeType
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Failed to fetch uploaded file for Gemini:', e);
+        }
+      }
+    }
+
+    const result = await model.generateContent(promptParts);
     const response = await result.response;
     let text = response.text();
 
