@@ -6,7 +6,9 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { OrgLayout } from '@/components/layout/OrgLayout';
-import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical, Sparkles } from 'lucide-react';
+import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical, Sparkles, Upload, X } from 'lucide-react';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -25,6 +27,10 @@ export default function WorkspacePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+
+  const [customInstructions, setCustomInstructions] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadStatus, setUploadStatus] = useState('');
 
   const [hasSampleData, setHasSampleData] = useState(false);
 
@@ -60,7 +66,25 @@ export default function WorkspacePage() {
       setIsGenerating(true);
       if (!currentOrgId) throw new Error("No organization selected");
 
-      // 1. APIを呼んでKPIツリーをAI生成
+      setUploadStatus('ファイルをアップロード中...');
+      const uploadedFiles: { url: string; path: string; mimeType: string }[] = [];
+      
+      // 1. ファイルのアップロード処理
+      for (const file of selectedFiles) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`${file.name}は5MBを超えているためアップロードできません。`);
+          setIsGenerating(false);
+          return;
+        }
+        const fileRef = ref(storage, `organizations/${currentOrgId}/temp_uploads/${Date.now()}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        uploadedFiles.push({ url, path: fileRef.fullPath, mimeType: file.type });
+      }
+
+      setUploadStatus('AIが最適なKPIツリーを構築中...');
+
+      // 2. APIを呼んでKPIツリーをAI生成
       const res = await fetch('/api/generate-kpi-tree', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,9 +94,16 @@ export default function WorkspacePage() {
           kgiPeriod,
           kgiTargetValue: Number(kgiTargetValue) || 0,
           businessModelType,
-          mvv
+          mvv,
+          customInstructions,
+          fileUrls: uploadedFiles.map(f => f.url)
         })
       });
+
+      // 後処理：一時ファイルを削除（非同期でバックグラウンド実行）
+      for (const f of uploadedFiles) {
+        deleteObject(ref(storage, f.path)).catch(console.error);
+      }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
@@ -339,7 +370,7 @@ export default function WorkspacePage() {
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-[#e8eaed] mb-2">AIが最適なKPIツリーを構築中...</h3>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-[#e8eaed] mb-2">{uploadStatus || 'AIが最適なKPIツリーを構築中...'}</h3>
                 <p className="text-slate-500 dark:text-[#9aa0a6] text-center max-w-md">
                   ヒアリング内容に基づき、事業特性に合わせたKGIとKPIの分解ツリー、および目標数値を自動生成しています。（最大10〜15秒かかります）
                 </p>
@@ -442,7 +473,55 @@ export default function WorkspacePage() {
                     </div>
 
                     <div>
-                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">5. 初期データの生成</label>
+                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">5. AIへの追加指示・前提条件 (任意)</label>
+                      <textarea
+                        value={customInstructions} onChange={(e) => setCustomInstructions(e.target.value)} rows={3}
+                        placeholder="「従業員定着率をKGIの直下に置いてほしい」「○○事業部のシステム移行コストを含めてほしい」など、ツリー生成時の要望を自由に記述してください。"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">6. 参考ファイル (CSV / PDF / 画像)</label>
+                      <div className="border-2 border-dashed border-slate-300 dark:border-[#5f6368] rounded-[4px] p-4 text-center hover:bg-slate-50 dark:hover:bg-[#202124] transition-colors relative">
+                        <input
+                          type="file" multiple accept=".csv,.pdf,image/*"
+                          onChange={(e) => {
+                            if (e.target.files) {
+                              const newFiles = Array.from(e.target.files);
+                              setSelectedFiles(prev => [...prev, ...newFiles].slice(0, 3)); // 最大3つ
+                            }
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div className="flex flex-col items-center pointer-events-none">
+                          <Upload size={20} className="text-slate-400 mb-2" />
+                          <p className="text-[12px] text-slate-500 font-medium">クリックまたはドラッグ＆ドロップでファイルを追加</p>
+                          <p className="text-[10px] text-slate-400 mt-1">最大3ファイル / 各5MBまで (CSV, PDF, JPG, PNG対応)</p>
+                        </div>
+                      </div>
+                      
+                      {selectedFiles.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {selectedFiles.map((file, idx) => (
+                            <div key={idx} className="flex items-center gap-2 bg-slate-100 dark:bg-[#3c4043] px-3 py-1.5 rounded-[4px] text-[11px] text-slate-700 dark:text-[#e8eaed]">
+                              <span className="truncate max-w-[150px]">{file.name}</span>
+                              <button 
+                                type="button" 
+                                onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))}
+                                className="text-slate-400 hover:text-rose-500"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-[11px] text-slate-400 mt-2">事業計画書やアンケート結果などの資料をアップロードすると、AIが内容を読み込んでツリーに反映します。</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">7. 初期データの生成</label>
                       <div className="flex items-center gap-4">
                         <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-[#e8eaed] cursor-pointer">
                           <input type="radio" checked={!hasSampleData} onChange={() => setHasSampleData(false)} className="text-primary-500 focus:ring-primary-500" />

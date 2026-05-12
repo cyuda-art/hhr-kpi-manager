@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, mvv } = await req.json();
+    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, mvv, customInstructions, fileUrls } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
@@ -51,12 +51,14 @@ export async function POST(req: Request) {
 - KGIの目標数値: ${kgiTargetValue}
 - ビジネスモデルの型: ${businessModelType}
 - MVV・制約条件 (企業の理念、提供価値、NG行動など): ${mvv || '未設定'}
+- 追加指示・前提条件: ${customInstructions || '特になし'}
 
 【思考プロセス（内部推論のステップ）】
-以下のステップ1〜3の推論を行い、その結果をJSONの "thinking_process" キーに出力してください。
-ステップ1: 環境分析と解読 - 事業概要テキストから事業ポートフォリオを解読。目標期間（${kgiPeriod}）に達成可能な規模感と現実的な数値を想定する。
-ステップ2: 第1階層の数式設計 - ユーザー指定のビジネスモデル（${businessModelType}）に基づき、KGI直下の第1階層を決定。
-ステップ3: プロセス分解とMVVの適用 - MVV（${mvv}）の理念をKPIの名称（qualitativeName）や、末端KPIのタスク（ToDo）に色濃く反映させる。顧客への提供価値を高めるアクションをタスク化し、MVVに反するスパム的な行動は排除する。
+以下のステップ1〜4の推論を行い、その結果をJSONの "thinking_process" キーに出力してください。
+ステップ1: 添付ファイル（もしあれば）の解析 - 画像、PDF、CSVなどの参照資料から、事業特性や既存の数値を読み解く。
+ステップ2: 環境分析と解読 - 事業概要テキストから事業ポートフォリオを解読。目標期間（${kgiPeriod}）に達成可能な規模感と現実的な数値を想定する。
+ステップ3: 第1階層の数式設計 - ユーザー指定のビジネスモデル（${businessModelType}）に基づき、KGI直下の第1階層を決定。追加指示（${customInstructions}）があれば優先して反映させる。
+ステップ4: プロセス分解とMVVの適用 - MVV（${mvv}）の理念をKPIの名称（qualitativeName）や、末端KPIのタスク（ToDo）に色濃く反映させる。顧客への提供価値を高めるアクションをタスク化し、MVVに反するスパム的な行動は排除する。
 
 【出力要件】
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
@@ -134,7 +136,31 @@ export async function POST(req: Request) {
 }
 `;
 
-    const result = await model.generateContent(prompt);
+    const promptParts: any[] = [prompt];
+
+    // アップロードされたファイル（URL）を取得し、Base64に変換してGeminiに渡す
+    if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
+      for (const url of fileUrls) {
+        try {
+          const fileRes = await fetch(url);
+          if (fileRes.ok) {
+            const arrayBuffer = await fileRes.arrayBuffer();
+            const mimeType = fileRes.headers.get('content-type') || 'application/octet-stream';
+            // Gemini 1.5は画像、PDF、テキストなどのinlineDataをサポート
+            promptParts.push({
+              inlineData: {
+                data: Buffer.from(arrayBuffer).toString('base64'),
+                mimeType
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Failed to fetch uploaded file for Gemini:', e);
+        }
+      }
+    }
+
+    const result = await model.generateContent(promptParts);
     const response = await result.response;
     let text = response.text();
 
