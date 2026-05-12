@@ -10,7 +10,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
-import { LayoutDashboard, Database, Activity, CheckSquare, FolderGit2, FolderKanban } from 'lucide-react';
+import { LayoutDashboard, Database, Activity, CheckSquare, FolderGit2, FolderKanban, Printer } from 'lucide-react';
 
 export const Header = () => {
   const router = useRouter();
@@ -74,6 +74,9 @@ export const Header = () => {
           </Link>
           <Link href={`/${currentOrgId}/p/${currentProjectId}/manifesto`} title="マニフェスト" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/manifesto') ? 'bg-primary-50 dark:bg-primary-900/20 text-amber-600 dark:text-amber-500' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Sparkles size={16} className={pathname.includes('/manifesto') ? 'text-amber-500' : ''} /> <span className="hidden xl:inline">マニフェスト</span>
+          </Link>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/report`} title="戦略レポート" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/report') ? 'bg-[#00205B]/10 dark:bg-[#00205B]/30 text-[#00205B] dark:text-[#8ab4f8]' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+            <Printer size={16} className={pathname.includes('/report') ? 'text-[#00205B] dark:text-[#8ab4f8]' : ''} /> <span className="hidden xl:inline">レポート</span>
           </Link>
           <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} title="シートエディタ" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/data-entry') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Database size={16} /> <span className="hidden xl:inline">シートエディタ</span>
