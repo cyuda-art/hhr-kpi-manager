@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
-    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, mvv, customInstructions, fileUrls, archivedKpis } = await req.json();
+    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, selectedManifesto, customInstructions, fileUrls, archivedKpis } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
@@ -41,8 +41,7 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-あなたはマッキンゼーやBCGなどのトップティア戦略コンサルティングファーム出身の、AI経営戦略コンサルタントです。
-以下のユーザー提供情報を元に、論理的で実行可能性の高い「KGI・KSF・KPIツリー」を構築してください。
+あなたの任務は、フェーズ1でユーザーが選択・決定した【作戦（Project Manifesto）】を忠実に実現するための「KGI・KSF・KPIツリー」を構築することです。
 
 【ユーザー入力情報】
 - 事業概要・URLテキスト: ${extractedText}
@@ -50,16 +49,16 @@ export async function POST(req: Request) {
 - KGIの目標期間: ${kgiPeriod}
 - KGIの目標数値: ${kgiTargetValue}
 - ビジネスモデルの型: ${businessModelType}
-- MVV・制約条件 (企業の理念、提供価値、NG行動など): ${mvv || '未設定'}
+- 【重要】ユーザーが選択した作戦（Manifesto）: 
+${selectedManifesto ? `タイトル: ${selectedManifesto.title}\n内容: ${selectedManifesto.description}` : '未設定'}
 - 追加指示・前提条件: ${customInstructions || '特になし'}
 
 【思考プロセス（内部推論のステップ）】
 以下のステップ1〜4の推論を行い、その結果をJSONの "thinking_process" キーに出力してください。
 ステップ1: 添付ファイル（もしあれば）の解析 - 画像、PDF、CSVなどの参照資料から、事業特性や既存の数値を読み解く。
-ステップ2: 環境分析と解読 - 事業概要テキストから事業ポートフォリオを解読。目標期間（${kgiPeriod}）に達成可能な規模感と現実的な数値を想定する。
-ステップ3: 第1階層の数式設計 - ユーザー指定のビジネスモデル（${businessModelType}）に基づき、KGI直下の第1階層を決定。追加指示（${customInstructions}）があれば優先して反映させる。
-ステップ4: アーカイブ資産の引き継ぎ判定 - 【アーカイブ済みKPIカタログ】が提供されている場合、新しく作成しようとしているKPIの意味（プロセス）と完全に合致する過去のKPIが存在するかを判定し、存在する場合はゼロから作らずにそのIDを mappedSourceId として出力する。
-ステップ5: プロセス分解とMVVの適用 - MVV（${mvv}）の理念をKPIの名称（qualitativeName）や、末端KPIのタスク（ToDo）に色濃く反映させる。顧客への提供価値を高めるアクションをタスク化し、MVVに反するスパム的な行動は排除する。
+ステップ2: 環境分析と作戦の解読 - 選択された作戦（Manifesto）を深く読み解き、その作戦を成功させるために最も重要となるプロセス（KSF: Key Success Factor）を特定する。
+ステップ3: 階層構造の数式設計 - ユーザー指定の作戦とビジネスモデルに基づき、KGIを分解。作戦で強調されている指標をツリーの中心に据える。
+ステップ4: アーカイブ資産の引き継ぎ判定 - 【アーカイブ済みKPIカタログ】が提供されている場合、新しく作成しようとしているKPIの意味と完全に合致する過去のKPIが存在するかを判定し、存在する場合はそのIDを mappedSourceId として出力する。
 
 【アーカイブ済みKPIカタログ（再利用候補）】
 ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: any) => ({ id: k.id, name: k.name, qualitativeName: k.qualitativeName })), null, 2) : '再利用可能なアーカイブKPIはありません。'}
@@ -79,6 +78,7 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
   - 悪い例: 「アンケート最高評価率」の直下に「満足度ドライバースコア」という1つのノードがあり、さらにその下に「回答数」がある（計算式の参照先と親子関係が一致していないため致命的なエラーとなります）。
   - 子ノードを持つすべての親ノードは、必ず isCalculated: true とし、子ノードのIDを用いた正しい formula (例: "#{id1} * #{id2}" や "#{id1} / #{id2} * 100") を設定してください。
   - 末端のノード（これ以上分解しない最下層）のみ isCalculated: false とし、formula は空文字 "" にしてください。
+- 戦略上、作戦（Manifesto）を実行する上で最も重要となるノード（KSFとなるノード）には、必ず "isKsf": true のフラグを立ててください（複数可）。
 - businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。
 - 数値（targetValue, actualValue, previousValue）は、売上規模から推測してリアリティのある数値を設定してください（単位に注意）。
 - 【重要】単位（unit）が「%」の指標（商談化率、利益率など）の場合、数値は0.2のような小数ではなく、必ず100倍した数値（例: 20%の場合は「20」）で設定してください。
@@ -108,7 +108,8 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
       "description": "KGIの詳細説明",
       "isCalculated": true,
       "formula": "#{kpi_child_1} * #{kpi_child_2}",
-      "mappedSourceId": "kpi_xxx" // 合致するアーカイブKPIがある場合のみ指定
+      "mappedSourceId": "kpi_xxx", // 合致するアーカイブKPIがある場合のみ指定
+      "isKsf": true // 戦略上特に重要なノードにはtrueを付与
     },
     {
       "id": "kpi_child_1",
