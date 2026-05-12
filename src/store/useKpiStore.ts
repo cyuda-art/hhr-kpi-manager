@@ -194,6 +194,36 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
 const initialData: Record<string, KpiNodeWithComputedAndInit> = {};
 
 // --- 動的計算エンジン ---
+// 数式のAIブレを吸収するサニタイズ関数（名前ベースで数式が書かれていた場合にIDに自動置換する）
+const sanitizeKpiData = (draft: Record<string, KpiNodeWithComputedAndInit>) => {
+  const nameToIdMap: Record<string, string> = {};
+  Object.values(draft).forEach(node => {
+    nameToIdMap[node.name] = node.id;
+  });
+
+  Object.values(draft).forEach(node => {
+    if (node.isCalculated && node.formula) {
+      let newFormula = node.formula;
+      
+      // 1. #{名前} のパターンを補正
+      newFormula = newFormula.replace(/#\{([^}]+)\}/g, (match, nameOrId) => {
+        if (draft[nameOrId]) return match; // 既にIDならOK
+        if (nameToIdMap[nameOrId]) return `#{${nameToIdMap[nameOrId]}}`;
+        return match;
+      });
+
+      // 2. [名前] のパターンを補正（AIがよく間違う）
+      newFormula = newFormula.replace(/\[([^\]]+)\]/g, (match, nameOrId) => {
+        if (draft[nameOrId]) return `#{${nameOrId}}`;
+        if (nameToIdMap[nameOrId]) return `#{${nameToIdMap[nameOrId]}}`;
+        return match;
+      });
+      
+      node.formula = newFormula;
+    }
+  });
+};
+
 const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue'): number | null => {
   if (!formulaStr) return null;
   let parsedFormula = formulaStr;
@@ -395,6 +425,10 @@ export const useKpiStore = create<KpiStore>()(
             (pData as any)._tempCollapsedNodes = newCollapsedNodes;
             (pData as any)._tempPredictionMode = newPredictionMode;
 
+            sanitizeKpiData(kpiData as Record<string, KpiNodeWithComputedAndInit>);
+            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'actualValue');
+            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'targetValue');
+            
             // 各KPIのhistoryをサブコレクションから取得して結合する
             if (Object.keys(kpiData).length > 0) {
               console.log(`🌐 [initializeDB] Fetching history for ${Object.keys(kpiData).length} KPIs...`);
@@ -940,6 +974,7 @@ export const useKpiStore = create<KpiStore>()(
   overwriteKpiData: (newKpiData) => set((state) => {
     state.saveHistory();
     const draft = { ...newKpiData };
+    sanitizeKpiData(draft);
     recalculateTree(draft, 'actualValue');
     recalculateTree(draft, 'targetValue');
     syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft });
