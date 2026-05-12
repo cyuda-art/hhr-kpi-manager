@@ -115,7 +115,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   return (
     <div className={cn(
-      "w-64 bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border border-slate-200 dark:border-slate-600 p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300 relative overflow-hidden",
+      "w-64 bg-white dark:bg-[#2d2f31] rounded-[8px] shadow-sm border border-slate-200 dark:border-slate-600 p-4 transition-all hover:shadow-md hover:-translate-y-0.5 duration-300 relative",
       getStatusBorder(displayStatus),
       data.isSimulated && "shadow-[#8ab4f8]/20",
       isSelected && "ring-2 ring-[#8ab4f8] border-[#8ab4f8]",
@@ -124,16 +124,18 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       isPredictionMode && "bg-slate-50 dark:bg-[#202124] border-[#8ab4f8]",
       data.isKsf && "ring-2 ring-amber-400 dark:ring-amber-500 shadow-[0_0_15px_rgba(251,191,36,0.4)] dark:shadow-[0_0_15px_rgba(245,158,11,0.2)]"
     )}>
-      {/* Background Progress Bar */}
-      <div 
-        className={cn(
-          "absolute top-0 left-0 h-full opacity-[0.15] dark:opacity-[0.25] transition-all duration-1000 ease-out",
-          displayStatus === 'good' ? "bg-gradient-to-r from-emerald-100 to-emerald-500 dark:from-emerald-900 dark:to-emerald-500" :
-          displayStatus === 'warning' ? "bg-gradient-to-r from-amber-100 to-amber-500 dark:from-amber-900 dark:to-amber-500" :
-          "bg-gradient-to-r from-rose-100 to-rose-500 dark:from-rose-900 dark:to-rose-500"
-        )}
-        style={{ width: `${Math.min(100, Math.max(0, displayAchievementRate))}%` }}
-      />
+      {/* Background Progress Bar Wrapper */}
+      <div className="absolute inset-0 overflow-hidden rounded-[8px] pointer-events-none">
+        <div 
+          className={cn(
+            "absolute top-0 left-0 h-full opacity-[0.15] dark:opacity-[0.25] transition-all duration-1000 ease-out",
+            displayStatus === 'good' ? "bg-gradient-to-r from-emerald-100 to-emerald-500 dark:from-emerald-900 dark:to-emerald-500" :
+            displayStatus === 'warning' ? "bg-gradient-to-r from-amber-100 to-amber-500 dark:from-amber-900 dark:to-amber-500" :
+            "bg-gradient-to-r from-rose-100 to-rose-500 dark:from-rose-900 dark:to-rose-500"
+          )}
+          style={{ width: `${Math.min(100, Math.max(0, displayAchievementRate))}%` }}
+        />
+      </div>
 
       <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none relative z-10" />
       
@@ -245,7 +247,11 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             toggleNodeCollapse(data.id);
           }}
           className={cn(
-            "absolute w-6 h-6 bg-white dark:bg-[#2d2f31] border border-slate-300 dark:border-[#5f6368] rounded-full flex items-center justify-center text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed] hover:border-[#8ab4f8] hover:bg-slate-50 dark:hover:bg-[#323639] transition-colors z-10",
+            "absolute w-6 h-6 bg-white dark:bg-slate-800 border-2 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all z-20 shadow-sm",
+            displayStatus === 'good' ? "border-emerald-400 hover:ring-2 hover:ring-emerald-400/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30" :
+            displayStatus === 'warning' ? "border-amber-400 hover:ring-2 hover:ring-amber-400/50 hover:bg-amber-50 dark:hover:bg-amber-900/30" :
+            displayStatus === 'danger' ? "border-rose-400 hover:ring-2 hover:ring-rose-400/50 hover:bg-rose-50 dark:hover:bg-rose-900/30" :
+            "border-slate-300",
             sourcePosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
           )}
         >

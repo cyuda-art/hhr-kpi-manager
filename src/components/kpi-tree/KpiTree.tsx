@@ -7,7 +7,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import dagre from 'dagre';
-import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2 } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight } from 'lucide-react';
 
 
 const nodeTypes = {
@@ -404,11 +404,11 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             </button>
             <button
               onClick={toggleDirection}
-              className="flex items-center justify-center px-3 py-1.5 rounded-lg shadow-sm border transition-colors bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-xs font-bold"
               title="レイアウトの方向（縦・横）を切り替え"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M21 9V3h-6"/><path d="M3 15v6h6"/><path d="M21 3l-6 6"/><path d="M3 21l6-6"/></svg>
-              方向切替 ({layoutDirection === 'TB' ? '上→下' : '左→右'})
+              {layoutDirection === 'TB' ? <MoveDown size={14} /> : <MoveRight size={14} />}
+              方向: {layoutDirection === 'TB' ? '縦 (Top to Bottom)' : '横 (Left to Right)'}
             </button>
             <button
               onClick={toggleMiniMap}
