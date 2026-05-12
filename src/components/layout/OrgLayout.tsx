@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { User, LogOut, Hexagon } from 'lucide-react';
+import { User, LogOut, Hexagon, Settings } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { ThemeToggle } from './ThemeToggle';
@@ -28,6 +28,16 @@ export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
         
         <div className="flex items-center gap-3 md:gap-6">
           <ThemeToggle />
+          
+          {currentOrgId && (
+            <Link 
+              href={`/${currentOrgId}/settings`}
+              className="p-2 text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-full transition-all"
+              title="組織設定"
+            >
+              <Settings size={20} />
+            </Link>
+          )}
           
           {user && (
             <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-slate-200 dark:border-[#3c4043]">
