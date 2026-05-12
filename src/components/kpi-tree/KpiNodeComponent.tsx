@@ -218,7 +218,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         )}
       </div>
       
-      {data.hasChildren && (
+      {data.hasChildren ? (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -231,6 +231,23 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           )}
         >
           {data.isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+        </button>
+      ) : (
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            btn.classList.add('animate-pulse', 'pointer-events-none');
+            await useKpiStore.getState().expandKpiNode(data.id);
+            btn.classList.remove('animate-pulse', 'pointer-events-none');
+          }}
+          title="AIでさらに要素分解する"
+          className={cn(
+            "absolute w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-strategic-teal hover:bg-strategic-teal hover:text-white hover:border-strategic-teal transition-all z-20 shadow-sm group",
+            sourcePosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
+          )}
+        >
+          <Sparkles size={12} className="group-hover:animate-spin" />
         </button>
       )}
 

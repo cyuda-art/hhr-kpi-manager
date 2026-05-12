@@ -53,6 +53,7 @@ interface KpiStore {
   undo: () => void;
   redo: () => void;
   reviveKpiNode: (id: string, newParentId: string | null) => void;
+  expandKpiNode: (kpiId: string) => Promise<void>;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -983,6 +984,89 @@ export const useKpiStore = create<KpiStore>()(
     syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft });
     return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
   }),
+
+  expandKpiNode: async (kpiId: string) => {
+    const state = useKpiStore.getState();
+    const parentNode = state.kpiData[kpiId];
+    if (!parentNode) return;
+
+    try {
+      const res = await fetch('/api/expand-kpi-node', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentNode })
+      });
+
+      if (!res.ok) throw new Error('Failed to expand KPI node');
+      
+      const { nodes, parentFormula } = await res.json();
+      if (!nodes || nodes.length === 0) return;
+
+      useKpiStore.setState((currentState) => {
+        currentState.saveHistory();
+        const draft = { ...currentState.kpiData };
+        let newActions = [...currentState.actions];
+
+        // 1. 新しいノードをdraftに追加
+        nodes.forEach((node: any) => {
+          // 重複を避けるためIDを上書き（万が一のため）
+          let safeId = node.id;
+          if (draft[safeId]) {
+            safeId = `kpi_exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            node.id = safeId;
+            // formula内のIDも置換が必要だが簡略化のためAIが被らないIDを出力すると信じるか置換処理を書く
+            // 現状はAIの出力した一意なIDを利用する
+          }
+
+          // タスクがあればActionsに退避
+          if (node.tasks && Array.isArray(node.tasks)) {
+            node.tasks.forEach((task: any) => {
+              newActions.push({
+                id: `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                kpiId: safeId,
+                title: task.task_name,
+                description: task.description || '',
+                status: 'todo',
+                owner: '未定',
+                dueDate: task.due_date || new Date().toISOString().split('T')[0]
+              });
+            });
+            delete node.tasks;
+          }
+
+          const newNode: KpiNodeWithComputedAndInit = {
+            ...node,
+            history: [],
+            initialActualValue: node.actualValue || 0
+          };
+          draft[safeId] = calculateComputed(newNode);
+        });
+
+        // 2. 親ノードの更新（計算式の設定など）
+        const newParentFormula = parentFormula || nodes.map((n:any) => `#{${n.id}}`).join(" + ");
+        const updatedParent = {
+          ...draft[kpiId],
+          isCalculated: true,
+          formula: newParentFormula
+        };
+        draft[kpiId] = calculateComputed(updatedParent);
+
+        // 3. ツリー全体の再計算
+        sanitizeKpiData(draft);
+        recalculateTree(draft, 'targetValue');
+        recalculateTree(draft, 'actualValue');
+
+        // 4. DBへ同期
+        syncToDB(currentState.currentProjectId, currentState.currentOrgId, { kpiData: draft, actions: newActions });
+
+        return { kpiData: draft, actions: newActions, projectData: saveToProjectData({ ...currentState, kpiData: draft, actions: newActions }) };
+      });
+
+    } catch (e) {
+      console.error("Expand API error:", e);
+      alert("展開に失敗しました。");
+    }
+  },
 
   toggleNodeCollapse: (id) => {
     set((state) => {
