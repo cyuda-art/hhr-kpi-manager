@@ -76,26 +76,26 @@ export default function SettingsPage() {
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in duration-300">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">組織設定</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">「{currentOrg.name}」のメンバーと権限を管理します</p>
+        <h1 className="text-2xl font-bold text-oxford-navy dark:text-slate-200">組織設定</h1>
+        <p className="text-logic-slate dark:text-slate-400 mt-1">「{currentOrg.name}」のメンバーと権限を管理します</p>
       </div>
 
       <div className="flex gap-4 mb-8 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
         <button
           onClick={() => setActiveTab('project-info')}
-          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'project-info' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'project-info' ? 'border-strategic-teal text-strategic-teal dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-logic-slate dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
         >
           プロジェクト基本情報
         </button>
         <button
           onClick={() => setActiveTab('members')}
-          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'members' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'members' ? 'border-strategic-teal text-strategic-teal dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-logic-slate dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
         >
           メンバー管理
         </button>
         <button
           onClick={() => setActiveTab('theme')}
-          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'theme' ? 'border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+          className={`pb-4 px-4 font-bold text-sm transition-colors whitespace-nowrap border-b-2 ${activeTab === 'theme' ? 'border-strategic-teal text-strategic-teal dark:border-primary-400 dark:text-primary-400' : 'border-transparent text-logic-slate dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
         >
           テーマカラー
         </button>
@@ -103,7 +103,7 @@ export default function SettingsPage() {
 
       {activeTab === 'project-info' && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden p-6 md:p-8">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6">プロジェクト基本情報の更新</h2>
+          <h2 className="text-lg font-bold text-oxford-navy dark:text-slate-200 mb-6">プロジェクト基本情報の更新</h2>
           <form onSubmit={handleUpdateProject} className="space-y-6 max-w-2xl">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">プロジェクト名</label>
@@ -111,7 +111,7 @@ export default function SettingsPage() {
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 bg-clean-canvas dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-strategic-teal"
                 required
               />
             </div>
@@ -120,7 +120,7 @@ export default function SettingsPage() {
               <textarea
                 value={projectDesc}
                 onChange={(e) => setProjectDesc(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none h-24"
+                className="w-full px-4 py-2 bg-clean-canvas dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-strategic-teal resize-none h-24"
               />
             </div>
             <div>
@@ -128,15 +128,15 @@ export default function SettingsPage() {
               <textarea
                 value={projectMvv}
                 onChange={(e) => setProjectMvv(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none h-24"
+                className="w-full px-4 py-2 bg-clean-canvas dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-strategic-teal resize-none h-24"
               />
-              <p className="text-xs text-slate-500 mt-2">※ここを変更しても、すでに生成されたKPIツリーには反映されません。今後新しくKPIをAI生成する際の基準として保存されます。</p>
+              <p className="text-xs text-logic-slate dark:text-slate-400 mt-2">※ここを変更しても、すでに生成されたKPIツリーには反映されません。今後新しくKPIをAI生成する際の基準として保存されます。</p>
             </div>
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-all disabled:opacity-50"
+                className="px-6 py-2.5 bg-strategic-teal hover:bg-strategic-teal text-white rounded-lg font-bold transition-all disabled:opacity-50"
               >
                 {isUpdating ? '保存中...' : '変更を保存'}
               </button>
@@ -149,8 +149,8 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-4">
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
-                <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-clean-canvas dark:bg-slate-900/50 dark:bg-slate-800/50 flex justify-between items-center">
+                <h2 className="font-bold text-oxford-navy dark:text-slate-200 flex items-center gap-2">
                   <Users className="w-5 h-5 text-primary-500" />
                   組織メンバー ({currentOrg.members.length}名)
                 </h2>
@@ -159,18 +159,18 @@ export default function SettingsPage() {
                 {currentOrg.members.map((member, idx) => (
                   <li key={idx} className="px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-700 dark:text-primary-300 font-bold">
+                      <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-strategic-teal dark:text-primary-300 font-bold">
                         {member.userId === user?.uid ? 'You' : 'M'}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                        <p className="font-bold text-oxford-navy dark:text-slate-200 text-sm">
                           {member.userId === user?.uid ? 'あなた' : `User (${member.userId.substring(0, 8)}...)`}
                         </p>
-                        <p className="text-xs text-slate-500">参加日: {new Date(member.joinedAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-logic-slate dark:text-slate-400">参加日: {new Date(member.joinedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${member.role === 'admin' ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800' : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400'}`}>
+                      <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${member.role === 'admin' ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800' : 'bg-slate-100 text-logic-slate dark:text-slate-400 border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400'}`}>
                         {member.role.toUpperCase()}
                       </span>
                     </div>
@@ -186,12 +186,12 @@ export default function SettingsPage() {
                 <Shield className="w-5 h-5 text-primary-500" />
                 新しいメンバーを招待
               </h3>
-              <p className="text-sm text-primary-700/80 dark:text-primary-300/80 mb-6">
+              <p className="text-sm text-strategic-teal/80 dark:text-primary-300/80 mb-6">
                 招待リンクをコピーして、チームメンバーに共有してください。リンクから参加したユーザーは初期権限として「Viewer」になります。
               </p>
               <button
                 onClick={handleCopyInviteLink}
-                className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary-600/30"
+                className="w-full flex items-center justify-center gap-2 bg-strategic-teal hover:bg-strategic-teal text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary-600/30"
               >
                 {isCopied ? <Check size={18} /> : <Copy size={18} />}
                 {isCopied ? 'コピー完了！' : '招待リンクをコピー'}
@@ -206,9 +206,9 @@ export default function SettingsPage() {
       {activeTab === 'theme' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-              <h2 className="font-bold text-slate-800 dark:text-slate-100">テーマカラーを選択</h2>
-              <p className="text-xs text-slate-500 mt-1">Colorion風のカラーパレットからお好みのスタイルを選択してください。</p>
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-clean-canvas dark:bg-slate-900/50 dark:bg-slate-800/50">
+              <h2 className="font-bold text-oxford-navy dark:text-slate-200">テーマカラーを選択</h2>
+              <p className="text-xs text-logic-slate dark:text-slate-400 mt-1">Colorion風のカラーパレットからお好みのスタイルを選択してください。</p>
             </div>
             <div className="p-6 space-y-6">
               {themes.map(theme => (
@@ -217,7 +217,7 @@ export default function SettingsPage() {
                   onClick={() => setThemeColor(theme.id)}
                   className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all border-2 ${
                     themeColor === theme.id 
-                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
+                      ? 'border-strategic-teal bg-primary-50 dark:bg-primary-900/20' 
                       : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
@@ -245,19 +245,19 @@ export default function SettingsPage() {
           
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4">プレビュー</h3>
+              <h3 className="font-bold text-oxford-navy dark:text-slate-200 mb-4">プレビュー</h3>
               
               <div className="space-y-4">
                 <div className="p-4 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800">
                   <h4 className="text-primary-800 dark:text-primary-200 font-bold text-sm mb-1">プライマリー背景</h4>
-                  <p className="text-primary-600 dark:text-primary-400 text-xs">テキストの視認性を確認します。</p>
+                  <p className="text-strategic-teal dark:text-primary-400 text-xs">テキストの視認性を確認します。</p>
                 </div>
                 
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-bold text-sm transition-colors shadow-lg shadow-primary-500/30">
+                  <button className="px-4 py-2 bg-primary-500 hover:bg-strategic-teal text-white rounded-lg font-bold text-sm transition-colors shadow-lg shadow-primary-500/30">
                     メインボタン
                   </button>
-                  <button className="px-4 py-2 bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800/50 rounded-lg font-bold text-sm transition-colors">
+                  <button className="px-4 py-2 bg-primary-100 dark:bg-primary-900/50 text-strategic-teal dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800/50 rounded-lg font-bold text-sm transition-colors">
                     サブボタン
                   </button>
                 </div>
@@ -265,9 +265,9 @@ export default function SettingsPage() {
                 <div className="mt-4">
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="font-bold text-slate-700 dark:text-slate-300">達成率</span>
-                    <span className="text-primary-600 dark:text-primary-400 font-bold">75%</span>
+                    <span className="text-strategic-teal dark:text-primary-400 font-bold">75%</span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
+                  <div className="w-full bg-clean-canvas dark:bg-slate-800 rounded-full h-2">
                     <div className="bg-primary-500 h-2 rounded-full" style={{ width: '75%' }}></div>
                   </div>
                 </div>

@@ -34,12 +34,12 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   // ローディング中、またはリダイレクト条件に引っかかっている場合は何も表示しない（チラつき防止）
   if (isAuthLoading || (!user)) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex items-center justify-center">Loading...</div>;
   }
 
   // 組織情報ロード中も待つ
   if (isOrgLoading && organizations.length === 0) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading Organizations...</div>;
+    return <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex items-center justify-center">Loading Organizations...</div>;
   }
 
   return <>{children}</>;

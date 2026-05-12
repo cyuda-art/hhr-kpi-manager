@@ -111,7 +111,7 @@ export const DataEditor = () => {
       <div className="w-64 border-r border-slate-200 dark:border-[#3c4043] bg-slate-50 dark:bg-[#282a2d] flex flex-col pt-4">
         <div className="px-4 mb-2 flex items-center justify-between">
           <span className="text-[11px] font-bold text-slate-500 dark:text-[#9aa0a6] uppercase tracking-wider">Tables</span>
-          <Plus size={14} className="text-slate-400 cursor-pointer hover:text-slate-600" />
+          <Plus size={14} className="text-slate-400 cursor-pointer hover:text-logic-slate dark:text-slate-400" />
         </div>
         
         <div className="px-2 space-y-0.5 mb-6">
@@ -170,7 +170,7 @@ export const DataEditor = () => {
             >
               <FileSpreadsheet size={14} className={node.type === 'KGI' ? 'text-amber-500' : 'opacity-50'} />
               <span className={`truncate ${node.isArchived ? 'opacity-50 line-through' : ''}`}>{node.name}</span>
-              {node.isArchived && <span className="ml-auto text-[9px] bg-slate-300 dark:bg-slate-700 px-1 rounded text-slate-500 dark:text-slate-400">済</span>}
+              {node.isArchived && <span className="ml-auto text-[9px] bg-slate-300 dark:bg-slate-700 px-1 rounded text-logic-slate dark:text-slate-400">済</span>}
             </button>
           ))}
         </div>
@@ -216,7 +216,7 @@ export const DataEditor = () => {
             </button>
             <button 
               onClick={exportToCSV}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-primary-600 dark:text-[#8ab4f8] hover:bg-primary-50 dark:hover:bg-[#8ab4f8]/10 rounded-[4px] ml-2"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-strategic-teal dark:text-[#8ab4f8] hover:bg-primary-50 dark:hover:bg-[#8ab4f8]/10 rounded-[4px] ml-2"
             >
               <Download size={14} /> Export
             </button>
@@ -289,7 +289,7 @@ export const DataEditor = () => {
                     {node.isArchived && <div className="text-[8px] text-amber-600 dark:text-amber-500 mt-1">アーカイブ</div>}
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="text" value={node.name} onChange={e => handleUpdate(node.id, 'name', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="text" value={node.name} onChange={e => handleUpdate(node.id, 'name', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
                     <select value={node.type} onChange={e => handleUpdate(node.id, 'type', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none">
@@ -320,16 +320,16 @@ export const DataEditor = () => {
                 <tr key={hist.id} className="hover:bg-slate-50 dark:hover:bg-[#282a2d] text-[13px] text-slate-800 dark:text-[#e8eaed] group">
                   <td className="p-2 text-center text-slate-400 bg-slate-50 dark:bg-[#282a2d] border-r border-slate-200 dark:border-[#3c4043]">{index + 1}</td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="date" value={hist.date} onChange={e => handleUpdate(hist.id!, 'date', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="date" value={hist.date} onChange={e => handleUpdate(hist.id!, 'date', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="number" value={getDisplayValue(hist.targetValue, selectedKpi, currentPeriod)} onChange={e => handleUpdate(hist.id!, 'targetValue', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none text-right focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="number" value={getDisplayValue(hist.targetValue, selectedKpi, currentPeriod)} onChange={e => handleUpdate(hist.id!, 'targetValue', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none text-right focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="number" value={getDisplayValue(hist.actualValue, selectedKpi, currentPeriod)} onChange={e => handleUpdate(hist.id!, 'actualValue', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none text-right font-bold focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="number" value={getDisplayValue(hist.actualValue, selectedKpi, currentPeriod)} onChange={e => handleUpdate(hist.id!, 'actualValue', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none text-right font-bold focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="text" value={hist.comment || ''} onChange={e => handleUpdate(hist.id!, 'comment', e.target.value)} placeholder="Click to add text..." className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="text" value={hist.comment || ''} onChange={e => handleUpdate(hist.id!, 'comment', e.target.value)} placeholder="Click to add text..." className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="p-0 align-middle">
                     <button 
@@ -351,16 +351,16 @@ export const DataEditor = () => {
                     {action.isArchived && <div className="text-[8px] text-amber-600 dark:text-amber-500 mt-1">アーカイブ</div>}
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="text" value={action.title} onChange={e => handleUpdate(action.id, 'title', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="text" value={action.title} onChange={e => handleUpdate(action.id, 'title', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="text" value={action.owner} onChange={e => handleUpdate(action.id, 'owner', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="text" value={action.owner} onChange={e => handleUpdate(action.id, 'owner', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="text" value={action.department || ''} onChange={e => handleUpdate(action.id, 'department', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="text" value={action.department || ''} onChange={e => handleUpdate(action.id, 'department', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <select value={action.priority || 'unassigned'} onChange={e => handleUpdate(action.id, 'priority', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500">
+                    <select value={action.priority || 'unassigned'} onChange={e => handleUpdate(action.id, 'priority', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal">
                       <option value="unassigned">未設定</option>
                       <option value="urgent_important">第1領域(必須・急)</option>
                       <option value="not_urgent_important">第2領域(重要・仕込)</option>
@@ -369,13 +369,13 @@ export const DataEditor = () => {
                     </select>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="date" value={action.startDate || ''} onChange={e => handleUpdate(action.id, 'startDate', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="date" value={action.startDate || ''} onChange={e => handleUpdate(action.id, 'startDate', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="date" value={action.dueDate || ''} onChange={e => handleUpdate(action.id, 'dueDate', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500" />
+                    <input type="date" value={action.dueDate || ''} onChange={e => handleUpdate(action.id, 'dueDate', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none focus:ring-1 focus:ring-inset focus:ring-strategic-teal" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <select value={action.status} onChange={e => handleUpdate(action.id, 'status', e.target.value)} className={`w-full h-full p-2 bg-transparent outline-none font-medium ${action.status === 'done' ? 'text-emerald-500' : action.status === 'in_progress' ? 'text-primary-500' : 'text-slate-500'}`}>
+                    <select value={action.status} onChange={e => handleUpdate(action.id, 'status', e.target.value)} className={`w-full h-full p-2 bg-transparent outline-none font-medium ${action.status === 'done' ? 'text-emerald-500' : action.status === 'in_progress' ? 'text-primary-500' : 'text-logic-slate dark:text-slate-400'}`}>
                       <option value="todo">To Do</option>
                       <option value="in_progress">進行中</option>
                       <option value="done">完了</option>
@@ -394,7 +394,7 @@ export const DataEditor = () => {
                <div className="w-12 border-r border-slate-200 dark:border-[#3c4043] bg-slate-50 dark:bg-[#282a2d]"></div>
                <button 
                  onClick={handleAddHistoryRow}
-                 className="flex-1 text-left p-2 text-[13px] text-slate-500 hover:bg-slate-50 dark:hover:bg-[#2d2f31] transition-colors flex items-center gap-2"
+                 className="flex-1 text-left p-2 text-[13px] text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2d2f31] transition-colors flex items-center gap-2"
                >
                  <Plus size={14} /> New row
                </button>

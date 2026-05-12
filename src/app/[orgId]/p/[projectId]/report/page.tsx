@@ -58,18 +58,18 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
   const mainKgi = kgiNodes.length > 0 ? kgiNodes[0] : null;
 
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white font-sans text-slate-800">
+    <div className="min-h-screen bg-slate-100 print:bg-white font-sans text-oxford-navy dark:text-slate-200">
       {/* 画面用ナビゲーションバー（印刷時は非表示） */}
       <div className="sticky top-0 z-50 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between print:hidden shadow-sm">
         <button 
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+          className="flex items-center gap-2 text-logic-slate dark:text-slate-400 hover:text-oxford-navy dark:text-slate-200 font-medium transition-colors"
         >
           <ChevronLeft size={20} />
           戻る
         </button>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-slate-500">※A4サイズ・横向き・背景のグラフィックをONにして印刷してください</span>
+          <span className="text-sm text-logic-slate dark:text-slate-400">※A4サイズ・横向き・背景のグラフィックをONにして印刷してください</span>
           <button 
             onClick={handlePrint}
             className="flex items-center gap-2 px-6 py-2.5 bg-[#00205B] hover:bg-[#00153D] text-white rounded-lg font-bold transition-all shadow-md"
@@ -134,7 +134,7 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
           </div>
 
           <div className="space-y-6 flex-1 flex flex-col">
-            <div className="bg-slate-50 p-4 rounded-xl border-l-4 border-[#00A3A1] shrink-0">
+            <div className="bg-clean-canvas dark:bg-slate-900 p-4 rounded-xl border-l-4 border-[#00A3A1] shrink-0">
               <h3 className="text-sm font-bold text-[#00205B] mb-1 uppercase tracking-wide">Master MVV / Absolute Constraint</h3>
               <p className="text-slate-700 whitespace-pre-wrap font-medium text-sm">{currentOrg.masterMvv || '未設定'}</p>
             </div>
@@ -146,7 +146,7 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
                   <BarChart size={20} className="text-[#00A3A1]" /> PEST Analysis
                 </h3>
                 {pest?.raw ? (
-                  <div className="bg-slate-50 p-4 rounded-xl text-[12px] whitespace-pre-wrap flex-1">{pest.raw}</div>
+                  <div className="bg-clean-canvas dark:bg-slate-900 p-4 rounded-xl text-[12px] whitespace-pre-wrap flex-1">{pest.raw}</div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3 flex-1">
                     <div className="bg-rose-50 p-3 rounded-lg border border-rose-100 flex flex-col">
@@ -154,7 +154,7 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
                       <p className="text-[10px] text-slate-700 leading-relaxed flex-1">{pest?.politics}</p>
                     </div>
                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex flex-col">
-                      <div className="flex items-center gap-1.5 text-blue-700 font-bold mb-1.5 text-[11px]"><TrendingUp size={14}/> Economy</div>
+                      <div className="flex items-center gap-1.5 text-strategic-teal font-bold mb-1.5 text-[11px]"><TrendingUp size={14}/> Economy</div>
                       <p className="text-[10px] text-slate-700 leading-relaxed flex-1">{pest?.economy}</p>
                     </div>
                     <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 flex flex-col">
@@ -175,35 +175,35 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
                   <Target size={20} className="text-[#00A3A1]" /> VRIO Analysis
                 </h3>
                 {vrio?.raw ? (
-                  <div className="bg-slate-50 p-4 rounded-xl text-[12px] whitespace-pre-wrap flex-1">{vrio.raw}</div>
+                  <div className="bg-clean-canvas dark:bg-slate-900 p-4 rounded-xl text-[12px] whitespace-pre-wrap flex-1">{vrio.raw}</div>
                 ) : (
                   <div className="flex flex-col gap-3 flex-1">
                     <div className="flex items-stretch bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex-1">
                       <div className="w-12 bg-[#00205B] text-white flex items-center justify-center font-bold text-xl shrink-0">V</div>
                       <div className="p-3 flex-1 flex flex-col justify-center">
-                        <div className="text-[10px] font-bold text-slate-500 mb-0.5">Value (経済的価値)</div>
-                        <p className="text-[11px] text-slate-800 leading-snug">{vrio?.value}</p>
+                        <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-0.5">Value (経済的価値)</div>
+                        <p className="text-[11px] text-oxford-navy dark:text-slate-200 leading-snug">{vrio?.value}</p>
                       </div>
                     </div>
                     <div className="flex items-stretch bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex-1">
                       <div className="w-12 bg-[#003B73] text-white flex items-center justify-center font-bold text-xl shrink-0">R</div>
                       <div className="p-3 flex-1 flex flex-col justify-center">
-                        <div className="text-[10px] font-bold text-slate-500 mb-0.5">Rarity (希少性)</div>
-                        <p className="text-[11px] text-slate-800 leading-snug">{vrio?.rarity}</p>
+                        <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-0.5">Rarity (希少性)</div>
+                        <p className="text-[11px] text-oxford-navy dark:text-slate-200 leading-snug">{vrio?.rarity}</p>
                       </div>
                     </div>
                     <div className="flex items-stretch bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex-1">
                       <div className="w-12 bg-[#00A3A1] text-white flex items-center justify-center font-bold text-xl shrink-0">I</div>
                       <div className="p-3 flex-1 flex flex-col justify-center">
-                        <div className="text-[10px] font-bold text-slate-500 mb-0.5">Imitability (模倣困難性)</div>
-                        <p className="text-[11px] text-slate-800 leading-snug">{vrio?.imitability}</p>
+                        <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-0.5">Imitability (模倣困難性)</div>
+                        <p className="text-[11px] text-oxford-navy dark:text-slate-200 leading-snug">{vrio?.imitability}</p>
                       </div>
                     </div>
                     <div className="flex items-stretch bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex-1">
                       <div className="w-12 bg-[#66C2C2] text-white flex items-center justify-center font-bold text-xl shrink-0">O</div>
                       <div className="p-3 flex-1 flex flex-col justify-center">
-                        <div className="text-[10px] font-bold text-slate-500 mb-0.5">Organization (組織)</div>
-                        <p className="text-[11px] text-slate-800 leading-snug">{vrio?.organization}</p>
+                        <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-0.5">Organization (組織)</div>
+                        <p className="text-[11px] text-oxford-navy dark:text-slate-200 leading-snug">{vrio?.organization}</p>
                       </div>
                     </div>
                   </div>
@@ -217,31 +217,31 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
                 <Crosshair size={20} className="text-[#00A3A1]" /> 5 Forces Analysis
               </h3>
               {fiveForces?.raw ? (
-                 <div className="bg-slate-50 p-4 rounded-xl text-[12px] whitespace-pre-wrap">{fiveForces.raw}</div>
+                 <div className="bg-clean-canvas dark:bg-slate-900 p-4 rounded-xl text-[12px] whitespace-pre-wrap">{fiveForces.raw}</div>
               ) : (
-                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                 <div className="bg-clean-canvas dark:bg-slate-900 p-4 rounded-xl border border-slate-200">
                    <div className="grid grid-cols-3 gap-2">
                      <div className="col-start-2 bg-white p-2 rounded border border-slate-200 text-center shadow-sm">
-                       <div className="text-[10px] font-bold text-slate-500 mb-1">新規参入の脅威</div>
-                       <p className="text-[10px] leading-snug text-slate-800">{fiveForces?.newEntrants}</p>
+                       <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-1">新規参入の脅威</div>
+                       <p className="text-[10px] leading-snug text-oxford-navy dark:text-slate-200">{fiveForces?.newEntrants}</p>
                      </div>
                      <div className="col-span-3 grid grid-cols-3 gap-2">
                        <div className="bg-white p-2 rounded border border-slate-200 shadow-sm flex flex-col justify-center">
-                         <div className="text-[10px] font-bold text-slate-500 mb-1">売り手の交渉力</div>
-                         <p className="text-[10px] leading-snug text-slate-800">{fiveForces?.suppliers}</p>
+                         <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-1">売り手の交渉力</div>
+                         <p className="text-[10px] leading-snug text-oxford-navy dark:text-slate-200">{fiveForces?.suppliers}</p>
                        </div>
                        <div className="bg-[#00205B] text-white p-3 rounded shadow-md flex flex-col justify-center text-center transform scale-105 z-10">
                          <div className="text-[11px] font-bold text-amber-400 mb-1">既存企業間の敵対関係</div>
                          <p className="text-[10px] leading-snug">{fiveForces?.rivalry}</p>
                        </div>
                        <div className="bg-white p-2 rounded border border-slate-200 shadow-sm flex flex-col justify-center">
-                         <div className="text-[10px] font-bold text-slate-500 mb-1">買い手の交渉力</div>
-                         <p className="text-[10px] leading-snug text-slate-800">{fiveForces?.buyers}</p>
+                         <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-1">買い手の交渉力</div>
+                         <p className="text-[10px] leading-snug text-oxford-navy dark:text-slate-200">{fiveForces?.buyers}</p>
                        </div>
                      </div>
                      <div className="col-start-2 bg-white p-2 rounded border border-slate-200 text-center shadow-sm">
-                       <div className="text-[10px] font-bold text-slate-500 mb-1">代替品の脅威</div>
-                       <p className="text-[10px] leading-snug text-slate-800">{fiveForces?.substitutes}</p>
+                       <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 mb-1">代替品の脅威</div>
+                       <p className="text-[10px] leading-snug text-oxford-navy dark:text-slate-200">{fiveForces?.substitutes}</p>
                      </div>
                    </div>
                  </div>
@@ -262,8 +262,8 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
           <div className="grid grid-cols-12 gap-8 h-full">
             {/* 左側: SWOT */}
             <div className="col-span-5 flex flex-col gap-6">
-              <div className="flex-1 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">SWOT Analysis</h3>
+              <div className="flex-1 bg-clean-canvas dark:bg-slate-900 p-6 rounded-xl border border-slate-200">
+                <h3 className="text-sm font-bold text-logic-slate dark:text-slate-400 uppercase tracking-widest mb-3">SWOT Analysis</h3>
                 <div className="text-[12px] leading-relaxed whitespace-pre-wrap text-slate-700 h-[220px] overflow-hidden">
                   {currentProject.swot || 'SWOT分析データがありません'}
                 </div>
@@ -289,7 +289,7 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
                       Primary Strategy
                     </span>
                     
-                    <h4 className="text-2xl font-extrabold text-slate-900 mb-4 leading-tight">
+                    <h4 className="text-2xl font-extrabold text-oxford-navy dark:text-slate-200 mb-4 leading-tight">
                       {currentProject.manifesto.split('\n')[0]}
                     </h4>
                     
@@ -299,7 +299,7 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
                   </div>
                 </div>
               ) : (
-                <div className="p-8 text-center text-slate-500 bg-slate-50 rounded-xl">マニフェストが設定されていません</div>
+                <div className="p-8 text-center text-logic-slate dark:text-slate-400 bg-clean-canvas dark:bg-slate-900 rounded-xl">マニフェストが設定されていません</div>
               )}
             </div>
           </div>
@@ -314,7 +314,7 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
             <h2 className="text-3xl font-extrabold text-[#00205B]">重要管理指標リスト (Dashboard Base)</h2>
           </div>
 
-          <div className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+          <div className="bg-clean-canvas dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-white uppercase bg-[#00205B]">
                 <tr>
@@ -328,31 +328,31 @@ const kgiNodes = Object.values(kpiData).filter(n => n.type === 'KGI');
                 {Object.values(kpiData).filter(n => n.type === 'KGI').map(node => (
                   <tr key={node.id} className="bg-teal-50">
                     <td className="px-6 py-4 font-bold text-[#00A3A1]">KGI</td>
-                    <td className="px-6 py-4 font-bold text-slate-900">{node.name}</td>
+                    <td className="px-6 py-4 font-bold text-oxford-navy dark:text-slate-200">{node.name}</td>
                     <td className="px-6 py-4 text-xs">{node.qualitativeName || '-'}</td>
                     <td className="px-6 py-4 text-right font-bold">{node.targetValue?.toLocaleString()}{node.unit}</td>
                   </tr>
                 ))}
                 {Object.values(kpiData).filter(n => n.type === 'KPI').slice(0, 15).map(node => (
                   <tr key={node.id} className="hover:bg-slate-100 transition-colors">
-                    <td className="px-6 py-3 font-bold text-slate-500">KPI</td>
+                    <td className="px-6 py-3 font-bold text-logic-slate dark:text-slate-400">KPI</td>
                     <td className="px-6 py-3">{node.name}</td>
-                    <td className="px-6 py-3 text-xs text-slate-500">{node.qualitativeName || '-'}</td>
+                    <td className="px-6 py-3 text-xs text-logic-slate dark:text-slate-400">{node.qualitativeName || '-'}</td>
                     <td className="px-6 py-3 text-right">{node.targetValue?.toLocaleString()}{node.unit}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {Object.values(kpiData).length > 15 && (
-              <div className="p-4 text-center text-xs text-slate-500 bg-white border-t border-slate-200">
+              <div className="p-4 text-center text-xs text-logic-slate dark:text-slate-400 bg-white border-t border-slate-200">
                 他 {Object.values(kpiData).length - 15} 件の指標が定義されています
               </div>
             )}
           </div>
           
           <div className="mt-12 p-6 bg-slate-100 rounded-xl flex items-center justify-between">
-            <div className="text-sm font-bold text-slate-500">Generated by LogicTree Pro AI</div>
-            <div className="text-sm font-bold text-slate-500">{new Date().toLocaleDateString('ja-JP')}</div>
+            <div className="text-sm font-bold text-logic-slate dark:text-slate-400">Generated by LogicTree Pro AI</div>
+            <div className="text-sm font-bold text-logic-slate dark:text-slate-400">{new Date().toLocaleDateString('ja-JP')}</div>
           </div>
         </div>
 

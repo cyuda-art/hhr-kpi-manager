@@ -161,28 +161,28 @@ export const ActionPanel = () => {
             {selectedKpi.type !== 'KGI' && (
               <button 
                 onClick={() => removeKpiNode(selectedKpi.id)}
-                className="absolute top-2 right-2 p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors"
+                className="absolute top-2 right-2 p-1.5 text-slate-400 dark:text-logic-slate dark:text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors"
                 title="このKPIを削除"
               >
                 <Trash2 size={16} />
               </button>
             )}
-            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
+            <p className="text-[10px] font-bold text-slate-400 dark:text-logic-slate dark:text-slate-400 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
             {selectedKpi.qualitativeName && (
-              <h4 className="font-bold text-slate-800 dark:text-slate-200 mt-1 break-words">
+              <h4 className="font-bold text-oxford-navy dark:text-slate-200 mt-1 break-words">
                 <span className="text-[10px] text-primary-500 mr-1">{getQualitativeLabel()}:</span>
                 {selectedKpi.qualitativeName.replace(/^(KSF|プロセス|Goal|Process)[:：\s]*/i, '')}
               </h4>
             )}
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <h4 className="font-bold text-slate-800 dark:text-slate-200 break-words flex-1">
+              <h4 className="font-bold text-oxford-navy dark:text-slate-200 break-words flex-1">
                 <span className="text-[10px] text-emerald-500 mr-1">{selectedKpi.type === 'KGI' ? 'KGI:' : 'KPI:'}</span>
                 {isPredictionMode && <span className="text-primary-500 mr-1 text-xs">[予測]</span>}
                 {selectedKpi.name}
               </h4>
               <button 
                 onClick={() => navigator.clipboard.writeText(`#{${selectedKpi.id}}`)} 
-                className="text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary-500 hover:bg-primary-50 hover:border-primary-200 dark:hover:text-primary-400 px-1.5 py-0.5 rounded cursor-copy border border-slate-200 dark:border-slate-800 dark:border-slate-700 active:bg-slate-200 flex items-center gap-1 shrink-0"
+                className="text-[9px] font-mono bg-clean-canvas dark:bg-slate-800 text-slate-400 hover:text-primary-500 hover:bg-primary-50 hover:border-primary-200 dark:hover:text-primary-400 px-1.5 py-0.5 rounded cursor-copy border border-slate-200 dark:border-slate-800 dark:border-slate-700 active:bg-slate-200 flex items-center gap-1 shrink-0"
                 title="クリックして計算式用のID（#{id}）をコピー"
               >
                 IDをコピー
@@ -200,10 +200,10 @@ export const ActionPanel = () => {
 
           {/* タブナビゲーション */}
           <div className="flex border-b border-slate-200 dark:border-slate-800 dark:border-slate-700 mt-4 mb-3">
-            <button onClick={() => setActiveTab('details')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'details' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+            <button onClick={() => setActiveTab('details')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'details' ? 'border-strategic-teal text-strategic-teal dark:text-primary-400' : 'border-transparent text-logic-slate dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}>
               詳細・数値
             </button>
-            <button onClick={() => setActiveTab('tasks')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'tasks' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+            <button onClick={() => setActiveTab('tasks')} className={`flex-1 py-1.5 text-[11px] font-bold border-b-2 transition-colors ${activeTab === 'tasks' ? 'border-strategic-teal text-strategic-teal dark:text-primary-400' : 'border-transparent text-logic-slate dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}>
               タスク ({selectedKpiTasks.length})
             </button>
           </div>
@@ -219,8 +219,8 @@ export const ActionPanel = () => {
                   <Bot size={18} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">AI Strategy Copilot</h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                  <h3 className="text-sm font-bold text-oxford-navy dark:text-slate-200">AI Strategy Copilot</h3>
+                  <p className="text-xs text-logic-slate dark:text-slate-400 mt-1 leading-relaxed">
                     現在のツリー構成やSWOT分析に基づいて、ツリーの動的な再編（再構築）を行います。
                     例：「もっと攻めの戦略に変えて」「プロセス階層を顧客体験中心に再編して」
                   </p>
@@ -249,9 +249,9 @@ export const ActionPanel = () => {
         {activeTab === 'details' && (
               <div className="space-y-4">
                 {selectedKpi.linkedSource && (
-                  <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 dark:border-slate-700 p-2 rounded-md flex items-start gap-2 animate-in fade-in zoom-in-95">
-                    <Link2 size={14} className="text-slate-500 mt-0.5 shrink-0" />
-                    <p className="text-[10px] text-slate-600 dark:text-slate-400">
+                  <div className="bg-clean-canvas dark:bg-slate-800 border border-slate-200 dark:border-slate-800 dark:border-slate-700 p-2 rounded-md flex items-start gap-2 animate-in fade-in zoom-in-95">
+                    <Link2 size={14} className="text-logic-slate dark:text-slate-400 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-logic-slate dark:text-slate-400">
                       この指標は他プロジェクトから同期されています。目標値・実績値はリンク元から自動取得されるため手動編集できません。
                     </p>
                   </div>
@@ -262,32 +262,32 @@ export const ActionPanel = () => {
                     <div className="space-y-2 border border-slate-200 dark:border-slate-800 dark:border-slate-700 rounded-md p-3 bg-white dark:bg-slate-900">
                       <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-slate-200 dark:border-slate-800 dark:border-slate-700/50">
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs text-slate-500">{getQualitativeLabel()}名 (定性)</span>
+                          <span className="text-xs text-logic-slate dark:text-slate-400">{getQualitativeLabel()}名 (定性)</span>
                           <input 
                             type="text" 
                             value={editQualitativeName} 
                             onChange={(e) => setEditQualitativeName(e.target.value)}
                             disabled={isPredictionMode}
-                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs text-slate-500">{selectedKpi.type === 'KGI' ? 'KGI名 (定量)' : 'KPI名 (定量)'}</span>
+                          <span className="text-xs text-logic-slate dark:text-slate-400">{selectedKpi.type === 'KGI' ? 'KGI名 (定量)' : 'KPI名 (定量)'}</span>
                           <input 
                             type="text" 
                             value={editName} 
                             onChange={(e) => setEditName(e.target.value)}
                             disabled={isPredictionMode}
-                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs text-slate-500">更新頻度</span>
+                          <span className="text-xs text-logic-slate dark:text-slate-400">更新頻度</span>
                           <select
                             value={editUpdateFrequency}
                             onChange={(e) => setEditUpdateFrequency(e.target.value as any)}
                             disabled={isPredictionMode}
-                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           >
                             <option value="daily">日次 (Daily)</option>
                             <option value="weekly">週次 (Weekly)</option>
@@ -295,14 +295,14 @@ export const ActionPanel = () => {
                           </select>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs text-slate-500">計算式（構造メモ）</span>
+                          <span className="text-xs text-logic-slate dark:text-slate-400">計算式（構造メモ）</span>
                           <input 
                             type="text" 
                             value={editCalculationFormula} 
                             onChange={(e) => setEditCalculationFormula(e.target.value)}
                             disabled={isPredictionMode}
                             placeholder="例: 客数 × 客単価"
-                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                            className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -312,9 +312,9 @@ export const ActionPanel = () => {
                               checked={editIsCalculated} 
                               onChange={(e) => setEditIsCalculated(e.target.checked)} 
                               disabled={isPredictionMode || hasChildren || !!selectedKpi.linkedSource}
-                              className="rounded border-slate-300 text-primary-500 focus:ring-primary-500 disabled:opacity-50"
+                              className="rounded border-slate-300 text-primary-500 focus:ring-strategic-teal disabled:opacity-50"
                             />
-                            <span className="text-xs text-slate-500 font-bold flex items-center gap-1">
+                            <span className="text-xs text-logic-slate dark:text-slate-400 font-bold flex items-center gap-1">
                               <Calculator size={12} /> 他のKPIから自動計算する (Formula)
                             </span>
                           </label>
@@ -323,8 +323,8 @@ export const ActionPanel = () => {
                           )}
                         </div>
                         {editIsCalculated && (
-                          <div className="flex flex-col gap-1 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">
-                            <span className="text-xs text-slate-500 flex items-center justify-between">
+                          <div className="flex flex-col gap-1 p-2 bg-clean-canvas dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">
+                            <span className="text-xs text-logic-slate dark:text-slate-400 flex items-center justify-between">
                               <span>数式入力</span>
                             </span>
                             <textarea 
@@ -332,51 +332,51 @@ export const ActionPanel = () => {
                               onChange={(e) => setEditFormula(e.target.value)}
                               disabled={isPredictionMode}
                               placeholder="例: #{kpi_123} * #{kpi_456}"
-                              className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 min-h-[40px] font-mono"
+                              className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50 min-h-[40px] font-mono"
                             />
                             <div className="text-[10px] text-slate-400 mt-1">※ 他ノードのIDを #&#123;id&#125; 形式で指定し四則演算が可能です。</div>
                           </div>
                         )}
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-slate-500 w-12">目標値</span>
+                        <span className="text-xs text-logic-slate dark:text-slate-400 w-12">目標値</span>
                         <input 
                           type="number" 
                           value={editTargetValue} 
                           onChange={(e) => setEditTargetValue(e.target.value)}
                           disabled={isPredictionMode || editIsCalculated || !!selectedKpi.linkedSource}
-                          className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
+                          className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                         />
-                        <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
+                        <span className="text-xs text-logic-slate dark:text-slate-400 w-4">{selectedKpi.unit}</span>
                       </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-slate-500 w-12">{isPredictionMode ? '予測値' : '実績値'}</span>
+                    <span className="text-xs text-logic-slate dark:text-slate-400 w-12">{isPredictionMode ? '予測値' : '実績値'}</span>
                     <input 
                       type="number" 
                       value={editActualValue} 
                       onChange={(e) => setEditActualValue(e.target.value)}
                       disabled={editIsCalculated || hasChildren || !!selectedKpi.linkedSource}
-                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
+                      className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                     />
-                    <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
+                    <span className="text-xs text-logic-slate dark:text-slate-400 w-4">{selectedKpi.unit}</span>
                   </div>
                   {editIsCalculated && !isPredictionMode && (
                     <div className="text-[10px] text-slate-400 text-right mt-1">※ 自動計算ノードの実績は手動入力できません。</div>
                   )}
                   <div className="flex justify-end gap-2 mt-2">
-                    <button onClick={() => setIsEditingValue(false)} className="text-[10px] px-2 py-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">キャンセル</button>
-                    <button onClick={handleSaveValues} className="text-[10px] px-2 py-1 bg-primary-500 text-white rounded hover:bg-primary-600 font-bold">保存して反映</button>
+                    <button onClick={() => setIsEditingValue(false)} className="text-[10px] px-2 py-1 text-logic-slate dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">キャンセル</button>
+                    <button onClick={handleSaveValues} className="text-[10px] px-2 py-1 bg-primary-500 text-white rounded hover:bg-strategic-teal font-bold">保存して反映</button>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2 group/edit cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded transition-colors border border-transparent hover:border-slate-200 dark:border-slate-800 dark:hover:border-slate-700" onClick={() => setIsEditingValue(true)}>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                      <div className="text-xs text-logic-slate dark:text-slate-400">
                         目標: <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round(getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod)).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-slate-800 dark:text-slate-200">{Math.round(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod)).toLocaleString()}</span> {selectedKpi.unit}
+                      <div className="text-xs text-logic-slate dark:text-slate-400">
+                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-oxford-navy dark:text-slate-200">{Math.round(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod)).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
                     </div>
                     <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded">
@@ -385,9 +385,9 @@ export const ActionPanel = () => {
                   </div>
                   
                   <div className="flex flex-col gap-1 mt-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
-                    <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-3 text-[10px] text-logic-slate dark:text-slate-400">
                       <span className="flex items-center gap-1">
-                        <span className="bg-slate-200 dark:bg-slate-700 px-1 rounded text-slate-600 dark:text-slate-300">
+                        <span className="bg-slate-200 dark:bg-slate-700 px-1 rounded text-logic-slate dark:text-slate-400">
                           {selectedKpi.updateFrequency === 'daily' ? '日次更新' : selectedKpi.updateFrequency === 'weekly' ? '週次更新' : '月次更新'}
                         </span>
                       </span>
@@ -396,7 +396,7 @@ export const ActionPanel = () => {
                       )}
                     </div>
                     {selectedKpi.isCalculated ? (
-                      <div className="flex items-center gap-1 text-[10px] text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-1.5 py-0.5 rounded w-fit mt-1 border border-primary-100 dark:border-primary-800/50">
+                      <div className="flex items-center gap-1 text-[10px] text-strategic-teal dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-1.5 py-0.5 rounded w-fit mt-1 border border-primary-100 dark:border-primary-800/50">
                         <Calculator size={10} /> 自動計算: <span className="font-mono">{selectedKpi.formula || '（数式が空です）'}</span>
                       </div>
                     ) : hasChildren ? (
@@ -418,7 +418,7 @@ export const ActionPanel = () => {
 
             {/* トレンドチャート */}
             <div className="mt-4">
-              <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">トレンド推移</h5>
+              <h5 className="text-[10px] font-bold text-logic-slate dark:text-slate-400 uppercase tracking-wider mb-2">トレンド推移</h5>
               <div className="bg-white dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 dark:border-slate-700">
                 <TrendChart 
                   actualValue={selectedKpi.actualValue} 
@@ -430,11 +430,11 @@ export const ActionPanel = () => {
 
             {/* 子ノード追加・リンク機能 */}
             <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 dark:border-slate-700">
-              <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">子要素 (KPI/プロセス)</h5>
+              <h5 className="text-[10px] font-bold text-logic-slate dark:text-slate-400 uppercase tracking-wider mb-2">子要素 (KPI/プロセス)</h5>
               <div className="flex flex-col gap-2">
                 <button 
                   onClick={() => setIsLinkModalOpen(true)}
-                  className="w-full text-[11px] py-2 border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
+                  className="w-full text-[11px] py-2 border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-strategic-teal dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
                 >
                   <Link2 size={14} /> 他プロジェクトから同期して追加
                 </button>
@@ -457,7 +457,7 @@ export const ActionPanel = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 {selectedKpiTasks.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">タスクはありません</p>
+                  <p className="text-xs text-logic-slate dark:text-slate-400 text-center py-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">タスクはありません</p>
                 ) : (
                   selectedKpiTasks.map(task => (
                     <div key={task.id} className="flex flex-col bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700 transition-colors group/task">
@@ -473,8 +473,8 @@ export const ActionPanel = () => {
                             {task.title}
                           </span>
                           <div className="flex flex-wrap items-center gap-2 mt-1">
-                            <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded truncate max-w-[80px]">{task.owner || '未設定'}</span>
-                            {task.department && <span className="text-[9px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1 rounded">{task.department}</span>}
+                            <span className="text-[9px] text-logic-slate dark:text-slate-400 bg-clean-canvas dark:bg-slate-800 px-1 rounded truncate max-w-[80px]">{task.owner || '未設定'}</span>
+                            {task.department && <span className="text-[9px] text-logic-slate dark:text-slate-400 bg-clean-canvas dark:bg-slate-800 px-1 rounded">{task.department}</span>}
                             <span className="text-[9px] text-slate-400">
                               {task.startDate ? task.startDate.split('T')[0] : ''} 
                               {task.startDate || task.dueDate ? ' 〜 ' : '期限なし'}
@@ -484,7 +484,7 @@ export const ActionPanel = () => {
                               <span className={`text-[9px] px-1 rounded ${
                                 task.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                 task.priority === 'not_urgent_important' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                                task.priority === 'urgent_not_important' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                task.priority === 'urgent_not_important' ? 'bg-blue-100 text-strategic-teal dark:bg-blue-900/30 dark:text-blue-400' :
                                 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                               }`}>
                                 {task.priority === 'urgent_important' ? '第1領域(必須・急)' :
@@ -494,7 +494,7 @@ export const ActionPanel = () => {
                             )}
                           </div>
                           {task.description && (
-                            <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{task.description}</p>
+                            <p className="text-[10px] text-logic-slate dark:text-slate-400 mt-1 line-clamp-2">{task.description}</p>
                           )}
                         </div>
                         <div className="flex items-center gap-1 opacity-0 group-hover/task:opacity-100 transition-opacity">
@@ -509,29 +509,29 @@ export const ActionPanel = () => {
                       
                       {/* インライン編集フォーム */}
                       {editingTaskId === task.id && (
-                        <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 space-y-2">
+                        <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-clean-canvas dark:bg-slate-900/50 space-y-2">
                           <div>
-                            <label className="text-[10px] text-slate-500">タイトル</label>
-                            <input type="text" defaultValue={task.title} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { title: e.target.value })} />
+                            <label className="text-[10px] text-logic-slate dark:text-slate-400">タイトル</label>
+                            <input type="text" defaultValue={task.title} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { title: e.target.value })} />
                           </div>
                           <div>
-                            <label className="text-[10px] text-slate-500">詳細</label>
-                            <textarea defaultValue={task.description} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" rows={2} onBlur={(e) => useKpiStore.getState().updateAction(task.id, { description: e.target.value })} />
+                            <label className="text-[10px] text-logic-slate dark:text-slate-400">詳細</label>
+                            <textarea defaultValue={task.description} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" rows={2} onBlur={(e) => useKpiStore.getState().updateAction(task.id, { description: e.target.value })} />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="text-[10px] text-slate-500">担当者</label>
-                              <input type="text" defaultValue={task.owner} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { owner: e.target.value })} />
+                              <label className="text-[10px] text-logic-slate dark:text-slate-400">担当者</label>
+                              <input type="text" defaultValue={task.owner} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { owner: e.target.value })} />
                             </div>
                             <div>
-                              <label className="text-[10px] text-slate-500">部署</label>
-                              <input type="text" defaultValue={task.department || ''} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { department: e.target.value })} />
+                              <label className="text-[10px] text-logic-slate dark:text-slate-400">部署</label>
+                              <input type="text" defaultValue={task.department || ''} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { department: e.target.value })} />
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="text-[10px] text-slate-500">優先度 (重要度×緊急度)</label>
-                              <select defaultValue={task.priority || 'unassigned'} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { priority: e.target.value as any })}>
+                              <label className="text-[10px] text-logic-slate dark:text-slate-400">優先度 (重要度×緊急度)</label>
+                              <select defaultValue={task.priority || 'unassigned'} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { priority: e.target.value as any })}>
                                 <option value="unassigned">未設定</option>
                                 <option value="urgent_important">第1領域(必須・緊急)</option>
                                 <option value="not_urgent_important">第2領域(重要・仕込)</option>
@@ -541,12 +541,12 @@ export const ActionPanel = () => {
                             </div>
                             <div className="flex gap-1">
                               <div className="flex-1">
-                                <label className="text-[10px] text-slate-500">開始日</label>
-                                <input type="date" defaultValue={task.startDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { startDate: e.target.value })} />
+                                <label className="text-[10px] text-logic-slate dark:text-slate-400">開始日</label>
+                                <input type="date" defaultValue={task.startDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { startDate: e.target.value })} />
                               </div>
                               <div className="flex-1">
-                                <label className="text-[10px] text-slate-500">期限</label>
-                                <input type="date" defaultValue={task.dueDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { dueDate: e.target.value })} />
+                                <label className="text-[10px] text-logic-slate dark:text-slate-400">期限</label>
+                                <input type="date" defaultValue={task.dueDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { dueDate: e.target.value })} />
                               </div>
                             </div>
                           </div>
@@ -583,7 +583,7 @@ export const ActionPanel = () => {
         </div>
         </>
       ) : (
-        <div className="flex items-center justify-center h-full text-sm text-slate-400 dark:text-slate-500">
+        <div className="flex items-center justify-center h-full text-sm text-slate-400 dark:text-logic-slate dark:text-slate-400">
           ツリーからKPIを選択してください
         </div>
       )}

@@ -15,7 +15,7 @@ export const GuestGuard = ({ children }: { children: React.ReactNode }) => {
   }, [user, isLoading, router]);
 
   if (isLoading || user) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex items-center justify-center">Loading...</div>;
   }
 
   return <>{children}</>;

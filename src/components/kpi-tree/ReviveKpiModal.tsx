@@ -40,7 +40,7 @@ export const ReviveKpiModal = ({ isOpen, onClose, targetParentId }: ReviveKpiMod
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
+          <div className="flex items-center gap-2 text-oxford-navy dark:text-slate-200">
             <ArchiveRestore size={20} className="text-amber-500" />
             <h2 className="text-lg font-bold">アーカイブからKPIを復活させる</h2>
           </div>
@@ -51,9 +51,9 @@ export const ReviveKpiModal = ({ isOpen, onClose, targetParentId }: ReviveKpiMod
 
         <div className="p-6 flex-1 overflow-y-auto flex flex-col gap-6">
           {/* 親ノード確認 */}
-          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-            <p className="text-xs text-slate-500 mb-1">復活先（親ノード）:</p>
-            <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{parentNode?.name || '不明'}</p>
+          <div className="bg-clean-canvas dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-logic-slate dark:text-slate-400 mb-1">復活先（親ノード）:</p>
+            <p className="font-bold text-sm text-oxford-navy dark:text-slate-200">{parentNode?.name || '不明'}</p>
           </div>
 
           <div className="flex flex-col gap-2 flex-1 min-h-[300px]">
@@ -66,30 +66,30 @@ export const ReviveKpiModal = ({ isOpen, onClose, targetParentId }: ReviveKpiMod
                 placeholder="指標名で検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 text-sm text-oxford-navy dark:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-strategic-teal"
               />
             </div>
 
-            <div className="mt-2 flex-1 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-800/50">
+            <div className="mt-2 flex-1 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-md bg-clean-canvas dark:bg-slate-900/50">
               {archivedNodes.length === 0 ? (
-                <div className="flex items-center justify-center h-32 text-sm text-slate-500">アーカイブされたKPIはありません。</div>
+                <div className="flex items-center justify-center h-32 text-sm text-logic-slate dark:text-slate-400">アーカイブされたKPIはありません。</div>
               ) : filteredNodes.length === 0 ? (
-                <div className="flex items-center justify-center h-32 text-sm text-slate-500">条件に一致するKPIが見つかりません。</div>
+                <div className="flex items-center justify-center h-32 text-sm text-logic-slate dark:text-slate-400">条件に一致するKPIが見つかりません。</div>
               ) : (
                 <ul className="divide-y divide-slate-200 dark:divide-slate-700">
                   {filteredNodes.map(node => (
                     <li key={node.id} className="p-3 hover:bg-white dark:hover:bg-slate-800 transition-colors flex items-center justify-between group">
                       <div className="flex flex-col pr-4">
                         {node.qualitativeName && (
-                          <span className="text-[10px] text-slate-500 font-bold mb-0.5 flex items-center gap-1">
+                          <span className="text-[10px] text-logic-slate dark:text-slate-400 font-bold mb-0.5 flex items-center gap-1">
                             <Target size={10} /> {node.qualitativeName}
                           </span>
                         )}
-                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                        <span className="text-sm font-bold text-oxford-navy dark:text-slate-200 flex items-center gap-1">
                           <BarChart2 size={12} className={node.type === 'KGI' ? 'text-primary-500' : 'text-slate-400'} />
                           {node.name}
                         </span>
-                        <span className="text-xs text-slate-500 mt-1">
+                        <span className="text-xs text-logic-slate dark:text-slate-400 mt-1">
                           最新実績: {Number(node.actualValue).toLocaleString()} {node.unit} / 目標: {Number(node.targetValue).toLocaleString()} {node.unit}
                         </span>
                       </div>

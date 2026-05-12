@@ -54,8 +54,8 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
     return (
       <div className="flex items-center justify-center h-full min-h-[50vh]">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-sm text-slate-500">プロジェクトデータを読み込み中...</p>
+          <div className="w-8 h-8 border-4 border-strategic-teal border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-sm text-logic-slate dark:text-slate-400">プロジェクトデータを読み込み中...</p>
         </div>
       </div>
     );

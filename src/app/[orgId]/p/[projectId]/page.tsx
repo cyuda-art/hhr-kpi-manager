@@ -157,7 +157,7 @@ export default function DashboardPage() {
                   onClick={() => setSelectedKpiId(kpi.id)}
                   className={`w-full text-left px-3 py-2 rounded-[4px] text-[13px] transition-colors flex items-center gap-2 ${
                     selectedKpiId === kpi.id
-                      ? 'bg-primary-600 dark:bg-[#8ab4f8]/10 text-primary-600 dark:text-[#8ab4f8] font-medium border border-primary-500 dark:border-[#8ab4f8]/20'
+                      ? 'bg-strategic-teal dark:bg-[#8ab4f8]/10 text-strategic-teal dark:text-[#8ab4f8] font-medium border border-strategic-teal dark:border-[#8ab4f8]/20'
                       : 'text-slate-500 dark:text-[#9aa0a6] hover:bg-slate-200 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed]'
                   }`}
                 >
@@ -165,7 +165,7 @@ export default function DashboardPage() {
                     {kpi.type}
                   </span>
                   <span className={`truncate ${kpi.isArchived ? 'opacity-50 line-through' : ''}`}>{kpi.name}</span>
-                  {kpi.isArchived && <span className="text-[9px] bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1 rounded ml-auto">アーカイブ</span>}
+                  {kpi.isArchived && <span className="text-[9px] bg-slate-300 dark:bg-slate-700 text-logic-slate dark:text-slate-400 px-1 rounded ml-auto">アーカイブ</span>}
                 </button>
               ))}
             </div>
@@ -195,7 +195,7 @@ export default function DashboardPage() {
                   <h2 className="text-[16px] font-medium text-slate-900 dark:text-[#f1f3f4] flex items-center gap-2">
                     {selectedNode.name}
                     {selectedNode.isArchived && (
-                      <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-normal">アーカイブ済み</span>
+                      <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-logic-slate dark:text-slate-400 px-2 py-0.5 rounded font-normal">アーカイブ済み</span>
                     )}
                   </h2>
                   <div className="text-[13px] text-slate-500 dark:text-[#9aa0a6] mt-1 flex items-center gap-2">
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                   <select 
                     value={periodFilter}
                     onChange={(e) => setPeriodFilter(e.target.value as any)}
-                    className="bg-slate-50 dark:bg-[#202124] border border-slate-200 dark:border-[#3c4043] text-slate-800 dark:text-[#e8eaed] text-[13px] rounded-[4px] px-3 py-1.5 outline-none focus:border-primary-500 dark:border-[#8ab4f8] transition-colors"
+                    className="bg-slate-50 dark:bg-[#202124] border border-slate-200 dark:border-[#3c4043] text-slate-800 dark:text-[#e8eaed] text-[13px] rounded-[4px] px-3 py-1.5 outline-none focus:border-strategic-teal dark:border-[#8ab4f8] transition-colors"
                   >
                     <option value="1m">過去1ヶ月</option>
                     <option value="3m">過去3ヶ月</option>

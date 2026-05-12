@@ -64,9 +64,9 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-800">
-        <div className="bg-primary-600 p-8 text-center relative overflow-hidden">
+        <div className="bg-strategic-teal p-8 text-center relative overflow-hidden">
           <div className="absolute top-[-50%] left-[-10%] w-[120%] h-[120%] bg-white/10 rounded-full blur-[50px] pointer-events-none" />
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm relative z-10">
             <Building2 className="w-8 h-8 text-white" />
@@ -80,8 +80,8 @@ export default function InvitePage() {
           ) : (
             <>
               <div className="mb-8">
-                <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">以下のプロジェクトに招待されています</p>
-                <div className="flex items-center justify-center gap-2 text-xl font-black text-slate-800 dark:text-slate-100">
+                <p className="text-logic-slate dark:text-slate-400 text-sm mb-2">以下のプロジェクトに招待されています</p>
+                <div className="flex items-center justify-center gap-2 text-xl font-black text-oxford-navy dark:text-slate-200">
                   <Link2 className="w-5 h-5 text-primary-500" />
                   {projectName || '読み込み中...'}
                 </div>
@@ -89,12 +89,12 @@ export default function InvitePage() {
 
               {!user ? (
                 <div className="space-y-4">
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <p className="text-sm text-logic-slate dark:text-slate-400">
                     参加するにはログインまたはアカウント登録が必要です。
                   </p>
                   <button
                     onClick={() => router.push('/login')}
-                    className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-xl font-bold transition-colors shadow-lg shadow-primary-600/30"
+                    className="w-full flex items-center justify-center gap-2 bg-strategic-teal hover:bg-strategic-teal text-white py-3 rounded-xl font-bold transition-colors shadow-lg shadow-primary-600/30"
                   >
                     <LogIn className="w-5 h-5" />
                     ログインして参加
@@ -104,7 +104,7 @@ export default function InvitePage() {
                 <button
                   onClick={handleJoin}
                   disabled={isJoining || !projectName}
-                  className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-3 rounded-xl font-bold transition-colors shadow-lg shadow-primary-600/30 disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 bg-strategic-teal hover:bg-strategic-teal text-white py-3 rounded-xl font-bold transition-colors shadow-lg shadow-primary-600/30 disabled:opacity-50"
                 >
                   {isJoining ? '参加処理中...' : 'プロジェクトに参加する'}
                   {!isJoining && <ArrowRight className="w-5 h-5" />}

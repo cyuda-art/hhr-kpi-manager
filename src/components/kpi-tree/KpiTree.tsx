@@ -372,7 +372,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               <button
                 onClick={undo}
                 disabled={pastStates.length === 0}
-                className="flex items-center justify-center w-8 h-8 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="flex items-center justify-center w-8 h-8 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                 title="元に戻す (Cmd+Z)"
               >
                 <Undo2 size={16} />
@@ -381,7 +381,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               <button
                 onClick={redo}
                 disabled={futureStates.length === 0}
-                className="flex items-center justify-center w-8 h-8 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="flex items-center justify-center w-8 h-8 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                 title="やり直す (Cmd+Shift+Z)"
               >
                 <Redo2 size={16} />
@@ -389,14 +389,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             </div>
             <button
               onClick={() => handleAutoLayout()}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-xs font-bold"
+              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-strategic-teal dark:hover:text-primary-400 transition-colors text-xs font-bold"
             >
               <Wand2 size={14} />
               自動整列 (Auto Layout)
             </button>
             <button
               onClick={toggleAutoCenter}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-colors text-xs font-bold ${autoCenter ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-colors text-xs font-bold ${autoCenter ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
               title="選択時の自動センタリングのオン/オフ"
             >
               <Focus size={14} />
@@ -404,7 +404,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             </button>
             <button
               onClick={toggleDirection}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-xs font-bold"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-strategic-teal dark:hover:text-primary-400 transition-colors text-xs font-bold"
               title="レイアウトの方向（縦・横）を切り替え"
             >
               {layoutDirection === 'TB' ? <MoveDown size={14} /> : <MoveRight size={14} />}
@@ -412,7 +412,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             </button>
             <button
               onClick={toggleMiniMap}
-              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
               title="ミニマップの表示/非表示"
             >
               <Map size={16} />
@@ -423,7 +423,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               <select
                 value={useKpiStore((state) => state.currentPeriod)}
                 onChange={(e) => useKpiStore.getState().setPeriod(e.target.value)}
-                className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 dark:text-slate-300 px-3 py-1.5 focus:ring-0 cursor-pointer"
+                className="bg-transparent border-none outline-none text-xs font-bold text-logic-slate dark:text-slate-400 px-3 py-1.5 focus:ring-0 cursor-pointer"
               >
                 <option value="year">年次 (1年)</option>
                 <option value="half">半期 (6ヶ月)</option>
@@ -450,14 +450,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-6 h-[3px] bg-[#34d399] rounded-full"></div>
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">順調</span>
+                  <span className="text-logic-slate dark:text-slate-400 font-medium">順調</span>
                 </div>
                 <span className="text-[10px] text-slate-400 font-mono">100%〜</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-6 h-[2.5px] bg-[#fbbf24] rounded-full"></div>
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">注意</span>
+                  <span className="text-logic-slate dark:text-slate-400 font-medium">注意</span>
                 </div>
                 <span className="text-[10px] text-slate-400 font-mono">80%〜99%</span>
               </div>
@@ -470,7 +470,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               </div>
               <div className="flex items-center gap-2.5 pt-1 mt-0.5 border-t border-slate-100 dark:border-slate-800/50">
                 <div className="w-6 h-[2px] bg-[#8ab4f8] rounded-full"></div>
-                <span className="text-slate-500 dark:text-slate-500 text-[10px]">AI予測モードON時のみ青く発光</span>
+                <span className="text-logic-slate dark:text-slate-400 text-[10px]">AI予測モードON時のみ青く発光</span>
               </div>
             </div>
           </div>
@@ -489,7 +489,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           onInit={setRfInstance}
           nodeTypes={nodeTypes}
           fitView
-          className="bg-slate-50 dark:bg-slate-950 transition-colors"
+          className="bg-clean-canvas dark:bg-slate-900 transition-colors"
         >
           
           <svg style={{ position: 'absolute', width: 0, height: 0 }}>

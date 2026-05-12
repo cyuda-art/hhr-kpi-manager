@@ -36,7 +36,7 @@ export default function ManifestoPage() {
   if (!currentProject) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-        <div className="text-slate-500 flex flex-col items-center">
+        <div className="text-logic-slate dark:text-slate-400 flex flex-col items-center">
           <AlertCircle size={48} className="mb-4 text-slate-300" />
           <p>プロジェクトが見つかりません</p>
         </div>
@@ -54,12 +54,12 @@ export default function ManifestoPage() {
     <div className="w-full h-[calc(100vh-4rem)] overflow-y-auto bg-slate-50 dark:bg-[#202124]">
       <div className="max-w-4xl mx-auto p-4 md:p-8 pt-8 md:pt-12 animate-in fade-in duration-500">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/50 rounded-xl flex items-center justify-center text-primary-600 dark:text-primary-400">
+          <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/50 rounded-xl flex items-center justify-center text-strategic-teal dark:text-primary-400">
             <Sparkles size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Project Manifesto</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">このKPIツリーの設計基盤となる戦略シナリオ</p>
+            <h1 className="text-2xl font-bold text-oxford-navy dark:text-slate-200 tracking-tight">Project Manifesto</h1>
+            <p className="text-sm text-logic-slate dark:text-slate-400 mt-1">このKPIツリーの設計基盤となる戦略シナリオ</p>
           </div>
         </div>
 
@@ -74,14 +74,14 @@ export default function ManifestoPage() {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full mb-4">
                 <Sparkles size={12} /> AI Generated Strategy
               </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight mb-2">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-oxford-navy dark:text-slate-200 leading-tight mb-2">
                 {title}
               </h2>
             </div>
 
             <div className="prose prose-slate dark:prose-invert max-w-none">
-              <div className="bg-slate-50 dark:bg-slate-800/50 p-6 md:p-8 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <div className="bg-clean-canvas dark:bg-slate-900/50 p-6 md:p-8 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                <h3 className="text-xs font-bold text-slate-400 dark:text-logic-slate dark:text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
                   Strategic Approach
                 </h3>
@@ -92,13 +92,13 @@ export default function ManifestoPage() {
             </div>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-              <div className="p-5 border border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
-                <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Target KGI</h4>
-                <p className="font-bold text-slate-800 dark:text-slate-200 text-lg">{currentProject.kgiType || '未設定'}</p>
+              <div className="p-5 border border-slate-100 dark:border-slate-700/50 bg-clean-canvas dark:bg-slate-900/30 rounded-xl">
+                <h4 className="text-[11px] font-bold text-logic-slate dark:text-slate-400 uppercase tracking-wider mb-2">Target KGI</h4>
+                <p className="font-bold text-oxford-navy dark:text-slate-200 text-lg">{currentProject.kgiType || '未設定'}</p>
               </div>
-              <div className="p-5 border border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
-                <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Target Value</h4>
-                <p className="font-bold text-slate-800 dark:text-slate-200 text-lg">
+              <div className="p-5 border border-slate-100 dark:border-slate-700/50 bg-clean-canvas dark:bg-slate-900/30 rounded-xl">
+                <h4 className="text-[11px] font-bold text-logic-slate dark:text-slate-400 uppercase tracking-wider mb-2">Target Value</h4>
+                <p className="font-bold text-oxford-navy dark:text-slate-200 text-lg">
                   {currentProject.kgiTargetValue ? currentProject.kgiTargetValue.toLocaleString() : '未設定'}
                 </p>
               </div>

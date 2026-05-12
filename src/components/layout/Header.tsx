@@ -38,7 +38,7 @@ export const Header = () => {
           className="hidden md:flex items-center gap-2 mr-2 group"
           title="管理コンソールへ戻る"
         >
-          <div className="w-7 h-7 bg-amber-400 rounded flex items-center justify-center text-slate-900 font-bold shadow-sm transition-transform group-hover:scale-105">
+          <div className="w-7 h-7 bg-amber-400 rounded flex items-center justify-center text-oxford-navy dark:text-slate-200 font-bold shadow-sm transition-transform group-hover:scale-105">
             H
           </div>
           <span className="font-bold text-[15px] text-white tracking-tight hidden xl:block group-hover:text-amber-500 transition-colors">
@@ -66,22 +66,22 @@ export const Header = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-1 xl:gap-2 pr-2 xl:pr-4 pl-2 border-l border-slate-200 dark:border-[#3c4043]">
-          <Link href={`/${currentOrgId}/p/${currentProjectId}`} title="ダッシュボード" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname === `/${currentOrgId}/p/${currentProjectId}` ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}`} title="ダッシュボード" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname === `/${currentOrgId}/p/${currentProjectId}` ? 'bg-primary-50 dark:bg-primary-900/20 text-strategic-teal dark:text-primary-400' : 'text-logic-slate dark:text-slate-400 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <LayoutDashboard size={16} /> <span className="hidden xl:inline">ダッシュボード</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/kpi-tree`} title="KPIツリー" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/kpi-tree') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/kpi-tree`} title="KPIツリー" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/kpi-tree') ? 'bg-primary-50 dark:bg-primary-900/20 text-strategic-teal dark:text-primary-400' : 'text-logic-slate dark:text-slate-400 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Activity size={16} /> <span className="hidden xl:inline">KPIツリー</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/manifesto`} title="マニフェスト" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/manifesto') ? 'bg-primary-50 dark:bg-primary-900/20 text-amber-600 dark:text-amber-500' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/manifesto`} title="マニフェスト" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/manifesto') ? 'bg-primary-50 dark:bg-primary-900/20 text-amber-600 dark:text-amber-500' : 'text-logic-slate dark:text-slate-400 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Sparkles size={16} className={pathname.includes('/manifesto') ? 'text-amber-500' : ''} /> <span className="hidden xl:inline">マニフェスト</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/report`} title="戦略レポート" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/report') ? 'bg-[#00205B]/10 dark:bg-[#00205B]/30 text-[#00205B] dark:text-[#8ab4f8]' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/report`} title="戦略レポート" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/report') ? 'bg-[#00205B]/10 dark:bg-[#00205B]/30 text-[#00205B] dark:text-[#8ab4f8]' : 'text-logic-slate dark:text-slate-400 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Printer size={16} className={pathname.includes('/report') ? 'text-[#00205B] dark:text-[#8ab4f8]' : ''} /> <span className="hidden xl:inline">レポート</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} title="シートエディタ" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/data-entry') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} title="シートエディタ" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/data-entry') ? 'bg-primary-50 dark:bg-primary-900/20 text-strategic-teal dark:text-primary-400' : 'text-logic-slate dark:text-slate-400 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <Database size={16} /> <span className="hidden xl:inline">シートエディタ</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/my-tasks`} title="マイタスク" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/my-tasks') ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
+          <Link href={`/${currentOrgId}/p/${currentProjectId}/my-tasks`} title="マイタスク" className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 rounded-[4px] text-[13px] font-medium transition-colors whitespace-nowrap ${pathname.includes('/my-tasks') ? 'bg-primary-50 dark:bg-primary-900/20 text-strategic-teal dark:text-primary-400' : 'text-logic-slate dark:text-slate-400 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <CheckSquare size={16} /> <span className="hidden xl:inline">マイタスク</span>
           </Link>
         </div>

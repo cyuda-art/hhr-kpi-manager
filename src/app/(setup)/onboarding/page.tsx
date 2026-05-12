@@ -178,11 +178,11 @@ export default function OnboardingChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-colors">
+    <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex flex-col transition-colors">
       
       {/* Header */}
       <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-6 sticky top-0 z-10">
-        <div className="font-bold text-primary-600 dark:text-primary-400 flex items-center gap-2">
+        <div className="font-bold text-strategic-teal dark:text-primary-400 flex items-center gap-2">
           <Sparkles size={20} />
           <span>Setup AI</span>
         </div>
@@ -197,7 +197,7 @@ export default function OnboardingChatPage() {
               {/* Avatar */}
               <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                 msg.sender === 'ai' 
-                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' 
+                  ? 'bg-primary-100 text-strategic-teal dark:bg-primary-900/30 dark:text-primary-400' 
                   : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
               }`}>
                 {msg.sender === 'ai' ? <Bot size={20} /> : <User size={20} />}
@@ -207,8 +207,8 @@ export default function OnboardingChatPage() {
               <div className={`flex flex-col gap-3 max-w-[80%] ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                 <div className={`px-5 py-3.5 rounded-2xl whitespace-pre-wrap leading-relaxed ${
                   msg.sender === 'user'
-                    ? 'bg-primary-600 text-white rounded-tr-sm'
-                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-tl-sm shadow-sm'
+                    ? 'bg-strategic-teal text-white rounded-tr-sm'
+                    : 'bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-tl-sm shadow-sm'
                 }`}>
                   {msg.isTyping ? (
                     <div className="flex items-center gap-1 h-6">
@@ -229,7 +229,7 @@ export default function OnboardingChatPage() {
                         key={i}
                         onClick={() => handleOptionClick(opt)}
                         disabled={isCreating}
-                        className="px-4 py-2 flex items-center gap-2 bg-white dark:bg-slate-800 border border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 rounded-full text-sm font-bold hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors shadow-sm disabled:opacity-50"
+                        className="px-4 py-2 flex items-center gap-2 bg-white dark:bg-slate-800 border border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-300 rounded-full text-sm font-bold hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors shadow-sm disabled:opacity-50"
                       >
                         {opt.icon && opt.icon}
                         {opt.label}

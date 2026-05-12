@@ -25,7 +25,7 @@ const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId, onClick }: { ac
   
   const getStatusColor = (status: string) => {
     if (status === 'done') return 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400';
-    if (status === 'in_progress') return 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400';
+    if (status === 'in_progress') return 'bg-blue-50 border-blue-200 text-strategic-teal dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400';
     return 'bg-white border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200';
   };
 
@@ -46,7 +46,7 @@ const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId, onClick }: { ac
             <span className={`text-[9px] px-1 rounded ${
               action.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
               action.priority === 'not_urgent_important' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-              action.priority === 'urgent_not_important' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+              action.priority === 'urgent_not_important' ? 'bg-blue-100 text-strategic-teal dark:bg-blue-900/30 dark:text-blue-400' :
               'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
             }`}>
               {action.priority === 'urgent_important' ? '第1領域(必須・急)' :
@@ -240,22 +240,22 @@ export default function MyTasksPage() {
             const done = kpiTasks.filter(a => a.status === 'done');
 
             return (
-              <div key={kpi.id} className="flex flex-col bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${kpi.type === 'KGI' ? 'bg-amber-100 text-amber-700' : 'bg-primary-100 text-primary-700'}`}>{kpi.type}</span>
-                  <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{kpi.name}</h3>
-                  <span className="text-xs text-slate-500 ml-auto">{kpiTasks.length} tasks</span>
+              <div key={kpi.id} className="flex flex-col bg-clean-canvas dark:bg-slate-900/50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="px-4 py-2 bg-clean-canvas dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${kpi.type === 'KGI' ? 'bg-amber-100 text-amber-700' : 'bg-primary-100 text-strategic-teal'}`}>{kpi.type}</span>
+                  <h3 className="font-bold text-sm text-oxford-navy dark:text-slate-200">{kpi.name}</h3>
+                  <span className="text-xs text-logic-slate dark:text-slate-400 ml-auto">{kpiTasks.length} tasks</span>
                 </div>
                 
                 <div className="flex flex-col md:flex-row w-full" style={{ minHeight: '200px' }}>
                   {/* To Do */}
-                  <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-slate-50/30 dark:bg-slate-900/10" style={{ minWidth: '200px' }} onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'todo')}>
-                    <div className="text-[11px] font-bold text-slate-500 mb-1 px-1">To Do ({todo.length})</div>
+                  <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-clean-canvas dark:bg-slate-900/30 dark:bg-slate-900/10" style={{ minWidth: '200px' }} onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'todo')}>
+                    <div className="text-[11px] font-bold text-logic-slate dark:text-slate-400 mb-1 px-1">To Do ({todo.length})</div>
                     {todo.map(a => renderTask(a))}
                   </div>
                   {/* In Progress */}
                   <div className="flex-1 p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-blue-50/10 dark:bg-blue-900/5" style={{ minWidth: '200px' }} onDragOver={e => e.preventDefault()} onDrop={e => handleDrop(e, 'in_progress')}>
-                    <div className="text-[11px] font-bold text-blue-600 mb-1 px-1">In Progress ({inProg.length})</div>
+                    <div className="text-[11px] font-bold text-strategic-teal mb-1 px-1">In Progress ({inProg.length})</div>
                     {inProg.map(a => renderTask(a))}
                   </div>
                   {/* Done */}
@@ -268,7 +268,7 @@ export default function MyTasksPage() {
             );
           })}
           {kpisWithTasks.length === 0 && (
-            <div className="flex items-center justify-center h-full text-slate-500">タスクがありません</div>
+            <div className="flex items-center justify-center h-full text-logic-slate dark:text-slate-400">タスクがありません</div>
           )}
         </div>
       );
@@ -280,7 +280,7 @@ export default function MyTasksPage() {
       
       const Column = ({ title, status, list, colorClass }: { title: string, status: any, list: Action[], colorClass: string }) => (
         <div 
-          className="flex-1 min-w-[280px] flex flex-col bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800/50 overflow-hidden"
+          className="flex-1 min-w-[280px] flex flex-col bg-clean-canvas dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800/50 overflow-hidden"
           onDragOver={e => e.preventDefault()}
           onDrop={e => handleDrop(e, status)}
         >
@@ -296,8 +296,8 @@ export default function MyTasksPage() {
 
       return (
         <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-x-auto custom-scrollbar pb-2">
-          <Column title="To Do (未着手)" status="todo" list={todo} colorClass="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" />
-          <Column title="In Progress (進行中)" status="in_progress" list={inProg} colorClass="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" />
+          <Column title="To Do (未着手)" status="todo" list={todo} colorClass="bg-clean-canvas dark:bg-slate-800 text-slate-700 dark:text-slate-300" />
+          <Column title="In Progress (進行中)" status="in_progress" list={inProg} colorClass="bg-blue-50 dark:bg-blue-900/20 text-strategic-teal dark:text-blue-300" />
           <Column title="Done (完了)" status="done" list={done} colorClass="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300" />
         </div>
       );
@@ -325,7 +325,7 @@ export default function MyTasksPage() {
           
           {/* 左側の階層ツリーリスト */}
           <div className="w-80 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#282a2d] sticky left-0 z-20 flex flex-col">
-            <div className="h-10 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 bg-slate-50 dark:bg-slate-900 font-bold text-xs text-slate-500 shadow-sm z-10">
+            <div className="h-10 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 bg-clean-canvas dark:bg-slate-900 font-bold text-xs text-logic-slate dark:text-slate-400 shadow-sm z-10">
               目標・タスク階層
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar pb-10">
@@ -337,7 +337,7 @@ export default function MyTasksPage() {
                   <div className="flex items-center w-full" style={{ paddingLeft: `${node.depth * 16 + 8}px` }}>
                     {/* 開閉トグルアイコン */}
                     <div 
-                      className={`w-5 h-5 flex items-center justify-center shrink-0 cursor-pointer text-slate-400 hover:text-slate-600 ${node.children.length === 0 ? 'invisible' : ''}`}
+                      className={`w-5 h-5 flex items-center justify-center shrink-0 cursor-pointer text-slate-400 hover:text-logic-slate dark:text-slate-400 ${node.children.length === 0 ? 'invisible' : ''}`}
                       onClick={() => toggleNode(node.id)}
                     >
                       {expandedNodes.has(node.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -353,13 +353,13 @@ export default function MyTasksPage() {
                     </div>
 
                     {/* テキスト */}
-                    <span className={`text-[12px] truncate ${node.type !== 'TASK' ? 'font-bold text-slate-800 dark:text-slate-200' : 'text-slate-700 dark:text-slate-300'}`}>
+                    <span className={`text-[12px] truncate ${node.type !== 'TASK' ? 'font-bold text-oxford-navy dark:text-slate-200' : 'text-slate-700 dark:text-slate-300'}`}>
                       {node.title}
                     </span>
                     
                     {/* 担当者（タスクのみ） */}
                     {node.type === 'TASK' && node.taskData?.owner && (
-                      <span className="ml-auto text-[10px] text-slate-400 shrink-0 bg-slate-100 dark:bg-slate-800 px-1.5 rounded">{node.taskData.owner}</span>
+                      <span className="ml-auto text-[10px] text-slate-400 shrink-0 bg-clean-canvas dark:bg-slate-800 px-1.5 rounded">{node.taskData.owner}</span>
                     )}
                   </div>
                 </div>
@@ -369,7 +369,7 @@ export default function MyTasksPage() {
 
           {/* 右側のガントチャート */}
           <div className="flex flex-col flex-1 min-w-max bg-white dark:bg-[#202124]">
-            <div className="h-10 flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
+            <div className="h-10 flex border-b border-slate-200 dark:border-slate-800 bg-clean-canvas dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
               {days.map(d => (
                 <div key={d.date} className={`w-8 shrink-0 flex flex-col items-center justify-center border-r border-slate-200 dark:border-slate-800/50 ${d.dayOfWeek === 0 || d.dayOfWeek === 6 ? 'bg-slate-100/80 dark:bg-slate-800/50' : ''}`}>
                   <span className="text-[8px] text-slate-400 leading-none mb-0.5">{['日','月','火','水','木','金','土'][d.dayOfWeek]}</span>
@@ -382,7 +382,7 @@ export default function MyTasksPage() {
               {/* 背景のグリッド線 */}
               <div className="absolute inset-0 flex pointer-events-none">
                 {days.map(d => (
-                  <div key={d.date} className={`w-8 shrink-0 border-r border-slate-100 dark:border-slate-800/30 ${d.dayOfWeek === 0 || d.dayOfWeek === 6 ? 'bg-slate-50/50 dark:bg-slate-800/10' : ''}`}></div>
+                  <div key={d.date} className={`w-8 shrink-0 border-r border-slate-100 dark:border-slate-800/30 ${d.dayOfWeek === 0 || d.dayOfWeek === 6 ? 'bg-clean-canvas dark:bg-slate-900/50 dark:bg-slate-800/10' : ''}`}></div>
                 ))}
               </div>
 
@@ -414,14 +414,14 @@ export default function MyTasksPage() {
                   // バーのスタイル
                   let barClass = "";
                   if (node.type === 'KGI') barClass = "bg-amber-400/80 dark:bg-amber-600/50 h-2 top-[14px]"; // サマリー細線
-                  else if (node.type === 'KPI') barClass = "bg-primary-400/80 dark:bg-primary-600/50 h-2 top-[14px]"; // サマリー細線
+                  else if (node.type === 'KPI') barClass = "bg-primary-400/80 dark:bg-strategic-teal/50 h-2 top-[14px]"; // サマリー細線
                   else {
                     const status = node.taskData?.status;
                     barClass = `h-5 top-[6px] ${status === 'done' ? 'bg-emerald-500' : status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400'}`;
                   }
 
                   return (
-                    <div key={node.id} className={`h-10 border-b border-transparent relative group ${node.type === 'TASK' ? 'hover:bg-slate-50/50 dark:hover:bg-white/5' : ''}`}>
+                    <div key={node.id} className={`h-10 border-b border-transparent relative group ${node.type === 'TASK' ? 'hover:bg-clean-canvas dark:bg-slate-900/50 dark:hover:bg-white/5' : ''}`}>
                       {(startIdx !== -1 && endIdx !== -1 && width > 0) && (
                         <div 
                           className={`absolute rounded-sm shadow-sm transition-all z-10 cursor-pointer ${barClass}`}
@@ -451,7 +451,7 @@ export default function MyTasksPage() {
     const days = [];
 
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="min-h-[120px] bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800/50"></div>);
+      days.push(<div key={`empty-${i}`} className="min-h-[120px] bg-clean-canvas dark:bg-slate-900/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800/50"></div>);
     }
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -461,14 +461,14 @@ export default function MyTasksPage() {
 
       days.push(
         <div key={d} className={`min-h-[120px] p-2 border border-slate-200 dark:border-slate-800 ${isToday ? 'bg-primary-50/30 dark:bg-primary-900/10' : 'bg-white dark:bg-[#282a2d]'}`}>
-          <div className={`text-xs font-bold mb-1 ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500'}`}>{d}</div>
+          <div className={`text-xs font-bold mb-1 ${isToday ? 'text-strategic-teal dark:text-primary-400' : 'text-logic-slate dark:text-slate-400'}`}>{d}</div>
           <div className="flex flex-col gap-1 overflow-y-auto max-h-[100px] custom-scrollbar">
             {dayTasks.map(task => {
               const kpi = kpiData[task.kpiId];
               return (
                 <div 
                   key={task.id} 
-                  className={`text-[10px] p-1 px-1.5 rounded truncate flex items-center gap-1 border-l-2 ${task.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-300' : task.status === 'in_progress' ? 'bg-blue-50 text-blue-700 border-blue-500 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-slate-50 text-slate-700 border-slate-400 dark:bg-slate-800 dark:text-slate-300'}`}
+                  className={`text-[10px] p-1 px-1.5 rounded truncate flex items-center gap-1 border-l-2 ${task.status === 'done' ? 'bg-emerald-50 text-emerald-700 border-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-300' : task.status === 'in_progress' ? 'bg-blue-50 text-strategic-teal border-strategic-teal dark:bg-blue-900/30 dark:text-blue-300' : 'bg-clean-canvas dark:bg-slate-900 text-slate-700 border-slate-400 dark:bg-slate-800 dark:text-slate-300'}`}
                   title={`${task.title} (${kpi?.name})`}
                 >
                   <span className="font-bold truncate">{task.title}</span>
@@ -482,9 +482,9 @@ export default function MyTasksPage() {
 
     return (
       <div className="flex-1 bg-white dark:bg-[#202124] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col shadow-sm">
-        <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+        <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-clean-canvas dark:bg-slate-900">
           {['日', '月', '火', '水', '木', '金', '土'].map(day => (
-            <div key={day} className="py-2 text-center text-[11px] font-bold text-slate-500 dark:text-slate-400">{day}</div>
+            <div key={day} className="py-2 text-center text-[11px] font-bold text-logic-slate dark:text-slate-400">{day}</div>
           ))}
         </div>
         <div className="grid grid-cols-7 grid-rows-5 flex-1 overflow-y-auto custom-scrollbar bg-slate-100 dark:bg-[#202124] gap-[1px]">
@@ -502,37 +502,37 @@ export default function MyTasksPage() {
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm shrink-0 gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-lg">
+          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 text-strategic-teal dark:text-indigo-400 rounded-lg">
             <CheckSquare size={24} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <h1 className="text-lg font-bold text-oxford-navy dark:text-slate-200 flex items-center gap-2">
               プロジェクト・タスク管理
-              <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-normal text-slate-500">{currentDate.getFullYear()}年{currentDate.getMonth() + 1}月</span>
+              <span className="text-xs px-2 py-0.5 bg-clean-canvas dark:bg-slate-800 rounded font-normal text-logic-slate dark:text-slate-400">{currentDate.getFullYear()}年{currentDate.getMonth() + 1}月</span>
             </h1>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">KGI/KPIのツリー階層と連動したタスクのステータスやスケジュールを管理します。</p>
+            <p className="text-[11px] text-logic-slate dark:text-slate-400 mt-0.5">KGI/KPIのツリー階層と連動したタスクのステータスやスケジュールを管理します。</p>
           </div>
         </div>
 
         <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
           
           {/* View Toggle */}
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+          <div className="flex bg-clean-canvas dark:bg-slate-800 p-1 rounded-lg">
             <button 
               onClick={() => setViewMode('timeline')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'timeline' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'timeline' ? 'bg-white dark:bg-[#202124] text-strategic-teal shadow-sm' : 'text-logic-slate dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               <Clock size={14} /> タイムライン
             </button>
             <button 
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-[#202124] text-strategic-teal shadow-sm' : 'text-logic-slate dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               <LayoutGrid size={14} /> カンバン
             </button>
             <button 
               onClick={() => setViewMode('calendar')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-[#202124] text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-[#202124] text-strategic-teal shadow-sm' : 'text-logic-slate dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               <CalendarIcon size={14} /> カレンダー
             </button>
@@ -544,14 +544,14 @@ export default function MyTasksPage() {
           {viewMode === 'kanban' && (
             <button 
               onClick={() => setGroupByKpi(!groupByKpi)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-bold transition-colors border ${groupByKpi ? 'bg-primary-50 border-primary-200 text-primary-700 dark:bg-primary-900/30 dark:border-primary-800 dark:text-primary-400' : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-bold transition-colors border ${groupByKpi ? 'bg-primary-50 border-primary-200 text-strategic-teal dark:bg-primary-900/30 dark:border-primary-800 dark:text-primary-400' : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}
             >
               <Layers size={14} /> KPIでグループ化
             </button>
           )}
 
           {/* Filter */}
-          <div className="flex items-center gap-2 w-full md:w-auto bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-2 w-full md:w-auto bg-clean-canvas dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
             <User size={14} className="text-slate-400" />
             <select 
               value={filterOwner}
@@ -577,33 +577,33 @@ export default function MyTasksPage() {
       {editingTask && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-              <h2 className="font-bold text-slate-800 dark:text-slate-200 text-lg">タスクの編集</h2>
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-clean-canvas dark:bg-slate-900/50">
+              <h2 className="font-bold text-oxford-navy dark:text-slate-200 text-lg">タスクの編集</h2>
               <button onClick={() => setEditingTask(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">×</button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">タイトル <span className="text-rose-500">*</span></label>
-                <input type="text" value={editingTask.title} onChange={(e) => handleUpdateTask({ title: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
+                <label className="block text-xs font-bold text-logic-slate dark:text-slate-400 mb-1">タイトル <span className="text-rose-500">*</span></label>
+                <input type="text" value={editingTask.title} onChange={(e) => handleUpdateTask({ title: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 focus:ring-2 focus:ring-strategic-teal outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">詳細説明</label>
-                <textarea value={editingTask.description || ''} onChange={(e) => handleUpdateTask({ description: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-24" placeholder="タスクの具体的な内容や前提条件など..." />
+                <label className="block text-xs font-bold text-logic-slate dark:text-slate-400 mb-1">詳細説明</label>
+                <textarea value={editingTask.description || ''} onChange={(e) => handleUpdateTask({ description: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 focus:ring-2 focus:ring-strategic-teal outline-none resize-none h-24" placeholder="タスクの具体的な内容や前提条件など..." />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">担当者 <span className="text-rose-500">*</span></label>
-                  <input type="text" value={editingTask.owner} onChange={(e) => handleUpdateTask({ owner: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
+                  <label className="block text-xs font-bold text-logic-slate dark:text-slate-400 mb-1">担当者 <span className="text-rose-500">*</span></label>
+                  <input type="text" value={editingTask.owner} onChange={(e) => handleUpdateTask({ owner: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 focus:ring-2 focus:ring-strategic-teal outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">部署</label>
-                  <input type="text" value={editingTask.department || ''} onChange={(e) => handleUpdateTask({ department: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="例: 営業部" />
+                  <label className="block text-xs font-bold text-logic-slate dark:text-slate-400 mb-1">部署</label>
+                  <input type="text" value={editingTask.department || ''} onChange={(e) => handleUpdateTask({ department: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 focus:ring-2 focus:ring-strategic-teal outline-none" placeholder="例: 営業部" />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">優先度 (重要度×緊急度)</label>
-                  <select value={editingTask.priority || 'unassigned'} onChange={(e) => handleUpdateTask({ priority: e.target.value as any })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none">
+                  <label className="block text-xs font-bold text-logic-slate dark:text-slate-400 mb-1">優先度 (重要度×緊急度)</label>
+                  <select value={editingTask.priority || 'unassigned'} onChange={(e) => handleUpdateTask({ priority: e.target.value as any })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 focus:ring-2 focus:ring-strategic-teal outline-none">
                     <option value="unassigned">未設定</option>
                     <option value="urgent_important">第1領域(必須・緊急)</option>
                     <option value="not_urgent_important">第2領域(重要・仕込)</option>
@@ -612,23 +612,23 @@ export default function MyTasksPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">開始日</label>
-                  <input type="date" value={editingTask.startDate?.split('T')[0] || ''} onChange={(e) => handleUpdateTask({ startDate: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
+                  <label className="block text-xs font-bold text-logic-slate dark:text-slate-400 mb-1">開始日</label>
+                  <input type="date" value={editingTask.startDate?.split('T')[0] || ''} onChange={(e) => handleUpdateTask({ startDate: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 focus:ring-2 focus:ring-strategic-teal outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">期限</label>
-                  <input type="date" value={editingTask.dueDate?.split('T')[0] || ''} onChange={(e) => handleUpdateTask({ dueDate: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none" />
+                  <label className="block text-xs font-bold text-logic-slate dark:text-slate-400 mb-1">期限</label>
+                  <input type="date" value={editingTask.dueDate?.split('T')[0] || ''} onChange={(e) => handleUpdateTask({ dueDate: e.target.value })} className="w-full text-sm px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-oxford-navy dark:text-slate-200 focus:ring-2 focus:ring-strategic-teal outline-none" />
                 </div>
               </div>
             </div>
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between bg-slate-50 dark:bg-slate-900/50">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between bg-clean-canvas dark:bg-slate-900/50">
               <button onClick={() => {
                 if(window.confirm('このタスクを削除しますか？')) {
                   useKpiStore.getState().removeAction(editingTask.id);
                   setEditingTask(null);
                 }
               }} className="text-sm font-bold text-rose-500 hover:text-rose-600 px-4 py-2">削除</button>
-              <button onClick={() => setEditingTask(null)} className="text-sm font-bold bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg transition-colors shadow-sm">完了</button>
+              <button onClick={() => setEditingTask(null)} className="text-sm font-bold bg-strategic-teal hover:bg-strategic-teal text-white px-6 py-2 rounded-lg transition-colors shadow-sm">完了</button>
             </div>
           </div>
         </div>

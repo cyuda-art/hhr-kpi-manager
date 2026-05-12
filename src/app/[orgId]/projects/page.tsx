@@ -382,12 +382,12 @@ ${editableManifesto.description}` : '',
             {/* Create New Project Card (Dashed) */}
             <button 
               onClick={() => setWizardStep('input')}
-              className="bg-transparent hover:bg-white dark:bg-[#282a2d] border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-primary-500 dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group"
+              className="bg-transparent hover:bg-white dark:bg-[#282a2d] border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-strategic-teal dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group"
             >
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 text-primary-600 dark:text-[#8ab4f8] bg-primary-600 dark:bg-[#8ab4f8]/10 group-hover:bg-primary-600 dark:bg-[#8ab4f8]/20 transition-colors">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 text-strategic-teal dark:text-[#8ab4f8] bg-strategic-teal dark:bg-[#8ab4f8]/10 group-hover:bg-strategic-teal dark:bg-[#8ab4f8]/20 transition-colors">
                 <Plus size={24} />
               </div>
-              <span className="text-[16px] font-medium text-primary-600 dark:text-[#8ab4f8]">
+              <span className="text-[16px] font-medium text-strategic-teal dark:text-[#8ab4f8]">
                 AIでKGI/KPIを生成
               </span>
             </button>
@@ -402,7 +402,7 @@ ${editableManifesto.description}` : '',
                 {/* 処理中のオーバーレイ */}
                 {isProcessing === project.id && (
                   <div className="absolute inset-0 bg-white/80 dark:bg-[#202124]/80 flex items-center justify-center z-10 rounded-[8px] backdrop-blur-sm">
-                    <span className="text-[13px] text-primary-600 dark:text-[#8ab4f8] font-medium animate-pulse">処理中...</span>
+                    <span className="text-[13px] text-strategic-teal dark:text-[#8ab4f8] font-medium animate-pulse">処理中...</span>
                   </div>
                 )}
 
@@ -455,7 +455,7 @@ ${editableManifesto.description}` : '',
                 </div>
 
                 {/* Card Footer */}
-                <div className="mt-auto pt-3 border-t border-slate-200 dark:border-[#3c4043]/50 flex items-center justify-between text-slate-500 dark:text-[#9aa0a6] group-hover:text-primary-600 dark:text-[#8ab4f8] transition-colors">
+                <div className="mt-auto pt-3 border-t border-slate-200 dark:border-[#3c4043]/50 flex items-center justify-between text-slate-500 dark:text-[#9aa0a6] group-hover:text-strategic-teal dark:text-[#8ab4f8] transition-colors">
                   <span className="text-[12px] font-medium">ツリーを開く</span>
                   <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                 </div>
@@ -481,7 +481,7 @@ ${editableManifesto.description}` : '',
                   <input
                     type="text" required autoFocus value={projectUrl} onChange={(e) => setProjectUrl(e.target.value)}
                     placeholder="例：https://example.com または ホテル5施設と飲食10店舗の運営"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-strategic-teal rounded-[4px] focus:outline-none"
                   />
                   <p className="text-[11px] text-slate-400 mt-1">AIが事業ポートフォリオを解読します。</p>
                 </div>
@@ -513,7 +513,7 @@ ${editableManifesto.description}` : '',
                       <input
                         type="text" required value={customKgiType} onChange={(e) => setCustomKgiType(e.target.value)}
                         placeholder="例：独自指標を入力..."
-                        className="w-full px-3 py-2 mt-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none animate-in fade-in slide-in-from-top-1"
+                        className="w-full px-3 py-2 mt-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-strategic-teal rounded-[4px] focus:outline-none animate-in fade-in slide-in-from-top-1"
                       />
                     )}
                   </div>
@@ -536,7 +536,7 @@ ${editableManifesto.description}` : '',
                     <input
                       type="number" required value={kgiTargetValue} onChange={(e) => setKgiTargetValue(e.target.value)}
                       placeholder="例：500000000 または 95"
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-strategic-teal rounded-[4px] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -578,7 +578,7 @@ ${editableManifesto.description}` : '',
                     />
                     <div className="flex flex-col items-center pointer-events-none">
                       <Upload size={20} className="text-slate-400 mb-2" />
-                      <p className="text-[12px] text-slate-500 font-medium">クリックまたはドラッグ＆ドロップでファイルを追加</p>
+                      <p className="text-[12px] text-logic-slate dark:text-slate-400 font-medium">クリックまたはドラッグ＆ドロップでファイルを追加</p>
                     </div>
                   </div>
                   
@@ -604,11 +604,11 @@ ${editableManifesto.description}` : '',
                   <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">6. 初期データの生成</label>
                   <div className="flex items-center gap-4">
                     <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-[#e8eaed] cursor-pointer">
-                      <input type="radio" checked={!hasSampleData} onChange={() => setHasSampleData(false)} className="text-primary-500 focus:ring-primary-500" />
+                      <input type="radio" checked={!hasSampleData} onChange={() => setHasSampleData(false)} className="text-primary-500 focus:ring-strategic-teal" />
                       空で作成（実績0からスタート）
                     </label>
                     <label className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-[#e8eaed] cursor-pointer">
-                      <input type="radio" checked={hasSampleData} onChange={() => setHasSampleData(true)} className="text-primary-500 focus:ring-primary-500" />
+                      <input type="radio" checked={hasSampleData} onChange={() => setHasSampleData(true)} className="text-primary-500 focus:ring-strategic-teal" />
                       サンプルデータあり
                     </label>
                   </div>
@@ -625,7 +625,7 @@ ${editableManifesto.description}` : '',
                 </button>
                 <button
                   type="submit" disabled={!projectUrl || !kgiTargetValue}
-                  className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-[4px] transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-oxford-navy to-strategic-teal hover:from-oxford-navy hover:to-strategic-teal text-white rounded-[4px] transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   <Sparkles size={16} />
                   AIで戦略案を生成（STEP 2へ）
@@ -641,7 +641,7 @@ ${editableManifesto.description}` : '',
         <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#282a2d] rounded-[8px] p-6 w-full max-w-5xl shadow-2xl border border-slate-200 dark:border-[#3c4043] relative overflow-hidden flex flex-col max-h-[90vh]">
             <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4] mb-2">AIが考案した3つの作戦（Manifesto）</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">組織のMaster MVVを遵守し、KGIを達成するための作戦です。方向性に最も近いものを1つ選び、必要に応じて修正してください。</p>
+            <p className="text-sm text-logic-slate dark:text-slate-400 mb-6">組織のMaster MVVを遵守し、KGIを達成するための作戦です。方向性に最も近いものを1つ選び、必要に応じて修正してください。</p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 overflow-y-auto pr-2">
               {manifestos.map((m, idx) => (
@@ -651,10 +651,10 @@ ${editableManifesto.description}` : '',
                     setSelectedManifestoIndex(idx);
                     setEditableManifesto(manifestos[idx]);
                   }}
-                  className={`p-5 rounded-xl border-2 cursor-pointer transition-all flex flex-col ${selectedManifestoIndex === idx ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md' : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700'}`}
+                  className={`p-5 rounded-xl border-2 cursor-pointer transition-all flex flex-col ${selectedManifestoIndex === idx ? 'border-strategic-teal bg-primary-50 dark:bg-primary-900/20 shadow-md' : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700'}`}
                 >
-                  <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-3 leading-tight">{m.title}</h3>
-                  <p className="text-[13px] text-slate-600 dark:text-slate-300 mb-4 flex-1 leading-relaxed">{m.description}</p>
+                  <h3 className="font-bold text-lg text-oxford-navy dark:text-slate-200 mb-3 leading-tight">{m.title}</h3>
+                  <p className="text-[13px] text-logic-slate dark:text-slate-400 mb-4 flex-1 leading-relaxed">{m.description}</p>
                   <div className="text-[12px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800">
                     <strong className="block mb-1">なぜこの作戦か？</strong>
                     {m.reason}
@@ -664,7 +664,7 @@ ${editableManifesto.description}` : '',
             </div>
 
             {/* 選択中のマニフェストの編集エリア */}
-            <div className="mb-6 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+            <div className="mb-6 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-clean-canvas dark:bg-slate-900/50">
               <label className="block text-[13px] font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
                 選択中の作戦を微調整（任意）
               </label>
@@ -672,13 +672,13 @@ ${editableManifesto.description}` : '',
                 type="text" 
                 value={editableManifesto?.title || ''} 
                 onChange={e => setEditableManifesto({...editableManifesto, title: e.target.value})}
-                className="w-full font-bold text-[15px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-primary-500 mb-3"
+                className="w-full font-bold text-[15px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal mb-3"
               />
               <textarea 
                 value={editableManifesto?.description || ''} 
                 onChange={e => setEditableManifesto({...editableManifesto, description: e.target.value})}
                 rows={3}
-                className="w-full text-[13px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-primary-500 resize-none"
+                className="w-full text-[13px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal resize-none"
               />
             </div>
 
@@ -692,7 +692,7 @@ ${editableManifesto.description}` : '',
               </button>
               <button
                 onClick={handleGenerateTree}
-                className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-indigo-500 to-primary-600 hover:from-indigo-600 hover:to-primary-700 text-white rounded-[4px] shadow-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-oxford-navy to-strategic-teal hover:from-oxford-navy hover:to-strategic-teal text-white rounded-[4px] shadow-lg transition-all flex items-center gap-2"
               >
                 <Sparkles size={16} />
                 この作戦でKPIツリーを展開

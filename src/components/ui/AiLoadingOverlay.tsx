@@ -45,11 +45,11 @@ export const AiLoadingOverlay: React.FC<AiLoadingOverlayProps> = ({ isVisible, s
         </div>
 
         {/* テキスト */}
-        <h3 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white tracking-wide mb-2 drop-shadow-[0_0_10px_rgba(14,165,233,0.3)] dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+        <h3 className="text-xl md:text-2xl font-bold text-oxford-navy dark:text-slate-200 tracking-wide mb-2 drop-shadow-[0_0_10px_rgba(14,165,233,0.3)] dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
           {statusText}
         </h3>
         {subText && (
-          <p className="text-sm md:text-base text-slate-600 dark:text-white/80 font-medium max-w-lg drop-shadow-md">
+          <p className="text-sm md:text-base text-logic-slate dark:text-slate-400/80 font-medium max-w-lg drop-shadow-md">
             {subText}
           </p>
         )}
