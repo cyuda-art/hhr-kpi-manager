@@ -5,8 +5,12 @@ import { useOrgStore } from '@/store/useOrgStore';
 import { Target, Sparkles, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export default function ManifestoPage({ params }: { params: { projectId: string } }) {
-  const { projects } = useProjectStore();
+import { useParams } from 'next/navigation';
+
+export default function ManifestoPage() {
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const { projects, isLoading } = useProjectStore();
   const { currentOrgId } = useOrgStore();
   const [isMounted, setIsMounted] = useState(false);
   
@@ -16,7 +20,18 @@ export default function ManifestoPage({ params }: { params: { projectId: string 
 
   if (!isMounted) return null;
 
-  const currentProject = projects.find(p => p.id === params.projectId);
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 mb-4"></div>
+          <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentProject = projects.find(p => p.id === projectId);
 
   if (!currentProject) {
     return (
