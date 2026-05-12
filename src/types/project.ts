@@ -16,4 +16,9 @@ export interface Project {
   revenueScale?: string;
   currentIssues?: string;
   members?: string[]; // 参加メンバーのUID配列
+  
+  // ミクロ環境・動的分析（地図層）
+  swot?: string;
+  crossSwot?: string;
+  ansoff?: string;
 }

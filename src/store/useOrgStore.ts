@@ -13,6 +13,7 @@ interface OrgStore {
   joinOrganization: (orgId: string, userId: string) => Promise<void>;
   updateOrganizationName: (orgId: string, name: string) => Promise<void>;
   updateOrganizationMvv: (orgId: string, masterMvv: string) => Promise<void>;
+  updateOrganizationFrameworks: (orgId: string, data: Partial<Organization>) => Promise<void>;
 }
 
 export const useOrgStore = create<OrgStore>((set, get) => ({
@@ -125,6 +126,16 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       await setDoc(orgRef, { masterMvv }, { merge: true });
     } catch (error) {
       console.error("Error updating organization MVV:", error);
+      throw error;
+    }
+  },
+
+  updateOrganizationFrameworks: async (orgId: string, data: Partial<Organization>) => {
+    try {
+      const orgRef = doc(db, 'organizations', orgId);
+      await setDoc(orgRef, data, { merge: true });
+    } catch (error) {
+      console.error("Error updating organization frameworks:", error);
       throw error;
     }
   }

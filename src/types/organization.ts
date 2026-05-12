@@ -13,5 +13,17 @@ export interface Organization {
   members: OrgMember[];
   membersUidList?: string[]; // クエリ用のUID配列
   masterMvv?: string; // 組織全体のMission, Vision, Valuesおよび制約条件
+  
+  // マクロ環境分析（羅針盤層）
+  companyUrl?: string;
+  industry?: string;
+  pest?: string;
+  fiveForces?: string;
+  vrio?: string;
+  
+  // AI自動更新のバッチ管理
+  lastCrawledAt?: number;
+  requiresStrategyReview?: boolean; // 環境変化検知フラグ
+  
   createdAt: number;
 }
