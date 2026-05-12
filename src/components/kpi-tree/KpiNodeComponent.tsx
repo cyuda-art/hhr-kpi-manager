@@ -4,7 +4,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getDisplayValue } from '@/lib/kpi-utils';
-import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2, Calculator } from 'lucide-react';
+import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2, Calculator, Link2 } from 'lucide-react';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -126,8 +126,13 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       
       <div className="flex justify-between items-start mb-2">
         <div className="flex flex-col flex-1 min-w-0 pr-2">
-          <div className="flex items-center gap-1.5 mb-2">
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             <span className="text-[10px] font-bold text-[#8ab4f8] uppercase tracking-wider">{data.businessUnit}</span>
+            {data.linkedSource && (
+              <span className="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 flex items-center gap-0.5" title="他プロジェクトから同期中の指標">
+                <Link2 size={10} /> LINKED
+              </span>
+            )}
             {data.type === 'KGI' ? (
               <span className="text-[9px] bg-[#c58af9]/20 text-[#c58af9] px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0">Goal & KGI</span>
             ) : level === 1 ? (
@@ -185,6 +190,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             isPredictionMode ? "text-slate-800 dark:text-[#e8eaed]" : "text-slate-900 dark:text-[#f1f3f4]"
           )}>
             {displayActual.toLocaleString()} {data.unit}
+            {data.linkedSource && <span title="他プロジェクトと同期されています"><Link2 size={10} className="inline ml-1 text-slate-400" /></span>}
           </span>
         </div>
         <div className="flex justify-between text-[12px]">

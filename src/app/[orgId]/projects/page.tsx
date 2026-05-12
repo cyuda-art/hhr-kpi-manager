@@ -19,6 +19,7 @@ export default function WorkspacePage() {
   const [kgiType, setKgiType] = useState('売上高');
   const [kgiPeriod, setKgiPeriod] = useState('年間');
   const [kgiTargetValue, setKgiTargetValue] = useState('');
+  const [customKgiType, setCustomKgiType] = useState('');
   const [businessModelType, setBusinessModelType] = useState('B2B SaaS（継続課金）');
   const [mvv, setMvv] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -50,8 +51,10 @@ export default function WorkspacePage() {
     e.preventDefault();
     if (!user || !projectUrl) return;
 
+    const finalKgiType = kgiType === 'その他' && customKgiType.trim() !== '' ? customKgiType : kgiType;
+
     // 自動生成するプロジェクト名
-    const projectName = `${kgiType} ${kgiTargetValue ? Number(kgiTargetValue).toLocaleString() : ''}達成プロジェクト`;
+    const projectName = `${finalKgiType} ${kgiTargetValue ? Number(kgiTargetValue).toLocaleString() : ''}達成プロジェクト`;
 
     try {
       setIsGenerating(true);
@@ -63,7 +66,7 @@ export default function WorkspacePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectUrl,
-          kgiType,
+          kgiType: finalKgiType,
           kgiPeriod,
           kgiTargetValue: Number(kgiTargetValue) || 0,
           businessModelType,
@@ -150,7 +153,7 @@ export default function WorkspacePage() {
       const newId = await createProject(projectName, projectUrl, user.uid, currentOrgId, {
         description: projectUrl,
         mvv, 
-        kgiType, 
+        kgiType: finalKgiType, 
         kgiPeriod,
         kgiTargetValue: Number(kgiTargetValue) || 0, 
         businessModelType
@@ -366,12 +369,29 @@ export default function WorkspacePage() {
                           value={kgiType} onChange={(e) => setKgiType(e.target.value)}
                           className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none"
                         >
-                          <option value="売上高">売上高</option>
-                          <option value="営業利益">営業利益</option>
-                          <option value="ARR">ARR</option>
-                          <option value="MAU">MAU</option>
-                          <option value="その他">その他</option>
+                          <optgroup label="財務指標（PL）">
+                            <option value="売上高">売上高</option>
+                            <option value="営業利益">営業利益</option>
+                            <option value="ARR">ARR</option>
+                            <option value="LTV">LTV</option>
+                          </optgroup>
+                          <optgroup label="非財務・組織/顧客指標（非PL）">
+                            <option value="アンケート最高評価率">アンケート最高評価率</option>
+                            <option value="NPS（ネットプロモータースコア）">NPS（ネットプロモータースコア）</option>
+                            <option value="MAU / アクティブユーザー数">MAU / アクティブユーザー数</option>
+                            <option value="システム稼働率">システム稼働率</option>
+                            <option value="社員エンゲージメントスコア">社員エンゲージメントスコア</option>
+                            <option value="採用成功数">採用成功数</option>
+                          </optgroup>
+                          <option value="その他">その他（自由入力）</option>
                         </select>
+                        {kgiType === 'その他' && (
+                          <input
+                            type="text" required value={customKgiType} onChange={(e) => setCustomKgiType(e.target.value)}
+                            placeholder="例：独自指標を入力..."
+                            className="w-full px-3 py-2 mt-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none animate-in fade-in slide-in-from-top-1"
+                          />
+                        )}
                       </div>
                       <div>
                         <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">目標期間</label>
@@ -384,13 +404,14 @@ export default function WorkspacePage() {
                           <option value="四半期">四半期</option>
                           <option value="月間">月間</option>
                           <option value="1日あたり">1日あたり</option>
+                          <option value="常時（常に維持）">常時（常に維持）</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">目標数値 (円/人など) <span className="text-rose-500">*</span></label>
+                        <label className="block text-[13px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-1.5">目標数値 (円/人/%など) <span className="text-rose-500">*</span></label>
                         <input
                           type="number" required value={kgiTargetValue} onChange={(e) => setKgiTargetValue(e.target.value)}
-                          placeholder="例：500000000"
+                          placeholder="例：500000000 または 95"
                           className="w-full px-3 py-2 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] focus:border-primary-500 rounded-[4px] focus:outline-none"
                         />
                       </div>

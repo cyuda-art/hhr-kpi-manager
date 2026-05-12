@@ -368,6 +368,47 @@ export const useKpiStore = create<KpiStore>()(
           } else {
             console.log("⚠️ [initializeDB] Main document NOT found.");
           }
+
+          // リンクノードの値を同期
+          if (Object.keys(kpiData).length > 0) {
+            console.log(`🌐 [initializeDB] Checking for linked nodes to sync...`);
+            let hasLinkedUpdates = false;
+            const linkPromises = Object.values(kpiData).map(async (node) => {
+              if (node.linkedSource && node.linkedSource.projectId && node.linkedSource.kpiId) {
+                try {
+                  const linkedDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', node.linkedSource.projectId, 'kpiData', 'main'));
+                  if (linkedDoc.exists()) {
+                    const linkedData = linkedDoc.data().kpiData;
+                    const sourceNode = linkedData?.[node.linkedSource.kpiId];
+                    if (sourceNode) {
+                      // ソースノードから値を取得してローカルを更新
+                      if (node.actualValue !== sourceNode.actualValue || node.targetValue !== sourceNode.targetValue) {
+                        kpiData[node.id] = calculateComputed({
+                          ...node,
+                          actualValue: sourceNode.actualValue,
+                          targetValue: sourceNode.targetValue,
+                          name: sourceNode.name,
+                          unit: sourceNode.unit,
+                          initialActualValue: sourceNode.actualValue
+                        });
+                        hasLinkedUpdates = true;
+                      }
+                    }
+                  }
+                } catch (err) {
+                  console.error(`❌ [initializeDB] Failed to sync linked node ${node.id}:`, err);
+                }
+              }
+            });
+            await Promise.all(linkPromises);
+            
+            if (hasLinkedUpdates) {
+              recalculateTree(kpiData, 'actualValue');
+              recalculateTree(kpiData, 'targetValue');
+              syncToDB(projectId, orgId, { kpiData: kpiData } as any);
+            }
+          }
+
         } catch (error) {
           console.error("❌ [initializeDB] Failed to load KPI Data from Firestore", error);
         }

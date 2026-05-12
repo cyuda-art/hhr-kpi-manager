@@ -28,6 +28,10 @@ export interface KpiNodeData {
   isCalculated?: boolean; // 自動計算列かどうか
   formula?: string; // 自動計算の数式（例: "#{kpi_A} * #{kpi_B}"）
   position?: { x: number; y: number }; // React Flow上の座標
+  linkedSource?: {
+    projectId: string;
+    kpiId: string;
+  }; // 他プロジェクトからの同期用リンク情報
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース

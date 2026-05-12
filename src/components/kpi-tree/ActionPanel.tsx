@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator } from 'lucide-react';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2 } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
+import { LinkKpiModal } from './LinkKpiModal';
 
 export const ActionPanel = () => {
   const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, workflows, setAiWorkflow, addAction, currentPeriod } = useKpiStore();
@@ -41,6 +42,7 @@ export const ActionPanel = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [activeTab, setActiveTab] = useState<'details' | 'tasks' | 'ai'>('details');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
   const handleAddTask = () => {
     if (!selectedKpi || !newTaskTitle.trim()) return;
@@ -289,6 +291,14 @@ export const ActionPanel = () => {
             {/* 1. 詳細・数値タブ */}
             {activeTab === 'details' && (
               <div className="space-y-4">
+                {selectedKpi.linkedSource && (
+                  <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-md flex items-start gap-2 animate-in fade-in zoom-in-95">
+                    <Link2 size={14} className="text-slate-500 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400">
+                      この指標は他プロジェクトから同期されています。目標値・実績値はリンク元から自動取得されるため手動編集できません。
+                    </p>
+                  </div>
+                )}
                 {/* 数値編集UI */}
                 <div>
                   {isEditingValue ? (
@@ -344,7 +354,7 @@ export const ActionPanel = () => {
                               type="checkbox" 
                               checked={editIsCalculated} 
                               onChange={(e) => setEditIsCalculated(e.target.checked)} 
-                              disabled={isPredictionMode || hasChildren}
+                              disabled={isPredictionMode || hasChildren || !!selectedKpi.linkedSource}
                               className="rounded border-slate-300 text-primary-500 focus:ring-primary-500 disabled:opacity-50"
                             />
                             <span className="text-xs text-slate-500 font-bold flex items-center gap-1">
@@ -377,7 +387,7 @@ export const ActionPanel = () => {
                           type="number" 
                           value={editTargetValue} 
                           onChange={(e) => setEditTargetValue(e.target.value)}
-                          disabled={isPredictionMode || editIsCalculated}
+                          disabled={isPredictionMode || editIsCalculated || !!selectedKpi.linkedSource}
                           className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                         />
                         <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
@@ -388,7 +398,7 @@ export const ActionPanel = () => {
                       type="number" 
                       value={editActualValue} 
                       onChange={(e) => setEditActualValue(e.target.value)}
-                      disabled={editIsCalculated || hasChildren}
+                      disabled={editIsCalculated || hasChildren || !!selectedKpi.linkedSource}
                       className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                     />
                     <span className="text-xs text-slate-500 w-4">{selectedKpi.unit}</span>
@@ -452,6 +462,22 @@ export const ActionPanel = () => {
                   unit={selectedKpi.unit} 
                 />
               </div>
+            </div>
+
+            {/* 子ノード追加・リンク機能 */}
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <h5 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">子要素 (KPI/プロセス)</h5>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setIsLinkModalOpen(true)}
+                  className="flex-1 text-[11px] py-2 border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
+                >
+                  <Link2 size={14} /> 他プロジェクトから同期して追加
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2">
+                ※自社・他部署の既存プロジェクトから数値を自動連携できます（例: 顧客アンケート結果など）
+              </p>
             </div>
           </div>
           )}
@@ -670,6 +696,14 @@ export const ActionPanel = () => {
         <div className="flex items-center justify-center h-full text-sm text-slate-400 dark:text-slate-500">
           ツリーからKPIを選択してください
         </div>
+      )}
+
+      {selectedKpi && (
+        <LinkKpiModal 
+          isOpen={isLinkModalOpen} 
+          onClose={() => setIsLinkModalOpen(false)} 
+          targetParentId={selectedKpi.id} 
+        />
       )}
     </div>
   );
