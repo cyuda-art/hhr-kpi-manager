@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --font-poppins: var(--font-poppins), var(--font-noto-sans-jp), sans-serif;
+  --font-lato: var(--font-lato), var(--font-noto-sans-jp), sans-serif;
+  --font-formula: "Times New Roman", Georgia, serif;
+
+  --color-oxford-navy: #00205B;
+  --color-strategic-teal: #00A3A1;
+  --color-logic-slate: #425563;
+  --color-clean-canvas: #F8FAFC;
+}
+
+
 /* Enable class-based dark mode for next-themes */
 @custom-variant dark (&:where(.dark, .dark *));
 

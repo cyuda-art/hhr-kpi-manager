@@ -41,7 +41,7 @@ export const Header = () => {
           <div className="w-7 h-7 bg-amber-400 rounded flex items-center justify-center text-slate-900 font-bold shadow-sm transition-transform group-hover:scale-105">
             H
           </div>
-          <span className="font-bold text-[15px] text-slate-800 dark:text-slate-200 tracking-tight hidden xl:block group-hover:text-amber-500 transition-colors">
+          <span className="font-bold text-[15px] text-white tracking-tight hidden xl:block group-hover:text-amber-500 transition-colors">
             HHR-KPI
           </span>
         </Link>
