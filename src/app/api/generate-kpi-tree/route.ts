@@ -66,7 +66,7 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
 【出力要件】
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
 - markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
-- "nodes" 配列内のノードは合計で10個〜15個程度作成してください。
+- "nodes" 配列内のノードは必ず合計で10個〜15個程度作成してください。KGI単体で終わることは絶対に許されません。必ずKGIを分解した子ノード（KPI）、孫ノードを生成し、深いツリー構造を完成させてください。
 - 階層構造と数式に関する【絶対ルール】（MECEとロジックツリーの完全連動）:
   - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main"、nameは "${kgiType}"、targetValueは ${kgiTargetValue || 100000000} としてください。
   - 各ノードの qualitativeName には、目標達成のための定性的な成功要因やプロセス名を設定してください（重要: 「KSF:」や「プロセス:」といった接頭辞は絶対に付けないこと）。
@@ -81,7 +81,7 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
   - 末端のノード（これ以上分解しない最下層）のみ isCalculated: false とし、formula は空文字 "" にしてください。
 - 戦略上、作戦（Manifesto）を実行する上で最も重要となるノード（KSFとなるノード）には、必ず "isKsf": true のフラグを立ててください（複数可）。
 - businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。
-- 数値（targetValue, actualValue, previousValue）は、売上規模から推測してリアリティのある数値を設定してください（単位に注意）。
+- 数値（targetValue, actualValue, previousValue）は、親ノードの計算式（formula）と完全に整合性が取れるように設定してください。計算が合わない数値はエラーになります。
 - 【重要】単位（unit）が「%」の指標（商談化率、利益率など）の場合、数値は0.2のような小数ではなく、必ず100倍した数値（例: 20%の場合は「20」）で設定してください。
 - アーカイブKPIと文脈が完全に合致すると判断した場合のみ、そのアーカイブKPIのIDを "mappedSourceId" に指定してください。合致しない場合は指定しないでください（nullまたは省略）。
 - 1年間のダミーデータをフロントエンドで生成するため、各ノードに事業特性を表す "trend_type" (steady_growth, seasonal_summer, seasonal_winter, flat_random のいずれか) と、日々の数値のブレ幅を表す "volatility" (0.05〜0.3の数値) を必ず含めてください。
@@ -172,7 +172,7 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
       contents: [{ role: "user", parts: promptParts }],
       generationConfig: {
         responseMimeType: "application/json",
-        temperature: 0.2
+        temperature: 0.7
       }
     });
     const response = await result.response;
