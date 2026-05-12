@@ -413,7 +413,94 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Features 3 and 4 omitted for brevity in this rewrite, they follow the same structural redesign (white/navy/teal, sharp edges). */}
+            {/* Feature 3 */}
+            <div className="flex flex-col md:flex-row items-center gap-16">
+              <div className="flex-1 space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
+                  <Target size={14} /> FEATURE 03
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black leading-tight text-oxford-navy dark:text-white">「数字」と「行動」を繋ぐ。<br />アクション管理の統合。</h3>
+                <p className="text-base text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
+                  KPIはあくまで「数値の箱」です。それを動かすための具体的な行動を「重要施策（KSF）」としてツリー上に直接定義し、担当者・期限をアサイン。「誰がどの数字のために何をしているか」を一覧化し、「決めたけどやらない」を物理的に排除します。
+                </p>
+                <ul className="space-y-4 pt-4">
+                  {['指標に直接紐づくタスクの可視化', '担当部署・期限の厳格なトラッキング', '数値目標に対する行動の進捗パーセンテージ'].map((point, i) => (
+                    <li key={i} className="flex items-center gap-3 font-medium text-oxford-navy dark:text-slate-300 text-sm">
+                      <CheckCircle2 className="text-strategic-teal" size={18} />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex-1 w-full bg-[#001133] p-8 rounded-sm shadow-xl flex items-center justify-center">
+                <div className="w-full bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
+                    <div className="text-xs font-bold text-logic-slate dark:text-slate-400 font-poppins tracking-widest">KEY SUCCESS FACTORS</div>
+                    <div className="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 px-2 py-1">商談化率の改善</div>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      { title: 'MAツールのシナリオ改修', owner: 'マーケティング部', done: true },
+                      { title: '休眠顧客リストへの架電', owner: 'インサイドセールス', done: false },
+                      { title: 'トークスクリプトのA/Bテスト', owner: '営業企画', done: false }
+                    ].map((task, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 bg-clean-canvas dark:bg-[#000a1f] rounded-sm border border-slate-200 dark:border-slate-700">
+                        <div className={`w-4 h-4 flex items-center justify-center border rounded-sm ${task.done ? 'bg-strategic-teal border-strategic-teal text-white' : 'border-slate-400'}`}>
+                          {task.done && <CheckCircle2 size={12} />}
+                        </div>
+                        <div className="flex-1 text-sm font-medium text-oxford-navy dark:text-slate-200 font-lato">{task.title}</div>
+                        <div className="text-[10px] font-bold text-logic-slate dark:text-slate-400 tracking-wider bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5">{task.owner}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="flex flex-col md:flex-row-reverse items-center gap-16">
+              <div className="flex-1 space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
+                  <TrendingUp size={14} /> FEATURE 04
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black leading-tight text-oxford-navy dark:text-white">未来予測とシミュレーション。<br />次の一手をAIが導く。</h3>
+                <p className="text-base text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
+                  トポロジカルソートを用いた高度な計算エンジンにより、会議のその場で「客単価が5%変化した場合の最終利益」を瞬時にシミュレーション。さらに、過去のトレンドから期末の未達をAIが早期警告し、即効性のあるリカバリータスクまで自動提案します。
+                </p>
+                <ul className="space-y-4 pt-4">
+                  {['トポロジカルソートによる即時シミュレーション', '期末の着地予測と未達アラート', 'ボトルネック解析とリカバリータスクの自動生成'].map((point, i) => (
+                    <li key={i} className="flex items-center gap-3 font-medium text-oxford-navy dark:text-slate-300 text-sm">
+                      <CheckCircle2 className="text-strategic-teal" size={18} />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex-1 w-full bg-slate-50 dark:bg-slate-800/50 p-8 rounded-sm border border-slate-200 dark:border-slate-700 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-strategic-teal/10 blur-3xl rounded-full"></div>
+                <div className="w-full bg-white dark:bg-[#001133] rounded-sm shadow-md border border-slate-200 dark:border-slate-800 p-6 relative">
+                  <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-slate-700 pb-3">
+                    <BrainCircuit size={16} className="text-strategic-teal" />
+                    <span className="font-bold text-xs font-poppins tracking-widest text-oxford-navy dark:text-white">AI FORECAST & PDCA</span>
+                  </div>
+                  <div className="space-y-5 text-sm leading-relaxed">
+                    <div className="bg-red-50 dark:bg-red-900/10 border-l-2 border-red-500 p-4">
+                      <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold mb-2">
+                        <AlertTriangle size={14} /> 着地予測アラート
+                      </div>
+                      <p className="text-oxford-navy dark:text-slate-300 font-lato">現在のトレンドが継続した場合、期末KGIに対して<strong className="text-red-500">15.0%ショート</strong>する予測です。ボトルネックは「商談化率」です。</p>
+                    </div>
+                    <div className="bg-clean-canvas dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-sm">
+                      <strong className="text-strategic-teal block mb-2 text-xs font-poppins tracking-widest">RECOMMENDED ACTIONS</strong>
+                      <ul className="list-disc pl-4 space-y-1 text-logic-slate dark:text-slate-300 font-lato text-sm">
+                        <li>リード獲得単価の予算再配分（即時）</li>
+                        <li>休眠顧客リストへの架電キャンペーン開始</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
           </div>
         </div>
