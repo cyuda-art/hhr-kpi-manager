@@ -253,9 +253,9 @@ export default function LandingPage() {
                 <Clock size={16} /> DATA GATHERING TIME
               </div>
               <div className="text-5xl md:text-6xl font-black mb-4 tracking-tight text-strategic-teal font-lato">
-                -80<span className="text-3xl">%</span>
+                -100<span className="text-3xl">%</span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed font-sans">各部署からのExcel収集と結合がゼロに。システムを開けば常に最新の全体図が完成。</p>
+              <p className="text-sm text-slate-300 leading-relaxed font-sans">末端KPIの入力が上位に自動連鎖。中間管理職を苦しめる数字の「二重集計業務」がゼロ化。</p>
             </div>
             
             <div className="p-6">
@@ -336,12 +336,12 @@ export default function LandingPage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
                   <BrainCircuit size={14} /> FEATURE 01
                 </div>
-                <h3 className="text-3xl md:text-4xl font-black leading-tight text-oxford-navy dark:text-white">自然言語から数秒で。<br />高度な初期構築。</h3>
+                <h3 className="text-3xl md:text-4xl font-black leading-tight text-oxford-navy dark:text-white">理念（MVV）を数字に。<br />一気通貫の戦略生成。</h3>
                 <p className="text-base text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
-                  「自社の事業に合ったKPI設定が分からない」「初期設定が面倒で使わなくなった」。SaaS最大の課題をAIが解決します。自社のビジネスモデルや目標を自然言語で入力するだけで、AIが最適なKPIツリー構造と初期データベースを数秒で完全自動生成します。
+                  抽象的な企業理念やビジネスモデルを入力するだけで、AIが市場分析（PEST等）からマニフェストを作成。そこから全社KGIと現場の末端KPIが完全に紐づいたツリー構造を数秒で自動生成します。トップの思想と現場の数字の断絶を解消します。
                 </p>
                 <ul className="space-y-4 pt-4">
-                  {['自然言語から事業構造を自動解析', 'KGIから現場指標までの数珠つなぎツリーを生成', '初期の実績・目標値もデータベースへ自動セット'].map((point, i) => (
+                  {['MVVに基づく市場環境・ビジネスフレームワークの自動分析', '理念から現場指標（KPI）までの数珠つなぎツリーを生成', '初期の実績・目標値もデータベースへ完全セット'].map((point, i) => (
                     <li key={i} className="flex items-center gap-3 font-medium text-oxford-navy dark:text-slate-300 text-sm">
                       <CheckCircle2 className="text-strategic-teal" size={18} />
                       {point}
@@ -374,12 +374,12 @@ export default function LandingPage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
                   <Database size={14} /> FEATURE 02
                 </div>
-                <h3 className="text-3xl md:text-4xl font-black leading-tight text-oxford-navy dark:text-white">「単一の真実」を描画する。<br />データベース完全同期。</h3>
+                <h3 className="text-3xl md:text-4xl font-black leading-tight text-oxford-navy dark:text-white">中間管理職の解放。<br />ボトムアップ自動連鎖。</h3>
                 <p className="text-base text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
-                  静的なダッシュボード特有の「更新待ち」は存在しません。ツリー画面でのシミュレーション、ダッシュボードでの分析、エディターでの履歴データ編集。どこを操作しても即座に裏側のデータベースと連動し、常に「単一の真実（Single Source of Truth）」を全画面へリアルタイムに映し出します。
+                  現場が末端のKPI（日々のタスクや数値）を達成するだけで、中間指標から最終利益（KGI）までが自動計算されリアルタイムに更新されます。中間層が数字を収集・報告するだけの「二重業務」を完全に撲滅し、本来のマネジメント業務に集中させます。
                 </p>
                 <ul className="space-y-4 pt-4">
-                  {['四則演算による高度な自動計算エンジン', '画面間での完全なリアルタイムデータ同期', 'エディターから過去の履歴データも柔軟に編集可能'].map((point, i) => (
+                  {['末端数値の更新が上位ノードへ即時波及する自動連鎖エンジン', '中間管理層の「Excel集計・報告バケツリレー」の撲滅', '全レイヤーが「単一の真実（Single Source of Truth）」を共有'].map((point, i) => (
                     <li key={i} className="flex items-center gap-3 font-medium text-oxford-navy dark:text-slate-300 text-sm">
                       <CheckCircle2 className="text-strategic-teal" size={18} />
                       {point}
