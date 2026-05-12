@@ -80,7 +80,7 @@ export async function POST(req: Request) {
 }
 `;
 
-    const promptParts: any[] = [prompt];
+    const promptParts: any[] = [{ text: prompt }];
 
     // アップロードされたファイル（URL）を取得し、Base64に変換してGeminiに渡す
     if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
