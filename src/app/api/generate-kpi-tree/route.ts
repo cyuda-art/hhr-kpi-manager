@@ -144,7 +144,7 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
 }
 `;
 
-    const promptParts: any[] = [prompt];
+    const promptParts: any[] = [{ text: prompt }];
 
     // アップロードされたファイル（URL）を取得し、Base64に変換してGeminiに渡す
     if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
@@ -168,14 +168,26 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
       }
     }
 
-    const result = await model.generateContent(promptParts);
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: promptParts }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.2
+      }
+    });
     const response = await result.response;
     let text = response.text();
 
     // markdownコードブロックが含まれている場合は除去する
     text = text.replace(new RegExp('\`\`\`json', 'g'), '').replace(new RegExp('\`\`\`', 'g'), '').trim();
 
-    const data = JSON.parse(text);
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Failed to parse JSON:", text);
+      throw new Error("AI output was not valid JSON");
+    }
     // 元のフロントエンドの実装が nodes 配列を期待しているため、data.nodes を返す
     // 思考プロセスもあわせてフロントエンドに返却する
     const nodes = data.nodes || data;
