@@ -514,7 +514,15 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 className="bg-transparent border-none outline-none text-xs font-bold text-logic-slate dark:text-slate-400 px-3 py-1.5 focus:ring-0 cursor-pointer"
               >
                 <option value="year">年次 (1年) - 累積</option>
-                <optgroup label="2026年度 (FY26)">
+                <optgroup label="サマリー (FY26)">
+                  <option value="H1-2026">上半期 (H1)</option>
+                  <option value="H2-2026">下半期 (H2)</option>
+                  <option value="Q1-2026">第1四半期 (Q1: 4〜6月)</option>
+                  <option value="Q2-2026">第2四半期 (Q2: 7〜9月)</option>
+                  <option value="Q3-2026">第3四半期 (Q3: 10〜12月)</option>
+                  <option value="Q4-2026">第4四半期 (Q4: 1〜3月)</option>
+                </optgroup>
+                <optgroup label="月次 (FY26)">
                   <option value="2026-04">2026年04月</option>
                   <option value="2026-05">2026年05月</option>
                   <option value="2026-06">2026年06月</option>
@@ -527,6 +535,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                   <option value="2027-01">2027年01月</option>
                   <option value="2027-02">2027年02月</option>
                   <option value="2027-03">2027年03月</option>
+                </optgroup>
+                <optgroup label="日次 (デイリーペース)">
+                  <option value="today">今日 (Today)</option>
                 </optgroup>
               </select>
             </div>

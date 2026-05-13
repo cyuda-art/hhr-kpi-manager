@@ -47,14 +47,64 @@ export const getDisplayValue = (
 ): number => {
   if (value === undefined || value === null) return 0;
 
+  // Check for quarters and half-years (e.g. Q1-2026)
+  let targetMonths: string[] = [];
   if (currentPeriod.match(/^\d{4}-\d{2}$/)) {
-    if (fieldKey && node.monthlyData && node.monthlyData[currentPeriod]) {
-      const val = node.monthlyData[currentPeriod][fieldKey];
-      if (val !== undefined && typeof val === 'number') return val;
+    targetMonths = [currentPeriod];
+  } else if (currentPeriod.match(/^(Q[1-4]|H[1-2])-(\d{4})$/)) {
+    const match = currentPeriod.match(/^(Q[1-4]|H[1-2])-(\d{4})$/);
+    if (match) {
+      const type = match[1];
+      const year = match[2];
+      const nextYear = (parseInt(year) + 1).toString();
+      if (type === 'Q1') targetMonths = [`${year}-04`, `${year}-05`, `${year}-06`];
+      if (type === 'Q2') targetMonths = [`${year}-07`, `${year}-08`, `${year}-09`];
+      if (type === 'Q3') targetMonths = [`${year}-10`, `${year}-11`, `${year}-12`];
+      if (type === 'Q4') targetMonths = [`${nextYear}-01`, `${nextYear}-02`, `${nextYear}-03`];
+      if (type === 'H1') targetMonths = [`${year}-04`, `${year}-05`, `${year}-06`, `${year}-07`, `${year}-08`, `${year}-09`];
+      if (type === 'H2') targetMonths = [`${year}-10`, `${year}-11`, `${year}-12`, `${nextYear}-01`, `${nextYear}-02`, `${nextYear}-03`];
     }
+  } else if (currentPeriod === 'today') {
+    // If today is requested, we map it to the current month, then divide by days.
+    const today = new Date();
+    const monthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    targetMonths = [monthStr];
+  }
+
+  if (targetMonths.length > 0) {
+    if (fieldKey && node.monthlyData) {
+      let sum = 0;
+      let validMonths = 0;
+      for (const m of targetMonths) {
+        if (node.monthlyData[m] && node.monthlyData[m][fieldKey] !== undefined) {
+          sum += node.monthlyData[m][fieldKey] as number;
+          validMonths++;
+        }
+      }
+      // If we have some data, we use it. For missing months, we assume 0 or fallback.
+      // Let's assume if at least one month is there, we use the sum.
+      if (validMonths > 0) {
+        if (!shouldScaleWithPeriod(node as Partial<KpiNodeData>)) {
+          // Average for non-cumulative
+          return sum / validMonths;
+        }
+        
+        // If today, divide by days in month
+        if (currentPeriod === 'today') {
+          const todayDate = new Date();
+          const daysInMonth = new Date(todayDate.getFullYear(), todayDate.getMonth() + 1, 0).getDate();
+          return sum / daysInMonth;
+        }
+
+        return sum;
+      }
+    }
+    
     // Fallback: scale the annual value if no monthly data exists
     if (!shouldScaleWithPeriod(node as Partial<KpiNodeData>)) return value;
-    return value / 12;
+    
+    if (currentPeriod === 'today') return value / 365;
+    return value * (targetMonths.length / 12);
   }
 
   if (currentPeriod === 'year' || !shouldScaleWithPeriod(node as Partial<KpiNodeData>)) {
@@ -73,11 +123,20 @@ export const getStorageValue = (
   fieldKey?: keyof MonthlyData
 ): number => {
   if (currentPeriod.match(/^\d{4}-\d{2}$/)) {
-    // If it's a specific month, and we're editing it, the display value IS the storage value for that month.
-    // However, if the caller is trying to save it as the ANNUAL value, we should multiply it.
-    // Wait, the new architecture means if we are editing '2026-05', we just save it into monthlyData['2026-05'].
-    // So no scaling is needed!
     return displayValue;
+  }
+
+  // If trying to save a grouped period, it's generally not recommended, but we can scale it to annual.
+  let targetMonthsLength = 0;
+  if (currentPeriod.match(/^(Q[1-4]|H[1-2])-(\d{4})$/)) {
+    targetMonthsLength = currentPeriod.startsWith('Q') ? 3 : 6;
+  } else if (currentPeriod === 'today') {
+    targetMonthsLength = 1 / 30; // Approximation
+  }
+
+  if (targetMonthsLength > 0) {
+    if (!shouldScaleWithPeriod(node as Partial<KpiNodeData>)) return displayValue;
+    return displayValue * (12 / targetMonthsLength);
   }
 
   if (currentPeriod === 'year' || !shouldScaleWithPeriod(node as Partial<KpiNodeData>)) {
