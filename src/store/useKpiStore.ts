@@ -56,6 +56,7 @@ interface KpiStore {
   reviveKpiNode: (id: string, newParentId: string | null) => void;
   expandKpiNode: (kpiId: string) => Promise<void>;
   smartAddKpi: (query: string) => Promise<void>;
+  applyRollingForecast: (kpiId: string, additionalTargetPerMonth: number, targetMonths: string[]) => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -810,7 +811,33 @@ export const useKpiStore = create<KpiStore>()(
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
-    updateKpiNode: (id, data) => {
+  applyRollingForecast: (kpiId, additionalTargetPerMonth, targetMonths) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      const node = draft[kpiId];
+      if (!node) return state;
+
+      const updatedMonthlyData = { ...node.monthlyData };
+      
+      targetMonths.forEach(m => {
+        if (!updatedMonthlyData[m]) {
+          updatedMonthlyData[m] = { month: m, targetValue: node.targetValue, actualValue: 0 };
+        }
+        updatedMonthlyData[m] = {
+          ...updatedMonthlyData[m],
+          simulatedTargetValue: (updatedMonthlyData[m].targetValue || 0) + additionalTargetPerMonth
+        };
+      });
+
+      draft[kpiId] = calculateComputed({ ...node, monthlyData: updatedMonthlyData, isSimulated: true });
+      
+      // We set isPredictionMode to true so the UI reflects the simulated targets
+      const updates = { kpiData: draft, isPredictionMode: true };
+      syncToDB(state.currentProjectId, state.currentOrgId, { ...updates, actions: state.actions, projectInfo: state.currentProjectInfo });
+      return { kpiData: draft, isPredictionMode: true, projectData: saveToProjectData({ ...state, ...updates }) };
+    });
+  },
+  updateKpiNode: (id, data) => {
       set((state) => {
         const draft = { ...state.kpiData };
         if (draft[id]) {

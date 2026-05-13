@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
-import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
+import { getDisplayValue, getStorageValue, shouldScaleWithPeriod } from '@/lib/kpi-utils';
 import { LinkKpiModal } from './LinkKpiModal';
 import { ReviveKpiModal } from './ReviveKpiModal';
 
@@ -19,7 +19,6 @@ export const ActionPanel = () => {
   const selectedKpiTasks = actions.filter(a => a.kpiId === selectedNodeId);
   const hasChildren = selectedKpi ? Object.values(kpiData).some(node => node.parentId === selectedKpi.id) : false;
   
-  // 階層(深さ)の計算
   const getLevel = (nodeId: string | null): number => {
     let currentId = nodeId;
     let level = 0;
@@ -32,6 +31,23 @@ export const ActionPanel = () => {
     return level;
   };
 
+  let shortfall = 0;
+  let hasShortfall = false;
+  if (selectedKpi && currentPeriod.match(/^\d{4}-\d{2}$/) && selectedKpi.monthlyData) {
+    let accumTarget = 0;
+    let accumActual = 0;
+    const sortedMonths = Object.keys(selectedKpi.monthlyData).sort();
+    for (const month of sortedMonths) {
+      if (month < currentPeriod) {
+        accumTarget += selectedKpi.monthlyData[month].targetValue || 0;
+        accumActual += selectedKpi.monthlyData[month].actualValue || 0;
+      }
+    }
+    shortfall = accumActual - accumTarget;
+    if (shortfall < 0 && shouldScaleWithPeriod(selectedKpi)) {
+      hasShortfall = true;
+    }
+  }
   // 定性ラベルの決定
   const getQualitativeLabel = () => {
     if (!selectedKpi) return '';
@@ -122,6 +138,23 @@ export const ActionPanel = () => {
       setEditFormula(selectedKpi.formula || '');
     }
   }, [selectedNodeId, kpiData, isPredictionMode, hasChildren, currentPeriod]);
+
+  const { applyRollingForecast } = useKpiStore();
+  const handleAiRecovery = () => {
+    if (!selectedKpi) return;
+    const allMonths = [
+      "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+      "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
+    ];
+    // Exclude past months and current month (recovery starts NEXT month?)
+    // Let's start recovery from current month if possible, but actually we usually recover from the REMAINING months.
+    // If we are viewing 2026-05, we distribute the debt of (April) into May~March. So we use currentPeriod and onwards.
+    const remainingMonths = allMonths.filter(m => m >= currentPeriod);
+    if (remainingMonths.length === 0) return;
+    
+    const additionalTargetPerMonth = Math.ceil(shortfall / remainingMonths.length);
+    applyRollingForecast(selectedKpi.id, additionalTargetPerMonth, remainingMonths);
+  };
 
   const handleSaveValues = () => {
     if (!selectedNodeId || !selectedKpi) return;
@@ -415,6 +448,32 @@ export const ActionPanel = () => {
                 </div>
               )}
             </div>
+
+            {/* AIリカバリープラン提案 (未達時のみ表示) */}
+            {hasShortfall && !isPredictionMode && (
+              <div className="mt-4 bg-gradient-to-br from-red-50 to-amber-50 dark:from-red-900/20 dark:to-amber-900/20 border border-red-200 dark:border-red-800/50 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <div className="bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 p-1.5 rounded flex-shrink-0">
+                    <AlertTriangle size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-[12px] font-bold text-red-800 dark:text-red-300 flex items-center gap-1.5">
+                      未達残債アラート
+                    </h5>
+                    <p className="text-[11px] text-red-700/80 dark:text-red-400/80 mt-1 mb-2 leading-relaxed">
+                      前月までの累計で <span className="font-bold text-red-600 dark:text-red-400">{Math.round(shortfall).toLocaleString()} {selectedKpi.unit}</span> のショートフォールが発生しています。残りの期間でリカバリーするための目標再設定をAIにシミュレーションさせますか？
+                    </p>
+                    <button 
+                      onClick={handleAiRecovery}
+                      className="w-full flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 transition-colors py-1.5 rounded-[4px] text-[11px] font-bold shadow-sm"
+                    >
+                      <Bot size={14} />
+                      AIリカバリープランを作成 (シミュレーション)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* トレンドチャート */}
             <div className="mt-4">
