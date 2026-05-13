@@ -1,0 +1,330 @@
+{
+  "isPredictionMode": false,
+  "projectInfo": {
+    "description": "",
+    "name": "新規プロジェクト"
+  },
+  "kpiData": {
+    "ksf_hr_contribution": {
+      "businessUnit": "cross",
+      "achievementRate": 106.483026,
+      "position": {
+        "y": 340,
+        "x": 0
+      },
+      "simulatedStatus": "good",
+      "unit": "円",
+      "name": "人材育成・定着による売上貢献",
+      "parentId": "kgi_main",
+      "simulatedAchievementRate": 106.483026,
+      "type": "KPI",
+      "qualitativeName": "MVVに基づく人材育成と定着によるサービス品質・顧客満足度向上",
+      "simulatedTargetValue": 300000000,
+      "initialActualValue": 319449078,
+      "targetValue": 300000000,
+      "actualValue": 319449078,
+      "isSimulated": false,
+      "id": "ksf_hr_contribution",
+      "simulatedValue": 319449078,
+      "formula": "",
+      "status": "good",
+      "previousValue": 0,
+      "description": "MVVに基づいた人材育成と定着施策により、サービス品質が向上し、結果として増加する売上貢献額。",
+      "isCalculated": false
+    },
+    "kgi_main": {
+      "parentId": null,
+      "monthlyData": {
+        "2027-03": {
+          "actualValue": 3466747460,
+          "targetValue": 3500000000,
+          "month": "2027-03"
+        }
+      },
+      "name": "売上高",
+      "unit": "円",
+      "simulatedStatus": "warning",
+      "position": {
+        "x": 537.2190442354306,
+        "y": -111.0950038497617
+      },
+      "achievementRate": 99.04992742857142,
+      "businessUnit": "company",
+      "isCalculated": true,
+      "description": "北海道ホテル＆リゾートホールディングス全体の年間売上高目標。",
+      "previousValue": 0,
+      "status": "warning",
+      "formula": "#{baseline_sales} + #{ksf_regional_contribution} + #{ksf_hr_contribution}",
+      "simulatedValue": 3466747460,
+      "id": "kgi_main",
+      "isSimulated": false,
+      "actualValue": 3466747460,
+      "initialActualValue": 3466747460,
+      "targetValue": 3500000000,
+      "simulatedTargetValue": 3500000000,
+      "qualitativeName": "持続的成長に向けた事業基盤強化と売上最大化",
+      "type": "KGI",
+      "simulatedAchievementRate": 99.04992742857142
+    },
+    "ksf_regional_contribution": {
+      "name": "地域共創型サプライチェーン強化による売上貢献",
+      "parentId": "kgi_main",
+      "achievementRate": 100.194614,
+      "businessUnit": "cross",
+      "simulatedStatus": "good",
+      "position": {
+        "y": 340,
+        "x": 440
+      },
+      "unit": "円",
+      "id": "ksf_regional_contribution",
+      "isSimulated": false,
+      "simulatedValue": 200389228,
+      "previousValue": 0,
+      "status": "good",
+      "formula": "",
+      "isCalculated": false,
+      "description": "地元サプライヤーとの連携強化や地産地消の徹底により創出される追加的な売上貢献額。",
+      "type": "KPI",
+      "simulatedAchievementRate": 100.194614,
+      "simulatedTargetValue": 200000000,
+      "qualitativeName": "地元サプライヤー連携深化と地産地消徹底による商品・サービス価値向上",
+      "targetValue": 200000000,
+      "initialActualValue": 200389228,
+      "actualValue": 200389228
+    },
+    "div_fnb_sales": {
+      "name": "飲食事業売上",
+      "parentId": "baseline_sales",
+      "businessUnit": "restaurant",
+      "achievementRate": 117.76642185714286,
+      "position": {
+        "y": 713.8403147628203,
+        "x": 1002.5214287048893
+      },
+      "simulatedStatus": "good",
+      "unit": "円",
+      "isSimulated": false,
+      "id": "div_fnb_sales",
+      "simulatedValue": 824364953,
+      "formula": "",
+      "status": "good",
+      "previousValue": 0,
+      "description": "飲食施設全体の年間売上高。",
+      "isCalculated": false,
+      "simulatedAchievementRate": 117.76642185714286,
+      "type": "KPI",
+      "simulatedTargetValue": 700000000,
+      "qualitativeName": "飲食事業全体の売上目標達成",
+      "targetValue": 700000000,
+      "initialActualValue": 824364953,
+      "actualValue": 824364953
+    },
+    "div_spa_sales": {
+      "name": "温浴事業売上",
+      "parentId": "baseline_sales",
+      "position": {
+        "y": 723.6363636363636,
+        "x": 706.3636363636364
+      },
+      "simulatedStatus": "warning",
+      "businessUnit": "spa",
+      "achievementRate": 89.201679,
+      "unit": "円",
+      "simulatedValue": 713613432,
+      "id": "div_spa_sales",
+      "isSimulated": false,
+      "description": "温浴施設全体の年間売上高。",
+      "isCalculated": false,
+      "formula": "",
+      "previousValue": 0,
+      "status": "warning",
+      "simulatedTargetValue": 800000000,
+      "qualitativeName": "温浴事業全体の売上目標達成",
+      "simulatedAchievementRate": 89.201679,
+      "type": "KPI",
+      "actualValue": 713613432,
+      "initialActualValue": 713613432,
+      "targetValue": 800000000
+    },
+    "div_hotel_sales": {
+      "unit": "円",
+      "position": {
+        "y": 680,
+        "x": 220
+      },
+      "simulatedStatus": "warning",
+      "businessUnit": "hotel",
+      "achievementRate": 90.93957416666667,
+      "parentId": "baseline_sales",
+      "name": "ホテル事業売上",
+      "actualValue": 1091274890,
+      "targetValue": 1200000000,
+      "initialActualValue": 1091274890,
+      "simulatedTargetValue": 1200000000,
+      "qualitativeName": "宿泊事業全体の売上目標達成",
+      "simulatedAchievementRate": 90.93957416666667,
+      "type": "KPI",
+      "description": "ホテル事業（宿泊施設）全体の年間売上高。",
+      "isCalculated": false,
+      "formula": "",
+      "previousValue": 0,
+      "status": "warning",
+      "simulatedValue": 1091274890,
+      "id": "div_hotel_sales",
+      "isSimulated": false
+    },
+    "baseline_sales": {
+      "isCalculated": true,
+      "description": "地域共創や人材育成による追加貢献を除いた、既存事業活動による売上高。",
+      "previousValue": 0,
+      "status": "warning",
+      "formula": "#{div_hotel_sales} + #{div_spa_sales} + #{div_fnb_sales} + #{div_other_sales}",
+      "simulatedValue": 2946909154,
+      "isSimulated": false,
+      "id": "baseline_sales",
+      "actualValue": 2946909154,
+      "initialActualValue": 2946909154,
+      "targetValue": 3000000000,
+      "simulatedTargetValue": 3000000000,
+      "qualitativeName": "既存事業の安定的な売上確保",
+      "type": "KPI",
+      "simulatedAchievementRate": 98.23030513333333,
+      "parentId": "kgi_main",
+      "monthlyData": {
+        "2027-03": {
+          "actualValue": 2946909154,
+          "targetValue": 3000000000,
+          "month": "2027-03"
+        }
+      },
+      "name": "既存事業基盤売上高",
+      "unit": "円",
+      "simulatedStatus": "warning",
+      "position": {
+        "y": 340,
+        "x": 880
+      },
+      "businessUnit": "company",
+      "achievementRate": 98.23030513333333
+    },
+    "div_other_sales": {
+      "unit": "円",
+      "achievementRate": 105.885293,
+      "businessUnit": "cross",
+      "simulatedStatus": "good",
+      "position": {
+        "y": 680,
+        "x": 1540
+      },
+      "parentId": "baseline_sales",
+      "name": "その他事業売上",
+      "targetValue": 300000000,
+      "initialActualValue": 317655879,
+      "actualValue": 317655879,
+      "type": "KPI",
+      "simulatedAchievementRate": 105.885293,
+      "simulatedTargetValue": 300000000,
+      "qualitativeName": "物販・運営受託などその他事業の売上目標達成",
+      "status": "good",
+      "previousValue": 0,
+      "formula": "",
+      "isCalculated": false,
+      "description": "物販、運営受託、指定管理など、上記以外の事業の年間売上高。",
+      "id": "div_other_sales",
+      "isSimulated": false,
+      "simulatedValue": 317655879
+    }
+  },
+  "actions": [
+    {
+      "status": "todo",
+      "owner": "未定",
+      "description": "【期待インパクト】High 【工数感】Medium\n地域食材や特産品を提供する新規サプライヤー候補をリサーチし、連携提案を行う。\n留意点: 独占契約や共同開発の可能性を模索",
+      "id": "rpu4azavu",
+      "dueDate": "2024-09-30",
+      "startDate": "2024-07-01",
+      "priority": "unassigned",
+      "kpiId": "ksf_regional_contribution",
+      "title": "新規地元サプライヤー開拓"
+    },
+    {
+      "id": "c8mlrnsdn",
+      "priority": "unassigned",
+      "dueDate": "2024-10-31",
+      "startDate": "2024-08-01",
+      "status": "todo",
+      "description": "【期待インパクト】High 【工数感】High\n各施設で地域食材を活かした新メニューやオリジナル商品を開発し、プロモーション計画を策定。\n留意点: 地域ブランドとのコラボレーションを強化",
+      "owner": "未定",
+      "title": "地産地消メニュー・商品開発",
+      "kpiId": "ksf_regional_contribution"
+    },
+    {
+      "title": "MVV浸透研修プログラム実施",
+      "kpiId": "ksf_hr_contribution",
+      "priority": "unassigned",
+      "dueDate": "2024-12-31",
+      "startDate": "2024-07-15",
+      "id": "vh1l9vlmf",
+      "description": "【期待インパクト】High 【工数感】Medium\n全従業員を対象に、企業のMVVを理解し、日々の業務に落とし込むための研修を定期的に実施する。\n留意点: 各事業部の特性に合わせた内容にカスタマイズ",
+      "owner": "未定",
+      "status": "todo"
+    },
+    {
+      "title": "従業員エンゲージメント向上施策",
+      "kpiId": "ksf_hr_contribution",
+      "id": "4zxd4969y",
+      "dueDate": "2025-03-31",
+      "startDate": "2024-09-01",
+      "priority": "unassigned",
+      "status": "todo",
+      "owner": "未定",
+      "description": "【期待インパクト】High 【工数感】High\n従業員満足度調査の実施と、結果に基づく改善アクションプランを策定・実行し、離職率低減と生産性向上を図る。\n留意点: 定期的なフィードバックとキャリアパス支援"
+    },
+    {
+      "kpiId": "div_hotel_sales",
+      "title": "宿泊プランの魅力向上",
+      "status": "todo",
+      "description": "【期待インパクト】Medium 【工数感】Medium\nターゲット顧客層に合わせた魅力的な宿泊プランを企画・販売促進する。\n留意点: 地域共創型プランの導入",
+      "owner": "未定",
+      "id": "qdbgc9ow5",
+      "priority": "unassigned",
+      "dueDate": "2024-09-30",
+      "startDate": "2024-07-01"
+    },
+    {
+      "title": "温浴イベントの企画・実施",
+      "kpiId": "div_spa_sales",
+      "startDate": "2024-08-01",
+      "dueDate": "2024-11-30",
+      "priority": "unassigned",
+      "id": "mt4px0em9",
+      "owner": "未定",
+      "description": "【期待インパクト】Medium 【工数感】Medium\n季節ごとのイベントやコラボ企画で集客を強化し、利用頻度を高める。\n留意点: ファミリー層や若年層をターゲットにした企画",
+      "status": "todo"
+    },
+    {
+      "id": "obe7wxmmv",
+      "startDate": "2024-07-01",
+      "dueDate": "2024-09-30",
+      "priority": "unassigned",
+      "status": "todo",
+      "owner": "未定",
+      "description": "【期待インパクト】Medium 【工数感】Medium\n地域食材を活かした季節限定メニューを導入し、顧客満足度と来店頻度を向上させる。\n留意点: SNSでの発信を強化",
+      "title": "F&Bメニューの季節ごとの見直し",
+      "kpiId": "div_fnb_sales"
+    },
+    {
+      "description": "【期待インパクト】Low 【工数感】Medium\n地域の事業者と連携し、ホテル・温浴施設で販売可能なオリジナル特産品を開発・販売する。\n留意点: オンラインストアでの販売も視野に入れる",
+      "owner": "未定",
+      "status": "todo",
+      "priority": "unassigned",
+      "startDate": "2024-07-01",
+      "dueDate": "2024-10-31",
+      "id": "j0dtwwl1j",
+      "kpiId": "div_other_sales",
+      "title": "地域特産品の共同開発"
+    }
+  ],
+  "updatedAt": 1778668682907
+}

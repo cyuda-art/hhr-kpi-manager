@@ -515,8 +515,6 @@ export const useKpiStore = create<KpiStore>()(
             (pData as any)._tempPredictionMode = newPredictionMode;
 
             sanitizeKpiData(kpiData as Record<string, KpiNodeWithComputedAndInit>);
-            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'actualValue', state.currentPeriod);
-            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'targetValue', state.currentPeriod);
             
             // 各KPIのhistoryをサブコレクションから取得して結合する
             if (Object.keys(kpiData).length > 0) {
@@ -539,6 +537,56 @@ export const useKpiStore = create<KpiStore>()(
               });
               await Promise.all(historyPromises);
               console.log(`✅ [initializeDB] Successfully loaded history for ${loadedHistoryCount} KPIs.`);
+              
+              // --- 破損データの自動修復（自己修復機能） ---
+              const kgiNode = Object.values(kpiData).find((n: any) => n.type === 'KGI');
+              const isCorrupted = kgiNode && (!kgiNode.monthlyData || !kgiNode.monthlyData['2026-04'] || kgiNode.monthlyData['2026-04'].targetValue === 0);
+              
+              if (isCorrupted) {
+                console.log("🛠️ [initializeDB] Detecting corrupted monthlyData. Running auto-repair...");
+                const allMonths = [
+                  "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+                  "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
+                ];
+                Object.values(kpiData).forEach((node: any) => {
+                  const isPercentage = node.unit === '%' || node.unit === '％';
+                  const monthlyData: any = {};
+                  allMonths.forEach(m => {
+                    monthlyData[m] = {
+                      targetValue: isPercentage ? (node.targetValue || 0) : ((node.targetValue || 0) / 12),
+                      actualValue: 0
+                    };
+                  });
+                  if (node.history && Array.isArray(node.history)) {
+                    const sortedHistory = [...node.history].sort((a, b) => a.date.localeCompare(b.date));
+                    const endOfMonthValues: Record<string, number> = {};
+                    sortedHistory.forEach(record => {
+                      const m = record.date.substring(0, 7);
+                      endOfMonthValues[m] = record.actualValue;
+                    });
+                    let previousCumValue = 0;
+                    allMonths.forEach(m => {
+                      if (endOfMonthValues[m] !== undefined) {
+                        const cumValue = endOfMonthValues[m];
+                        if (isPercentage) {
+                          monthlyData[m].actualValue = cumValue;
+                        } else {
+                          monthlyData[m].actualValue = Math.max(0, cumValue - previousCumValue);
+                        }
+                        previousCumValue = cumValue;
+                      }
+                    });
+                  }
+                  node.monthlyData = monthlyData;
+                });
+                recalculateAllMonths(kpiData as any);
+                // force sync to DB
+                setTimeout(() => {
+                  syncToDB(projectId, orgId, { kpiData: kpiData as any, _forceSync: true } as any);
+                }, 1000);
+              } else {
+                recalculateAllMonths(kpiData as any);
+              }
             }
           } else {
             console.log("⚠️ [initializeDB] Main document NOT found.");

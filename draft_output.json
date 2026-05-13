@@ -1,0 +1,618 @@
+{
+  "ksf_hr_contribution": {
+    "businessUnit": "cross",
+    "achievementRate": 106.483026,
+    "position": {
+      "y": 340,
+      "x": 0
+    },
+    "simulatedStatus": "good",
+    "unit": "円",
+    "name": "人材育成・定着による売上貢献",
+    "parentId": "kgi_main",
+    "simulatedAchievementRate": 106.483026,
+    "type": "KPI",
+    "qualitativeName": "MVVに基づく人材育成と定着によるサービス品質・顧客満足度向上",
+    "simulatedTargetValue": 300000000,
+    "initialActualValue": 319449078,
+    "targetValue": 300000000,
+    "actualValue": 319449078,
+    "isSimulated": false,
+    "id": "ksf_hr_contribution",
+    "simulatedValue": 319449078,
+    "formula": "",
+    "status": "good",
+    "previousValue": 0,
+    "description": "MVVに基づいた人材育成と定着施策により、サービス品質が向上し、結果として増加する売上貢献額。",
+    "isCalculated": false,
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      }
+    }
+  },
+  "kgi_main": {
+    "parentId": null,
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 291666666.6666667,
+        "actualValue": 0
+      }
+    },
+    "name": "売上高",
+    "unit": "円",
+    "simulatedStatus": "warning",
+    "position": {
+      "x": 537.2190442354306,
+      "y": -111.0950038497617
+    },
+    "achievementRate": 99.04992742857142,
+    "businessUnit": "company",
+    "isCalculated": true,
+    "description": "北海道ホテル＆リゾートホールディングス全体の年間売上高目標。",
+    "previousValue": 0,
+    "status": "warning",
+    "formula": "#{baseline_sales} + #{ksf_regional_contribution} + #{ksf_hr_contribution}",
+    "simulatedValue": 3466747460,
+    "id": "kgi_main",
+    "isSimulated": false,
+    "actualValue": 3466747460,
+    "initialActualValue": 3466747460,
+    "targetValue": 3500000000,
+    "simulatedTargetValue": 3500000000,
+    "qualitativeName": "持続的成長に向けた事業基盤強化と売上最大化",
+    "type": "KGI",
+    "simulatedAchievementRate": 99.04992742857142
+  },
+  "ksf_regional_contribution": {
+    "name": "地域共創型サプライチェーン強化による売上貢献",
+    "parentId": "kgi_main",
+    "achievementRate": 100.194614,
+    "businessUnit": "cross",
+    "simulatedStatus": "good",
+    "position": {
+      "y": 340,
+      "x": 440
+    },
+    "unit": "円",
+    "id": "ksf_regional_contribution",
+    "isSimulated": false,
+    "simulatedValue": 200389228,
+    "previousValue": 0,
+    "status": "good",
+    "formula": "",
+    "isCalculated": false,
+    "description": "地元サプライヤーとの連携強化や地産地消の徹底により創出される追加的な売上貢献額。",
+    "type": "KPI",
+    "simulatedAchievementRate": 100.194614,
+    "simulatedTargetValue": 200000000,
+    "qualitativeName": "地元サプライヤー連携深化と地産地消徹底による商品・サービス価値向上",
+    "targetValue": 200000000,
+    "initialActualValue": 200389228,
+    "actualValue": 200389228,
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 16666666.666666666,
+        "actualValue": 0
+      }
+    }
+  },
+  "div_fnb_sales": {
+    "name": "飲食事業売上",
+    "parentId": "baseline_sales",
+    "businessUnit": "restaurant",
+    "achievementRate": 117.76642185714286,
+    "position": {
+      "y": 713.8403147628203,
+      "x": 1002.5214287048893
+    },
+    "simulatedStatus": "good",
+    "unit": "円",
+    "isSimulated": false,
+    "id": "div_fnb_sales",
+    "simulatedValue": 824364953,
+    "formula": "",
+    "status": "good",
+    "previousValue": 0,
+    "description": "飲食施設全体の年間売上高。",
+    "isCalculated": false,
+    "simulatedAchievementRate": 117.76642185714286,
+    "type": "KPI",
+    "simulatedTargetValue": 700000000,
+    "qualitativeName": "飲食事業全体の売上目標達成",
+    "targetValue": 700000000,
+    "initialActualValue": 824364953,
+    "actualValue": 824364953,
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 58333333.333333336,
+        "actualValue": 0
+      }
+    }
+  },
+  "div_spa_sales": {
+    "name": "温浴事業売上",
+    "parentId": "baseline_sales",
+    "position": {
+      "y": 723.6363636363636,
+      "x": 706.3636363636364
+    },
+    "simulatedStatus": "warning",
+    "businessUnit": "spa",
+    "achievementRate": 89.201679,
+    "unit": "円",
+    "simulatedValue": 713613432,
+    "id": "div_spa_sales",
+    "isSimulated": false,
+    "description": "温浴施設全体の年間売上高。",
+    "isCalculated": false,
+    "formula": "",
+    "previousValue": 0,
+    "status": "warning",
+    "simulatedTargetValue": 800000000,
+    "qualitativeName": "温浴事業全体の売上目標達成",
+    "simulatedAchievementRate": 89.201679,
+    "type": "KPI",
+    "actualValue": 713613432,
+    "initialActualValue": 713613432,
+    "targetValue": 800000000,
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 66666666.666666664,
+        "actualValue": 0
+      }
+    }
+  },
+  "div_hotel_sales": {
+    "unit": "円",
+    "position": {
+      "y": 680,
+      "x": 220
+    },
+    "simulatedStatus": "warning",
+    "businessUnit": "hotel",
+    "achievementRate": 90.93957416666667,
+    "parentId": "baseline_sales",
+    "name": "ホテル事業売上",
+    "actualValue": 1091274890,
+    "targetValue": 1200000000,
+    "initialActualValue": 1091274890,
+    "simulatedTargetValue": 1200000000,
+    "qualitativeName": "宿泊事業全体の売上目標達成",
+    "simulatedAchievementRate": 90.93957416666667,
+    "type": "KPI",
+    "description": "ホテル事業（宿泊施設）全体の年間売上高。",
+    "isCalculated": false,
+    "formula": "",
+    "previousValue": 0,
+    "status": "warning",
+    "simulatedValue": 1091274890,
+    "id": "div_hotel_sales",
+    "isSimulated": false,
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 100000000,
+        "actualValue": 0
+      }
+    }
+  },
+  "baseline_sales": {
+    "isCalculated": true,
+    "description": "地域共創や人材育成による追加貢献を除いた、既存事業活動による売上高。",
+    "previousValue": 0,
+    "status": "warning",
+    "formula": "#{div_hotel_sales} + #{div_spa_sales} + #{div_fnb_sales} + #{div_other_sales}",
+    "simulatedValue": 2946909154,
+    "isSimulated": false,
+    "id": "baseline_sales",
+    "actualValue": 2946909154,
+    "initialActualValue": 2946909154,
+    "targetValue": 3000000000,
+    "simulatedTargetValue": 3000000000,
+    "qualitativeName": "既存事業の安定的な売上確保",
+    "type": "KPI",
+    "simulatedAchievementRate": 98.23030513333333,
+    "parentId": "kgi_main",
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 250000000,
+        "actualValue": 0
+      }
+    },
+    "name": "既存事業基盤売上高",
+    "unit": "円",
+    "simulatedStatus": "warning",
+    "position": {
+      "y": 340,
+      "x": 880
+    },
+    "businessUnit": "company",
+    "achievementRate": 98.23030513333333
+  },
+  "div_other_sales": {
+    "unit": "円",
+    "achievementRate": 105.885293,
+    "businessUnit": "cross",
+    "simulatedStatus": "good",
+    "position": {
+      "y": 680,
+      "x": 1540
+    },
+    "parentId": "baseline_sales",
+    "name": "その他事業売上",
+    "targetValue": 300000000,
+    "initialActualValue": 317655879,
+    "actualValue": 317655879,
+    "type": "KPI",
+    "simulatedAchievementRate": 105.885293,
+    "simulatedTargetValue": 300000000,
+    "qualitativeName": "物販・運営受託などその他事業の売上目標達成",
+    "status": "good",
+    "previousValue": 0,
+    "formula": "",
+    "isCalculated": false,
+    "description": "物販、運営受託、指定管理など、上記以外の事業の年間売上高。",
+    "id": "div_other_sales",
+    "isSimulated": false,
+    "simulatedValue": 317655879,
+    "monthlyData": {
+      "2026-04": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-05": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-06": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-07": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-08": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-09": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-10": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-11": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2026-12": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2027-01": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2027-02": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      },
+      "2027-03": {
+        "targetValue": 25000000,
+        "actualValue": 0
+      }
+    }
+  }
+}
