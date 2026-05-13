@@ -303,8 +303,16 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       let strokeWidth = 2;
       let strokeDasharray = undefined as string | undefined;
       let animated = isSimulated;
+      let filter = undefined as string | undefined;
 
-      if (targetStatus === 'danger') {
+      const isNew = targetData?.addedAt && Date.now() - targetData.addedAt < 5000;
+
+      if (isNew) {
+        strokeColor = '#00A3A1';
+        strokeWidth = 3;
+        animated = true;
+        filter = 'drop-shadow(0 0 6px rgba(0, 163, 161, 0.6))';
+      } else if (targetStatus === 'danger') {
         strokeColor = `url(#edge-progress-${targetId})`;
         strokeWidth = 3;
         strokeDasharray = '5, 5';
@@ -316,13 +324,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         strokeWidth = 3;
       }
 
-      if (isSimulated) {
+      if (isSimulated && !isNew) {
         strokeColor = '#8ab4f8';
         animated = true;
       }
 
       const style: any = { stroke: strokeColor, strokeWidth };
       if (strokeDasharray) style.strokeDasharray = strokeDasharray;
+      if (filter) style.filter = filter;
 
       return { style, animated };
     };

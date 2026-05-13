@@ -1039,7 +1039,8 @@ export const useKpiStore = create<KpiStore>()(
           const newNode: KpiNodeWithComputedAndInit = {
             ...node,
             history: [],
-            initialActualValue: node.actualValue || 0
+            initialActualValue: node.actualValue || 0,
+            addedAt: Date.now()
           };
           draft[safeId] = calculateComputed(newNode);
         });
@@ -1126,7 +1127,8 @@ export const useKpiStore = create<KpiStore>()(
           const newNode: KpiNodeWithComputedAndInit = {
             ...node,
             history: [],
-            initialActualValue: node.actualValue || 0
+            initialActualValue: node.actualValue || 0,
+            addedAt: Date.now()
           };
           draft[safeId] = calculateComputed(newNode);
         });

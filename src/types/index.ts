@@ -33,6 +33,7 @@ export interface KpiNodeData {
   isArchived?: boolean; // 論理削除（アーカイブ）フラグ
   mappedSourceId?: string; // AI生成時に既存のアーカイブKPIを復活させた場合の元ID
   isKsf?: boolean; // AI戦略においてKey Success Factor（最重要ノード）と判定されたか
+  addedAt?: number; // UI演出用の追加時刻タイムスタンプ
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース

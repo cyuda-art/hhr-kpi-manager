@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
@@ -42,6 +43,16 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   const isSelected = selectedNodeId === data.id;
 
   const kpiData = useKpiStore((state) => state.kpiData);
+  
+  const [isNew, setIsNew] = useState(false);
+  
+  useEffect(() => {
+    if (data.addedAt && Date.now() - data.addedAt < 5000) {
+      setIsNew(true);
+      const timer = setTimeout(() => setIsNew(false), 5000 - (Date.now() - data.addedAt));
+      return () => clearTimeout(timer);
+    }
+  }, [data.addedAt]);
 
   // 階層(深さ)の計算
   const getLevel = (nodeId: string | null): number => {
@@ -119,7 +130,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       getStatusBorder(displayStatus),
       isAlert ? "bg-red-50/50 border-red-600" : "",
       isSelected && "ring-2 ring-oxford-navy border-oxford-navy dark:ring-blue-400 dark:border-blue-400 shadow-md",
-      data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20"
+      data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20",
+      isNew && "ring-4 ring-strategic-teal/50 shadow-[0_0_20px_rgba(0,163,161,0.6)] z-50 animate-pulse"
     )}>
       {/* Background Progress Bar Wrapper (Refined Gradient) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-lg">
