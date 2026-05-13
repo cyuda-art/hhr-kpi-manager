@@ -419,18 +419,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               <Wand2 size={14} />
               自動整列 (Auto Layout)
             </button>
-            <button
-              onClick={() => {
-                if (rfInstance) {
-                  rfInstance.fitView({ padding: 0.2, duration: 800 });
-                }
-              }}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-strategic-teal dark:hover:text-primary-400 transition-colors text-xs font-bold"
-              title="ツリー全体を画面に収める"
-            >
-              <Map size={14} />
-              全体を俯瞰する (Fit View)
-            </button>
+
             <button
               onClick={toggleAutoCenter}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-colors text-xs font-bold ${autoCenter ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
