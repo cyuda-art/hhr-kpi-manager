@@ -306,7 +306,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       return newNodes;
     });
 
-    const getEdgeStyle = (targetId: string) => {
+    const getEdgeStyle = (sourceId: string, targetId: string) => {
       const targetData = kpiData[targetId];
       const isSimulated = targetData?.isSimulated || false;
       let targetStatus = 'danger';
@@ -335,7 +335,6 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       } else if (targetStatus === 'danger') {
         strokeColor = `url(#edge-progress-${targetId})`;
         strokeWidth = 3;
-        strokeDasharray = '5, 5';
       } else if (targetStatus === 'warning') {
         strokeColor = `url(#edge-progress-${targetId})`;
         strokeWidth = 2.5;
@@ -347,6 +346,12 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       if (isSimulated && !isNew) {
         strokeColor = '#8ab4f8';
         animated = true;
+      }
+
+      // 選択中ノードに直接紐づく線のみ点線にする
+      if (selectedNodeId && (sourceId === selectedNodeId || targetId === selectedNodeId)) {
+        strokeDasharray = '5, 5';
+        strokeWidth = 3; // 選択中の線は少し太くする
       }
 
       const style: any = { stroke: strokeColor, strokeWidth };
@@ -361,7 +366,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         .filter((edge) => kpiData[edge.target] && kpiData[edge.source])
         .map((edge) => {
           const hidden = isNodeHidden(edge.target);
-          const { style, animated } = getEdgeStyle(edge.target);
+          const { style, animated } = getEdgeStyle(edge.source, edge.target);
 
           return {
             ...edge,
@@ -379,7 +384,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const edgeId = `e-${parentId}-${id}`;
           if (!existingEdgeIds.has(edgeId)) {
             const hidden = isNodeHidden(id);
-            const { style, animated } = getEdgeStyle(id);
+            const { style, animated } = getEdgeStyle(parentId, id);
             newEdges.push({
               id: edgeId,
               source: parentId,
