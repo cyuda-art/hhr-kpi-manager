@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2 } from 'lucide-react';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
@@ -432,6 +432,29 @@ export const ActionPanel = () => {
             <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 dark:border-slate-700">
               <h5 className="text-[10px] font-bold text-logic-slate dark:text-slate-400 uppercase tracking-wider mb-2">子要素 (KPI/プロセス)</h5>
               <div className="flex flex-col gap-2">
+                <button 
+                  onClick={() => {
+                    const newId = `kpi_manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    useKpiStore.getState().addKpiNode({
+                      id: newId,
+                      name: '新規KPI (手動)',
+                      qualitativeName: '手動追加された指標',
+                      businessUnit: selectedKpi.businessUnit,
+                      type: 'KPI',
+                      parentId: selectedKpi.id,
+                      targetValue: 100,
+                      actualValue: 0,
+                      unit: selectedKpi.unit || '件',
+                      previousValue: 0,
+                      description: '手動で追加されたKPIです。設定から詳細を編集してください。',
+                      isCalculated: false,
+                      formula: ''
+                    });
+                  }}
+                  className="w-full text-[11px] py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-logic-slate dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
+                >
+                  <Plus size={14} /> 新規KPIを手動で追加
+                </button>
                 <button 
                   onClick={() => setIsLinkModalOpen(true)}
                   className="w-full text-[11px] py-2 border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-strategic-teal dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors flex items-center justify-center gap-1.5 shadow-sm font-bold"
