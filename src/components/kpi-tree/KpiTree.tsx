@@ -7,7 +7,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import dagre from 'dagre';
-import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight, Sparkles, Loader2 } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight, Sparkles, Loader2, Bot } from 'lucide-react';
 
 
 const nodeTypes = {
@@ -94,7 +94,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 };
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, undo, redo, pastStates, futureStates } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection } = useLayoutStore();
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
@@ -366,6 +366,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       if (isSimulated && !isNew) {
         strokeColor = '#8ab4f8';
         animated = true;
+        filter = 'drop-shadow(0 0 6px rgba(138, 180, 248, 0.6))';
       }
 
       // 選択中ノードとその影響範囲（上位・下位すべて）を点線にする
@@ -472,6 +473,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             >
               <Focus size={14} />
               自動フォーカス
+            </button>
+            <button
+              onClick={togglePredictionMode}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-all text-xs font-bold ${isPredictionMode ? 'bg-[#8ab4f8]/10 border-[#8ab4f8] text-[#8ab4f8] shadow-[0_0_10px_rgba(138,180,248,0.3)] ring-1 ring-[#8ab4f8]' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+              title="AI予測（シミュレーション）モードのON/OFF"
+            >
+              <Bot size={14} />
+              AI予測モード {isPredictionMode ? 'ON' : 'OFF'}
             </button>
             <button
               onClick={toggleDirection}

@@ -131,6 +131,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       isAlert ? "bg-red-50/50 border-red-600" : "",
       isSelected && "ring-2 ring-oxford-navy border-oxford-navy dark:ring-blue-400 dark:border-blue-400 shadow-md",
       data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20",
+      data.isSimulated && !isNew && "ring-4 ring-[#8ab4f8]/50 shadow-[0_0_20px_rgba(138,180,248,0.5)] z-40",
       isNew && "ring-4 ring-strategic-teal/50 shadow-[0_0_20px_rgba(0,163,161,0.6)] z-50 animate-pulse"
     )}>
       {/* Background Progress Bar Wrapper (Refined Gradient) */}
