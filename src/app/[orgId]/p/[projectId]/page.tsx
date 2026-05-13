@@ -2,31 +2,63 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Target, CalendarDays, BarChart3, AlertCircle } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, ReferenceDot } from 'recharts';
+import { TrendingUp, Target, BarChart3, AlertCircle, AlertTriangle, Bot, CheckCircle2 } from 'lucide-react';
+import { shouldScaleWithPeriod } from '@/lib/kpi-utils';
 
 export default function DashboardPage() {
-  const { kpiData } = useKpiStore();
+  const { kpiData, currentPeriod, applyRollingForecast } = useKpiStore();
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null);
-  const [periodFilter, setPeriodFilter] = useState<'1m' | '3m' | '6m' | '1y' | '3y' | '10y'>('6m');
   const [viewMode, setViewMode] = useState<'actual' | 'rate'>('actual');
   const [showArchived, setShowArchived] = useState(false);
 
-  // KPIリストをフラット化してセレクトボックス用に準備
-  const kpiList = useMemo(() => {
-    return Object.values(kpiData)
-      .filter(node => showArchived || !node.isArchived)
-      .map(node => ({
-        id: node.id,
-        name: node.name,
-        type: node.type,
-        unit: node.unit,
-        depth: node.parentId ? 1 : 0,
-        isArchived: node.isArchived
-      }));
+  // Executive Summary Calculations
+  const summary = useMemo(() => {
+    let kgiNode: any = null;
+    let statusCounts = { good: 0, warning: 0, danger: 0 };
+    
+    Object.values(kpiData).forEach(node => {
+      if (node.isArchived && !showArchived) return;
+      if (node.type === 'KGI') kgiNode = node;
+      
+      if (node.status === 'good') statusCounts.good++;
+      else if (node.status === 'warning') statusCounts.warning++;
+      else statusCounts.danger++;
+    });
+
+    return { kgiNode, statusCounts };
   }, [kpiData, showArchived]);
 
-  // 初期選択（KGI優先）
+  // Current logical period for rolling forecast
+  const cp = currentPeriod.match(/^\d{4}-\d{2}$/) ? currentPeriod : "2026-06"; // Fallback to a mid-year month
+
+  // KPIs with Shortfall (Leaderboard)
+  const shortfallLeaderboard = useMemo(() => {
+    const list = Object.values(kpiData).filter(node => {
+      if (node.isArchived && !showArchived) return false;
+      if (!shouldScaleWithPeriod(node as any)) return false;
+      if (!node.monthlyData) return false;
+      return true;
+    }).map(node => {
+      let accumTarget = 0;
+      let accumActual = 0;
+      const sortedMonths = Object.keys(node.monthlyData!).sort();
+      for (const month of sortedMonths) {
+        if (month < cp) {
+          accumTarget += node.monthlyData![month].targetValue || 0;
+          accumActual += node.monthlyData![month].actualValue || 0;
+        }
+      }
+      return { node, shortfall: accumActual - accumTarget };
+    }).filter(item => item.shortfall < 0);
+
+    return list.sort((a, b) => a.shortfall - b.shortfall); // Most negative first (worst)
+  }, [kpiData, showArchived, cp]);
+
+  const kpiList = useMemo(() => {
+    return Object.values(kpiData).filter(node => showArchived || !node.isArchived);
+  }, [kpiData, showArchived]);
+
   useEffect(() => {
     if (!selectedKpiId && kpiList.length > 0) {
       const kgi = kpiList.find(k => k.type === 'KGI');
@@ -36,303 +68,321 @@ export default function DashboardPage() {
 
   const selectedNode = selectedKpiId ? kpiData[selectedKpiId] : null;
 
-  // グラフ用のデータを生成
+  // Chart Data based on Monthly Data (Rolling Forecast)
   const chartData = useMemo(() => {
-    if (!selectedNode || !selectedNode.history || selectedNode.history.length === 0) {
-      return [];
-    }
+    if (!selectedNode || !selectedNode.monthlyData) return [];
     
-    // 実データのみを使用する
-    const baseData = [...selectedNode.history].sort((a, b) => a.date.localeCompare(b.date));
+    const allMonths = [
+      "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+      "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
+    ];
 
-    // 期間の計算とグルーピング単位の決定
-    const now = new Date();
-    let startDate = new Date();
-    let groupMode: 'day' | 'week' | 'month' | 'year' = 'day';
+    return allMonths.map(month => {
+      const mData = selectedNode.monthlyData![month] || { targetValue: 0, actualValue: 0 };
+      
+      const isPast = month < cp;
+      const isCurrent = month === cp;
+      const isFuture = month > cp;
 
-    switch (periodFilter) {
-      case '1m': startDate.setMonth(now.getMonth() - 1); groupMode = 'day'; break;
-      case '3m': startDate.setMonth(now.getMonth() - 3); groupMode = 'day'; break;
-      case '6m': startDate.setMonth(now.getMonth() - 6); groupMode = 'week'; break;
-      case '1y': startDate.setFullYear(now.getFullYear() - 1); groupMode = 'month'; break;
-      case '3y': startDate.setFullYear(now.getFullYear() - 3); groupMode = 'month'; break;
-      case '10y': startDate.setFullYear(now.getFullYear() - 10); groupMode = 'year'; break;
-    }
+      let t = mData.targetValue || 0;
+      let a = mData.actualValue || 0;
+      let st = mData.simulatedTargetValue !== undefined ? mData.simulatedTargetValue : t;
+      let sa = mData.simulatedValue !== undefined ? mData.simulatedValue : a;
 
-    // フィルタリング
-    const filtered = baseData.filter(item => new Date(item.date) >= startDate);
-
-    // グルーピング（集計）
-    const grouped = new Map<string, { totalActual: number; totalTarget: number; count: number }>();
-    
-    filtered.forEach(item => {
-      const d = new Date(item.date);
-      let key = item.date; // day
-      if (groupMode === 'week') {
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // 月曜始まり
-        const firstDay = new Date(d.setDate(diff));
-        key = firstDay.toISOString().split('T')[0];
-      } else if (groupMode === 'month') {
-        key = item.date.substring(0, 7); // YYYY-MM
-      } else if (groupMode === 'year') {
-        key = item.date.substring(0, 4); // YYYY
-      }
-
-      if (!grouped.has(key)) {
-        grouped.set(key, { totalActual: 0, totalTarget: 0, count: 0 });
-      }
-      const g = grouped.get(key)!;
-      g.totalActual += item.actualValue;
-      g.totalTarget += item.targetValue;
-      g.count += 1;
-    });
-
-    const result = Array.from(grouped.entries()).map(([date, vals]) => {
-      // 期間内の平均値を採用
-      const actualValue = vals.totalActual / vals.count;
-      const targetValue = vals.totalTarget / vals.count;
       return {
-        date,
-        actualValue: Math.round(actualValue * 10) / 10,
-        targetValue: Math.round(targetValue * 10) / 10,
-        achievementRate: targetValue > 0 ? (actualValue / targetValue) * 100 : 0
+        month,
+        originalTarget: t,
+        actualValue: isPast || isCurrent ? a : undefined,
+        simulatedTargetValue: isFuture || isCurrent ? st : undefined,
+        simulatedValue: isFuture ? sa : undefined,
       };
     });
-    
-    return result.sort((a, b) => a.date.localeCompare(b.date));
+  }, [selectedNode, cp]);
 
-  }, [selectedNode, periodFilter]);
+  const handleAiRecoveryAll = () => {
+    const allMonths = [
+      "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+      "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
+    ];
+    const remainingMonths = allMonths.filter(m => m >= cp);
+    if (remainingMonths.length === 0) return;
 
-  // 選択された期間全体のサマリー数値を計算（グラフに連動）
-  const periodSummary = useMemo(() => {
-    if (!selectedNode) return null;
-    if (chartData.length === 0) {
-      return {
-        actualValue: selectedNode.actualValue,
-        targetValue: selectedNode.targetValue,
-        achievementRate: selectedNode.targetValue > 0 ? (selectedNode.actualValue / selectedNode.targetValue) * 100 : 0
-      };
-    }
-    
-    const totalActual = chartData.reduce((sum, item) => sum + item.actualValue, 0);
-    const totalTarget = chartData.reduce((sum, item) => sum + item.targetValue, 0);
-    const count = chartData.length;
-    
-    const avgActual = totalActual / count;
-    const avgTarget = totalTarget / count;
-    const achievementRate = avgTarget > 0 ? (avgActual / avgTarget) * 100 : 0;
-    
-    return {
-      actualValue: Math.round(avgActual * 10) / 10,
-      targetValue: Math.round(avgTarget * 10) / 10,
-      achievementRate
-    };
-  }, [chartData, selectedNode]);
+    shortfallLeaderboard.forEach(({ node, shortfall }) => {
+      const additionalTargetPerMonth = Math.ceil(Math.abs(shortfall) / remainingMonths.length);
+      applyRollingForecast(node.id, additionalTargetPerMonth, remainingMonths);
+    });
+  };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-8">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-[32px] md:text-[36px] font-normal text-slate-900 dark:text-[#f1f3f4] flex items-center gap-3 tracking-tight">
-            ダッシュボード
-          </h1>
-          <p className="text-[20px] md:text-[24px] font-normal text-slate-500 dark:text-[#9aa0a6] mt-2">
-            プロジェクトのKGI・KPIの目標と実績の推移を可視化します。
-          </p>
+    <div className="p-6 max-w-7xl mx-auto space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-[32px] md:text-[36px] font-normal text-slate-900 dark:text-[#f1f3f4] flex items-center gap-3 tracking-tight">
+          マネジメント・コックピット
+        </h1>
+        <p className="text-[18px] font-normal text-slate-500 dark:text-[#9aa0a6] mt-1">
+          全社の目標達成状況の俯瞰と、AIを活用したローリング・フォーキャスト
+        </p>
+      </div>
+
+      {/* Executive Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 text-slate-800 dark:text-[#e8eaed]">
+            <Target className="text-strategic-teal" />
+            <h3 className="font-bold text-[16px]">KGI 進捗サマリー</h3>
+          </div>
+          {summary.kgiNode ? (
+            <div>
+              <div className="text-[32px] font-bold text-slate-900 dark:text-white leading-tight">
+                {Math.round(summary.kgiNode.achievementRate || 0)}%
+              </div>
+              <div className="text-[13px] text-slate-500 mt-1">
+                目標: {summary.kgiNode.targetValue.toLocaleString()} / 実績: {summary.kgiNode.actualValue.toLocaleString()}
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500">KGIが設定されていません</div>
+          )}
+        </div>
+
+        <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4 text-slate-800 dark:text-[#e8eaed]">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="text-rose-500" />
+              <h3 className="font-bold text-[16px]">全社ショートフォール</h3>
+            </div>
+            {shortfallLeaderboard.length > 0 && (
+              <span className="bg-rose-100 text-rose-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                {shortfallLeaderboard.length}件のアラート
+              </span>
+            )}
+          </div>
+          <div className="text-[32px] font-bold text-rose-600 leading-tight">
+            {shortfallLeaderboard.length > 0 ? '要注意' : '正常'}
+          </div>
+          <div className="text-[13px] text-slate-500 mt-1">
+            未達残債を抱えているKPIの数
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 text-slate-800 dark:text-[#e8eaed]">
+            <BarChart3 className="text-blue-500" />
+            <h3 className="font-bold text-[16px]">KPI ヘルスチェック</h3>
+          </div>
+          <div className="flex items-end gap-6">
+            <div className="text-center">
+              <div className="text-[24px] font-bold text-[#81c995]">{summary.statusCounts.good}</div>
+              <div className="text-[11px] text-slate-500">順調</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[24px] font-bold text-[#fbbc04]">{summary.statusCounts.warning}</div>
+              <div className="text-[11px] text-slate-500">注意</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[24px] font-bold text-rose-500">{summary.statusCounts.danger}</div>
+              <div className="text-[11px] text-slate-500">危険</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* 左側：セレクタ */}
+        {/* Left Col: Leaderboard & Selector */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white dark:bg-[#2d2f31] rounded-[8px] border border-slate-200 dark:border-[#3c4043] p-4">
-            <h3 className="font-medium text-[14px] mb-4 flex items-center gap-1.5 text-slate-800 dark:text-[#e8eaed]">
-              <Target size={16} /> 対象指標の選択
+          {/* AI Recovery Panel */}
+          {shortfallLeaderboard.length > 0 && (
+            <div className="bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-900/20 dark:to-orange-900/20 rounded-xl border border-rose-200 dark:border-rose-800 p-4">
+              <h3 className="font-bold text-[14px] text-rose-800 dark:text-rose-300 flex items-center gap-2 mb-3">
+                <AlertCircle size={16} /> 未達KPI リーダーボード
+              </h3>
+              <div className="space-y-2 mb-4 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                {shortfallLeaderboard.map(({ node, shortfall }) => (
+                  <button 
+                    key={node.id}
+                    onClick={() => setSelectedKpiId(node.id)}
+                    className="w-full text-left bg-white/60 dark:bg-slate-800/60 p-2 rounded border border-rose-100 dark:border-rose-900/50 hover:bg-white transition-colors"
+                  >
+                    <div className="text-[12px] font-bold text-slate-800 dark:text-slate-200 truncate">{node.name}</div>
+                    <div className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
+                      累計未達: {shortfall.toLocaleString()} {node.unit}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button 
+                onClick={handleAiRecoveryAll}
+                className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white transition-colors py-2 rounded-lg text-[13px] font-bold shadow-sm"
+              >
+                <Bot size={16} /> 全社AIリカバリーを実行
+              </button>
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-4">
+            <h3 className="font-bold text-[14px] mb-4 flex items-center gap-1.5 text-slate-800 dark:text-[#e8eaed]">
+              <Target size={16} /> 指標を選択して分析
             </h3>
-            <div className="space-y-1 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+            <div className="space-y-1 max-h-[40vh] overflow-y-auto pr-1 custom-scrollbar">
               {kpiList.map(kpi => (
                 <button
                   key={kpi.id}
                   onClick={() => setSelectedKpiId(kpi.id)}
-                  className={`w-full text-left px-3 py-2 rounded-[4px] text-[13px] transition-colors flex items-center gap-2 ${
+                  className={`w-full text-left px-3 py-2 rounded-[6px] text-[13px] transition-colors flex items-center gap-2 ${
                     selectedKpiId === kpi.id
-                      ? 'bg-strategic-teal dark:bg-[#8ab4f8]/10 text-strategic-teal dark:text-[#8ab4f8] font-medium border border-strategic-teal dark:border-[#8ab4f8]/20'
-                      : 'text-slate-500 dark:text-[#9aa0a6] hover:bg-slate-200 dark:bg-[#3c4043] hover:text-slate-800 dark:text-[#e8eaed]'
+                      ? 'bg-strategic-teal dark:bg-[#8ab4f8]/10 text-strategic-teal dark:text-[#8ab4f8] font-bold border border-strategic-teal/20 dark:border-[#8ab4f8]/20'
+                      : 'text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043]'
                   }`}
                 >
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-[2px] font-bold ${kpi.type === 'KGI' ? 'bg-[#fbbc04]/20 text-[#fbbc04]' : 'bg-[#5f6368] text-slate-800 dark:text-[#e8eaed]'}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-[3px] font-bold ${kpi.type === 'KGI' ? 'bg-[#fbbc04]/20 text-[#fbbc04]' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-[#e8eaed]'}`}>
                     {kpi.type}
                   </span>
-                  <span className={`truncate ${kpi.isArchived ? 'opacity-50 line-through' : ''}`}>{kpi.name}</span>
-                  {kpi.isArchived && <span className="text-[9px] bg-slate-300 dark:bg-slate-700 text-logic-slate dark:text-slate-400 px-1 rounded ml-auto">アーカイブ</span>}
+                  <span className="truncate">{kpi.name}</span>
                 </button>
               ))}
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[#3c4043]">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <div className="relative">
-                  <input type="checkbox" className="sr-only" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
-                  <div className={`block w-8 h-5 rounded-full transition-colors ${showArchived ? 'bg-primary-500' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
-                  <div className={`absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform ${showArchived ? 'translate-x-3' : ''}`}></div>
-                </div>
-                <span className="text-[12px] text-slate-500 dark:text-[#9aa0a6] group-hover:text-slate-700 dark:group-hover:text-[#e8eaed] transition-colors">
-                  🗑️ アーカイブ済みのKPIも表示する
-                </span>
-              </label>
             </div>
           </div>
         </div>
 
-        {/* 右側：メインレポート */}
-        <div className="lg:col-span-3 space-y-6">
+        {/* Right Col: Rolling Forecast Chart */}
+        <div className="lg:col-span-3">
           {selectedNode ? (
-            <div className="bg-white dark:bg-[#2d2f31] rounded-[8px] border border-slate-200 dark:border-[#3c4043] p-6">
-              
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
-                  <h2 className="text-[16px] font-medium text-slate-900 dark:text-[#f1f3f4] flex items-center gap-2">
+                  <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4] flex items-center gap-2">
                     {selectedNode.name}
-                    {selectedNode.isArchived && (
-                      <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-logic-slate dark:text-slate-400 px-2 py-0.5 rounded font-normal">アーカイブ済み</span>
-                    )}
-                  </h2>
-                  <div className="text-[13px] text-slate-500 dark:text-[#9aa0a6] mt-1 flex items-center gap-2">
-                    <span>期間内実績: <strong className="text-slate-800 dark:text-[#e8eaed]">{periodSummary?.actualValue.toLocaleString()}{selectedNode.unit}</strong></span>
-                    <span>/</span>
-                    <span>目標: {periodSummary?.targetValue.toLocaleString()}{selectedNode.unit}</span>
-                    <span className={`ml-2 px-1.5 py-0.5 rounded-[2px] font-medium text-[11px] ${(periodSummary?.achievementRate || 0) >= 100 ? 'bg-[#81c995]/20 text-[#81c995]' : (periodSummary?.achievementRate || 0) >= 80 ? 'bg-[#fbbc04]/20 text-[#fbbc04]' : 'bg-rose-500/20 text-rose-500'}`}>
-                      達成率: {periodSummary?.achievementRate.toFixed(1)}%
+                    <span className="text-[12px] font-normal text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                      単位: {selectedNode.unit}
                     </span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex bg-slate-50 dark:bg-[#202124] rounded-[4px] p-1 border border-slate-200 dark:border-[#3c4043]">
-                    <button 
-                      onClick={() => setViewMode('actual')}
-                      className={`px-3 py-1.5 text-[12px] font-medium rounded-[2px] transition-colors ${viewMode === 'actual' ? 'bg-slate-200 dark:bg-[#3c4043] text-slate-800 dark:text-[#e8eaed]' : 'text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed]'}`}
-                    >
-                      実数値
-                    </button>
-                    <button 
-                      onClick={() => setViewMode('rate')}
-                      className={`px-3 py-1.5 text-[12px] font-medium rounded-[2px] transition-colors ${viewMode === 'rate' ? 'bg-slate-200 dark:bg-[#3c4043] text-slate-800 dark:text-[#e8eaed]' : 'text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:text-[#e8eaed]'}`}
-                    >
-                      達成率 (%)
-                    </button>
-                  </div>
-
-                  <select 
-                    value={periodFilter}
-                    onChange={(e) => setPeriodFilter(e.target.value as any)}
-                    className="bg-slate-50 dark:bg-[#202124] border border-slate-200 dark:border-[#3c4043] text-slate-800 dark:text-[#e8eaed] text-[13px] rounded-[4px] px-3 py-1.5 outline-none focus:border-strategic-teal dark:border-[#8ab4f8] transition-colors"
-                  >
-                    <option value="1m">過去1ヶ月</option>
-                    <option value="3m">過去3ヶ月</option>
-                    <option value="6m">過去半年</option>
-                    <option value="1y">過去1年</option>
-                    <option value="3y">過去3年</option>
-                    <option value="10y">過去10年</option>
-                  </select>
+                  </h2>
+                  <p className="text-[13px] text-slate-500 mt-1">
+                    ローリング・フォーキャスト（実績 vs 当初目標 vs AIシミュレーション）
+                  </p>
                 </div>
               </div>
 
               {/* Chart */}
               <div className="h-[400px] w-full relative">
-                {chartData.length === 0 ? (
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
-                    履歴データがありません。シートエディタからデータを追加するか、ツリーで実績を更新してください。
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3c4043" />
-                      <XAxis 
-                        dataKey="date" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#9aa0a6', fontSize: 12 }}
-                        dy={10}
-                      />
-                      <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#9aa0a6', fontSize: 12 }}
-                        tickFormatter={(val) => viewMode === 'actual' ? `${val.toLocaleString()}` : `${val}%`}
-                      />
-                      <RechartsTooltip 
-                        contentStyle={{ backgroundColor: '#282a2d', borderRadius: '4px', border: '1px solid #3c4043', color: '#e8eaed' }}
-                        formatter={(value: any, name: any) => [
-                          viewMode === 'actual' ? `${value.toLocaleString()} ${selectedNode.unit}` : `${value.toFixed(1)}%`,
-                          name
-                        ]}
-                        labelStyle={{ color: '#9aa0a6', marginBottom: '4px' }}
-                      />
-                      <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                      <Line 
-                        type="monotone" 
-                        dataKey={viewMode === 'actual' ? 'actualValue' : 'achievementRate'} 
-                        name="実績" 
-                        stroke="#8ab4f8" 
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: '#2d2f31', strokeWidth: 2 }}
-                        activeDot={{ r: 6, strokeWidth: 0 }}
-                      />
-                      {viewMode === 'actual' && (
-                        <Line 
-                          type="monotone" 
-                          dataKey="targetValue" 
-                          name="目標" 
-                          stroke="#9aa0a6" 
-                          strokeWidth={2}
-                          strokeDasharray="5 5"
-                          dot={false}
-                          activeDot={{ r: 4 }}
-                        />
-                      )}
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3c4043" opacity={0.3} />
+                    <XAxis 
+                      dataKey="month" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9aa0a6', fontSize: 12 }}
+                      dy={10}
+                    />
+                    <YAxis 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#9aa0a6', fontSize: 12 }}
+                      tickFormatter={(val) => val.toLocaleString()}
+                    />
+                    <RechartsTooltip 
+                      contentStyle={{ backgroundColor: '#282a2d', borderRadius: '8px', border: '1px solid #3c4043', color: '#e8eaed', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                      formatter={(value: any, name: any) => {
+                        let label = name;
+                        if (name === 'originalTarget') label = '当初目標';
+                        if (name === 'actualValue') label = '実績';
+                        if (name === 'simulatedTargetValue') label = 'AI修正目標';
+                        if (name === 'simulatedValue') label = 'AI予測実績';
+                        return [`${value.toLocaleString()} ${selectedNode.unit}`, label];
+                      }}
+                      labelStyle={{ color: '#9aa0a6', marginBottom: '8px', fontWeight: 'bold' }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                    
+                    {/* 当初目標 */}
+                    <Line 
+                      type="monotone" 
+                      dataKey="originalTarget" 
+                      name="originalTarget" 
+                      stroke="#9aa0a6" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={false}
+                      activeDot={false}
+                    />
+                    
+                    {/* 実績 (過去) */}
+                    <Line 
+                      type="monotone" 
+                      dataKey="actualValue" 
+                      name="actualValue" 
+                      stroke="#8ab4f8" 
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#8ab4f8', strokeWidth: 2 }}
+                      activeDot={{ r: 6 }}
+                    />
+                    
+                    {/* AI修正目標 (未来) */}
+                    <Line 
+                      type="monotone" 
+                      dataKey="simulatedTargetValue" 
+                      name="simulatedTargetValue" 
+                      stroke="#fbbc04" 
+                      strokeWidth={2}
+                      strokeDasharray="3 3"
+                      dot={false}
+                    />
+
+                    {/* AI予測実績 (未来) */}
+                    <Line 
+                      type="monotone" 
+                      dataKey="simulatedValue" 
+                      name="simulatedValue" 
+                      stroke="#f28b82" 
+                      strokeWidth={3}
+                      strokeDasharray="3 3"
+                      dot={{ r: 4, fill: '#f28b82' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
 
               {/* Data Table */}
-              {chartData.length > 0 && (
-                <div className="mt-8 overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="text-[12px] text-slate-500 dark:text-[#9aa0a6] uppercase bg-white dark:bg-[#282a2d] border-y border-slate-200 dark:border-[#3c4043]">
-                      <tr>
-                        <th className="px-4 py-3 font-medium">期間 (日付)</th>
-                        <th className="px-4 py-3 font-medium">目標値</th>
-                        <th className="px-4 py-3 font-medium">実績値</th>
-                        <th className="px-4 py-3 font-medium">達成率</th>
+              <div className="mt-8 overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="text-[12px] text-slate-500 dark:text-[#9aa0a6] uppercase bg-slate-50 dark:bg-[#282a2d] border-y border-slate-200 dark:border-[#3c4043]">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">月次</th>
+                      <th className="px-4 py-3 font-medium">当初目標</th>
+                      <th className="px-4 py-3 font-medium">実績</th>
+                      <th className="px-4 py-3 font-medium text-orange-600 dark:text-orange-400">AI修正目標</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {chartData.map((row, i) => (
+                      <tr key={i} className="border-b border-slate-200 dark:border-[#3c4043] last:border-0 hover:bg-slate-50 dark:hover:bg-[#323639] transition-colors text-[13px]">
+                        <td className="px-4 py-3 font-bold text-slate-800 dark:text-[#e8eaed]">
+                          {row.month}
+                          {row.month === cp && <span className="ml-2 bg-blue-100 text-blue-700 text-[9px] px-1.5 py-0.5 rounded">CURRENT</span>}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {row.originalTarget.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
+                          {row.actualValue !== undefined ? row.actualValue.toLocaleString() : '-'}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-orange-600 dark:text-orange-400 bg-orange-50/30 dark:bg-orange-900/10">
+                          {row.simulatedTargetValue !== undefined ? row.simulatedTargetValue.toLocaleString() : '-'}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {chartData.map((row, i) => (
-                        <tr key={i} className="border-b border-slate-200 dark:border-[#3c4043] last:border-0 hover:bg-slate-100 dark:bg-[#323639] transition-colors text-[13px]">
-                          <td className="px-4 py-3 text-slate-800 dark:text-[#e8eaed]">{row.date}</td>
-                          <td className="px-4 py-3 text-slate-500 dark:text-[#9aa0a6]">{row.targetValue.toLocaleString()} {selectedNode.unit}</td>
-                          <td className="px-4 py-3 font-medium text-slate-900 dark:text-[#f1f3f4]">{row.actualValue.toLocaleString()} {selectedNode.unit}</td>
-                          <td className="px-4 py-3">
-                            <span className={`font-medium ${row.achievementRate >= 100 ? 'text-[#81c995]' : row.achievementRate >= 80 ? 'text-[#fbbc04]' : 'text-rose-500 dark:text-[#f28b82]'}`}>
-                              {row.achievementRate.toFixed(1)}%
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
-            <div className="bg-white dark:bg-[#282a2d] rounded-[8px] border border-dashed border-slate-300 dark:border-[#5f6368] p-12 flex flex-col items-center justify-center text-center">
+            <div className="bg-white dark:bg-[#282a2d] rounded-xl border border-dashed border-slate-300 dark:border-[#5f6368] p-12 flex flex-col items-center justify-center text-center h-full">
               <AlertCircle size={48} className="text-[#5f6368] mb-4" />
-              <h3 className="text-[16px] font-medium text-slate-800 dark:text-[#e8eaed] mb-2">指標が選択されていません</h3>
-              <p className="text-[13px] text-slate-500 dark:text-[#9aa0a6]">左側のリストから、推移を確認したいKGIまたはKPIを選択してください。</p>
+              <h3 className="text-[18px] font-bold text-slate-800 dark:text-[#e8eaed] mb-2">指標を選択してください</h3>
+              <p className="text-[14px] text-slate-500 dark:text-[#9aa0a6]">
+                左側のリストから、ローリング・フォーキャストを確認したいKGI・KPIを選択してください。
+              </p>
             </div>
           )}
         </div>
