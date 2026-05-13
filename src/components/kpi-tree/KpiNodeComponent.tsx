@@ -115,14 +115,14 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   return (
     <div className={cn(
-      "w-64 bg-white dark:bg-slate-800 rounded-lg dark:border-slate-700 shadow-sm border p-4 transition-all duration-300 relative overflow-hidden",
+      "w-64 bg-white dark:bg-slate-800 rounded-lg dark:border-slate-700 shadow-sm border p-4 transition-all duration-300 relative",
       getStatusBorder(displayStatus),
       isAlert ? "bg-red-50/50 border-red-600" : "",
       isSelected && "ring-2 ring-oxford-navy border-oxford-navy dark:ring-blue-400 dark:border-blue-400 shadow-md",
       data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20"
     )}>
       {/* Background Progress Bar Wrapper (Refined Gradient) */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-lg">
         <div 
           className={cn(
             "absolute top-0 left-0 h-full opacity-10 transition-all duration-1000 ease-out",
