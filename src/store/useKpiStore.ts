@@ -590,6 +590,7 @@ export const useKpiStore = create<KpiStore>()(
                   description: node.description,
                   isCalculated: node.isCalculated,
                   formula: node.formula,
+                  monthlyData: node.monthlyData,
                   initialActualValue: node.actualValue || 0
                 });
                 
