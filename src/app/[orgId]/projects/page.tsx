@@ -262,8 +262,41 @@ export default function WorkspacePage() {
               comment: i === 0 ? '現在' : i % 30 === 0 ? '月次まとめ' : ''
             });
           }
+          
+          // Generate monthlyData from history
+          const monthlyData: Record<string, any> = {};
+          
+          // First, initialize FY26 (2026-04 to 2027-03) with targets
+          const allMonths = [
+            "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+            "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
+          ];
+          for (const m of allMonths) {
+            monthlyData[m] = {
+              targetValue: isPercentage ? (node.targetValue || 0) : ((node.targetValue || 0) / 12),
+              actualValue: 0
+            };
+          }
+
+          // Then aggregate history into monthlyData
+          for (const record of history) {
+            const m = record.date.substring(0, 7); // YYYY-MM
+            if (!monthlyData[m]) {
+              monthlyData[m] = { targetValue: isPercentage ? (node.targetValue || 0) : ((node.targetValue || 0) / 12), actualValue: 0 };
+            }
+            if (isPercentage) {
+              // For percentages, we can't just sum daily actuals. 
+              // The generated history for percentages is already close to the target.
+              // We'll just take the latest actual value of the month.
+              monthlyData[m].actualValue = record.actualValue;
+            } else {
+              monthlyData[m].actualValue += record.actualValue;
+            }
+          }
+
           node.actualValue = history[history.length - 1].actualValue;
           node.history = history;
+          node.monthlyData = monthlyData;
           return node;
         });
       } else if (!hasSampleData && data.nodes && Array.isArray(data.nodes)) {
