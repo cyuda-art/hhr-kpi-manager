@@ -341,7 +341,48 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-4">
+          {/* DEBUG: 月次データ再生成ボタン */}
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-xl">
+            <h3 className="text-[13px] font-bold text-amber-800 dark:text-amber-400 mb-2">デバッグ・ツール</h3>
+            <button
+              onClick={() => {
+                if (!confirm('全ての指標の月次データ（monthlyData）を再生成します。よろしいですか？')) return;
+                const draft = { ...kpiData };
+                const allMonths = [
+                  "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+                  "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
+                ];
+                Object.values(draft).forEach(node => {
+                  const isPercentage = node.unit === '%' || node.unit === '％';
+                  const monthlyData: any = {};
+                  allMonths.forEach(m => {
+                    monthlyData[m] = {
+                      targetValue: isPercentage ? (node.targetValue || 0) : ((node.targetValue || 0) / 12),
+                      actualValue: 0
+                    };
+                  });
+                  // historyがあれば合算
+                  if (node.history && Array.isArray(node.history)) {
+                    node.history.forEach((record: any) => {
+                      const m = record.date.substring(0, 7);
+                      if (monthlyData[m]) {
+                        if (isPercentage) monthlyData[m].actualValue = record.actualValue;
+                        else monthlyData[m].actualValue += record.actualValue;
+                      }
+                    });
+                  }
+                  draft[node.id] = { ...node, monthlyData };
+                });
+                useKpiStore.setState({ kpiData: draft });
+                alert('再生成が完了しました。グラフが更新されるか確認してください。');
+              }}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-bold py-2 rounded"
+            >
+              月次データを再生成する
+            </button>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
             <h3 className="font-bold text-[14px] mb-4 flex items-center gap-1.5 text-slate-800 dark:text-[#e8eaed]">
               <Target size={16} /> 指標を選択して分析
             </h3>
