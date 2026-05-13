@@ -42,6 +42,7 @@ export interface KpiNodeWithComputed extends KpiNodeData {
   status: Status;
   isSimulated?: boolean;
   simulatedValue?: number; // シミュレーションモード中の仮想実績値
+  simulatedTargetValue?: number; // シミュレーションモード中の仮想目標値
   simulatedAchievementRate?: number; // シミュレーションモード中の仮想達成率
   simulatedStatus?: Status; // シミュレーションモード中の仮想ステータス
 }

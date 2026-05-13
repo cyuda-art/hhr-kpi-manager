@@ -25,6 +25,7 @@ interface KpiStore {
   togglePredictionMode: () => void;
   initializeDB: (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => Promise<void>;
   updateSimulatedValue: (id: string, newValue: number) => void;
+  updateSimulatedTarget: (id: string, newValue: number) => void;
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
   updateAction: (id: string, updates: Partial<Action>) => void;
@@ -226,7 +227,7 @@ const sanitizeKpiData = (draft: Record<string, KpiNodeWithComputedAndInit>) => {
   });
 };
 
-const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue'): number | null => {
+const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue'): number | null => {
   if (!formulaStr) return null;
   let parsedFormula = formulaStr;
   
@@ -235,9 +236,14 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
   parsedFormula = parsedFormula.replace(regex, (match, id) => {
     const node = kpiData[id];
     if (node) {
-      const val = valueType === 'simulatedValue' && node.simulatedValue !== undefined 
-        ? node.simulatedValue 
-        : node[valueType === 'simulatedValue' ? 'actualValue' : valueType];
+      let val: number;
+      if (valueType === 'simulatedValue') {
+        val = node.simulatedValue !== undefined ? node.simulatedValue : node.actualValue;
+      } else if (valueType === 'simulatedTargetValue') {
+        val = node.simulatedTargetValue !== undefined ? node.simulatedTargetValue : node.targetValue;
+      } else {
+        val = node[valueType];
+      }
       return val.toString();
     }
     return '0';
@@ -260,7 +266,7 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
 };
 
 // トポロジカルソートを用いた計算ツリーの再計算
-const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue') => {
+const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue') => {
   const inDegree: Record<string, number> = {};
   const graph: Record<string, string[]> = {};
   const nodesWithFormula: string[] = [];
@@ -308,6 +314,8 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
       if (newValue !== null && !isNaN(newValue) && isFinite(newValue)) {
         if (valueType === 'simulatedValue') {
           draft[node.id] = calculateComputed({ ...draft[node.id], simulatedValue: newValue, isSimulated: true });
+        } else if (valueType === 'simulatedTargetValue') {
+          draft[node.id] = calculateComputed({ ...draft[node.id], simulatedTargetValue: newValue, isSimulated: true });
         } else if (valueType === 'targetValue') {
           draft[node.id] = calculateComputed({ ...draft[node.id], targetValue: newValue });
         } else {
@@ -393,9 +401,18 @@ export const useKpiStore = create<KpiStore>()(
         const draft = { ...state.kpiData };
         Object.keys(draft).forEach(key => {
           if (isNowPrediction) {
-            draft[key] = calculateComputed({ ...draft[key], simulatedValue: draft[key].actualValue });
+            draft[key] = calculateComputed({ 
+              ...draft[key], 
+              simulatedValue: draft[key].actualValue,
+              simulatedTargetValue: draft[key].targetValue
+            });
           } else {
-            draft[key] = calculateComputed({ ...draft[key], simulatedValue: undefined, isSimulated: false });
+            draft[key] = calculateComputed({ 
+              ...draft[key], 
+              simulatedValue: undefined, 
+              simulatedTargetValue: undefined,
+              isSimulated: false 
+            });
           }
         });
         syncToDB(state.currentProjectId, state.currentOrgId, { isPredictionMode: isNowPrediction });
@@ -683,6 +700,37 @@ export const useKpiStore = create<KpiStore>()(
         recalculateTree(draft, 'simulatedValue');
       }
       return { kpiData: draft }; // シミュレーションはDBやプロジェクトデータには即時保存しない
+    });
+  },
+
+  updateSimulatedTarget: (id: string, newValue: number) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      if (!draft[id] || draft[id].simulatedTargetValue === undefined) return state;
+
+      const oldTarget = draft[id].simulatedTargetValue!;
+      if (oldTarget === newValue) return state;
+
+      // トップダウンの配分ロジック（比率で下位に波及させる）
+      const ratio = oldTarget !== 0 ? newValue / oldTarget : 1;
+      
+      const updateDescendants = (parentId: string, mult: number) => {
+        Object.values(draft).forEach(node => {
+          if (node.parentId === parentId) {
+            const currentSimTarget = node.simulatedTargetValue !== undefined ? node.simulatedTargetValue : node.targetValue;
+            draft[node.id] = calculateComputed({ ...draft[node.id], simulatedTargetValue: currentSimTarget * mult, isSimulated: true });
+            updateDescendants(node.id, mult);
+          }
+        });
+      };
+
+      draft[id] = calculateComputed({ ...draft[id], simulatedTargetValue: newValue, isSimulated: true });
+      updateDescendants(id, ratio);
+
+      // ボトムアップの再計算（上位のターゲットも念のため計算式で再評価する）
+      recalculateTree(draft, 'simulatedTargetValue');
+
+      return { kpiData: draft };
     });
   },
 

@@ -3,8 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { ActionPanel } from '@/components/kpi-tree/ActionPanel';
+import { SimulationPanel } from '@/components/kpi-tree/SimulationPanel';
+import { useKpiStore } from '@/store/useKpiStore';
 
 export default function KpiTreePage() {
+  const isPredictionMode = useKpiStore(state => state.isPredictionMode);
   const [isMounted, setIsMounted] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(400); // 初期幅
   const [isDragging, setIsDragging] = useState(false);
@@ -76,11 +79,11 @@ export default function KpiTreePage() {
 
       {/* 右サイドバー：アクションパネル */}
       <div 
-        style={{ width: `${sidebarWidth}px` }} 
+        style={{ width: isPredictionMode ? '550px' : `${sidebarWidth}px` }} 
         className="shrink-0 bg-white dark:bg-[#2d2f31] flex flex-col h-full overflow-hidden"
       >
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 custom-scrollbar">
-          <ActionPanel />
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {isPredictionMode ? <SimulationPanel /> : <div className="h-full overflow-y-auto p-4 custom-scrollbar"><ActionPanel /></div>}
         </div>
       </div>
     </div>
