@@ -46,13 +46,13 @@ export const DataEditor = () => {
       let finalValue = value;
       if (field === 'targetValue' || field === 'actualValue') {
         const node = kpiData[id];
-        finalValue = getStorageValue(Number(value) || 0, node, currentPeriod);
+        finalValue = getStorageValue(Number(value) || 0, node, currentPeriod, field as 'targetValue' | 'actualValue');
       }
       updateKpiNode(id, { [field]: finalValue });
     } else if (activeMode === 'history' && selectedKpi) {
       let finalValue = value;
       if (field === 'targetValue' || field === 'actualValue') {
-        finalValue = getStorageValue(Number(value) || 0, selectedKpi, currentPeriod);
+        finalValue = getStorageValue(Number(value) || 0, selectedKpi, currentPeriod, field as 'targetValue' | 'actualValue');
       }
       updateHistoryRecord(selectedKpi.id, id, { [field]: finalValue });
     } else if (activeMode === 'ksf') {
@@ -300,12 +300,12 @@ export const DataEditor = () => {
                     <input type="text" value={node.businessUnit} onChange={e => handleUpdate(node.id, 'businessUnit', e.target.value)} className="w-full h-full p-2 bg-transparent outline-none" />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">
-                    <input type="number" value={getDisplayValue(node.targetValue, node, currentPeriod)} onChange={e => handleUpdate(node.id, 'targetValue', e.target.value)} disabled={node.isCalculated} className={`w-full h-full p-2 bg-transparent outline-none text-right ${node.isCalculated ? 'text-primary-500 font-bold cursor-not-allowed' : ''}`} title={node.isCalculated ? '自動計算項目です' : ''} />
+                    <input type="number" value={getDisplayValue(node.targetValue, node, currentPeriod, 'targetValue')} onChange={e => handleUpdate(node.id, 'targetValue', e.target.value)} disabled={node.isCalculated} className={`w-full h-full p-2 bg-transparent outline-none text-right ${node.isCalculated ? 'text-primary-500 font-bold cursor-not-allowed' : ''}`} title={node.isCalculated ? '自動計算項目です' : ''} />
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0 bg-slate-50 dark:bg-[#2d2f31] font-medium text-right">
                     <div className="w-full h-full p-2 flex items-center justify-end gap-1" title={node.isCalculated ? `自動計算: ${node.formula}` : ''}>
                       {node.isCalculated && <Calculator size={12} className="text-primary-500 opacity-70" />}
-                      {isPredictionMode && node.simulatedValue !== undefined ? getDisplayValue(node.simulatedValue, node, currentPeriod) : getDisplayValue(node.actualValue, node, currentPeriod)}
+                      {isPredictionMode && node.simulatedValue !== undefined ? getDisplayValue(node.simulatedValue, node, currentPeriod, 'simulatedValue') : getDisplayValue(node.actualValue, node, currentPeriod, 'actualValue')}
                     </div>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">

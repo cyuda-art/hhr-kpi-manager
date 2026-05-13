@@ -25,10 +25,10 @@ export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
     const simTarget = kpi.simulatedTargetValue !== undefined ? kpi.simulatedTargetValue : kpi.targetValue;
     const simActual = kpi.simulatedValue !== undefined ? kpi.simulatedValue : kpi.actualValue;
     
-    const displaySimTarget = getDisplayValue(simTarget, kpi, currentPeriod);
-    const displaySimActual = getDisplayValue(simActual, kpi, currentPeriod);
-    const displayTarget = getDisplayValue(kpi.targetValue, kpi, currentPeriod);
-    const displayActual = getDisplayValue(kpi.actualValue, kpi, currentPeriod);
+    const displaySimTarget = getDisplayValue(simTarget, kpi, currentPeriod, 'simulatedTargetValue');
+    const displaySimActual = getDisplayValue(simActual, kpi, currentPeriod, 'simulatedValue');
+    const displayTarget = getDisplayValue(kpi.targetValue, kpi, currentPeriod, 'targetValue');
+    const displayActual = getDisplayValue(kpi.actualValue, kpi, currentPeriod, 'actualValue');
 
     // スライダーの範囲設定（現状の0%〜200%などをカバー。目標値は0にならないよう最低値1を設定）
     const targetMax = Math.max(displayTarget * 2, 100);
@@ -36,13 +36,13 @@ export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
 
     const handleTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const displayVal = Number(e.target.value);
-      const storageVal = getStorageValue(displayVal, kpi, currentPeriod);
+      const storageVal = getStorageValue(displayVal, kpi, currentPeriod, 'simulatedTargetValue');
       updateSimulatedTarget(id, storageVal);
     };
 
     const handleActualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const displayVal = Number(e.target.value);
-      const storageVal = getStorageValue(displayVal, kpi, currentPeriod);
+      const storageVal = getStorageValue(displayVal, kpi, currentPeriod, 'simulatedValue');
       updateSimulatedValue(id, storageVal);
     };
 

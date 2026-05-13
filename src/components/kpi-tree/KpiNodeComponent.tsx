@@ -89,8 +89,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   }
 
   // kpi-utilsを用いてUI表示用に換算する
-  let displayActual = getDisplayValue(displayActualRaw, data, currentPeriod);
-  let displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod);
+  let displayActual = getDisplayValue(displayActualRaw, data, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
+  let displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod, isPredictionMode ? 'simulatedTargetValue' : 'targetValue');
 
   // 過去データの判定（ここでは一旦シンプルにfalseとする。必要に応じて実際の日付比較を追加）
   isPast = false;

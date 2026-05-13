@@ -1,4 +1,4 @@
-import { KpiNodeData } from '@/types';
+import { KpiNodeData, MonthlyData } from '@/types';
 
 /**
  * 期間（Period）に応じた係数を取得する。
@@ -35,12 +35,29 @@ export const shouldScaleWithPeriod = (node: Partial<KpiNodeData>): boolean => {
   return true;
 };
 
+
 /**
  * UI表示用に数値を期間換算する。
  */
-export const getDisplayValue = (value: number | undefined, node: Partial<KpiNodeData>, currentPeriod: string): number => {
+export const getDisplayValue = (
+  value: number | undefined, 
+  node: Partial<KpiNodeData & { monthlyData?: Record<string, MonthlyData> }>, 
+  currentPeriod: string,
+  fieldKey?: keyof MonthlyData
+): number => {
   if (value === undefined || value === null) return 0;
-  if (currentPeriod === 'year' || !shouldScaleWithPeriod(node)) {
+
+  if (currentPeriod.match(/^\d{4}-\d{2}$/)) {
+    if (fieldKey && node.monthlyData && node.monthlyData[currentPeriod]) {
+      const val = node.monthlyData[currentPeriod][fieldKey];
+      if (val !== undefined && typeof val === 'number') return val;
+    }
+    // Fallback: scale the annual value if no monthly data exists
+    if (!shouldScaleWithPeriod(node as Partial<KpiNodeData>)) return value;
+    return value / 12;
+  }
+
+  if (currentPeriod === 'year' || !shouldScaleWithPeriod(node as Partial<KpiNodeData>)) {
     return value;
   }
   return value * getPeriodMultiplier(currentPeriod);
@@ -49,8 +66,21 @@ export const getDisplayValue = (value: number | undefined, node: Partial<KpiNode
 /**
  * UIの入力値をDB保存用に「年間基準」に逆換算する。
  */
-export const getStorageValue = (displayValue: number, node: Partial<KpiNodeData>, currentPeriod: string): number => {
-  if (currentPeriod === 'year' || !shouldScaleWithPeriod(node)) {
+export const getStorageValue = (
+  displayValue: number, 
+  node: Partial<KpiNodeData & { monthlyData?: Record<string, MonthlyData> }>, 
+  currentPeriod: string,
+  fieldKey?: keyof MonthlyData
+): number => {
+  if (currentPeriod.match(/^\d{4}-\d{2}$/)) {
+    // If it's a specific month, and we're editing it, the display value IS the storage value for that month.
+    // However, if the caller is trying to save it as the ANNUAL value, we should multiply it.
+    // Wait, the new architecture means if we are editing '2026-05', we just save it into monthlyData['2026-05'].
+    // So no scaling is needed!
+    return displayValue;
+  }
+
+  if (currentPeriod === 'year' || !shouldScaleWithPeriod(node as Partial<KpiNodeData>)) {
     return displayValue;
   }
   return displayValue / getPeriodMultiplier(currentPeriod);

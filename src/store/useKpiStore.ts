@@ -227,7 +227,7 @@ const sanitizeKpiData = (draft: Record<string, KpiNodeWithComputedAndInit>) => {
   });
 };
 
-const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue'): number | null => {
+const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue', currentPeriod: string): number | null => {
   if (!formulaStr) return null;
   let parsedFormula = formulaStr;
   
@@ -237,12 +237,27 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
     const node = kpiData[id];
     if (node) {
       let val: number;
+      const isMonth = currentPeriod.match(/^\d{4}-\d{2}$/);
+      
+      const getVal = (field: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue') => {
+        if (isMonth && node.monthlyData && node.monthlyData[currentPeriod] && node.monthlyData[currentPeriod][field] !== undefined) {
+          return node.monthlyData[currentPeriod][field]!;
+        }
+        return node[field] || 0;
+      };
+
       if (valueType === 'simulatedValue') {
-        val = node.simulatedValue !== undefined ? node.simulatedValue : node.actualValue;
+        val = getVal('simulatedValue');
+        if (val === 0 && (!isMonth || !node.monthlyData || !node.monthlyData[currentPeriod] || node.monthlyData[currentPeriod].simulatedValue === undefined)) {
+          val = getVal('actualValue');
+        }
       } else if (valueType === 'simulatedTargetValue') {
-        val = node.simulatedTargetValue !== undefined ? node.simulatedTargetValue : node.targetValue;
+        val = getVal('simulatedTargetValue');
+        if (val === 0 && (!isMonth || !node.monthlyData || !node.monthlyData[currentPeriod] || node.monthlyData[currentPeriod].simulatedTargetValue === undefined)) {
+          val = getVal('targetValue');
+        }
       } else {
-        val = node[valueType];
+        val = getVal(valueType);
       }
       return val.toString();
     }
@@ -266,7 +281,7 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
 };
 
 // トポロジカルソートを用いた計算ツリーの再計算
-const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue') => {
+const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue', currentPeriod: string) => {
   const inDegree: Record<string, number> = {};
   const graph: Record<string, string[]> = {};
   const nodesWithFormula: string[] = [];
@@ -310,16 +325,45 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
 
     const node = draft[currId];
     if (node && node.isCalculated && node.formula) {
-      const newValue = evaluateFormula(node.formula, draft, valueType);
+      const newValue = evaluateFormula(node.formula, draft, valueType, currentPeriod);
       if (newValue !== null && !isNaN(newValue) && isFinite(newValue)) {
+        const isMonth = currentPeriod.match(/^\d{4}-\d{2}$/);
+        let targetObj: Record<string, any> | undefined = undefined;
+        if (isMonth) {
+          targetObj = draft[node.id].monthlyData || {};
+          if (!targetObj[currentPeriod]) {
+            targetObj[currentPeriod] = { month: currentPeriod, targetValue: draft[node.id].targetValue, actualValue: draft[node.id].actualValue };
+          }
+        }
+
         if (valueType === 'simulatedValue') {
-          draft[node.id] = calculateComputed({ ...draft[node.id], simulatedValue: newValue, isSimulated: true });
+          if (isMonth && targetObj) {
+            targetObj[currentPeriod].simulatedValue = newValue;
+            draft[node.id] = calculateComputed({ ...draft[node.id], monthlyData: targetObj, isSimulated: true });
+          } else {
+            draft[node.id] = calculateComputed({ ...draft[node.id], simulatedValue: newValue, isSimulated: true });
+          }
         } else if (valueType === 'simulatedTargetValue') {
-          draft[node.id] = calculateComputed({ ...draft[node.id], simulatedTargetValue: newValue, isSimulated: true });
+          if (isMonth && targetObj) {
+            targetObj[currentPeriod].simulatedTargetValue = newValue;
+            draft[node.id] = calculateComputed({ ...draft[node.id], monthlyData: targetObj, isSimulated: true });
+          } else {
+            draft[node.id] = calculateComputed({ ...draft[node.id], simulatedTargetValue: newValue, isSimulated: true });
+          }
         } else if (valueType === 'targetValue') {
-          draft[node.id] = calculateComputed({ ...draft[node.id], targetValue: newValue });
+          if (isMonth && targetObj) {
+            targetObj[currentPeriod].targetValue = newValue;
+            draft[node.id] = calculateComputed({ ...draft[node.id], monthlyData: targetObj });
+          } else {
+            draft[node.id] = calculateComputed({ ...draft[node.id], targetValue: newValue });
+          }
         } else {
-          draft[node.id] = calculateComputed({ ...draft[node.id], actualValue: newValue, initialActualValue: newValue });
+          if (isMonth && targetObj) {
+            targetObj[currentPeriod].actualValue = newValue;
+            draft[node.id] = calculateComputed({ ...draft[node.id], monthlyData: targetObj });
+          } else {
+            draft[node.id] = calculateComputed({ ...draft[node.id], actualValue: newValue, initialActualValue: newValue });
+          }
         }
       }
     }
@@ -448,8 +492,8 @@ export const useKpiStore = create<KpiStore>()(
             (pData as any)._tempPredictionMode = newPredictionMode;
 
             sanitizeKpiData(kpiData as Record<string, KpiNodeWithComputedAndInit>);
-            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'actualValue');
-            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'targetValue');
+            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'actualValue', state.currentPeriod);
+            recalculateTree(kpiData as Record<string, KpiNodeWithComputedAndInit>, 'targetValue', state.currentPeriod);
             
             // 各KPIのhistoryをサブコレクションから取得して結合する
             if (Object.keys(kpiData).length > 0) {
@@ -511,8 +555,8 @@ export const useKpiStore = create<KpiStore>()(
             await Promise.all(linkPromises);
             
             if (hasLinkedUpdates) {
-              recalculateTree(kpiData, 'actualValue');
-              recalculateTree(kpiData, 'targetValue');
+              recalculateTree(kpiData as any, 'actualValue', state.currentPeriod);
+              recalculateTree(kpiData as any, 'targetValue', state.currentPeriod);
               syncToDB(projectId, orgId, { kpiData: kpiData } as any);
             }
           }
@@ -578,8 +622,8 @@ export const useKpiStore = create<KpiStore>()(
 
               // --- 初期計算 ---
               // 数式セット後、ツリー全体の数値を再計算して整合性を取る
-              recalculateTree(kpiData, 'targetValue');
-              recalculateTree(kpiData, 'actualValue');
+              recalculateTree(kpiData as any, 'targetValue', state.currentPeriod);
+              recalculateTree(kpiData as any, 'actualValue', state.currentPeriod);
 
               // ロード完了したらストレージから削除
               sessionStorage.removeItem(`kpi_init_${projectId}`);
@@ -697,7 +741,7 @@ export const useKpiStore = create<KpiStore>()(
 
       if (newValue !== oldSimulated) {
         // 動的計算エンジンによる再計算（シミュレーション値）
-        recalculateTree(draft, 'simulatedValue');
+        recalculateTree(draft, 'simulatedValue', state.currentPeriod);
       }
       return { kpiData: draft }; // シミュレーションはDBやプロジェクトデータには即時保存しない
     });
@@ -728,7 +772,7 @@ export const useKpiStore = create<KpiStore>()(
       updateDescendants(id, ratio);
 
       // ボトムアップの再計算（上位のターゲットも念のため計算式で再評価する）
-      recalculateTree(draft, 'simulatedTargetValue');
+      recalculateTree(draft, 'simulatedTargetValue', state.currentPeriod);
 
       return { kpiData: draft };
     });
@@ -746,7 +790,7 @@ export const useKpiStore = create<KpiStore>()(
       });
 
       // 動的計算エンジンによる再計算（実績値）
-      recalculateTree(draft, 'actualValue');
+      recalculateTree(draft, 'actualValue', state.currentPeriod);
 
       // 一旦、全データを isSimulated = false にする
       Object.keys(draft).forEach(key => {
@@ -780,14 +824,14 @@ export const useKpiStore = create<KpiStore>()(
           // 実績値が更新された場合
           if (data.actualValue !== undefined && data.actualValue !== oldActual) {
             // 動的計算エンジンによる再計算（実績値）
-            recalculateTree(draft, 'actualValue');
+            recalculateTree(draft, 'actualValue', state.currentPeriod);
             valueChanged = true;
           }
 
           // 目標値が更新された場合
           if (data.targetValue !== undefined && oldTarget > 0 && data.targetValue !== oldTarget) {
             // 動的計算エンジンによる再計算（目標値）
-            recalculateTree(draft, 'targetValue');
+            recalculateTree(draft, 'targetValue', state.currentPeriod);
             valueChanged = true;
           }
 
@@ -919,8 +963,8 @@ export const useKpiStore = create<KpiStore>()(
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
       // 再計算をトリガー
-      recalculateTree(draft, 'actualValue');
-      recalculateTree(draft, 'targetValue');
+      recalculateTree(draft, 'actualValue', state.currentPeriod);
+      recalculateTree(draft, 'targetValue', state.currentPeriod);
       
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: newActions, projectInfo: state.currentProjectInfo });
       return { kpiData: draft, actions: newActions, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft, actions: newActions }) };
@@ -943,8 +987,8 @@ export const useKpiStore = create<KpiStore>()(
       );
 
       // 再計算をトリガー
-      recalculateTree(draft, 'actualValue');
-      recalculateTree(draft, 'targetValue');
+      recalculateTree(draft, 'actualValue', state.currentPeriod);
+      recalculateTree(draft, 'targetValue', state.currentPeriod);
 
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: newActions, projectInfo: state.currentProjectInfo });
       return { kpiData: draft, actions: newActions, projectData: saveToProjectData({ ...state, kpiData: draft, actions: newActions }) };
@@ -1028,8 +1072,8 @@ export const useKpiStore = create<KpiStore>()(
     state.saveHistory();
     const draft = { ...newKpiData };
     sanitizeKpiData(draft);
-    recalculateTree(draft, 'actualValue');
-    recalculateTree(draft, 'targetValue');
+    recalculateTree(draft, 'actualValue', state.currentPeriod);
+    recalculateTree(draft, 'targetValue', state.currentPeriod);
     syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft });
     return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
   }),
@@ -1104,8 +1148,8 @@ export const useKpiStore = create<KpiStore>()(
 
         // 3. ツリー全体の再計算
         sanitizeKpiData(draft);
-        recalculateTree(draft, 'targetValue');
-        recalculateTree(draft, 'actualValue');
+        recalculateTree(draft, 'targetValue', state.currentPeriod);
+        recalculateTree(draft, 'actualValue', state.currentPeriod);
 
         // 4. DBへ同期
         syncToDB(currentState.currentProjectId, currentState.currentOrgId, { kpiData: draft, actions: newActions });
@@ -1193,8 +1237,8 @@ export const useKpiStore = create<KpiStore>()(
 
         // 3. ツリー全体の再計算
         sanitizeKpiData(draft);
-        recalculateTree(draft, 'targetValue');
-        recalculateTree(draft, 'actualValue');
+        recalculateTree(draft, 'targetValue', state.currentPeriod);
+        recalculateTree(draft, 'actualValue', state.currentPeriod);
 
         // 4. DBへ同期
         syncToDB(currentState.currentProjectId, currentState.currentOrgId, { kpiData: draft, actions: newActions });

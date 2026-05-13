@@ -10,6 +10,15 @@ export interface KpiHistoryEntry {
   comment?: string; // 特記事項・要因など
 }
 
+export interface MonthlyData {
+  month: string; // "YYYY-MM"
+  targetValue: number; // その月の目標
+  actualValue: number; // その月の実績
+  revisedTargetValue?: number; // ローリング・フォーキャスト用の修正目標
+  simulatedValue?: number; // シミュレーション用の仮想実績
+  simulatedTargetValue?: number; // シミュレーション用の仮想目標
+}
+
 export interface KpiNodeData {
   id: string;
   name: string; // KGIまたはKPIの名称（定量）
@@ -34,6 +43,7 @@ export interface KpiNodeData {
   mappedSourceId?: string; // AI生成時に既存のアーカイブKPIを復活させた場合の元ID
   isKsf?: boolean; // AI戦略においてKey Success Factor（最重要ノード）と判定されたか
   addedAt?: number; // UI演出用の追加時刻タイムスタンプ
+  monthlyData?: Record<string, MonthlyData>; // 月次データ（YYYY-MM形式をキーとする）
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース

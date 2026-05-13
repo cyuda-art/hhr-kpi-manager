@@ -109,8 +109,8 @@ export const ActionPanel = () => {
   useEffect(() => {
     setIsEditingValue(false);
     if (selectedKpi) {
-      const displayTarget = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod);
-      const displayActual = getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod);
+      const displayTarget = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue');
+      const displayActual = getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
       
       setEditTargetValue(displayTarget.toString());
       setEditActualValue(displayActual.toString());
@@ -127,8 +127,8 @@ export const ActionPanel = () => {
     if (!selectedNodeId || !selectedKpi) return;
     
     // 入力値(UI上の表示スケール)をDB保存用のベーススケール(year基準等)に戻す
-    const storedTarget = getStorageValue(Number(editTargetValue) || 0, selectedKpi, currentPeriod);
-    const storedActual = getStorageValue(Number(editActualValue) || 0, selectedKpi, currentPeriod);
+    const storedTarget = getStorageValue(Number(editTargetValue) || 0, selectedKpi, currentPeriod, 'targetValue');
+    const storedActual = getStorageValue(Number(editActualValue) || 0, selectedKpi, currentPeriod, 'actualValue');
 
     if (isPredictionMode) {
       updateSimulatedValue(selectedNodeId, storedActual);
@@ -373,10 +373,10 @@ export const ActionPanel = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="text-xs text-logic-slate dark:text-slate-400">
-                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round(getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod)).toLocaleString()}</span> {selectedKpi.unit}
+                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round(getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue')).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
                       <div className="text-xs text-logic-slate dark:text-slate-400">
-                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-oxford-navy dark:text-slate-200">{Math.round(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod)).toLocaleString()}</span> {selectedKpi.unit}
+                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-oxford-navy dark:text-slate-200">{Math.round(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue')).toLocaleString()}</span> {selectedKpi.unit}
                       </div>
                     </div>
                     <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded">
