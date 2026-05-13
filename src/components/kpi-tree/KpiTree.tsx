@@ -398,7 +398,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       });
       return newEdges;
     });
-  }, [kpiData, setNodes, setEdges, collapsedNodes]);
+  }, [kpiData, setNodes, setEdges, collapsedNodes, selectedNodeId, isPredictionMode]);
 
   // 選択されたノードが変更されたらセンタリングするアニメーション
   useEffect(() => {
