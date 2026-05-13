@@ -127,17 +127,17 @@ export default function DashboardPage() {
 
       {/* Executive Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4 text-slate-800 dark:text-[#e8eaed]">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 text-logic-slate dark:text-slate-300">
             <Target className="text-strategic-teal" />
             <h3 className="font-bold text-[16px]">KGI 進捗サマリー</h3>
           </div>
           {summary.kgiNode ? (
             <div>
-              <div className="text-[32px] font-bold text-slate-900 dark:text-white leading-tight">
+              <div className="text-[32px] font-bold text-oxford-navy dark:text-slate-100 leading-tight">
                 {Math.round(summary.kgiNode.achievementRate || 0)}%
               </div>
-              <div className="text-[13px] text-slate-500 mt-1">
+              <div className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">
                 目標: {summary.kgiNode.targetValue.toLocaleString()} / 実績: {summary.kgiNode.actualValue.toLocaleString()}
               </div>
             </div>
@@ -146,7 +146,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4 text-slate-800 dark:text-[#e8eaed]">
             <div className="flex items-center gap-3">
               <AlertTriangle className="text-rose-500" />
@@ -166,7 +166,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4 text-slate-800 dark:text-[#e8eaed]">
             <BarChart3 className="text-blue-500" />
             <h3 className="font-bold text-[16px]">KPI ヘルスチェック</h3>
@@ -248,16 +248,16 @@ export default function DashboardPage() {
         {/* Right Col: Rolling Forecast Chart */}
         <div className="lg:col-span-3">
           {selectedNode ? (
-            <div className="bg-white dark:bg-[#2d2f31] rounded-xl border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
-                  <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4] flex items-center gap-2">
+                  <h2 className="text-[20px] font-bold text-oxford-navy dark:text-slate-100 flex items-center gap-2">
                     {selectedNode.name}
                     <span className="text-[12px] font-normal text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
                       単位: {selectedNode.unit}
                     </span>
                   </h2>
-                  <p className="text-[13px] text-slate-500 mt-1">
+                  <p className="text-[13px] text-logic-slate dark:text-slate-400 mt-1">
                     ローリング・フォーキャスト（実績 vs 当初目標 vs AIシミュレーション）
                   </p>
                 </div>
@@ -267,22 +267,22 @@ export default function DashboardPage() {
               <div className="h-[400px] w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3c4043" opacity={0.3} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" opacity={0.3} />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: '#9aa0a6', fontSize: 12 }}
+                      tick={{ fill: '#64748b', fontSize: 12 }}
                       dy={10}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: '#9aa0a6', fontSize: 12 }}
+                      tick={{ fill: '#64748b', fontSize: 12 }}
                       tickFormatter={(val) => val.toLocaleString()}
                     />
                     <RechartsTooltip 
-                      contentStyle={{ backgroundColor: '#282a2d', borderRadius: '8px', border: '1px solid #3c4043', color: '#e8eaed', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                      contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#00205B', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
                       formatter={(value: any, name: any) => {
                         let label = name;
                         if (name === 'originalTarget') label = '当初目標';
@@ -291,7 +291,7 @@ export default function DashboardPage() {
                         if (name === 'simulatedValue') label = 'AI予測実績';
                         return [`${value.toLocaleString()} ${selectedNode.unit}`, label];
                       }}
-                      labelStyle={{ color: '#9aa0a6', marginBottom: '8px', fontWeight: 'bold' }}
+                      labelStyle={{ color: '#425563', marginBottom: '8px', fontWeight: 'bold' }}
                     />
                     <Legend wrapperStyle={{ paddingTop: '20px' }} />
                     
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                       type="monotone" 
                       dataKey="originalTarget" 
                       name="originalTarget" 
-                      stroke="#9aa0a6" 
+                      stroke="#94a3b8" 
                       strokeWidth={2}
                       strokeDasharray="5 5"
                       dot={false}
@@ -312,9 +312,9 @@ export default function DashboardPage() {
                       type="monotone" 
                       dataKey="actualValue" 
                       name="actualValue" 
-                      stroke="#8ab4f8" 
+                      stroke="#00A3A1" 
                       strokeWidth={3}
-                      dot={{ r: 4, fill: '#8ab4f8', strokeWidth: 2 }}
+                      dot={{ r: 4, fill: '#00A3A1', strokeWidth: 2 }}
                       activeDot={{ r: 6 }}
                     />
                     
@@ -323,7 +323,7 @@ export default function DashboardPage() {
                       type="monotone" 
                       dataKey="simulatedTargetValue" 
                       name="simulatedTargetValue" 
-                      stroke="#fbbc04" 
+                      stroke="#f59e0b" 
                       strokeWidth={2}
                       strokeDasharray="3 3"
                       dot={false}
@@ -334,10 +334,10 @@ export default function DashboardPage() {
                       type="monotone" 
                       dataKey="simulatedValue" 
                       name="simulatedValue" 
-                      stroke="#f28b82" 
+                      stroke="#f43f5e" 
                       strokeWidth={3}
                       strokeDasharray="3 3"
-                      dot={{ r: 4, fill: '#f28b82' }}
+                      dot={{ r: 4, fill: '#f43f5e' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -346,28 +346,28 @@ export default function DashboardPage() {
               {/* Data Table */}
               <div className="mt-8 overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="text-[12px] text-slate-500 dark:text-[#9aa0a6] uppercase bg-slate-50 dark:bg-[#282a2d] border-y border-slate-200 dark:border-[#3c4043]">
+                  <thead className="text-[12px] text-logic-slate dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800/50 border-y border-slate-200 dark:border-slate-700">
                     <tr>
                       <th className="px-4 py-3 font-medium">月次</th>
                       <th className="px-4 py-3 font-medium">当初目標</th>
                       <th className="px-4 py-3 font-medium">実績</th>
-                      <th className="px-4 py-3 font-medium text-orange-600 dark:text-orange-400">AI修正目標</th>
+                      <th className="px-4 py-3 font-medium text-amber-600 dark:text-amber-400">AI修正目標</th>
                     </tr>
                   </thead>
                   <tbody>
                     {chartData.map((row, i) => (
-                      <tr key={i} className="border-b border-slate-200 dark:border-[#3c4043] last:border-0 hover:bg-slate-50 dark:hover:bg-[#323639] transition-colors text-[13px]">
-                        <td className="px-4 py-3 font-bold text-slate-800 dark:text-[#e8eaed]">
+                      <tr key={i} className="border-b border-slate-200 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-[13px]">
+                        <td className="px-4 py-3 font-bold text-oxford-navy dark:text-slate-200">
                           {row.month}
                           {row.month === cp && <span className="ml-2 bg-blue-100 text-blue-700 text-[9px] px-1.5 py-0.5 rounded">CURRENT</span>}
                         </td>
-                        <td className="px-4 py-3 text-slate-500">
+                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                           {row.originalTarget.toLocaleString()}
                         </td>
                         <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
                           {row.actualValue !== undefined ? row.actualValue.toLocaleString() : '-'}
                         </td>
-                        <td className="px-4 py-3 font-medium text-orange-600 dark:text-orange-400 bg-orange-50/30 dark:bg-orange-900/10">
+                        <td className="px-4 py-3 font-medium text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-900/10">
                           {row.simulatedTargetValue !== undefined ? row.simulatedTargetValue.toLocaleString() : '-'}
                         </td>
                       </tr>
@@ -377,10 +377,10 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white dark:bg-[#282a2d] rounded-xl border border-dashed border-slate-300 dark:border-[#5f6368] p-12 flex flex-col items-center justify-center text-center h-full">
-              <AlertCircle size={48} className="text-[#5f6368] mb-4" />
-              <h3 className="text-[18px] font-bold text-slate-800 dark:text-[#e8eaed] mb-2">指標を選択してください</h3>
-              <p className="text-[14px] text-slate-500 dark:text-[#9aa0a6]">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-12 flex flex-col items-center justify-center text-center h-full">
+              <AlertCircle size={48} className="text-slate-400 dark:text-slate-500 mb-4" />
+              <h3 className="text-[18px] font-bold text-oxford-navy dark:text-slate-200 mb-2">指標を選択してください</h3>
+              <p className="text-[14px] text-logic-slate dark:text-slate-400">
                 左側のリストから、ローリング・フォーキャストを確認したいKGI・KPIを選択してください。
               </p>
             </div>
