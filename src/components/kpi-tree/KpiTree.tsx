@@ -7,7 +7,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import dagre from 'dagre';
-import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight, Sparkles, Loader2 } from 'lucide-react';
 
 
 const nodeTypes = {
@@ -99,8 +99,13 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(true);
   const [rfInstance, setRfInstance] = useState<any>(null);
+
+  const [isSmartAddModalOpen, setIsSmartAddModalOpen] = useState(false);
+  const [smartAddQuery, setSmartAddQuery] = useState('');
+  const [isSmartAdding, setIsSmartAdding] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
     const handleResizeMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -434,6 +439,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               方向: {layoutDirection === 'TB' ? '縦 (Top to Bottom)' : '横 (Left to Right)'}
             </button>
             <button
+              onClick={() => setIsSmartAddModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-strategic-teal text-white border border-transparent rounded-lg shadow-sm hover:bg-strategic-teal/90 transition-colors text-xs font-bold"
+              title="AIに最適な場所を判定させてKPIを追加"
+            >
+              <Sparkles size={14} />
+              AIスマート追加
+            </button>
+            <button
               onClick={toggleMiniMap}
               className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
               title="ミニマップの表示/非表示"
@@ -556,6 +569,72 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         </ReactFlow>
       </div>
 
+      {/* AI Smart Add Modal */}
+      {isSmartAddModalOpen && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-[500px] max-w-[90vw] overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <Sparkles className="text-strategic-teal" size={18} />
+                AIスマート追加
+              </h3>
+              <button onClick={() => setIsSmartAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                追加したいKPIや要素を入力してください。AIがツリー全体を分析し、最適な階層への接続、中間KPIの生成、計算式の再構築を全自動で行います。
+              </p>
+              <textarea
+                value={smartAddQuery}
+                onChange={(e) => setSmartAddQuery(e.target.value)}
+                placeholder="例: インバウンド売上を管理したい。従業員エンゲージメントスコアを追加して。"
+                className="w-full h-24 p-3 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-strategic-teal focus:border-transparent outline-none dark:bg-slate-900 dark:text-slate-100 resize-none"
+                disabled={isSmartAdding}
+              />
+            </div>
+            <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+              <button
+                onClick={() => setIsSmartAddModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                disabled={isSmartAdding}
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={async () => {
+                  if (!smartAddQuery.trim()) return;
+                  setIsSmartAdding(true);
+                  try {
+                    await useKpiStore.getState().smartAddKpi(smartAddQuery);
+                    setSmartAddQuery('');
+                    setIsSmartAddModalOpen(false);
+                  } catch (e) {
+                    console.error(e);
+                  } finally {
+                    setIsSmartAdding(false);
+                  }
+                }}
+                disabled={!smartAddQuery.trim() || isSmartAdding}
+                className="px-4 py-2 text-sm font-bold text-white bg-strategic-teal hover:bg-strategic-teal/90 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSmartAdding ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    自動構築中...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 size={16} />
+                    ツリーに自動追加
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

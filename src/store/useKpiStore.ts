@@ -54,6 +54,7 @@ interface KpiStore {
   redo: () => void;
   reviveKpiNode: (id: string, newParentId: string | null) => void;
   expandKpiNode: (kpiId: string) => Promise<void>;
+  smartAddKpi: (query: string) => Promise<void>;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -1066,6 +1067,95 @@ export const useKpiStore = create<KpiStore>()(
     } catch (e) {
       console.error("Expand API error:", e);
       alert("展開に失敗しました。");
+    }
+  },
+
+  smartAddKpi: async (query: string) => {
+    try {
+      const state = useKpiStore.getState();
+      const nodesArray = Object.values(state.kpiData);
+      
+      const response = await fetch('/api/smart-add-kpi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentTree: nodesArray,
+          query: query,
+          businessUnit: state.currentProjectInfo?.name || 'company'
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to smart add KPI');
+
+      const data = await response.json();
+      const { updatedParent, newNodes } = data;
+
+      if (!updatedParent || !updatedParent.id || !newNodes || !Array.isArray(newNodes) || newNodes.length === 0) {
+        throw new Error('Invalid patch format received from AI');
+      }
+
+      useKpiStore.setState((currentState) => {
+        currentState.saveHistory();
+        const draft = { ...currentState.kpiData };
+        const newActions = [...currentState.actions];
+
+        // 1. 新しいノードの追加
+        newNodes.forEach((node: any) => {
+          let safeId = node.id;
+          if (draft[safeId]) {
+            safeId = `kpi_smart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            node.id = safeId;
+          }
+
+          if (node.tasks && Array.isArray(node.tasks)) {
+            node.tasks.forEach((task: any) => {
+              const isString = typeof task === 'string';
+              newActions.push({
+                id: `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                kpiId: safeId,
+                title: isString ? task : (task.task_name || '新規タスク'),
+                description: isString ? '' : (task.description || ''),
+                status: 'todo',
+                owner: '未定',
+                dueDate: isString ? new Date().toISOString().split('T')[0] : (task.due_date || new Date().toISOString().split('T')[0])
+              });
+            });
+            delete node.tasks;
+          }
+
+          const newNode: KpiNodeWithComputedAndInit = {
+            ...node,
+            history: [],
+            initialActualValue: node.actualValue || 0
+          };
+          draft[safeId] = calculateComputed(newNode);
+        });
+
+        // 2. 親ノードの数式更新
+        if (draft[updatedParent.id]) {
+          const updatedParentNode = {
+            ...draft[updatedParent.id],
+            isCalculated: true,
+            formula: updatedParent.newFormula
+          };
+          draft[updatedParent.id] = calculateComputed(updatedParentNode);
+        }
+
+        // 3. ツリー全体の再計算
+        sanitizeKpiData(draft);
+        recalculateTree(draft, 'targetValue');
+        recalculateTree(draft, 'actualValue');
+
+        // 4. DBへ同期
+        syncToDB(currentState.currentProjectId, currentState.currentOrgId, { kpiData: draft, actions: newActions });
+
+        return { kpiData: draft, actions: newActions, projectData: saveToProjectData({ ...currentState, kpiData: draft, actions: newActions }) };
+      });
+
+    } catch (e) {
+      console.error("Smart Add KPI error:", e);
+      alert("KPIの追加に失敗しました。詳細なプロンプトを試してください。");
+      throw e;
     }
   },
 
