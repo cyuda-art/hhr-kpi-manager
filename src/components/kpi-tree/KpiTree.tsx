@@ -190,7 +190,27 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     useKpiStore.getState().updateKpiNodePositionsBulk(positionsToSave);
     
     if (rfInstance) {
-      setTimeout(() => rfInstance.fitView({ padding: 0.2, duration: 800 }), 50);
+      setTimeout(() => {
+        const now = Date.now();
+        const newlyAddedNodes = layoutedNodes.filter(n => n.data?.addedAt && (now - Number(n.data.addedAt)) < 10000);
+        
+        if (newlyAddedNodes.length > 0) {
+          const topNewNodes = newlyAddedNodes.filter(n => {
+            const parentId = n.data?.parentId;
+            if (!parentId) return true;
+            return !newlyAddedNodes.some(pn => pn.id === parentId);
+          });
+          
+          const focusNode = topNewNodes.length > 0 ? topNewNodes[0] : newlyAddedNodes[0];
+          
+          if (focusNode) {
+            rfInstance.setCenter(focusNode.position.x + 180, focusNode.position.y + 110, { zoom: 1.0, duration: 800 });
+            return;
+          }
+        }
+        
+        rfInstance.fitView({ padding: 0.2, duration: 800 });
+      }, 50);
     }
   };
 
