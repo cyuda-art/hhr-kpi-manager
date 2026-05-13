@@ -61,7 +61,13 @@ export async function POST(req: Request) {
       "isKsf": true,
       "trend_type": "steady_growth",
       "volatility": 0.1,
-      "tasks": [...]
+      "tasks": [
+        {
+          "task_name": "具体的なアクションプラン1",
+          "description": "タスクの詳細説明",
+          "due_date": "2026-12-31"
+        }
+      ]
     },
     ...
   ]

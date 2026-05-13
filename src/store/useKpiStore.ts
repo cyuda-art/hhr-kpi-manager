@@ -1021,14 +1021,15 @@ export const useKpiStore = create<KpiStore>()(
           // タスクがあればActionsに退避
           if (node.tasks && Array.isArray(node.tasks)) {
             node.tasks.forEach((task: any) => {
+              const isString = typeof task === 'string';
               newActions.push({
                 id: `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 kpiId: safeId,
-                title: task.task_name,
-                description: task.description || '',
+                title: isString ? task : (task.task_name || '新規タスク'),
+                description: isString ? '' : (task.description || ''),
                 status: 'todo',
                 owner: '未定',
-                dueDate: task.due_date || new Date().toISOString().split('T')[0]
+                dueDate: isString ? new Date().toISOString().split('T')[0] : (task.due_date || new Date().toISOString().split('T')[0])
               });
             });
             delete node.tasks;
