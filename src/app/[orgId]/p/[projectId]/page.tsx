@@ -59,6 +59,52 @@ export default function DashboardPage() {
     return Object.values(kpiData).filter(node => showArchived || !node.isArchived);
   }, [kpiData, showArchived]);
 
+  // Heatmap Data (Macro View)
+  const heatmapData = useMemo(() => {
+    // KGIを探す
+    const kgi = kpiList.find(k => k.type === 'KGI');
+    // KGIとその直接の子（KSF）のみを抽出
+    const list = kpiList.filter(k => k.type === 'KGI' || (kgi && k.parentId === kgi.id));
+    
+    return list.map(kpi => {
+      const node = kpiData[kpi.id];
+      if (!node || !node.monthlyData) return null;
+      
+      const getAggregatedRate = (months: string[]) => {
+        let t = 0; let a = 0;
+        let count = 0;
+        for (const m of months) {
+          if (node.monthlyData![m]) {
+            t += node.monthlyData![m].targetValue || 0;
+            a += node.monthlyData![m].actualValue || 0;
+            count++;
+          }
+        }
+        if (count === 0) return null;
+        if (!shouldScaleWithPeriod(node as any)) {
+          const avgT = t / count;
+          const avgA = a / count;
+          return avgT > 0 ? (avgA / avgT) * 100 : null;
+        }
+        return t > 0 ? (a / t) * 100 : null;
+      };
+
+      return {
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        q1: getAggregatedRate(["2026-04", "2026-05", "2026-06"]),
+        q2: getAggregatedRate(["2026-07", "2026-08", "2026-09"]),
+        q3: getAggregatedRate(["2026-10", "2026-11", "2026-12"]),
+        q4: getAggregatedRate(["2027-01", "2027-02", "2027-03"]),
+        year: getAggregatedRate([
+          "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
+          "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
+        ])
+      };
+    }).filter(Boolean);
+  }, [kpiList, kpiData]);
+
   useEffect(() => {
     if (!selectedKpiId && kpiList.length > 0) {
       const kgi = kpiList.find(k => k.type === 'KGI');
@@ -185,6 +231,81 @@ export default function DashboardPage() {
               <div className="text-[11px] text-slate-500">危険</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Drill-Down Heatmap (Macro View) */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm overflow-hidden">
+        <div className="mb-4">
+          <h2 className="text-[18px] font-bold text-oxford-navy dark:text-slate-100 flex items-center gap-2">
+            <Target size={20} className="text-strategic-teal" />
+            ドリルダウン・ヒートマップ
+          </h2>
+          <p className="text-[13px] text-logic-slate dark:text-slate-400 mt-1">
+            KGIと主要KPIの四半期ごとの達成状況。赤いセル（ボトルネック）をクリックすると詳細チャートへドリルダウンします。
+          </p>
+        </div>
+        
+        <div className="overflow-x-auto custom-scrollbar pb-2">
+          <table className="w-full text-left border-collapse">
+            <thead className="text-[12px] text-logic-slate dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800/50">
+              <tr>
+                <th className="px-4 py-3 font-bold border-b border-slate-200 dark:border-slate-700">指標名</th>
+                <th className="px-4 py-3 font-medium border-b border-slate-200 dark:border-slate-700 text-center">Q1<br/><span className="text-[10px] font-normal opacity-70">4-6月</span></th>
+                <th className="px-4 py-3 font-medium border-b border-slate-200 dark:border-slate-700 text-center">Q2<br/><span className="text-[10px] font-normal opacity-70">7-9月</span></th>
+                <th className="px-4 py-3 font-medium border-b border-slate-200 dark:border-slate-700 text-center">Q3<br/><span className="text-[10px] font-normal opacity-70">10-12月</span></th>
+                <th className="px-4 py-3 font-medium border-b border-slate-200 dark:border-slate-700 text-center">Q4<br/><span className="text-[10px] font-normal opacity-70">1-3月</span></th>
+                <th className="px-4 py-3 font-bold border-b border-slate-200 dark:border-slate-700 text-center border-l border-slate-100 dark:border-slate-700/50">年間累計</th>
+              </tr>
+            </thead>
+            <tbody>
+              {heatmapData.map((row: any, i) => {
+                const getBgColor = (rate: number | null) => {
+                  if (rate === null) return "bg-slate-50 dark:bg-slate-800/20";
+                  if (rate >= 100) return "bg-[#81c995]/20 hover:bg-[#81c995]/30 text-emerald-800 dark:text-emerald-300";
+                  if (rate >= 80) return "bg-[#fbbc04]/20 hover:bg-[#fbbc04]/30 text-amber-800 dark:text-amber-300";
+                  return "bg-rose-500/20 hover:bg-rose-500/30 text-rose-800 dark:text-rose-300";
+                };
+
+                const renderCell = (rate: number | null) => (
+                  <td 
+                    className={`px-4 py-3 text-center text-[13px] font-bold transition-colors cursor-pointer border-b border-slate-100 dark:border-slate-700/50 ${getBgColor(rate)}`}
+                    onClick={() => setSelectedKpiId(row.id)}
+                  >
+                    {rate !== null ? `${rate.toFixed(1)}%` : '-'}
+                  </td>
+                );
+
+                return (
+                  <tr key={i} className={`group ${row.type === 'KGI' ? 'bg-slate-50/50 dark:bg-slate-800/30' : ''}`}>
+                    <td 
+                      className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      onClick={() => setSelectedKpiId(row.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-[3px] font-bold ${row.type === 'KGI' ? 'bg-[#fbbc04]/20 text-amber-700 dark:text-amber-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
+                          {row.type}
+                        </span>
+                        <span className={`text-[13px] font-medium truncate ${selectedKpiId === row.id ? 'text-strategic-teal font-bold' : 'text-oxford-navy dark:text-slate-200'}`}>
+                          {row.name}
+                        </span>
+                      </div>
+                    </td>
+                    {renderCell(row.q1)}
+                    {renderCell(row.q2)}
+                    {renderCell(row.q3)}
+                    {renderCell(row.q4)}
+                    <td 
+                      className={`px-4 py-3 text-center text-[13px] font-bold cursor-pointer border-b border-l border-slate-100 dark:border-slate-700/50 ${getBgColor(row.year)}`}
+                      onClick={() => setSelectedKpiId(row.id)}
+                    >
+                      {row.year !== null ? `${row.year.toFixed(1)}%` : '-'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
