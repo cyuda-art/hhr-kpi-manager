@@ -247,7 +247,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     setNodes((nds) => {
       const isHorizontal = layoutDirection === 'LR';
       const newNodes = nds
-        .filter((node) => kpiData[node.id])
+        .filter((node) => kpiData[node.id] && !kpiData[node.id].isArchived)
         .map((node) => {
           const hasChildren = Object.values(kpiData).some(k => k.parentId === node.id);
           const isCollapsed = collapsedNodes.includes(node.id);
@@ -383,7 +383,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
     setEdges((eds) => {
       const newEdges = eds
-        .filter((edge) => kpiData[edge.target] && kpiData[edge.source])
+        .filter((edge) => kpiData[edge.target] && !kpiData[edge.target].isArchived && kpiData[edge.source] && !kpiData[edge.source].isArchived)
         .map((edge) => {
           const hidden = isNodeHidden(edge.target);
           const { style, animated } = getEdgeStyle(edge.source, edge.target);
