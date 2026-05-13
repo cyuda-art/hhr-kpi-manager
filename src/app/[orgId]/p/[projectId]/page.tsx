@@ -84,9 +84,9 @@ export default function DashboardPage() {
         if (!shouldScaleWithPeriod(node as any)) {
           const avgT = t / count;
           const avgA = a / count;
-          return avgT > 0 ? (avgA / avgT) * 100 : null;
+          return avgT > 0 ? (avgA / avgT) * 100 : (avgA > 0 ? 100 : null);
         }
-        return t > 0 ? (a / t) * 100 : null;
+        return t > 0 ? (a / t) * 100 : (a > 0 ? 100 : null);
       };
 
       return {
@@ -346,7 +346,7 @@ export default function DashboardPage() {
             <h3 className="text-[13px] font-bold text-amber-800 dark:text-amber-400 mb-2">デバッグ・ツール</h3>
             <button
               onClick={() => {
-                if (!confirm('全ての指標の月次データ（monthlyData）を再生成します。よろしいですか？')) return;
+                if (!confirm('全ての指標の月次データ（monthlyData）を再生成し、ツリー全体を再計算します。よろしいですか？')) return;
                 const draft = { ...kpiData };
                 const allMonths = [
                   "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
@@ -361,24 +361,40 @@ export default function DashboardPage() {
                       actualValue: 0
                     };
                   });
-                  // historyがあれば合算
+                  
+                  // Extract end-of-month cumulative values from history
                   if (node.history && Array.isArray(node.history)) {
-                    node.history.forEach((record: any) => {
+                    const sortedHistory = [...node.history].sort((a, b) => a.date.localeCompare(b.date));
+                    const endOfMonthValues: Record<string, number> = {};
+                    sortedHistory.forEach(record => {
                       const m = record.date.substring(0, 7);
-                      if (monthlyData[m]) {
-                        if (isPercentage) monthlyData[m].actualValue = record.actualValue;
-                        else monthlyData[m].actualValue += record.actualValue;
+                      endOfMonthValues[m] = record.actualValue; // will overwrite, leaving the last day's value
+                    });
+                    
+                    let previousCumValue = 0;
+                    allMonths.forEach(m => {
+                      if (endOfMonthValues[m] !== undefined) {
+                        const cumValue = endOfMonthValues[m];
+                        if (isPercentage) {
+                          monthlyData[m].actualValue = cumValue;
+                        } else {
+                          monthlyData[m].actualValue = Math.max(0, cumValue - previousCumValue);
+                        }
+                        previousCumValue = cumValue;
                       }
                     });
                   }
                   draft[node.id] = { ...node, monthlyData };
                 });
+                
                 useKpiStore.setState({ kpiData: draft });
-                alert('再生成が完了しました。グラフが更新されるか確認してください。');
+                useKpiStore.getState().recalculateAllMonthsAction();
+                
+                alert('月次データの再生成とツリー全体の再計算が完了しました！グラフが正常化されたか確認してください。');
               }}
               className="w-full bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-bold py-2 rounded"
             >
-              月次データを再生成する
+              全データ再計算＆バグ修正ツール
             </button>
           </div>
 

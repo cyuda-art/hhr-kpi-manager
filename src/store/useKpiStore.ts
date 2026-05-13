@@ -57,6 +57,7 @@ interface KpiStore {
   expandKpiNode: (kpiId: string) => Promise<void>;
   smartAddKpi: (query: string) => Promise<void>;
   applyRollingForecast: (kpiId: string, additionalTargetPerMonth: number, targetMonths: string[]) => void;
+  recalculateAllMonthsAction: () => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -384,6 +385,20 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
   }
 };
 
+const recalculateAllMonths = (draft: Record<string, KpiNodeWithComputedAndInit>) => {
+  const allMonths = new Set<string>();
+  Object.values(draft).forEach(node => {
+    if (node.monthlyData) {
+      Object.keys(node.monthlyData).forEach(m => allMonths.add(m));
+    }
+  });
+  
+  const monthsArray = Array.from(allMonths).sort();
+  monthsArray.forEach(m => {
+    recalculateTree(draft, 'targetValue', m);
+    recalculateTree(draft, 'actualValue', m);
+  });
+};
 
 const saveToProjectData = (state: any) => {
   if (!state.currentProjectId) return state.projectData;
@@ -438,6 +453,13 @@ export const useKpiStore = create<KpiStore>()(
         const newPast = [...state.pastStates, { kpiData: state.kpiData, actions: state.actions }];
         syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: next.kpiData, actions: next.actions, projectInfo: state.currentProjectInfo });
         return { kpiData: next.kpiData, actions: next.actions, pastStates: newPast, futureStates: newFuture, projectData: saveToProjectData({ ...state, kpiData: next.kpiData, actions: next.actions }) };
+      }),
+
+      recalculateAllMonthsAction: () => set((state) => {
+        const draft = { ...state.kpiData };
+        recalculateAllMonths(draft);
+        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft });
+        return { kpiData: draft };
       }),
 
       setPeriod: (period) => set({ currentPeriod: period }),
@@ -556,8 +578,7 @@ export const useKpiStore = create<KpiStore>()(
             await Promise.all(linkPromises);
             
             if (hasLinkedUpdates) {
-              recalculateTree(kpiData as any, 'actualValue', state.currentPeriod);
-              recalculateTree(kpiData as any, 'targetValue', state.currentPeriod);
+              recalculateAllMonths(kpiData as any);
               syncToDB(projectId, orgId, { kpiData: kpiData } as any);
             }
           }
@@ -624,8 +645,7 @@ export const useKpiStore = create<KpiStore>()(
 
               // --- 初期計算 ---
               // 数式セット後、ツリー全体の数値を再計算して整合性を取る
-              recalculateTree(kpiData as any, 'targetValue', state.currentPeriod);
-              recalculateTree(kpiData as any, 'actualValue', state.currentPeriod);
+              recalculateAllMonths(kpiData as any);
 
               // ロード完了したらストレージから削除
               sessionStorage.removeItem(`kpi_init_${projectId}`);
