@@ -8,6 +8,7 @@ import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import dagre from 'dagre';
 import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight, Sparkles, Loader2, Bot } from 'lucide-react';
+import { getDisplayValue } from '@/lib/kpi-utils';
 
 
 const nodeTypes = {
@@ -94,7 +95,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 };
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates, currentPeriod } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection } = useLayoutStore();
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
@@ -332,9 +333,26 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       let targetStatus = 'danger';
       
       if (targetData) {
-        const displayTarget = targetData.targetValue || 0;
-        const displayActual = isPredictionMode && targetData.simulatedValue !== undefined ? targetData.simulatedValue : (targetData.actualValue || 0);
-        const achievementRate = displayTarget > 0 ? (displayActual / displayTarget) * 100 : 0;
+        let displayTarget = targetData.targetValue || 0;
+        let displayActual = targetData.actualValue || 0;
+        
+        if (isPredictionMode) {
+          displayActual = targetData.simulatedValue !== undefined ? targetData.simulatedValue : displayActual;
+          displayTarget = targetData.simulatedTargetValue !== undefined ? targetData.simulatedTargetValue : displayTarget;
+        }
+
+        displayActual = getDisplayValue(displayActual, targetData, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
+        displayTarget = getDisplayValue(displayTarget, targetData, currentPeriod, isPredictionMode ? 'simulatedTargetValue' : 'targetValue');
+
+        let achievementRate = 0;
+        if (displayTarget > 0) {
+          if (targetData.name?.includes('原価率') || targetData.name?.includes('キャンセル率') || targetData.name?.includes('コスト')) {
+            achievementRate = displayActual === 0 ? 0 : (displayTarget / displayActual) * 100;
+          } else {
+            achievementRate = (displayActual / displayTarget) * 100;
+          }
+        }
+        
         targetStatus = isPredictionMode && targetData.simulatedStatus ? targetData.simulatedStatus : (achievementRate >= 100 ? 'good' : achievementRate >= 80 ? 'warning' : 'danger');
       }
 
@@ -353,8 +371,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         animated = true;
         filter = 'drop-shadow(0 0 6px rgba(0, 163, 161, 0.6))';
       } else if (targetStatus === 'danger') {
-        strokeColor = `url(#edge-progress-${targetId})`;
-        strokeWidth = 3;
+        strokeColor = '#f43f5e'; // Solid red for bottleneck
+        strokeWidth = 2.5;
+        strokeDasharray = '4, 4'; // Dotted line to match legend
       } else if (targetStatus === 'warning') {
         strokeColor = `url(#edge-progress-${targetId})`;
         strokeWidth = 2.5;
@@ -608,10 +627,27 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               {Object.keys(kpiData).map(id => {
                 const data = kpiData[id];
                 if (!data || !data.parentId) return null;
-                const displayTarget = data.targetValue || 0;
-                const displayActual = isPredictionMode && data.simulatedValue !== undefined ? data.simulatedValue : (data.actualValue || 0);
-                const achievementRate = displayTarget > 0 ? Math.min(100, Math.max(0, (displayActual / displayTarget) * 100)) : 0;
+                let displayTarget = data.targetValue || 0;
+                let displayActual = data.actualValue || 0;
                 
+                if (isPredictionMode) {
+                  displayActual = data.simulatedValue !== undefined ? data.simulatedValue : displayActual;
+                  displayTarget = data.simulatedTargetValue !== undefined ? data.simulatedTargetValue : displayTarget;
+                }
+
+                displayActual = getDisplayValue(displayActual, data as any, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
+                displayTarget = getDisplayValue(displayTarget, data as any, currentPeriod, isPredictionMode ? 'simulatedTargetValue' : 'targetValue');
+
+                let achievementRate = 0;
+                if (displayTarget > 0) {
+                  if (data.name?.includes('原価率') || data.name?.includes('キャンセル率') || data.name?.includes('コスト')) {
+                    achievementRate = displayActual === 0 ? 0 : (displayTarget / displayActual) * 100;
+                  } else {
+                    achievementRate = (displayActual / displayTarget) * 100;
+                  }
+                }
+                
+                achievementRate = Math.min(100, Math.max(0, achievementRate));
                 const status = isPredictionMode && data.simulatedStatus ? data.simulatedStatus : (achievementRate >= 100 ? 'good' : achievementRate >= 80 ? 'warning' : 'danger');
                 const color = status === 'good' ? '#10b981' : status === 'warning' ? '#fbbf24' : '#f43f5e';
 
