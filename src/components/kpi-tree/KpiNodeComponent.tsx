@@ -4,7 +4,7 @@ import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { getDisplayValue } from '@/lib/kpi-utils';
+import { getDisplayValue, shouldScaleWithPeriod } from '@/lib/kpi-utils';
 import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2, Calculator, Link2 } from 'lucide-react';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -95,15 +95,40 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   // 過去データの判定（ここでは一旦シンプルにfalseとする。必要に応じて実際の日付比較を追加）
   isPast = false;
 
-  const displayAchievementRate = isPredictionMode && data.simulatedAchievementRate !== undefined 
-    ? data.simulatedAchievementRate 
-    : (displayActual / displayTarget) * 100;
+  let displayAchievementRate = 0;
+  if (displayTarget > 0) {
+    if (data.name?.includes('原価率') || data.name?.includes('キャンセル率') || data.name?.includes('コスト')) {
+      displayAchievementRate = displayActual === 0 ? 0 : (displayTarget / displayActual) * 100;
+    } else {
+      displayAchievementRate = (displayActual / displayTarget) * 100;
+    }
+  }
     
-  const displayStatus = isPredictionMode && data.simulatedStatus !== undefined
-    ? data.simulatedStatus
-    : displayAchievementRate >= 100 ? 'good' : displayAchievementRate >= 80 ? 'warning' : 'danger';
+  const displayStatus = displayAchievementRate >= 100 ? 'good' : displayAchievementRate >= 80 ? 'warning' : 'danger';
 
   const isAlert = displayTarget > 0 && displayAchievementRate < 50;
+
+  // 未達残債（ショートフォール）の計算
+  let shortfall = 0;
+  let hasShortfall = false;
+  if (currentPeriod.match(/^\d{4}-\d{2}$/) && data.monthlyData) {
+    let accumTarget = 0;
+    let accumActual = 0;
+    const sortedMonths = Object.keys(data.monthlyData).sort();
+    for (const month of sortedMonths) {
+      if (month < currentPeriod) { // We compare strict less than current period to see YTD debt before this month?
+        // Actually, YTD shortfall includes current period, or up to previous?
+        // Usually, the debt we carry over is up to the *previous* month.
+        accumTarget += data.monthlyData[month].targetValue || 0;
+        accumActual += data.monthlyData[month].actualValue || 0;
+      }
+    }
+    shortfall = accumActual - accumTarget;
+    // For cumulative metrics, if shortfall is negative, it's a debt.
+    if (shortfall < 0 && shouldScaleWithPeriod(data)) {
+      hasShortfall = true;
+    }
+  }
 
   // フォーミュラを可読な文字列に変換
   const getReadableFormula = () => {
@@ -161,6 +186,11 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {data.warning && (
               <span className="text-[8px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 animate-pulse tracking-wider">
                 ⚠️ RESET
+              </span>
+            )}
+            {hasShortfall && (
+              <span className="text-[8px] bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 animate-pulse tracking-wider border border-red-200 dark:border-red-800" title="前月までの累計未達分">
+                ⚠️ 累計 {Math.round(shortfall).toLocaleString()} {data.unit}
               </span>
             )}
             <span className="text-[8px] bg-logic-slate/5 dark:bg-slate-700 text-logic-slate dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 tracking-wider">

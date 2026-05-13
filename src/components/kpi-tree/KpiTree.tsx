@@ -513,11 +513,21 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 onChange={(e) => useKpiStore.getState().setPeriod(e.target.value)}
                 className="bg-transparent border-none outline-none text-xs font-bold text-logic-slate dark:text-slate-400 px-3 py-1.5 focus:ring-0 cursor-pointer"
               >
-                <option value="year">年次 (1年)</option>
-                <option value="half">半期 (6ヶ月)</option>
-                <option value="quarter">四半期 (3ヶ月)</option>
-                <option value="month">月次 (1ヶ月)</option>
-                <option value="day">日次 (1日)</option>
+                <option value="year">年次 (1年) - 累積</option>
+                <optgroup label="2026年度 (FY26)">
+                  <option value="2026-04">2026年04月</option>
+                  <option value="2026-05">2026年05月</option>
+                  <option value="2026-06">2026年06月</option>
+                  <option value="2026-07">2026年07月</option>
+                  <option value="2026-08">2026年08月</option>
+                  <option value="2026-09">2026年09月</option>
+                  <option value="2026-10">2026年10月</option>
+                  <option value="2026-11">2026年11月</option>
+                  <option value="2026-12">2026年12月</option>
+                  <option value="2027-01">2027年01月</option>
+                  <option value="2027-02">2027年02月</option>
+                  <option value="2027-03">2027年03月</option>
+                </optgroup>
               </select>
             </div>
             
