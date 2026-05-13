@@ -21,6 +21,7 @@ import {
   Download
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
@@ -32,40 +33,20 @@ export default function LandingPage() {
     setMounted(true);
   }, []);
 
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
+  const opacity1 = useTransform(scrollY, [0, 300], [1, 0]);
+
   return (
     <div className="min-h-screen bg-clean-canvas dark:bg-[#000a1f] text-oxford-navy dark:text-slate-200 font-sans selection:bg-strategic-teal/30 overflow-x-hidden">
       
-      {/* Custom Animations */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes drawLine {
-          from { height: 0; opacity: 0; }
-          to { height: 40px; opacity: 1; }
-        }
-        @keyframes drawLineH {
-          from { width: 0; opacity: 0; }
-          to { width: 120px; opacity: 1; }
-        }
-        @keyframes popIn {
-          0% { transform: scale(0.95) translateY(10px); opacity: 0; }
-          100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        @keyframes progressFill {
-          0% { width: 30%; }
-          100% { width: 85%; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
-        .anim-line-v { animation: drawLine 0.5s ease-out forwards; }
-        .anim-line-h { animation: drawLineH 0.5s ease-out forwards; }
-        .anim-pop { animation: popIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .anim-progress { animation: progressFill 4s ease-in-out infinite alternate; }
-        .anim-float { animation: float 6s ease-in-out infinite; }
-      `}} />
-
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#001133]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#001133]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800"
+      >
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-black text-xl tracking-widest font-poppins text-oxford-navy dark:text-white uppercase">
             <Network className="w-5 h-5 text-strategic-teal" />
@@ -80,31 +61,51 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* 1. Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-40 overflow-hidden">
         {/* Minimal Grid Background */}
-        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50"></div>
+        <motion.div style={{ y: y1, opacity: opacity1 }} className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50"></motion.div>
         <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-white dark:from-[#001133] to-transparent z-0"></div>
 
         <div className="container mx-auto px-6 relative z-10 text-center max-w-5xl">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal text-xs font-bold font-poppins tracking-widest mb-8 shadow-sm anim-pop" style={{ animationDelay: '0s', opacity: 0 }}>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal text-xs font-bold font-poppins tracking-widest mb-8 shadow-sm"
+          >
             NEXT-GEN KPI MANAGEMENT
-          </div>
+          </motion.div>
           
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-8 leading-[1.15] font-poppins anim-pop text-oxford-navy dark:text-white" style={{ animationDelay: '0.1s', opacity: 0 }}>
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-5xl md:text-7xl font-black tracking-tight mb-8 leading-[1.15] font-poppins text-oxford-navy dark:text-white"
+          >
             経営のブラックボックスを破壊する。<br />
             <span className="text-strategic-teal font-serif italic font-normal tracking-normal mt-2 inline-block">
               "Living" KPI Tree
             </span>
-          </h1>
+          </motion.h1>
           
-          <p className="text-lg text-logic-slate dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed anim-pop font-lato" style={{ animationDelay: '0.2s', opacity: 0 }}>
+          <motion.p 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-lg text-logic-slate dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed font-lato"
+          >
             静的なExcel管理はもう限界です。事業構造を可視化するインタラクティブなツリーと、未達を防ぐ「KSF（重要施策）」の実行管理を統合。AIが達成率から次の一手を提案し、会議室の議論を「過去の反省」から「未来の打ち手」へと変革します。
-          </p>
+          </motion.p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 anim-pop" style={{ animationDelay: '0.3s', opacity: 0 }}>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
             <Link 
               href="/login"
               className="w-full sm:w-auto px-8 py-4 bg-oxford-navy dark:bg-strategic-teal hover:bg-strategic-teal dark:hover:bg-strategic-teal/80 text-white rounded-sm font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 group"
@@ -121,7 +122,7 @@ export default function LandingPage() {
             >
               資料をダウンロード
             </button>
-          </div>
+          </motion.div>
         </div>
 
         {/* Dynamic Interactive Dashboard Mockup Preview */}
@@ -248,46 +249,63 @@ export default function LandingPage() {
         
         <div className="container mx-auto px-6 relative z-10 max-w-6xl">
           <div className="grid md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-white/10">
-            <div className="p-6">
-              <div className="flex items-center justify-center gap-2 text-slate-400 font-bold mb-4 font-poppins tracking-widest text-xs">
-                <Clock size={16} /> DATA GATHERING TIME
-              </div>
-              <div className="text-5xl md:text-6xl font-black mb-4 tracking-tight text-strategic-teal font-lato">
-                -100<span className="text-3xl">%</span>
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed font-sans">末端KPIの入力が上位に自動連鎖。中間管理職を苦しめる数字の「二重集計業務」がゼロ化。</p>
-            </div>
-            
-            <div className="p-6">
-              <div className="flex items-center justify-center gap-2 text-slate-400 font-bold mb-4 font-poppins tracking-widest text-xs">
-                <Zap size={16} /> DECISION SPEED
-              </div>
-              <div className="text-5xl md:text-6xl font-black mb-4 tracking-tight text-strategic-teal font-lato">
-                即時
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed font-sans">シミュレーション機能により、「持ち帰って再計算」がなくなり、会議のその場で打ち手が決まる。</p>
-            </div>
-            
-            <div className="p-6">
-              <div className="flex items-center justify-center gap-2 text-slate-400 font-bold mb-4 font-poppins tracking-widest text-xs">
-                <TrendingUp size={16} /> EXECUTION RATE
-              </div>
-              <div className="text-5xl md:text-6xl font-black mb-4 tracking-tight text-strategic-teal font-lato">
-                100<span className="text-3xl">%</span>
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed font-sans">KPIとタスク(KSF)が完全に紐づくため、「決めたけどやらない」が物理的に発生しない。</p>
-            </div>
+            {[
+              {
+                icon: <Clock size={16} />,
+                label: "DATA GATHERING TIME",
+                value: "-100",
+                unit: "%",
+                desc: "末端KPIの入力が上位に自動連鎖。中間管理職を苦しめる数字の「二重集計業務」がゼロ化。"
+              },
+              {
+                icon: <Zap size={16} />,
+                label: "DECISION SPEED",
+                value: "即時",
+                unit: "",
+                desc: "シミュレーション機能により、「持ち帰って再計算」がなくなり、会議のその場で打ち手が決まる。"
+              },
+              {
+                icon: <TrendingUp size={16} />,
+                label: "EXECUTION RATE",
+                value: "100",
+                unit: "%",
+                desc: "KPIとタスク(KSF)が完全に紐づくため、「決めたけどやらない」が物理的に発生しない。"
+              }
+            ].map((stat, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.6, delay: i * 0.2 }}
+                className="p-6"
+              >
+                <div className="flex items-center justify-center gap-2 text-slate-400 font-bold mb-4 font-poppins tracking-widest text-xs">
+                  {stat.icon} {stat.label}
+                </div>
+                <div className="text-5xl md:text-6xl font-black mb-4 tracking-tight text-strategic-teal font-lato">
+                  {stat.value}<span className="text-3xl">{stat.unit}</span>
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed font-sans">{stat.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* 2. Problem Section */}
-      <section className="py-32 bg-white dark:bg-[#000a1f] border-b border-slate-200 dark:border-slate-800">
+      <section className="py-32 bg-white dark:bg-[#000a1f] border-b border-slate-200 dark:border-slate-800 overflow-hidden">
         <div className="container mx-auto px-6 max-w-6xl">
-          <div className="text-center mb-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
             <h2 className="text-3xl md:text-5xl font-black mb-6 text-oxford-navy dark:text-white font-poppins tracking-tight">こんな課題、経営会議で起きていませんか？</h2>
             <p className="text-lg text-logic-slate dark:text-slate-400 font-lato">従来の静的なExcel管理では、組織の実行スピードは上がりません。</p>
-          </div>
+          </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -307,13 +325,21 @@ export default function LandingPage() {
                 desc: "月末や期末に数字が締まってから「未達」に気付くため、軌道修正の打ち手を打つ時間がない。"
               }
             ].map((item, i) => (
-              <div key={i} className="bg-clean-canvas dark:bg-[#001133] p-10 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-strategic-teal dark:hover:border-strategic-teal transition-colors group">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                whileHover={{ y: -10, transition: { duration: 0.2 } }}
+                className="bg-clean-canvas dark:bg-[#001133] p-10 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-strategic-teal dark:hover:border-strategic-teal transition-colors group shadow-sm"
+              >
                 <div className="w-14 h-14 flex items-center justify-center mb-6 border-b-2 border-strategic-teal">
                   {item.icon}
                 </div>
                 <h3 className="text-xl font-bold mb-4 text-oxford-navy dark:text-white">{item.title}</h3>
                 <p className="text-logic-slate dark:text-slate-400 leading-relaxed text-sm">{item.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -331,8 +357,14 @@ export default function LandingPage() {
 
           <div className="space-y-32">
             {/* Feature 1 */}
-            <div className="flex flex-col md:flex-row items-center gap-16">
-              <div className="flex-1 space-y-6">
+            <div className="flex flex-col md:flex-row items-center gap-16 overflow-hidden">
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+                className="flex-1 space-y-6"
+              >
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
                   <BrainCircuit size={14} /> FEATURE 01
                 </div>
@@ -348,8 +380,14 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="flex-1 w-full bg-white dark:bg-[#001133] p-8 rounded-sm border border-slate-200 dark:border-slate-800 shadow-xl">
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex-1 w-full bg-white dark:bg-[#001133] p-8 rounded-sm border border-slate-200 dark:border-slate-800 shadow-xl"
+              >
                 <div className="text-xs text-logic-slate dark:text-slate-400 mb-4 font-bold flex items-center gap-2 font-poppins tracking-widest"><BrainCircuit className="w-4 h-4 text-strategic-teal" /> AI PROMPT</div>
                 <div className="bg-clean-canvas dark:bg-[#000a1f] p-5 border border-slate-200 dark:border-slate-800 text-sm text-oxford-navy dark:text-slate-300 mb-6 font-lato leading-relaxed">
                   "B2BのSaaS企業です。月額課金で、エンタープライズ向けのプランを売り出したいのでKPIツリーを作って。"
@@ -365,12 +403,18 @@ export default function LandingPage() {
                     <div className="h-2 bg-slate-200 dark:bg-slate-700 w-2/3"></div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Feature 2 */}
-            <div className="flex flex-col md:flex-row-reverse items-center gap-16">
-              <div className="flex-1 space-y-6">
+            <div className="flex flex-col md:flex-row-reverse items-center gap-16 overflow-hidden">
+              <motion.div 
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+                className="flex-1 space-y-6"
+              >
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
                   <Database size={14} /> FEATURE 02
                 </div>
@@ -386,8 +430,14 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="flex-1 w-full bg-[#001133] p-8 rounded-sm shadow-xl relative overflow-hidden font-mono text-xs">
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex-1 w-full bg-[#001133] p-8 rounded-sm shadow-xl relative overflow-hidden font-mono text-xs"
+              >
                 <div className="absolute top-4 right-4 text-[9px] border border-strategic-teal/50 text-strategic-teal px-2 py-1 tracking-widest">LIVE SYNC</div>
                 <div className="text-slate-500 mb-4">// Database Object</div>
                 <div className="text-blue-400">"kpiData"<span className="text-slate-500">:</span> {'{'}</div>
@@ -410,12 +460,18 @@ export default function LandingPage() {
                     <span className="text-strategic-teal">¥1.25M</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Feature 3 */}
-            <div className="flex flex-col md:flex-row items-center gap-16">
-              <div className="flex-1 space-y-6">
+            <div className="flex flex-col md:flex-row items-center gap-16 overflow-hidden">
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+                className="flex-1 space-y-6"
+              >
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
                   <Target size={14} /> FEATURE 03
                 </div>
@@ -431,8 +487,14 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="flex-1 w-full bg-[#001133] p-8 rounded-sm shadow-xl flex items-center justify-center">
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex-1 w-full bg-[#001133] p-8 rounded-sm shadow-xl flex items-center justify-center"
+              >
                 <div className="w-full bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 p-6">
                   <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
                     <div className="text-xs font-bold text-logic-slate dark:text-slate-400 font-poppins tracking-widest">KEY SUCCESS FACTORS</div>
@@ -454,12 +516,18 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Feature 4 */}
-            <div className="flex flex-col md:flex-row-reverse items-center gap-16">
-              <div className="flex-1 space-y-6">
+            <div className="flex flex-col md:flex-row-reverse items-center gap-16 overflow-hidden">
+              <motion.div 
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+                className="flex-1 space-y-6"
+              >
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal font-bold text-xs font-poppins tracking-widest shadow-sm">
                   <TrendingUp size={14} /> FEATURE 04
                 </div>
@@ -475,8 +543,14 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="flex-1 w-full bg-slate-50 dark:bg-slate-800/50 p-8 rounded-sm border border-slate-200 dark:border-slate-700 shadow-xl relative overflow-hidden">
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex-1 w-full bg-slate-50 dark:bg-slate-800/50 p-8 rounded-sm border border-slate-200 dark:border-slate-700 shadow-xl relative overflow-hidden"
+              >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-strategic-teal/10 blur-3xl rounded-full"></div>
                 <div className="w-full bg-white dark:bg-[#001133] rounded-sm shadow-md border border-slate-200 dark:border-slate-800 p-6 relative">
                   <div className="flex items-center gap-2 mb-6 border-b border-slate-200 dark:border-slate-700 pb-3">
@@ -499,7 +573,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
           </div>
@@ -509,14 +583,32 @@ export default function LandingPage() {
       {/* 5. CTA */}
       <section className="py-32 relative overflow-hidden text-center bg-white dark:bg-[#001133] border-t border-slate-200 dark:border-slate-800">
         <div className="container mx-auto px-6 relative z-10 max-w-4xl">
-          <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight tracking-tight text-oxford-navy dark:text-white font-poppins">
+          <motion.h2 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl md:text-5xl font-black mb-6 leading-tight tracking-tight text-oxford-navy dark:text-white font-poppins"
+          >
             経営の解像度を上げ、<br />実行力を最大化する。
-          </h2>
-          <p className="text-lg text-logic-slate dark:text-slate-400 mb-12 font-lato">
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-lg text-logic-slate dark:text-slate-400 mb-12 font-lato"
+          >
             あなたの会社の戦略を、今日から「動く地図」に変えませんか？
-          </p>
+          </motion.p>
           
-          <div className="flex flex-col items-center gap-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex flex-col items-center gap-6"
+          >
             <Link 
               href="/login"
               className="px-10 py-5 bg-oxford-navy dark:bg-strategic-teal hover:bg-strategic-teal dark:hover:bg-strategic-teal/90 text-white rounded-sm font-bold text-sm tracking-widest transition-all shadow-lg flex items-center gap-3 group font-poppins"
@@ -527,7 +619,7 @@ export default function LandingPage() {
             <p className="text-xs text-logic-slate dark:text-slate-400 max-w-lg mt-4 leading-relaxed">
               ※セットアップは最短5分。お手持ちの事業計画書(CSV/PDF)をAIに読み込ませるだけで初期ツリーが完成します。
             </p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
