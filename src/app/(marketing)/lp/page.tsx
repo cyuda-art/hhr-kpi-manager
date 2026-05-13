@@ -18,7 +18,9 @@ import {
   X,
   FileText,
   Sparkles,
-  Download
+  Download,
+  Telescope,
+  Diamond
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -289,6 +291,105 @@ export default function LandingPage() {
                 <p className="text-sm text-slate-300 leading-relaxed font-sans">{stat.desc}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* NEW: MVV (Identity) Section */}
+      <section className="py-24 bg-white dark:bg-[#000a1f] border-b border-slate-200 dark:border-slate-800">
+        <div className="container mx-auto px-6 max-w-5xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-sm font-bold tracking-[0.2em] text-strategic-teal mb-4 font-poppins">OUR IDENTITY</h2>
+            <h3 className="text-3xl md:text-4xl font-black text-oxford-navy dark:text-white font-poppins tracking-tight">次世代経営管理プラットフォームのMVV</h3>
+          </motion.div>
+
+          <div className="space-y-20">
+            {/* Mission & Vision */}
+            <div className="grid md:grid-cols-2 gap-12">
+              <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+                className="bg-clean-canvas dark:bg-[#001133] p-10 rounded-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 w-1 h-full bg-strategic-teal"></div>
+                <div className="flex items-center gap-3 mb-6">
+                  <Target className="text-strategic-teal" size={24} />
+                  <h4 className="text-xl font-bold text-oxford-navy dark:text-white font-poppins tracking-wider">Mission <span className="text-sm font-normal text-slate-500 ml-2">私たちが果たすべき使命</span></h4>
+                </div>
+                <p className="text-2xl font-black text-oxford-navy dark:text-white mb-6 leading-tight">「すべての『文脈』を見せつけ、<br/>経営と現場をひとつのチームにする」</p>
+                <p className="text-sm text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
+                  経営の「数字」と現場の「行動」の間にあるブラックボックスを破壊するという宣言です。あなたが最も解決したい「泥臭い集計作業」や「不毛な摩擦」をなくし、全員が同じ方向を向くためのプラットフォームであるという存在意義を明確にしています。
+                </p>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="bg-clean-canvas dark:bg-[#001133] p-10 rounded-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                <div className="flex items-center gap-3 mb-6">
+                  <Telescope className="text-blue-500" size={24} />
+                  <h4 className="text-xl font-bold text-oxford-navy dark:text-white font-poppins tracking-wider">Vision <span className="text-sm font-normal text-slate-500 ml-2">私たちが実現したい未来</span></h4>
+                </div>
+                <p className="text-2xl font-black text-oxford-navy dark:text-white mb-6 leading-tight">「個人の努力が会社の未来に直結し、<br/>誰もが『なぜやるのか』に迷わない世界」</p>
+                <p className="text-sm text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
+                  プロダクトが普及した先にある理想の社会です。末端の数値（毎日の仕事）がどのように会社の成果に紐づき、自分に返ってくるのか。その道筋がAIとUIによって完全に可視化され、働く人すべてが納得感を持って前進できる世界を描いています。
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Values */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center justify-center mb-4">
+                  <Diamond className="text-strategic-teal" size={28} />
+                </div>
+                <h4 className="text-2xl font-bold text-oxford-navy dark:text-white font-poppins tracking-wider mb-2">Values</h4>
+                <p className="text-sm text-logic-slate dark:text-slate-400">ミッションを達成し、圧倒的なプロダクトを創り続けるための3つの行動規範</p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="bg-white dark:bg-[#000a1f] p-8 border border-slate-200 dark:border-slate-800 rounded-sm hover:border-strategic-teal transition-colors duration-300">
+                  <div className="text-4xl font-black text-slate-100 dark:text-slate-800/50 mb-4 font-poppins">01</div>
+                  <h5 className="text-lg font-bold text-oxford-navy dark:text-white mb-4">Context over Control<br/><span className="text-xs font-normal text-strategic-teal mt-1 block">管理より、文脈を</span></h5>
+                  <p className="text-sm text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
+                    トップダウンで数字を管理するのではなく、「なぜこの目標なのか」という背景と文脈の共有を最優先する。顧客に対しても、チーム内でも、情報の透明性を徹底する。
+                  </p>
+                </div>
+                
+                <div className="bg-white dark:bg-[#000a1f] p-8 border border-slate-200 dark:border-slate-800 rounded-sm hover:border-strategic-teal transition-colors duration-300">
+                  <div className="text-4xl font-black text-slate-100 dark:text-slate-800/50 mb-4 font-poppins">02</div>
+                  <h5 className="text-lg font-bold text-oxford-navy dark:text-white mb-4">Destroy the "Dorokusai"<br/><span className="text-xs font-normal text-strategic-teal mt-1 block">泥臭さをテクノロジーで駆逐せよ</span></h5>
+                  <p className="text-sm text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
+                    気合いと根性の手作業を憎む。AI推論、自己修復ロジック（Auto-repair）、自動計算エンジンなどの技術を駆使し、人間は「意思決定」と「創造」にのみ時間を使う。
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-[#000a1f] p-8 border border-slate-200 dark:border-slate-800 rounded-sm hover:border-strategic-teal transition-colors duration-300">
+                  <div className="text-4xl font-black text-slate-100 dark:text-slate-800/50 mb-4 font-poppins">03</div>
+                  <h5 className="text-lg font-bold text-oxford-navy dark:text-white mb-4">Beautiful Truth<br/><span className="text-xs font-normal text-strategic-teal mt-1 block">美しく、飾らない真実を</span></h5>
+                  <p className="text-sm text-logic-slate dark:text-slate-400 leading-relaxed font-lato">
+                    ボトルネックや未達の現実から目を背けない。プロダクトの洗練されたUI（Premium & Modern）のように、複雑なデータや厳しい現実であっても、直感的で美しく、ごまかしのない形で相手に提示する。
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
