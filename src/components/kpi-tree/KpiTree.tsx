@@ -305,6 +305,26 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       });
       return newNodes;
     });
+    const highlightedNodeIds = new Set<string>();
+    if (selectedNodeId) {
+      highlightedNodeIds.add(selectedNodeId);
+      // 上位方向（祖先）の取得
+      let currentId = kpiData[selectedNodeId]?.parentId;
+      while (currentId && kpiData[currentId]) {
+        highlightedNodeIds.add(currentId);
+        currentId = kpiData[currentId].parentId;
+      }
+      // 下位方向（子孫）の取得
+      const getDescendants = (parentId: string) => {
+        Object.keys(kpiData).forEach(id => {
+          if (kpiData[id] && kpiData[id].parentId === parentId && !kpiData[id].isArchived) {
+            highlightedNodeIds.add(id);
+            getDescendants(id);
+          }
+        });
+      };
+      getDescendants(selectedNodeId);
+    }
 
     const getEdgeStyle = (sourceId: string, targetId: string) => {
       const targetData = kpiData[targetId];
@@ -348,10 +368,10 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         animated = true;
       }
 
-      // 選択中ノードに直接紐づく線のみ点線にする
-      if (selectedNodeId && (sourceId === selectedNodeId || targetId === selectedNodeId)) {
+      // 選択中ノードとその影響範囲（上位・下位すべて）を点線にする
+      if (selectedNodeId && highlightedNodeIds.has(sourceId) && highlightedNodeIds.has(targetId)) {
         strokeDasharray = '5, 5';
-        strokeWidth = 3; // 選択中の線は少し太くする
+        strokeWidth = 3; // 選択中の影響ツリーは少し太くする
       }
 
       const style: any = { stroke: strokeColor, strokeWidth };
