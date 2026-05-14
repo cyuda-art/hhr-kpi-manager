@@ -1288,12 +1288,46 @@ export const useKpiStore = create<KpiStore>()(
         const draft = { ...currentState.kpiData };
         const newActions = [...currentState.actions];
 
-        // 1. 新しいノードの追加
+        // 0. ID衝突の事前チェックとマップ作成
+        const idMap: Record<string, string> = {};
         newNodes.forEach((node: any) => {
           let safeId = node.id;
           if (draft[safeId]) {
             safeId = `kpi_smart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            node.id = safeId;
+            idMap[node.id] = safeId;
+            node.id = safeId; // IDを更新
+          }
+        });
+
+        // 親ノードの数式（newFormula）のID置換
+        let finalNewFormula = updatedParent.newFormula;
+        if (finalNewFormula) {
+          Object.keys(idMap).forEach(oldId => {
+            finalNewFormula = finalNewFormula.replace(new RegExp(`#{${oldId}}`, 'g'), `#{${idMap[oldId]}}`);
+          });
+        }
+
+        // 1. 新しいノードのフォーマットと追加
+        newNodes.forEach((node: any) => {
+          const safeId = node.id;
+
+          // 親IDの置換
+          if (node.parentId && idMap[node.parentId]) {
+            node.parentId = idMap[node.parentId];
+          }
+
+          // 数式内のID置換
+          if (node.formula) {
+            Object.keys(idMap).forEach(oldId => {
+              node.formula = node.formula.replace(new RegExp(`#{${oldId}}`, 'g'), `#{${idMap[oldId]}}`);
+            });
+          }
+
+          // フォールバック: AIが数式を忘れたが、子ノードが存在する場合の自動補完
+          const childrenOfThisNode = newNodes.filter((n: any) => n.parentId === safeId);
+          if (childrenOfThisNode.length > 0 && (!node.isCalculated || !node.formula)) {
+            node.isCalculated = true;
+            node.formula = childrenOfThisNode.map((c: any) => `#{${c.id}}`).join(' + ');
           }
 
           if (node.tasks && Array.isArray(node.tasks)) {
@@ -1322,11 +1356,11 @@ export const useKpiStore = create<KpiStore>()(
         });
 
         // 2. 親ノードの数式更新
-        if (draft[updatedParent.id]) {
+        if (draft[updatedParent.id] && finalNewFormula) {
           const updatedParentNode = {
             ...draft[updatedParent.id],
             isCalculated: true,
-            formula: updatedParent.newFormula
+            formula: finalNewFormula
           };
           draft[updatedParent.id] = calculateComputed(updatedParentNode);
         }
