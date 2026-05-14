@@ -245,6 +245,27 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       return false;
     };
 
+    const highlightedNodeIds = new Set<string>();
+    if (selectedNodeId) {
+      highlightedNodeIds.add(selectedNodeId);
+      // 上位方向（祖先）の取得
+      let currentId = kpiData[selectedNodeId]?.parentId;
+      while (currentId && kpiData[currentId]) {
+        highlightedNodeIds.add(currentId);
+        currentId = kpiData[currentId].parentId;
+      }
+      // 下位方向（子孫）の取得
+      const getDescendants = (parentId: string) => {
+        Object.keys(kpiData).forEach(id => {
+          if (kpiData[id] && kpiData[id].parentId === parentId && !kpiData[id].isArchived) {
+            highlightedNodeIds.add(id);
+            getDescendants(id);
+          }
+        });
+      };
+      getDescendants(selectedNodeId);
+    }
+
     setNodes((nds) => {
       const isHorizontal = layoutDirection === 'LR';
       const newNodes = nds
@@ -265,6 +286,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               ...kpiNode,
               hasChildren,
               isCollapsed,
+              isHighlighted: highlightedNodeIds.has(node.id),
+              isDimmed: selectedNodeId && !highlightedNodeIds.has(node.id)
             } as any,
           };
         });
@@ -300,32 +323,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               ...kpiData[id],
               hasChildren,
               isCollapsed,
+              isHighlighted: highlightedNodeIds.has(id),
+              isDimmed: selectedNodeId && !highlightedNodeIds.has(id)
             } as any,
           });
         }
       });
       return newNodes;
     });
-    const highlightedNodeIds = new Set<string>();
-    if (selectedNodeId) {
-      highlightedNodeIds.add(selectedNodeId);
-      // 上位方向（祖先）の取得
-      let currentId = kpiData[selectedNodeId]?.parentId;
-      while (currentId && kpiData[currentId]) {
-        highlightedNodeIds.add(currentId);
-        currentId = kpiData[currentId].parentId;
-      }
-      // 下位方向（子孫）の取得
-      const getDescendants = (parentId: string) => {
-        Object.keys(kpiData).forEach(id => {
-          if (kpiData[id] && kpiData[id].parentId === parentId && !kpiData[id].isArchived) {
-            highlightedNodeIds.add(id);
-            getDescendants(id);
-          }
-        });
-      };
-      getDescendants(selectedNodeId);
-    }
 
     const getEdgeStyle = (sourceId: string, targetId: string) => {
       const targetData = kpiData[targetId];
@@ -387,10 +392,17 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         filter = 'drop-shadow(0 0 6px rgba(138, 180, 248, 0.6))';
       }
 
-      // 選択中ノードとその影響範囲（上位・下位すべて）を点線にする
+      // 選択中ノードとその影響範囲（上位・下位すべて）を点線にして発光させる
       if (selectedNodeId && highlightedNodeIds.has(sourceId) && highlightedNodeIds.has(targetId)) {
-        strokeDasharray = '5, 5';
-        strokeWidth = 3; // 選択中の影響ツリーは少し太くする
+        strokeDasharray = '6, 6';
+        strokeWidth = 3.5; 
+        strokeColor = '#00A3A1'; // Strategic Teal
+        animated = true;
+        filter = 'drop-shadow(0 0 6px rgba(0, 163, 161, 0.7))';
+      } else if (selectedNodeId) {
+        // 選択外の線は薄くする
+        strokeColor = '#e2e8f0'; // slate-200
+        filter = undefined;
       }
 
       const style: any = { stroke: strokeColor, strokeWidth };
