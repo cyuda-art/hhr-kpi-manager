@@ -1346,8 +1346,15 @@ export const useKpiStore = create<KpiStore>()(
             delete node.tasks;
           }
 
+          // isKsf の自動判定 (親がKGIならtrue、それ以外はfalse)
+          let isKsf = false;
+          if (draft[node.parentId] && draft[node.parentId].type === 'KGI') {
+            isKsf = true;
+          }
+
           const newNode: KpiNodeWithComputedAndInit = {
             ...node,
+            isKsf, // AIの出力を上書き
             history: [],
             initialActualValue: node.actualValue || 0,
             addedAt: Date.now()
