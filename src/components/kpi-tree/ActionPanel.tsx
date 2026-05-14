@@ -63,6 +63,22 @@ export const ActionPanel = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiProcessing, setIsAiProcessing] = useState(false);
 
+  const handleReconstructFormula = () => {
+    if (!selectedKpi) return;
+    
+    // 直下の子要素を取得
+    const children = Object.values(kpiData).filter(node => node.parentId === selectedKpi.id && !node.isArchived);
+    if (children.length === 0) return;
+
+    const newFormula = children.map(c => `#{${c.id}}`).join(' + ');
+
+    updateKpiNode(selectedKpi.id, {
+      isCalculated: true,
+      formula: newFormula,
+      warning: undefined // 警告をクリア
+    });
+  };
+
   const handleAiReconstruct = async () => {
     if (!aiPrompt.trim() || !currentProject) return;
     setIsAiProcessing(true);
@@ -433,13 +449,21 @@ export const ActionPanel = () => {
                         <Calculator size={10} /> 自動計算: <span className="font-mono">{selectedKpi.formula || '（数式が空です）'}</span>
                       </div>
                     ) : hasChildren ? (
-                      <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded w-fit mt-1 border border-amber-200 dark:border-amber-800/50">
-                        <AlertTriangle size={10} /> 計算式が未設定です（クリックして編集）
+                      <div className="flex flex-col gap-1.5 w-full mt-1">
+                        <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded w-fit border border-amber-200 dark:border-amber-800/50">
+                          <AlertTriangle size={10} /> 計算式が未設定です
+                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleReconstructFormula(); }}
+                          className="flex items-center justify-center gap-1.5 w-full bg-strategic-teal/10 hover:bg-strategic-teal/20 text-strategic-teal dark:text-teal-400 text-[11px] font-bold py-1.5 rounded transition-colors"
+                        >
+                          <Calculator size={12} /> 子要素を元に計算式を自動再構築する
+                        </button>
                       </div>
                     ) : null}
 
                     {selectedKpi.warning && (
-                      <div className="flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 p-2 rounded w-full mt-1 border border-amber-200 dark:border-amber-800/50 animate-pulse">
+                      <div className="flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 p-2 rounded w-full mt-2 border border-amber-200 dark:border-amber-800/50 animate-pulse">
                         <AlertTriangle size={14} className="shrink-0 mt-0.5" /> 
                         <span className="leading-tight">{selectedKpi.warning}</span>
                       </div>
