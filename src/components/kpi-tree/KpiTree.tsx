@@ -373,7 +373,6 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       } else if (targetStatus === 'danger') {
         strokeColor = '#f43f5e'; // Solid red for bottleneck
         strokeWidth = 2.5;
-        strokeDasharray = '4, 4'; // Dotted line to match legend
       } else if (targetStatus === 'warning') {
         strokeColor = `url(#edge-progress-${targetId})`;
         strokeWidth = 2.5;
@@ -591,14 +590,20 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-0 border-t-[3px] border-dotted border-[#f43f5e]"></div>
+                  <div className="w-6 h-[3px] bg-[#f43f5e] rounded-full"></div>
                   <span className="text-rose-600 dark:text-rose-400 font-bold">ボトルネック / 不足</span>
                 </div>
                 <span className="text-[10px] text-rose-500 font-mono">〜79%</span>
               </div>
-              <div className="flex items-center gap-2.5 pt-1 mt-0.5 border-t border-slate-100 dark:border-slate-800/50">
-                <div className="w-6 h-[2px] bg-[#8ab4f8] rounded-full"></div>
-                <span className="text-logic-slate dark:text-slate-400 text-[10px]">AI予測モードON時のみ青く発光</span>
+              <div className="flex flex-col gap-2 pt-1 mt-0.5 border-t border-slate-100 dark:border-slate-800/50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-0 border-t-[2px] border-dashed border-slate-400"></div>
+                  <span className="text-logic-slate dark:text-slate-400 text-[10px]">選択中のKPIの依存経路（ハイライト）</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-[2px] bg-[#8ab4f8] rounded-full"></div>
+                  <span className="text-logic-slate dark:text-slate-400 text-[10px]">AI予測モードON時のみ青く発光</span>
+                </div>
               </div>
             </div>
           </div>
