@@ -87,7 +87,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-5xl md:text-7xl font-black tracking-tight mb-8 leading-[1.15] font-poppins text-oxford-navy dark:text-white"
           >
-            月末のエクセル地獄を終わらせる。<br />
+            過去を測る管理から、<br />未来を創る経営へ。<br />
             <span className="text-strategic-teal font-serif italic font-normal tracking-normal mt-2 inline-block">
               "AI-Driven" KPI Cockpit
             </span>
@@ -99,9 +99,9 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-lg text-logic-slate dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed font-lato"
           >
-            「過去の結果」を集計するだけの静的なExcelやBIツールはもう不要です。<br />
-            たった10秒でAIが完璧な戦略ツリーを全自動生成。手元のデータをCSVインポートするだけで、<br />
-            未達を防ぐAIシミュレーションとタスク管理が完全に連動する、次世代の経営コックピットが今日から稼働します。
+            表計算ツールによる緻密な実績管理は、次なる成長への確かな土台です。<br />
+            本システムはそこから一歩踏み出し、AIによる「未来の軌道修正」を提供します。<br />
+            10秒での戦略ツリー生成から、未達を防ぐシミュレーションまで。<br />目標と現在地を直結させる次世代の経営コックピットをご体験ください。
           </motion.p>
           
           <motion.div 
