@@ -6,6 +6,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getDisplayValue, shouldScaleWithPeriod } from '@/lib/kpi-utils';
 import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2, Calculator, Link2 } from 'lucide-react';
+import { AILoadingIndicator } from '@/components/ui/AILoadingIndicator';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -45,6 +46,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   const kpiData = useKpiStore((state) => state.kpiData);
   
   const [isNew, setIsNew] = useState(false);
+  const [isExpanding, setIsExpanding] = useState(false);
   
   useEffect(() => {
     if (data.addedAt && Date.now() - data.addedAt < 5000) {
@@ -284,10 +286,15 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         <button
           onClick={async (e) => {
             e.stopPropagation();
-            const btn = e.currentTarget;
-            btn.classList.add('animate-pulse', 'pointer-events-none');
-            await useKpiStore.getState().expandKpiNode(data.id);
-            btn.classList.remove('animate-pulse', 'pointer-events-none');
+            if (isExpanding) return;
+            setIsExpanding(true);
+            try {
+              await useKpiStore.getState().expandKpiNode(data.id);
+            } catch (err) {
+              console.error(err);
+            } finally {
+              setIsExpanding(false);
+            }
           }}
           title="AIでさらに要素分解する"
           className={cn(
@@ -297,6 +304,16 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         >
           <Sparkles size={12} className="group-hover:animate-spin" />
         </button>
+      )}
+
+      {isExpanding && (
+        <div className="absolute inset-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl overflow-hidden flex items-center justify-center">
+          <AILoadingIndicator 
+            message="GENERATING..." 
+            subMessage="下位KPIを生成中" 
+            className="h-full border-none shadow-none bg-transparent dark:bg-transparent"
+          />
+        </div>
       )}
 
       <Handle type="source" position={sourcePosition} className="w-3 h-3 !bg-transparent border-none opacity-0" />
