@@ -3,6 +3,7 @@ import { Noto_Sans_JP, Poppins, Lato } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AppProvider } from "@/components/providers/AppProvider";
+import { CookieBanner } from "@/components/ui/CookieBanner";
 
 const notoSansJP = Noto_Sans_JP({ 
   subsets: ["latin"],
@@ -46,6 +47,7 @@ export default function RootLayout({
         >
           <AppProvider>
             {children}
+            <CookieBanner />
           </AppProvider>
         </ThemeProvider>
       </body>
