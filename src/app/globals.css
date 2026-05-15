@@ -265,3 +265,47 @@ body {
 .dark .atlas-dot-grid {
   background-image: radial-gradient(rgba(255, 255, 255, 0.6) 1.5px, transparent 1.5px);
 }
+
+/* LP Mockup Animations */
+@keyframes animPop {
+  0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.anim-pop {
+  animation: animPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes animLineH {
+  0% { width: 0; opacity: 0; }
+  1% { opacity: 1; }
+  100% { width: var(--final-width, 100%); opacity: 1; }
+}
+.anim-line-h {
+  animation: animLineH 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes animLineV {
+  0% { height: 0; opacity: 0; }
+  1% { opacity: 1; }
+  100% { height: var(--final-height, 40px); opacity: 1; }
+}
+.anim-line-v {
+  animation: animLineV 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes animProgress {
+  0% { width: 0; }
+  100% { width: 100%; }
+}
+.anim-progress {
+  animation: animProgress 1.5s ease-out forwards;
+}
+
+@keyframes animFloat {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+.anim-float {
+  animation: animFloat 6s ease-in-out infinite;
+}

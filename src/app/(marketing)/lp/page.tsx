@@ -170,15 +170,15 @@ export default function LandingPage() {
                     </div>
 
                     {/* Vertical Line from KGI */}
-                    <div className="absolute top-[140px] left-1/2 -translate-x-1/2 w-px bg-slate-300 dark:bg-slate-600 anim-line-v" style={{ animationDelay: '1.4s', opacity: 0 }}></div>
+                    <div className="absolute top-[140px] left-1/2 -translate-x-1/2 w-px bg-slate-300 dark:bg-slate-600 anim-line-v" style={{ animationDelay: '1.4s', opacity: 0, '--final-height': '40px' } as React.CSSProperties}></div>
                     
                     {/* Horizontal Line Split */}
-                    <div className="absolute top-[180px] left-[calc(50%-120px)] h-px bg-slate-300 dark:bg-slate-600 anim-line-h" style={{ animationDelay: '1.7s', opacity: 0, width: '240px' }}></div>
+                    <div className="absolute top-[180px] left-[calc(50%-120px)] h-px bg-slate-300 dark:bg-slate-600 anim-line-h" style={{ animationDelay: '1.7s', opacity: 0, '--final-width': '240px' } as React.CSSProperties}></div>
 
                     {/* Left vertical drop */}
-                    <div className="absolute top-[180px] left-[calc(50%-120px)] w-px bg-slate-300 dark:bg-slate-600 anim-line-v" style={{ animationDelay: '2.0s', opacity: 0 }}></div>
+                    <div className="absolute top-[180px] left-[calc(50%-120px)] w-px bg-slate-300 dark:bg-slate-600 anim-line-v" style={{ animationDelay: '2.0s', opacity: 0, '--final-height': '40px' } as React.CSSProperties}></div>
                     {/* Right vertical drop */}
-                    <div className="absolute top-[180px] left-[calc(50%+120px)] w-px bg-slate-300 dark:bg-slate-600 anim-line-v" style={{ animationDelay: '2.0s', opacity: 0 }}></div>
+                    <div className="absolute top-[180px] left-[calc(50%+120px)] w-px bg-slate-300 dark:bg-slate-600 anim-line-v" style={{ animationDelay: '2.0s', opacity: 0, '--final-height': '40px' } as React.CSSProperties}></div>
 
                     {/* Node 2: KPI Left */}
                     <div className="absolute top-[220px] left-[calc(50%-120px)] -translate-x-1/2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm p-4 z-10 anim-pop overflow-hidden" style={{ animationDelay: '2.4s', opacity: 0 }}>
