@@ -65,43 +65,39 @@ export default function LandingPage() {
         </div>
       </motion.header>
 
-      {/* 1. Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-40 overflow-hidden">
-        {/* Minimal Grid Background */}
-        <motion.div style={{ y: y1, opacity: opacity1 }} className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-50"></motion.div>
-        <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-white dark:from-[#001133] to-transparent z-0"></div>
+      {/* 1. Hero Section - Asana Style Clean & Spacious */}
+      <section className="relative pt-40 pb-32 md:pt-56 md:pb-48 bg-white dark:bg-[#000a1f] overflow-hidden">
+        {/* Very subtle radial glow instead of grid */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-strategic-teal/5 dark:bg-strategic-teal/10 blur-[100px] rounded-full pointer-events-none"></div>
 
         <div className="container mx-auto px-6 relative z-10 text-center max-w-5xl">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-strategic-teal text-xs font-bold font-poppins tracking-widest mb-8 shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700 rounded-full text-slate-600 dark:text-slate-300 text-xs font-bold font-poppins tracking-widest mb-8 shadow-sm"
           >
-            NEXT-GEN KPI MANAGEMENT
+            NEXT-GEN KPI MANAGEMENT <Sparkles size={14} className="text-strategic-teal" />
           </motion.div>
           
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl font-black tracking-tight mb-8 leading-[1.15] font-poppins text-oxford-navy dark:text-white"
+            className="text-5xl md:text-7xl lg:text-[80px] font-black tracking-tight mb-8 leading-[1.1] font-poppins text-slate-900 dark:text-white"
           >
             過去を測る管理から、<br />未来を創る経営へ。<br />
-            <span className="text-strategic-teal font-serif italic font-normal tracking-normal mt-2 inline-block">
-              "AI-Driven" KPI Cockpit
-            </span>
           </motion.h1>
           
           <motion.p 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-lg text-logic-slate dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed font-lato"
+            className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed font-sans"
           >
-            表計算ツールによる緻密な実績管理は、次なる成長への確かな土台です。<br />
-            本システムはそこから一歩踏み出し、AIによる「未来の軌道修正」を提供します。<br />
-            10秒での戦略ツリー生成から、未達を防ぐシミュレーションまで。<br />目標と現在地を直結させる次世代の経営コックピットをご体験ください。
+            表計算ツールによる緻密な実績管理は、次なる成長への確かな土台です。<br className="hidden md:block" />
+            本システムはそこから一歩踏み出し、AIによる「未来の軌道修正」を提供します。<br className="hidden md:block" />
+            10秒での戦略ツリー生成から、未達を防ぐシミュレーションまで。<br className="hidden md:block" />目標と現在地を直結させる次世代の経営コックピットをご体験ください。
           </motion.p>
           
           <motion.div 
@@ -112,23 +108,37 @@ export default function LandingPage() {
           >
             <Link 
               href="/login"
-              className="w-full sm:w-auto px-8 py-4 bg-oxford-navy dark:bg-strategic-teal hover:bg-strategic-teal dark:hover:bg-strategic-teal/80 text-white rounded-sm font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 group relative overflow-hidden"
+              className="w-full sm:w-auto px-8 py-4 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-full font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
             >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-              <span className="relative flex items-center gap-3">
-                14日間 無料トライアルを開始
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </span>
+              14日間 無料体験を始める
+              <ArrowRight size={18} />
             </Link>
             <button 
               onClick={() => {
                 setModalStep('input');
                 setIsModalOpen(true);
               }}
-              className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-[#001133] hover:bg-slate-50 dark:hover:bg-[#001a4d] text-oxford-navy dark:text-white border border-slate-200 dark:border-slate-700 rounded-sm font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-sm"
+              className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-full font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-sm hover:shadow-md"
             >
               エクセルとの比較資料DL
             </button>
+          </motion.div>
+
+          {/* Asana Style Trust Badges */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="mt-20 pt-10 border-t border-slate-100 dark:border-slate-800/50"
+          >
+            <p className="text-xs font-bold text-slate-400 tracking-widest mb-6 font-poppins uppercase">Trusted by innovative teams</p>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale">
+              <div className="font-poppins font-black text-xl">Acme Corp</div>
+              <div className="font-formula font-bold text-xl italic">GlobalTech</div>
+              <div className="font-poppins font-bold text-xl tracking-tighter">Nexus</div>
+              <div className="font-sans font-black text-xl">Stellar</div>
+              <div className="font-poppins font-medium text-xl tracking-widest">PULSE</div>
+            </div>
           </motion.div>
         </div>
 
