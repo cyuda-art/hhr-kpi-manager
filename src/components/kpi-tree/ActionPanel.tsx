@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus } from 'lucide-react';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus, CheckSquare, User, Calendar } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 import { getDisplayValue, getStorageValue, shouldScaleWithPeriod } from '@/lib/kpi-utils';
@@ -640,31 +640,50 @@ export const ActionPanel = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 {selectedKpiTasks.length === 0 ? (
-                  <p className="text-xs text-logic-slate dark:text-slate-400 text-center py-4 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">タスクはありません</p>
+                  <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                    <CheckSquare size={24} className="text-slate-300 dark:text-slate-600 mb-2" />
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">登録されたアクションはありません</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">下のフォームからタスクを追加してください</p>
+                  </div>
                 ) : (
                   selectedKpiTasks.map(task => (
-                    <div key={task.id} className="flex flex-col bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700 transition-colors group/task">
-                      <div className="flex items-start gap-2 p-2">
+                    <div key={task.id} className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                      {/* タスクのヘッダー部分（常に表示） */}
+                      <div 
+                        className="flex items-start gap-3 p-3 cursor-pointer"
+                        onClick={(e) => {
+                          // チェックボックスのクリック時は展開しない
+                          if ((e.target as HTMLElement).closest('button.status-toggle') || (e.target as HTMLElement).closest('button.delete-btn')) return;
+                          setEditingTaskId(editingTaskId === task.id ? null : task.id);
+                        }}
+                      >
                         <button 
-                          onClick={() => toggleActionStatus(task.id)}
-                          className="mt-0.5 flex-shrink-0 text-slate-400 hover:text-primary-500 transition-colors"
+                          onClick={(e) => { e.stopPropagation(); toggleActionStatus(task.id); }}
+                          className="status-toggle mt-0.5 flex-shrink-0 text-slate-300 hover:text-emerald-500 transition-colors"
                         >
-                          {task.status === 'done' ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Circle size={16} />}
+                          {task.status === 'done' ? <CheckCircle2 size={18} className="text-emerald-500" /> : <Circle size={18} />}
                         </button>
+                        
                         <div className="flex flex-col flex-1 min-w-0">
-                          <span className={`text-xs font-medium truncate ${task.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                          <span className={`text-[13px] font-bold truncate transition-colors ${task.status === 'done' ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-800 dark:text-slate-200'}`}>
                             {task.title}
                           </span>
-                          <div className="flex flex-wrap items-center gap-2 mt-1">
-                            <span className="text-[9px] text-logic-slate dark:text-slate-400 bg-clean-canvas dark:bg-slate-800 px-1 rounded truncate max-w-[80px]">{task.owner || '未設定'}</span>
-                            {task.department && <span className="text-[9px] text-logic-slate dark:text-slate-400 bg-clean-canvas dark:bg-slate-800 px-1 rounded">{task.department}</span>}
-                            <span className="text-[9px] text-slate-400">
-                              {task.startDate ? task.startDate.split('T')[0] : ''} 
-                              {task.startDate || task.dueDate ? ' 〜 ' : '期限なし'}
-                              {task.dueDate ? task.dueDate.split('T')[0] : ''}
-                            </span>
-                            {task.priority && (
-                              <span className={`text-[9px] px-1 rounded ${
+                          
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            {(task.owner || task.department) && (
+                              <span className="flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded-md">
+                                <User size={10} />
+                                {task.owner || '未設定'} {task.department ? `(${task.department})` : ''}
+                              </span>
+                            )}
+                            {(task.startDate || task.dueDate) && (
+                              <span className="flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded-md">
+                                <Calendar size={10} />
+                                {task.startDate ? task.startDate.split('T')[0] : ''} {task.startDate || task.dueDate ? '-' : ''} {task.dueDate ? task.dueDate.split('T')[0] : '期限なし'}
+                              </span>
+                            )}
+                            {task.priority && task.priority !== 'unassigned' && (
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                                 task.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                 task.priority === 'not_urgent_important' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                                 task.priority === 'urgent_not_important' ? 'bg-blue-100 text-strategic-teal dark:bg-blue-900/30 dark:text-blue-400' :
@@ -676,65 +695,105 @@ export const ActionPanel = () => {
                               </span>
                             )}
                           </div>
-                          {task.description && (
-                            <p className="text-[10px] text-logic-slate dark:text-slate-400 mt-1 line-clamp-2">{task.description}</p>
-                          )}
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover/task:opacity-100 transition-opacity">
-                          <button onClick={() => setEditingTaskId(editingTaskId === task.id ? null : task.id)} className="text-slate-400 hover:text-primary-500 p-1">
-                            <Edit2 size={12} />
-                          </button>
-                          <button onClick={() => { if(window.confirm('このタスクを削除しますか？')) useKpiStore.getState().removeAction(task.id) }} className="text-slate-400 hover:text-rose-500 p-1">
-                            <Trash2 size={12} />
+
+                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            className="delete-btn text-slate-300 hover:text-rose-500 p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              if(window.confirm('このタスクを削除しますか？')) useKpiStore.getState().removeAction(task.id);
+                            }}
+                          >
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </div>
                       
-                      {/* インライン編集フォーム */}
+                      {/* 詳細展開（インライン編集）エリア */}
                       {editingTaskId === task.id && (
-                        <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-clean-canvas dark:bg-slate-900/50 space-y-2">
+                        <div className="px-3 pb-3 pt-1 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3 animate-in slide-in-from-top-2">
                           <div>
-                            <label className="text-[10px] text-logic-slate dark:text-slate-400">タイトル</label>
-                            <input type="text" defaultValue={task.title} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { title: e.target.value })} />
+                            <input 
+                              type="text" 
+                              value={task.title} 
+                              onChange={(e) => useKpiStore.getState().updateAction(task.id, { title: e.target.value })}
+                              placeholder="タスクのタイトル"
+                              className="w-full text-sm font-bold px-2 py-1.5 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-strategic-teal focus:outline-none transition-colors dark:text-slate-200" 
+                            />
                           </div>
                           <div>
-                            <label className="text-[10px] text-logic-slate dark:text-slate-400">詳細</label>
-                            <textarea defaultValue={task.description} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" rows={2} onBlur={(e) => useKpiStore.getState().updateAction(task.id, { description: e.target.value })} />
+                            <textarea 
+                              value={task.description || ''} 
+                              onChange={(e) => useKpiStore.getState().updateAction(task.id, { description: e.target.value })}
+                              placeholder="詳細な説明やメモを入力..."
+                              className="w-full text-xs px-2 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal resize-none" 
+                              rows={3} 
+                            />
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[10px] text-logic-slate dark:text-slate-400">担当者</label>
-                              <input type="text" defaultValue={task.owner} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { owner: e.target.value })} />
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">担当者</label>
+                              <input 
+                                type="text" 
+                                value={task.owner || ''} 
+                                onChange={(e) => useKpiStore.getState().updateAction(task.id, { owner: e.target.value })}
+                                className="w-full text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:border-strategic-teal" 
+                              />
                             </div>
-                            <div>
-                              <label className="text-[10px] text-logic-slate dark:text-slate-400">部署</label>
-                              <input type="text" defaultValue={task.department || ''} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onBlur={(e) => useKpiStore.getState().updateAction(task.id, { department: e.target.value })} />
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">部署</label>
+                              <input 
+                                type="text" 
+                                value={task.department || ''} 
+                                onChange={(e) => useKpiStore.getState().updateAction(task.id, { department: e.target.value })}
+                                className="w-full text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:border-strategic-teal" 
+                              />
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[10px] text-logic-slate dark:text-slate-400">優先度 (重要度×緊急度)</label>
-                              <select defaultValue={task.priority || 'unassigned'} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { priority: e.target.value as any })}>
+                          <div className="grid grid-cols-1 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">優先度 (重要度×緊急度)</label>
+                              <select 
+                                value={task.priority || 'unassigned'} 
+                                onChange={(e) => useKpiStore.getState().updateAction(task.id, { priority: e.target.value as any })}
+                                className="w-full text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:border-strategic-teal"
+                              >
                                 <option value="unassigned">未設定</option>
-                                <option value="urgent_important">第1領域(必須・緊急)</option>
-                                <option value="not_urgent_important">第2領域(重要・仕込)</option>
-                                <option value="urgent_not_important">第3領域(錯覚・振分)</option>
-                                <option value="not_urgent_not_important">第4領域(無駄・削除)</option>
+                                <option value="urgent_important">第1領域 (必須・緊急)</option>
+                                <option value="not_urgent_important">第2領域 (重要・仕込)</option>
+                                <option value="urgent_not_important">第3領域 (錯覚・振分)</option>
+                                <option value="not_urgent_not_important">第4領域 (無駄・削除)</option>
                               </select>
                             </div>
-                            <div className="flex gap-1">
-                              <div className="flex-1">
-                                <label className="text-[10px] text-logic-slate dark:text-slate-400">開始日</label>
-                                <input type="date" defaultValue={task.startDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { startDate: e.target.value })} />
+                            <div className="flex gap-2">
+                              <div className="flex-1 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">開始日</label>
+                                <input 
+                                  type="date" 
+                                  value={task.startDate?.split('T')[0] || ''} 
+                                  onChange={(e) => useKpiStore.getState().updateAction(task.id, { startDate: e.target.value })}
+                                  className="w-full text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:border-strategic-teal" 
+                                />
                               </div>
-                              <div className="flex-1">
-                                <label className="text-[10px] text-logic-slate dark:text-slate-400">期限</label>
-                                <input type="date" defaultValue={task.dueDate?.split('T')[0]} className="w-full text-xs px-2 py-1 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-900 text-oxford-navy dark:text-slate-200" onChange={(e) => useKpiStore.getState().updateAction(task.id, { dueDate: e.target.value })} />
+                              <div className="flex-1 space-y-1">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">期限日</label>
+                                <input 
+                                  type="date" 
+                                  value={task.dueDate?.split('T')[0] || ''} 
+                                  onChange={(e) => useKpiStore.getState().updateAction(task.id, { dueDate: e.target.value })}
+                                  className="w-full text-xs px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:border-strategic-teal" 
+                                />
                               </div>
                             </div>
                           </div>
-                          <div className="flex justify-end pt-1">
-                            <button onClick={() => setEditingTaskId(null)} className="text-[10px] bg-primary-500 text-white px-3 py-1 rounded">完了</button>
+                          <div className="flex justify-end pt-2">
+                            <button 
+                              onClick={() => setEditingTaskId(null)} 
+                              className="text-xs font-bold bg-slate-800 dark:bg-slate-700 text-white px-4 py-1.5 rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
+                            >
+                              閉じる
+                            </button>
                           </div>
                         </div>
                       )}
