@@ -56,6 +56,7 @@ export default function LandingPage() {
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-300">
             <Link href="/product" className="hover:text-strategic-teal transition-colors">製品</Link>
+            <Link href="/use-cases" className="hover:text-strategic-teal transition-colors">活用シーン</Link>
             <Link href="/pricing" className="hover:text-strategic-teal transition-colors">料金</Link>
             <Link href="/tutorial" className="hover:text-strategic-teal transition-colors">チュートリアル</Link>
           </nav>
