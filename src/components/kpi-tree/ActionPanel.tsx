@@ -353,20 +353,43 @@ export const ActionPanel = () => {
             </div>
 
             <div className="space-y-3">
-              <textarea
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder="AIへの指示を記述してください..."
-                className="w-full h-32 p-3 text-sm border border-slate-200 dark:border-slate-800 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"
-              />
-              <button
-                onClick={handleAiReconstruct}
-                disabled={isAiProcessing || !aiPrompt.trim()}
-                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
-              >
-                {isAiProcessing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                {isAiProcessing ? 'AIがツリーを再構築中...' : 'ツリーを再編する'}
-              </button>
+              {isAiProcessing ? (
+                <div className="h-44 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-amber-200/50 dark:border-amber-700/30 overflow-hidden relative">
+                  {/* Subtle glowing background pulse */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-orange-500/10 to-amber-500/5 animate-pulse"></div>
+                  
+                  {/* Siri-like Wave Indicator */}
+                  <div className="flex items-center gap-1.5 mb-6 relative z-10">
+                    <div className="w-1.5 h-4 bg-amber-400 rounded-full anim-siri-wave" style={{ animationDelay: '0.0s' }}></div>
+                    <div className="w-1.5 h-8 bg-orange-400 rounded-full anim-siri-wave" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-1.5 h-12 bg-amber-500 rounded-full anim-siri-wave" style={{ animationDelay: '0.4s' }}></div>
+                    <div className="w-1.5 h-8 bg-orange-500 rounded-full anim-siri-wave" style={{ animationDelay: '0.6s' }}></div>
+                    <div className="w-1.5 h-4 bg-amber-400 rounded-full anim-siri-wave" style={{ animationDelay: '0.8s' }}></div>
+                  </div>
+                  
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400 font-poppins tracking-widest animate-pulse relative z-10">
+                    AI IS ANALYZING...
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2 relative z-10">ツリー構造を再編・最適化しています</p>
+                </div>
+              ) : (
+                <>
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="AIへの指示を記述してください..."
+                    className="w-full h-32 p-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all resize-none"
+                  />
+                  <button
+                    onClick={handleAiReconstruct}
+                    disabled={!aiPrompt.trim()}
+                    className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+                  >
+                    <Sparkles size={16} />
+                    ツリーを再編する
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
