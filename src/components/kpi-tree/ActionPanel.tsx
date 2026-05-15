@@ -70,7 +70,82 @@ export const ActionPanel = () => {
     const children = Object.values(kpiData).filter(node => node.parentId === selectedKpi.id && !node.isArchived);
     if (children.length === 0) return;
 
-    const newFormula = children.map(c => `#{${c.id}}`).join(' + ');
+    // --- 過去データ退避（バックフィル）ロジック ---
+    let needsDummyNode = false;
+    const dummyMonthlyData: Record<string, any> = {};
+    let dummyActualValue = 0;
+    let dummyTargetValue = 0;
+
+    if (selectedKpi.monthlyData && Object.keys(selectedKpi.monthlyData).length > 0) {
+      Object.keys(selectedKpi.monthlyData).forEach(month => {
+        const parentActual = selectedKpi.monthlyData![month]?.actualValue || 0;
+        const parentTarget = selectedKpi.monthlyData![month]?.targetValue || 0;
+        
+        let childrenActualSum = 0;
+        let childrenTargetSum = 0;
+        children.forEach(c => {
+          childrenActualSum += c.monthlyData?.[month]?.actualValue || 0;
+          childrenTargetSum += c.monthlyData?.[month]?.targetValue || 0;
+        });
+
+        const actualGap = parentActual - childrenActualSum;
+        const targetGap = parentTarget - childrenTargetSum;
+
+        // Gapが存在する場合、未分類ノードで吸収する
+        if (actualGap > 0 || targetGap > 0) {
+          needsDummyNode = true;
+          dummyMonthlyData[month] = {
+            month,
+            actualValue: Math.max(0, actualGap),
+            targetValue: Math.max(0, targetGap)
+          };
+          dummyActualValue += Math.max(0, actualGap);
+          dummyTargetValue += Math.max(0, targetGap);
+        }
+      });
+    } else {
+      // monthlyDataがない場合でも、大元のactualValueにGapがあれば吸収
+      let childrenActualSum = 0;
+      let childrenTargetSum = 0;
+      children.forEach(c => {
+        childrenActualSum += c.actualValue || 0;
+        childrenTargetSum += c.targetValue || 0;
+      });
+      const actualGap = (selectedKpi.actualValue || 0) - childrenActualSum;
+      const targetGap = (selectedKpi.targetValue || 0) - childrenTargetSum;
+      if (actualGap > 0 || targetGap > 0) {
+        needsDummyNode = true;
+        dummyActualValue = Math.max(0, actualGap);
+        dummyTargetValue = Math.max(0, targetGap);
+      }
+    }
+
+    let formulaElements = children.map(c => `#{${c.id}}`);
+
+    if (needsDummyNode) {
+      const dummyId = `kpi_dummy_${Date.now()}`;
+      addKpiNode({
+        id: dummyId,
+        name: `その他（内訳未分類）`,
+        qualitativeName: `システム自動退避`,
+        type: 'KPI',
+        parentId: selectedKpi.id,
+        targetValue: dummyTargetValue,
+        actualValue: dummyActualValue,
+        unit: selectedKpi.unit,
+        businessUnit: selectedKpi.businessUnit || 'company',
+        previousValue: 0,
+        description: '過去の入力を保護するためにシステムが自動生成した退避用データです。',
+        isCalculated: false,
+        formula: '',
+        monthlyData: Object.keys(dummyMonthlyData).length > 0 ? dummyMonthlyData : undefined,
+        addedAt: Date.now()
+      });
+      formulaElements.push(`#{${dummyId}}`);
+      alert('過去の入力数値を保護するため、「その他（内訳未分類）」というデータを自動生成し過去実績を退避させました。');
+    }
+
+    const newFormula = formulaElements.join(' + ');
 
     updateKpiNode(selectedKpi.id, {
       isCalculated: true,
