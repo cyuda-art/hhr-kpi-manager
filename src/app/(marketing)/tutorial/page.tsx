@@ -1,32 +1,13 @@
 "use client";
 
 import Link from 'next/link';
-import { Network, PlayCircle, FileText, Download } from 'lucide-react';
+import { PlayCircle, FileText, Download } from 'lucide-react';
+import { MarketingHeader } from '@/components/layout/MarketingHeader';
 
 export default function TutorialPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#000a1f] text-slate-900 dark:text-slate-100 font-sans pt-32 pb-24">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#001133]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/lp" className="flex items-center gap-2 font-black text-xl tracking-widest font-poppins text-slate-900 dark:text-white uppercase">
-            <Network className="w-5 h-5 text-strategic-teal" />
-            LogicTree Pro
-          </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-300">
-            <Link href="/product" className="hover:text-strategic-teal transition-colors">製品</Link>
-            <Link href="/pricing" className="hover:text-strategic-teal transition-colors">料金</Link>
-            <Link href="/tutorial" className="text-strategic-teal">チュートリアル</Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors hidden md:block">
-              ログイン
-            </Link>
-            <Link href="/login" className="text-xs font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors">
-              無料トライアル
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MarketingHeader />
 
       <div className="container mx-auto px-6 max-w-4xl mt-12">
         <h1 className="text-4xl font-black mb-4">リソース & チュートリアル</h1>

@@ -25,6 +25,8 @@ import {
 import { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
+import { MarketingHeader } from '@/components/layout/MarketingHeader';
+
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,33 +45,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-clean-canvas dark:bg-[#000a1f] text-oxford-navy dark:text-slate-200 font-sans selection:bg-strategic-teal/30 overflow-x-hidden">
       
       {/* Header */}
-      <motion.header 
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#001133]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800"
-      >
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-black text-xl tracking-widest font-poppins text-slate-900 dark:text-white uppercase">
-            <Network className="w-5 h-5 text-strategic-teal" />
-            LogicTree Pro
-          </div>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-300">
-            <Link href="/product" className="hover:text-strategic-teal transition-colors">製品</Link>
-            <Link href="/use-cases" className="hover:text-strategic-teal transition-colors">活用シーン</Link>
-            <Link href="/pricing" className="hover:text-strategic-teal transition-colors">料金</Link>
-            <Link href="/tutorial" className="hover:text-strategic-teal transition-colors">チュートリアル</Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-bold font-poppins text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors hidden md:block">
-              ログイン
-            </Link>
-            <Link href="/login" className="text-xs font-bold font-poppins tracking-wider bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm">
-              無料トライアル
-            </Link>
-          </div>
-        </div>
-      </motion.header>
+      <MarketingHeader />
 
       {/* 1. Hero Section - Asana Style Clean & Spacious */}
       <section className="relative pt-40 pb-32 md:pt-56 md:pb-48 bg-white dark:bg-[#000a1f] overflow-hidden">
