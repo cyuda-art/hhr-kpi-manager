@@ -17,10 +17,22 @@ interface Props {
   targetValue: number;
   unit: string;
   history?: import('@/types').KpiHistoryEntry[];
+  monthlyData?: Record<string, import('@/types').MonthlyData>;
 }
 
-export const TrendChart = ({ targetValue, unit, history }: Props) => {
+export const TrendChart = ({ targetValue, unit, history, monthlyData }: Props) => {
   const data = useMemo(() => {
+    // monthlyDataがある場合は月次トレンドを描画
+    if (monthlyData && Object.keys(monthlyData).length > 0) {
+      const sortedMonths = Object.keys(monthlyData).sort();
+      return sortedMonths.map(m => ({
+        name: m.substring(5).replace('-', '/'), // YYYY-MM -> MM/DD or MM
+        実績: monthlyData[m].actualValue,
+        目標: monthlyData[m].targetValue,
+        シミュレーション: monthlyData[m].simulatedValue
+      }));
+    }
+
     // historyがある場合はそれを優先して描画する
     if (history && history.length > 0) {
       // 履歴データを日付順にソート（念のため）
@@ -32,9 +44,9 @@ export const TrendChart = ({ targetValue, unit, history }: Props) => {
         目標: h.targetValue,
       }));
     }
-    // historyがない場合は空の配列を返す（ダミー表示をやめる）
+    // どちらもない場合は空の配列を返す
     return [];
-  }, [history]);
+  }, [history, monthlyData]);
 
   return (
     <div className="w-full flex flex-col gap-2 mt-4 bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-800">

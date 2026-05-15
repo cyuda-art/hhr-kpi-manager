@@ -582,6 +582,8 @@ export const ActionPanel = () => {
                   actualValue={selectedKpi.actualValue} 
                   targetValue={selectedKpi.targetValue} 
                   unit={selectedKpi.unit} 
+                  history={selectedKpi.history}
+                  monthlyData={selectedKpi.monthlyData}
                 />
               </div>
             </div>
