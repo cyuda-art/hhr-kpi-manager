@@ -40,6 +40,7 @@ interface KpiStore {
   updateKpiNodePosition: (id: string, position: { x: number; y: number }) => void;
   updateKpiNodePositionsBulk: (positions: { id: string; position: { x: number; y: number } }[]) => void;
   setKpiDataBulk: (nodes: KpiNodeData[]) => void;
+  bulkUpdateMonthlyData: (updates: { kpiId: string, month: string, targetValue?: number, actualValue?: number }[]) => void;
   overwriteKpiData: (kpiData: Record<string, KpiNodeWithComputedAndInit>) => void;
   toggleNodeCollapse: (id: string) => void;
   setProjectInfo: (info: Partial<import('@/types').ProjectInfo>) => void;
@@ -1007,6 +1008,42 @@ export const useKpiStore = create<KpiStore>()(
       });
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: newData, actions: state.actions, projectInfo: state.currentProjectInfo });
       return { kpiData: newData, selectedNodeId: null, projectData: saveToProjectData({ ...state, kpiData: newData }) };
+    });
+  },
+  bulkUpdateMonthlyData: (updates) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      let hasChanges = false;
+      const updatedMonths = new Set<string>();
+
+      updates.forEach(({ kpiId, month, targetValue, actualValue }) => {
+        if (draft[kpiId]) {
+          const node = draft[kpiId];
+          const monthlyData = { ...(node.monthlyData || {}) };
+          
+          if (!monthlyData[month]) {
+            monthlyData[month] = { month, targetValue: node.targetValue || 0, actualValue: 0 };
+          }
+          
+          if (targetValue !== undefined) monthlyData[month].targetValue = targetValue;
+          if (actualValue !== undefined) monthlyData[month].actualValue = actualValue;
+          
+          draft[kpiId] = calculateComputed({ ...node, monthlyData });
+          hasChanges = true;
+          updatedMonths.add(month);
+        }
+      });
+
+      if (hasChanges) {
+        // 更新された月すべてで、ツリーの動的再計算をトリガーする
+        updatedMonths.forEach(month => {
+          recalculateTree(draft, 'targetValue', month);
+          recalculateTree(draft, 'actualValue', month);
+        });
+        
+        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
+      }
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
   removeKpiNode: (id) => {

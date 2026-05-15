@@ -2,7 +2,7 @@
 
 import { useKpiStore } from '@/store/useKpiStore';
 import { useState, useMemo } from 'react';
-import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator, Code2, Trash2 } from 'lucide-react';
+import { Download, Search, Filter, ArrowUpDown, Plus, LayoutGrid, Hash, Target, Database, FileSpreadsheet, ListChecks, Calendar, Calculator, Code2, Trash2, Upload, FileText } from 'lucide-react';
 import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 
 type TableMode = 'master' | 'ksf' | 'history' | 'database';
@@ -99,6 +99,78 @@ export const DataEditor = () => {
     link.setAttribute("href", encodedUri);
     const fileName = activeMode === 'master' ? 'kpi_master.csv' : activeMode === 'ksf' ? 'ksf_list.csv' : `history_${selectedKpi?.name}.csv`;
     link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    import('papaparse').then((Papa) => {
+      Papa.default.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const data = results.data as any[];
+          
+          if (activeMode === 'master') {
+            // 月次一括インポートを優先チェック
+            if (data.length > 0 && data[0]['年月(YYYY-MM)']) {
+              const updates: { kpiId: string, month: string, targetValue?: number, actualValue?: number }[] = [];
+              let errorCount = 0;
+              data.forEach(row => {
+                const kpiId = row['KPI_ID'];
+                const month = row['年月(YYYY-MM)'];
+                if (kpiId && month && kpiData[kpiId]) {
+                  updates.push({
+                    kpiId,
+                    month,
+                    targetValue: row['月次目標'] ? Number(row['月次目標']) : undefined,
+                    actualValue: row['月次実績'] ? Number(row['月次実績']) : undefined
+                  });
+                } else {
+                  errorCount++;
+                }
+              });
+              
+              if (updates.length > 0) {
+                useKpiStore.getState().bulkUpdateMonthlyData(updates);
+                alert(`${updates.length}件の月次データをインポートしました。${errorCount > 0 ? `(${errorCount}件の行がスキップされました)` : ''}`);
+              } else {
+                alert('インポート可能な月次データが見つかりませんでした。フォーマットを確認してください。');
+              }
+              return;
+            }
+            
+            // 従来のマスターデータインポート（未実装部分は別途拡充）
+            alert('マスターデータの一括インポートフォーマットは現在準備中です。月次一括投入をご利用ください。');
+            
+          } else {
+            alert('インポートは「KPIマスター」タブを開いた状態で行ってください。');
+          }
+          
+          // Reset file input
+          event.target.value = '';
+        },
+        error: (error) => {
+          console.error(error);
+          alert('CSVの読み込みに失敗しました: ' + error.message);
+        }
+      });
+    });
+  };
+
+  const downloadTemplate = () => {
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+    csvContent += "KPI_ID,KPI名,年月(YYYY-MM),月次目標,月次実績\n";
+    Object.values(kpiData).filter(n => !n.isCalculated && !n.isArchived).forEach(node => {
+      csvContent += `${node.id},"${node.name}",2026-04,,${node.actualValue}\n`;
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "monthly_data_import_template.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -216,10 +288,22 @@ export const DataEditor = () => {
             </button>
             <button 
               onClick={exportToCSV}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-strategic-teal dark:text-[#8ab4f8] hover:bg-primary-50 dark:hover:bg-[#8ab4f8]/10 rounded-[4px] ml-2"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px] ml-2"
             >
               <Download size={14} /> Export
             </button>
+            <div className="h-4 w-px bg-slate-300 dark:bg-[#5f6368] mx-1"></div>
+            <button 
+              onClick={downloadTemplate}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px]"
+              title="月次実績インポート用のテンプレートCSVをダウンロード"
+            >
+              <FileText size={14} /> Template
+            </button>
+            <label className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-bold text-white bg-strategic-teal hover:bg-teal-600 rounded-[4px] cursor-pointer shadow-sm ml-1 transition-colors">
+              <Upload size={14} /> Import CSV
+              <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
+            </label>
           </div>
         </div>
 
