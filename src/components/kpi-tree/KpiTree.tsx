@@ -9,6 +9,7 @@ import { KpiNodeComponent } from './KpiNodeComponent';
 import dagre from 'dagre';
 import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight, Sparkles, Loader2, Bot } from 'lucide-react';
 import { getDisplayValue } from '@/lib/kpi-utils';
+import { AILoadingIndicator } from '@/components/ui/AILoadingIndicator';
 
 
 const nodeTypes = {
@@ -709,16 +710,63 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               </button>
             </div>
             <div className="p-6">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                追加したいKPIや要素を入力してください。AIがツリー全体を分析し、最適な階層への接続、中間KPIの生成、計算式の再構築を全自動で行います。
-              </p>
-              <textarea
-                value={smartAddQuery}
-                onChange={(e) => setSmartAddQuery(e.target.value)}
-                placeholder="例: インバウンド売上を管理したい。従業員エンゲージメントスコアを追加して。"
-                className="w-full h-24 p-3 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-strategic-teal focus:border-transparent outline-none dark:bg-slate-900 dark:text-slate-100 resize-none"
-                disabled={isSmartAdding}
-              />
+              {isSmartAdding ? (
+                <AILoadingIndicator 
+                  message="AI IS THINKING..." 
+                  subMessage="最適なKPIを自動生成しています" 
+                  className="h-32 shadow-none border-none bg-transparent dark:bg-transparent"
+                />
+              ) : (
+                <>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+                    追加したいKPIや要素を入力してください。AIがツリー全体を分析し、最適な階層への接続、中間KPIの生成、計算式の再構築を全自動で行います。
+                  </p>
+                  <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="例：SNSマーケティングのKPIを追加したい"
+                    value={smartAddQuery}
+                    onChange={(e) => setSmartAddQuery(e.target.value)}
+                    className="flex-1 px-4 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter') {
+                        if (!smartAddQuery.trim()) return;
+                        setIsSmartAdding(true);
+                        try {
+                          await useKpiStore.getState().smartAddKpi(smartAddQuery);
+                          setSmartAddQuery('');
+                          setIsSmartAddModalOpen(false);
+                        } catch (err) {
+                          console.error(err);
+                        } finally {
+                          setIsSmartAdding(false);
+                        }
+                      }
+                    }}
+                  />
+                  <button 
+                    disabled={!smartAddQuery.trim() || isSmartAdding}
+                    onClick={async () => {
+                      if (!smartAddQuery.trim()) return;
+                      setIsSmartAdding(true);
+                      try {
+                        await useKpiStore.getState().smartAddKpi(smartAddQuery);
+                        setSmartAddQuery('');
+                        setIsSmartAddModalOpen(false);
+                      } catch (err) {
+                        console.error(err);
+                      } finally {
+                        setIsSmartAdding(false);
+                      }
+                    }}
+                    className="px-6 py-2 bg-gradient-to-r from-strategic-teal to-blue-600 hover:from-strategic-teal/90 hover:to-blue-600/90 text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-md disabled:opacity-50"
+                  >
+                    <Sparkles size={16} />
+                    生成する
+                  </button>
+                </div>
+                </>
+              )}
             </div>
             <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
               <button
