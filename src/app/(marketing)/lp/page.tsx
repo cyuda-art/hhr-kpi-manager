@@ -87,9 +87,9 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-5xl md:text-7xl font-black tracking-tight mb-8 leading-[1.15] font-poppins text-oxford-navy dark:text-white"
           >
-            経営のブラックボックスを破壊する。<br />
+            月末のエクセル地獄を終わらせる。<br />
             <span className="text-strategic-teal font-serif italic font-normal tracking-normal mt-2 inline-block">
-              "Living" KPI Tree
+              "AI-Driven" KPI Cockpit
             </span>
           </motion.h1>
           
@@ -99,7 +99,9 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-lg text-logic-slate dark:text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed font-lato"
           >
-            静的なExcel管理はもう限界です。事業構造を可視化するインタラクティブなツリーと、未達を防ぐ「KSF（重要施策）」の実行管理を統合。AIが達成率から次の一手を提案し、会議室の議論を「過去の反省」から「未来の打ち手」へと変革します。
+            「過去の結果」を集計するだけの静的なExcelやBIツールはもう不要です。<br />
+            たった10秒でAIが完璧な戦略ツリーを全自動生成。手元のデータをCSVインポートするだけで、<br />
+            未達を防ぐAIシミュレーションとタスク管理が完全に連動する、次世代の経営コックピットが今日から稼働します。
           </motion.p>
           
           <motion.div 
@@ -110,10 +112,13 @@ export default function LandingPage() {
           >
             <Link 
               href="/login"
-              className="w-full sm:w-auto px-8 py-4 bg-oxford-navy dark:bg-strategic-teal hover:bg-strategic-teal dark:hover:bg-strategic-teal/80 text-white rounded-sm font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 group"
+              className="w-full sm:w-auto px-8 py-4 bg-oxford-navy dark:bg-strategic-teal hover:bg-strategic-teal dark:hover:bg-strategic-teal/80 text-white rounded-sm font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 group relative overflow-hidden"
             >
-              今すぐ無料デモを体験する
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+              <span className="relative flex items-center gap-3">
+                14日間 無料トライアルを開始
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </span>
             </Link>
             <button 
               onClick={() => {
@@ -122,7 +127,7 @@ export default function LandingPage() {
               }}
               className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-[#001133] hover:bg-slate-50 dark:hover:bg-[#001a4d] text-oxford-navy dark:text-white border border-slate-200 dark:border-slate-700 rounded-sm font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-sm"
             >
-              資料をダウンロード
+              エクセルとの比較資料DL
             </button>
           </motion.div>
         </div>
