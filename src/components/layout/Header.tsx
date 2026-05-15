@@ -10,7 +10,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
-import { LayoutDashboard, Database, Activity, CheckSquare, FolderGit2, FolderKanban, Printer } from 'lucide-react';
+import { LayoutDashboard, Database, Activity, CheckSquare, FolderGit2, FolderKanban, Printer, Network } from 'lucide-react';
 
 export const Header = () => {
   const router = useRouter();
@@ -35,14 +35,12 @@ export const Header = () => {
         {/* ロゴ / 管理コンソールへのリンク */}
         <Link 
           href={currentOrgId ? `/${currentOrgId}/projects` : '/'} 
-          className="hidden md:flex items-center gap-2 mr-2 group"
+          className="hidden md:flex items-center gap-2 mr-4 group"
           title="管理コンソールへ戻る"
         >
-          <div className="w-7 h-7 bg-amber-400 rounded flex items-center justify-center text-oxford-navy dark:text-slate-200 font-bold shadow-sm transition-transform group-hover:scale-105">
-            H
-          </div>
-          <span className="font-bold text-[15px] text-white tracking-tight hidden xl:block group-hover:text-amber-500 transition-colors">
-            HHR-KPI
+          <Network className="w-5 h-5 text-strategic-teal group-hover:scale-110 transition-transform" />
+          <span className="font-black text-[15px] tracking-widest font-poppins text-slate-900 dark:text-white uppercase hidden xl:block group-hover:text-strategic-teal transition-colors">
+            LogicTree Pro
           </span>
         </Link>
 
