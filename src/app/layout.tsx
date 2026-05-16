@@ -27,7 +27,7 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "LogicTree Pro | 複合施設KPI管理",
+  title: "Gnu.Done | 複合施設KPI管理",
   description: "複合施設向けKPI/KGI管理ツール",
 };
 

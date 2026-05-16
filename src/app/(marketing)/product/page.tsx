@@ -12,7 +12,7 @@ export default function ProductPage() {
       <div className="container mx-auto px-6 max-w-5xl mt-12 text-center">
         <h1 className="text-4xl md:text-6xl font-black mb-8 tracking-tight">AIが導く、次世代のKPI管理</h1>
         <p className="text-xl text-slate-600 dark:text-slate-400 mb-16 max-w-3xl mx-auto leading-relaxed">
-          LogicTree Proは、ただ数値を記録するだけのツールではありません。<br/>
+          Gnu.Doneは、ただ数値を記録するだけのツールではありません。<br/>
           事業の構造を視覚化し、AIが未来の未達リスクを検知・修正する「生きた戦略コックピット」です。
         </p>
 

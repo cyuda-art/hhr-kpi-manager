@@ -64,7 +64,7 @@ export default function LoginPage() {
           <div className="w-14 h-14 border border-strategic-teal/50 rounded-sm flex items-center justify-center mx-auto mb-4 backdrop-blur-sm relative z-10 bg-white/5">
             <Network className="w-6 h-6 text-strategic-teal" />
           </div>
-          <h1 className="text-2xl font-black text-white mb-2 font-poppins tracking-wider relative z-10">LogicTree Pro</h1>
+          <h1 className="text-2xl font-black text-white mb-2 font-poppins tracking-wider relative z-10">Gnu.Done</h1>
           <p className="text-strategic-teal text-xs font-bold tracking-widest font-poppins relative z-10">NEXT-GEN STRATEGY PLATFORM</p>
         </div>
 
@@ -141,7 +141,7 @@ export default function LoginPage() {
               onClick={() => setIsRegister(!isRegister)}
               className="text-xs text-strategic-teal hover:text-strategic-teal/70 font-bold tracking-wide transition-colors font-lato"
             >
-              {isRegister ? 'Already have an account? Log in' : 'New to LogicTree Pro? Sign up here'}
+              {isRegister ? 'Already have an account? Log in' : 'New to Gnu.Done? Sign up here'}
             </button>
           </div>
 

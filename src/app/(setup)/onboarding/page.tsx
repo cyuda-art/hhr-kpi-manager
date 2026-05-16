@@ -38,7 +38,7 @@ export default function OnboardingChatPage() {
       {
         id: 'msg-1',
         sender: 'ai',
-        text: 'はじめまして！LogicTree Pro へようこそ。まずはあなたのプロファイルを設定し、最適な環境をご用意します。\\nあなたは法人としてご利用ですか？それとも個人ですか？',
+        text: 'はじめまして！Gnu.Done へようこそ。まずはあなたのプロファイルを設定し、最適な環境をご用意します。\\nあなたは法人としてご利用ですか？それとも個人ですか？',
         options: [
           { label: '法人・チーム', value: 'company', type: 'userType', icon: <Building2 size={16} /> },
           { label: '個人・フリーランス', value: 'personal', type: 'userType', icon: <UserCircle size={16} /> }

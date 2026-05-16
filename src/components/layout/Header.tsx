@@ -17,10 +17,11 @@ export const Header = () => {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { currentProjectId, projects } = useProjectStore();
-  const { currentOrgId } = useOrgStore();
+  const { currentOrgId, organizations } = useOrgStore();
   const { toggleMobileMenu } = useLayoutStore();
 
   const currentProject = projects.find(p => p.id === currentProjectId);
+  const currentOrg = organizations.find(o => o.id === currentOrgId);
 
   return (
     <header className="h-16 bg-white dark:bg-[#202124] border-b border-slate-200 dark:border-[#3c4043] flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-colors">
@@ -40,7 +41,7 @@ export const Header = () => {
         >
           <Network className="w-5 h-5 text-strategic-teal group-hover:scale-110 transition-transform" />
           <span className="font-black text-[15px] tracking-widest font-poppins text-slate-900 dark:text-white uppercase hidden xl:block group-hover:text-strategic-teal transition-colors">
-            LogicTree Pro
+            Gnu.Done
           </span>
         </Link>
 
@@ -84,7 +85,17 @@ export const Header = () => {
           </Link>
         </div>
       </div>
-      <div className="flex items-center gap-3 md:gap-4 xl:gap-6">
+      <div className="flex items-center gap-3 md:gap-4">
+        {/* AI Credits (Agentic Pivot) */}
+        {currentOrg && (
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20 border border-amber-200/50 dark:border-amber-700/50 rounded-full" title="AI クレジット残高">
+            <Sparkles size={14} className="text-amber-500" />
+            <span className="text-[12px] font-bold text-amber-700 dark:text-amber-400 font-poppins">
+              {currentOrg.aiCreditBalance?.toLocaleString() || 1000}
+            </span>
+          </div>
+        )}
+
         <ThemeToggle />
         
         {/* 管理コンソールへのリンク（アイコン） */}

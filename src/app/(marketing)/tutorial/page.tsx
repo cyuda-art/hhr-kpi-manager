@@ -11,7 +11,7 @@ export default function TutorialPage() {
 
       <div className="container mx-auto px-6 max-w-4xl mt-12">
         <h1 className="text-4xl font-black mb-4">リソース & チュートリアル</h1>
-        <p className="text-lg text-slate-600 dark:text-slate-400 mb-12">LogicTree Proの基本的な使い方から、高度なAI予測の活用方法までを学びます。</p>
+        <p className="text-lg text-slate-600 dark:text-slate-400 mb-12">Gnu.Doneの基本的な使い方から、高度なAI予測の活用方法までを学びます。</p>
 
         <div className="space-y-6">
           <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl flex flex-col md:flex-row items-center gap-6 border border-slate-200 dark:border-slate-700 hover:border-strategic-teal transition-colors cursor-pointer">

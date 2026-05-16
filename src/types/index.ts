@@ -72,6 +72,11 @@ export interface Action {
   priority?: TaskPriority;
   isArchived?: boolean; // 論理削除フラグ
   mappedSourceId?: string; // AI生成時に既存のアーカイブActionを復活させた場合の元ID
+  
+  // 自律型エージェント用拡張 (Agentic Pivot)
+  isAiAgentTask?: boolean; // 人間ではなくAIエージェントが実行するか
+  agentStatus?: 'PENDING' | 'EXECUTING' | 'SUCCESS' | 'FAILED';
+  agentLog?: string; // ターミナルログ
 }
 
 export interface ProjectInfo {

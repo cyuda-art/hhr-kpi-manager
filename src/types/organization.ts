@@ -25,5 +25,9 @@ export interface Organization {
   lastCrawledAt?: number;
   requiresStrategyReview?: boolean; // 環境変化検知フラグ
   
+  // エコノミクスと課金 (Agentic Pivot)
+  aiCreditBalance?: number;
+  subscriptionPlan?: string;
+
   createdAt: number;
 }

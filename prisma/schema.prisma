@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// 1. 組織とユーザー（マルチテナント基盤）
+// ==========================================
+
+model Organization {
+  id               String     @id @default(cuid())
+  name             String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  
+  // 💰 AIクレジットとエコノミクス（Phase 2）
+  aiCreditBalance  Int        @default(1000) // 初回無料クレジット枠（原価コントロール）
+  subscriptionPlan String     @default("FREE") // FREE, STARTER, BUSINESS
+  stripeCustomerId String?    @unique
+  
+  users            User[]
+  projects         Project[]
+  creditLogs       AiCreditLog[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  firebaseUid    String       @unique // Firebase Authから移行する際のマッピング用
+  email          String       @unique
+  name           String?
+  role           String       @default("MEMBER") // ADMIN, MEMBER, VIEWER
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  assignedTasks  Task[]
+}
+
+// ==========================================
+// 2. AIクレジット消費ログ（防衛システム）
+// ==========================================
+
+model AiCreditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  featureName    String       // 例: "NEURAL_GENERATION", "ROOT_CAUSE_ANALYSIS", "AGENT_EXECUTION"
+  tokensUsed     Int          // 消費したLLMトークン量
+  creditsCharged Int          // 差し引かれたAIクレジット（原価率30%に合致するレート）
+  createdAt      DateTime     @default(now())
+}
+
+// ==========================================
+// 3. KPIツリーデータ構造（Phase 1 コア）
+// ==========================================
+
+model Project {
+  id             String       @id @default(cuid())
+  name           String
+  description    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  nodes          KpiNode[]
+}
+
+// 🌳 再帰的なツリーノード（PostgreSQLへの移行の主目的）
+model KpiNode {
+  id               String       @id @default(cuid())
+  projectId        String
+  project          Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // 階層関係（自己参照による親子関係）
+  parentId         String?
+  parent           KpiNode?     @relation("NodeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children         KpiNode[]    @relation("NodeHierarchy")
+
+  // 基本メタデータ
+  name             String
+  qualitativeName  String?
+  type             String       // KGI, KPI, KSF
+  unit             String       @default("円")
+  businessUnit     String?      // e.g., "sales", "marketing", "hr"
+
+  // リアルタイム集計値（Current State）
+  actualValue      Float        @default(0)
+  targetValue      Float        @default(0)
+  previousValue    Float        @default(0)
+  
+  // 🔮 AIローリング予測結果
+  simulatedValue       Float?
+  simulatedTargetValue Float?
+
+  // ツリー計算ロジック
+  isCalculated     Boolean      @default(false)
+  formula          String?      // 例: "#{node_id_1} * #{node_id_2}"
+  description      String?
+  warning          String?
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  monthlyData      MonthlyData[]
+  tasks            Task[]
+}
+
+// 時系列データ（パフォーマンス履歴）
+model MonthlyData {
+  id          String   @id @default(cuid())
+  nodeId      String
+  node        KpiNode  @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  
+  period      Int      // 例: 202404 (YYYYMM)
+  actualValue Float
+  targetValue Float
+  
+  @@unique([nodeId, period]) // 同一ノード・同一期間の重複を防ぐ複合ユニークキー
+}
+
+// ==========================================
+// 4. 自律型エージェント・タスク（Phase 4）
+// ==========================================
+
+model Task {
+  id             String   @id @default(cuid())
+  nodeId         String
+  node           KpiNode  @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  title          String
+  description    String?
+  status         String   @default("TODO") // TODO, IN_PROGRESS, DONE
+  priority       String?  // e.g., "urgent_important"
+  
+  // 人間へのアサイン用
+  assigneeId     String?
+  assignee       User?    @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  startDate      DateTime?
+  dueDate        DateTime?
+  
+  // 🤖 AIエージェントの自律実行設定
+  isAiAgentTask  Boolean  @default(false) // 人間ではなくエージェントが実行するか
+  agentStatus    String?  // PENDING, EXECUTING, SUCCESS, FAILED
+  agentLog       String?  // ターミナル風UIに出すための実行ログ格納領域
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

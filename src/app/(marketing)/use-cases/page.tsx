@@ -13,7 +13,7 @@ export default function UseCasesPage() {
         <div className="text-center mb-20">
           <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">あらゆるビジネスの解像度を上げる</h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            LogicTree Proは、業界やフェーズを問わず、目標達成に向けた「最善のルート」をAIが導き出します。<br/>様々なビジネスシーンでの活用方法をご紹介します。
+            Gnu.Doneは、業界やフェーズを問わず、目標達成に向けた「最善のルート」をAIが導き出します。<br/>様々なビジネスシーンでの活用方法をご紹介します。
           </p>
         </div>
 

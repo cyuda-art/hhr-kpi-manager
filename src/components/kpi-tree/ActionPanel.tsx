@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useOrgStore } from '@/store/useOrgStore';
+import { usePaywallStore } from '@/store/usePaywallStore';
 import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus, CheckSquare, User, Calendar } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
@@ -14,7 +16,10 @@ export const ActionPanel = () => {
   const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, addAction, currentPeriod, saveHistory } = useKpiStore();
   const { currentProjectId, projects } = useProjectStore();
   const { user } = useAuthStore();
+  const { currentOrgId, organizations, updateOrganizationFrameworks } = useOrgStore();
+  const { openPaywall } = usePaywallStore();
   const currentProject = projects.find(p => p.id === currentProjectId);
+  const currentOrg = organizations.find(o => o.id === currentOrgId);
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
 
   const selectedKpiTasks = actions.filter(a => a.kpiId === selectedNodeId);
@@ -157,6 +162,10 @@ export const ActionPanel = () => {
 
   const handleAiReconstruct = async () => {
     if (!aiPrompt.trim() || !currentProject) return;
+    
+    // 💡 Paywallチェック: ツリー再構築は 100 クレジット消費
+    if (!consumeAiCredits('AIツリー再構築（Neural Generation）', 100)) return;
+    
     setIsAiProcessing(true);
     try {
       const res = await fetch('/api/reconstruct-tree', {
@@ -232,8 +241,28 @@ export const ActionPanel = () => {
   }, [selectedNodeId, kpiData, isPredictionMode, hasChildren, currentPeriod]);
 
   const { applyRollingForecast } = useKpiStore();
+  
+  // 💰 AIクレジット確認・消費のラッパー関数
+  const consumeAiCredits = (featureName: string, requiredCredits: number): boolean => {
+    if (!currentOrg) return false;
+    if ((currentOrg.aiCreditBalance || 0) < requiredCredits) {
+      openPaywall(featureName, requiredCredits);
+      return false;
+    }
+    
+    // 成功した場合はクレジットを即時減算する（楽観的UI更新）
+    updateOrganizationFrameworks(currentOrg.id, {
+      aiCreditBalance: (currentOrg.aiCreditBalance || 0) - requiredCredits
+    });
+    return true;
+  };
+
   const handleAiRecovery = () => {
     if (!selectedKpi) return;
+    
+    // 💡 Paywallチェック: AIリカバリーは 50 クレジット消費
+    if (!consumeAiCredits('AIリカバリー・シミュレーション', 50)) return;
+    
     const allMonths = [
       "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
       "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
@@ -689,6 +718,21 @@ export const ActionPanel = () => {
                                 {task.startDate ? task.startDate.split('T')[0] : ''} {task.startDate || task.dueDate ? '-' : ''} {task.dueDate ? task.dueDate.split('T')[0] : '期限なし'}
                               </span>
                             )}
+                            
+                            {/* AI Agent Status Pill */}
+                            {task.isAiAgentTask && (
+                              <span className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
+                                task.agentStatus === 'EXECUTING' 
+                                  ? 'bg-red-500/10 text-red-600 border-red-500/30 animate-pulse dark:text-red-400' 
+                                  : task.agentStatus === 'SUCCESS'
+                                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400'
+                                    : 'bg-purple-500/10 text-purple-600 border-purple-500/30 dark:text-purple-400'
+                              }`}>
+                                <Bot size={10} />
+                                {task.agentStatus === 'EXECUTING' ? 'EXECUTING...' : 
+                                 task.agentStatus === 'SUCCESS' ? '完了 (AI)' : 'AI エージェント'}
+                              </span>
+                            )}
                             {task.priority && task.priority !== 'unassigned' && (
                               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                                 task.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
@@ -793,6 +837,92 @@ export const ActionPanel = () => {
                                 />
                               </div>
                             </div>
+                            
+                            {/* Agentic Pivot Toggle & Terminal UI */}
+                            <div className="pt-2 border-t border-slate-200 dark:border-slate-700/50">
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                  <Bot size={14} className="text-purple-500" />
+                                  100%自律型AIエージェントに実行を委任する
+                                </label>
+                                <button 
+                                  onClick={() => useKpiStore.getState().updateAction(task.id, { isAiAgentTask: !task.isAiAgentTask, agentStatus: !task.isAiAgentTask ? 'PENDING' : undefined })}
+                                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${task.isAiAgentTask ? 'bg-purple-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                                >
+                                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${task.isAiAgentTask ? 'translate-x-4.5' : 'translate-x-1'}`} style={{ transform: task.isAiAgentTask ? 'translateX(18px)' : 'translateX(4px)' }} />
+                                </button>
+                              </div>
+                              
+                              {task.isAiAgentTask && (
+                                <div className="mt-2 bg-[#0d1117] rounded-md border border-[#30363d] overflow-hidden flex flex-col">
+                                  <div className="bg-[#161b22] px-3 py-1.5 border-b border-[#30363d] flex items-center justify-between">
+                                    <span className="text-[10px] font-mono text-[#8b949e]">agent-terminal-v1.0</span>
+                                    {task.agentStatus === 'EXECUTING' && (
+                                      <span className="flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="p-3 font-mono text-[11px] text-[#c9d1d9] h-24 overflow-y-auto whitespace-pre-wrap flex flex-col gap-1">
+                                    {task.agentLog ? (
+                                      <span>{task.agentLog}</span>
+                                    ) : (
+                                      <span className="text-[#8b949e] italic">// エージェントの実行ログがここに表示されます...</span>
+                                    )}
+                                    {task.agentStatus === 'EXECUTING' && (
+                                      <div className="flex gap-1 items-center text-red-400 mt-1">
+                                        <span className="animate-pulse">_</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="p-2 bg-[#161b22] border-t border-[#30363d] flex justify-end">
+                                    <button 
+                                      onClick={async () => {
+                                        // 💡 Paywallチェック: エージェント実行は 30 クレジット消費
+                                        if (!consumeAiCredits('100%自律型エージェントの実行', 30)) return;
+                                        
+                                        useKpiStore.getState().updateAction(task.id, { 
+                                          agentStatus: 'EXECUTING', 
+                                          agentLog: `> System: Starting autonomous execution protocol...\n> Analyzing task requirements for: ${task.title}\n> Connecting to Vertex AI (Gemini 1.5 Pro)...\n`
+                                        });
+
+                                        try {
+                                          const res = await fetch('/api/agent-execute', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                              taskTitle: task.title,
+                                              taskDescription: task.description,
+                                              kpiContext: selectedKpi,
+                                              manifesto: currentProject?.manifesto
+                                            })
+                                          });
+                                          const data = await res.json();
+                                          if (!res.ok) throw new Error(data.error);
+
+                                          useKpiStore.getState().updateAction(task.id, {
+                                            agentStatus: 'SUCCESS',
+                                            agentLog: data.log + '\n\n【AI サマリー】\n' + data.summary,
+                                            status: 'done' // タスク自体も完了にする
+                                          });
+                                        } catch (error: any) {
+                                          useKpiStore.getState().updateAction(task.id, {
+                                            agentStatus: 'FAILED',
+                                            agentLog: `> ERROR: ${error.message}\n> Execution terminated.`
+                                          });
+                                        }
+                                      }}
+                                      disabled={task.agentStatus === 'EXECUTING'}
+                                      className="text-[10px] font-bold bg-purple-600 hover:bg-purple-500 disabled:bg-purple-900/50 disabled:text-purple-400 text-white px-3 py-1 rounded transition-colors flex items-center gap-1"
+                                    >
+                                      {task.agentStatus === 'EXECUTING' ? '実行中...' : 'エージェントを起動'}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
                           </div>
                           <div className="flex justify-end pt-2">
                             <button 

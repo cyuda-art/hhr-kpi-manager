@@ -447,7 +447,7 @@ export default function LandingPage() {
       <section className="py-32 relative bg-clean-canvas dark:bg-[#000a1f]">
         <div className="container mx-auto px-6 max-w-6xl relative z-10">
           <div className="text-center mb-24">
-            <h2 className="text-3xl md:text-5xl font-black mb-6 text-oxford-navy dark:text-white font-poppins tracking-tight">LogicTree Pro がもたらす<br className="md:hidden" /> 4つの革新</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-6 text-oxford-navy dark:text-white font-poppins tracking-tight">Gnu.Done がもたらす<br className="md:hidden" /> 4つの革新</h2>
             <p className="text-lg text-logic-slate dark:text-slate-400 max-w-2xl mx-auto font-lato">
               ただのダッシュボードではありません。戦略を描き、シミュレーションし、行動を管理するための統合プラットフォームです。
             </p>
@@ -725,9 +725,9 @@ export default function LandingPage() {
       <footer className="py-12 border-t border-slate-200 dark:border-slate-800 bg-clean-canvas dark:bg-[#000a1f] text-center text-logic-slate dark:text-slate-500 text-xs font-poppins tracking-wider uppercase">
         <div className="flex items-center justify-center gap-2 font-bold mb-4">
           <Network className="w-4 h-4" />
-          LogicTree Pro
+          Gnu.Done
         </div>
-        <p>© 2026 LOGICTREE PRO. ALL RIGHTS RESERVED.</p>
+        <p>© 2026 Gnu.Done. ALL RIGHTS RESERVED.</p>
       </footer>
 
       {/* Lead Generation Modal */}

@@ -66,6 +66,8 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       ownerId: userId,
       members: [newMember],
       membersUidList: [userId], // クエリ用のUID配列
+      aiCreditBalance: 1000,
+      subscriptionPlan: 'FREE',
       createdAt: Date.now(),
     };
 

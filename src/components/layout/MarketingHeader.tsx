@@ -19,7 +19,7 @@ export const MarketingHeader = () => {
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/lp" className="flex items-center gap-2 font-black text-xl tracking-widest font-poppins text-slate-900 dark:text-white uppercase group">
           <Network className="w-5 h-5 text-strategic-teal group-hover:scale-110 transition-transform" />
-          LogicTree Pro
+          Gnu.Done
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-300">
           {navLinks.map((link) => (

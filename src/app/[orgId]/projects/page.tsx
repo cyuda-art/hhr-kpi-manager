@@ -400,7 +400,7 @@ export default function WorkspacePage() {
               こんにちは、{user?.displayName || 'ゲスト'}さん
             </p>
             <h1 className="text-[32px] md:text-[36px] font-normal text-slate-900 dark:text-[#f1f3f4] tracking-tight">
-              LogicTree Pro へようこそ
+              Gnu.Done へようこそ
             </h1>
           </div>
         </div>
