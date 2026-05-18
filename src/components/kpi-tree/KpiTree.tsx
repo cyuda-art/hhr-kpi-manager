@@ -163,8 +163,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData, layoutDirection);
     
-    // 全てのノード（少なくともKGIなど）が有効なpositionを持っているかチェック
-    const hasPositions = genNodes.some(n => n.position.x !== 0 || n.position.y !== 0);
+    // ノードの過半数が有効なpositionを持っているかチェック（一部だけ手動で動かして他が(0,0)の場合は未保存とみなす）
+    const positionedNodesCount = genNodes.filter(n => n.position.x !== 0 || n.position.y !== 0).length;
+    const hasPositions = genNodes.length > 0 && positionedNodesCount > genNodes.length / 2;
     
     if (hasPositions) {
       return { nodes: genNodes, edges: genEdges };
@@ -230,6 +231,29 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     }
     previousNodeCountRef.current = nodeCount;
   }, [nodeCount]);
+
+  useEffect(() => {
+    // 初回マウント時など、位置情報がDBに保存されていない場合は、自動レイアウト結果をDBに保存する
+    if (nodes.length === 0) return;
+    
+    const positionedNodesCount = Object.values(kpiData).filter(data => data.position && (data.position.x !== 0 || data.position.y !== 0)).length;
+    const totalNodes = Object.keys(kpiData).length;
+    
+    // 位置情報を持っていないノードが過半数の場合（初期生成直後や不具合による位置消失時）
+    if (totalNodes > 0 && positionedNodesCount <= totalNodes / 2) {
+      console.log("Missing positions for many nodes. Saving initial layout to DB.");
+      const positionsToSave = nodes.map(n => ({
+        id: n.id,
+        position: n.position
+      }));
+      
+      const timeoutId = setTimeout(() => {
+        useKpiStore.getState().updateKpiNodePositionsBulk(positionsToSave);
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [nodes, kpiData]);
 
   useEffect(() => {
     // kpiDataから親子関係マップを作成し、あるノードが折りたたまれるべきかを判定
