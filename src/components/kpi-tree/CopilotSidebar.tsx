@@ -92,6 +92,20 @@ export const CopilotSidebar = () => {
                 if (data.patchData) {
                   setIsSmartAdding(true);
                   await applySmartAddPatch(data.patchData);
+                  
+                  // ハイライト演出用
+                  const modifiedIds = [
+                    ...(data.patchData.updatedNodes || []).map((n: any) => n.id),
+                    ...(data.patchData.newNodes || []).map((n: any) => n.id)
+                  ].filter(Boolean);
+                  
+                  if (modifiedIds.length > 0) {
+                    useKpiStore.getState().setRecentlyUpdatedNodes(modifiedIds);
+                    setTimeout(() => {
+                      useKpiStore.getState().setRecentlyUpdatedNodes([]);
+                    }, 4000);
+                  }
+
                   setIsCopilotSidebarOpen(false);
                   setSmartAddMessages([]);
                 }
@@ -134,6 +148,20 @@ export const CopilotSidebar = () => {
                 if (data.patchData) {
                   setIsSmartAdding(true);
                   await applySmartAddPatch(data.patchData);
+                  
+                  // ハイライト演出用
+                  const modifiedIds = [
+                    ...(data.patchData.updatedNodes || []).map((n: any) => n.id),
+                    ...(data.patchData.newNodes || []).map((n: any) => n.id)
+                  ].filter(Boolean);
+                  
+                  if (modifiedIds.length > 0) {
+                    useKpiStore.getState().setRecentlyUpdatedNodes(modifiedIds);
+                    setTimeout(() => {
+                      useKpiStore.getState().setRecentlyUpdatedNodes([]);
+                    }, 4000);
+                  }
+
                   setIsCopilotSidebarOpen(false);
                   setSmartAddMessages([]);
                 }

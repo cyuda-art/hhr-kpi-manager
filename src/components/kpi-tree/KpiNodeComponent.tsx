@@ -153,6 +153,9 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   const isHighlighted = (data as any).isHighlighted;
   const isDimmed = (data as any).isDimmed;
+  
+  const recentlyUpdatedNodes = useKpiStore((state) => state.recentlyUpdatedNodes);
+  const isRecentlyUpdated = recentlyUpdatedNodes.includes(data.id);
 
   return (
     <div className={cn(
@@ -164,7 +167,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       !isSelected && isHighlighted && "ring-2 ring-strategic-teal/50 shadow-[0_0_15px_rgba(0,163,161,0.25)] border-strategic-teal/50 z-20", // Glow effect for highlighted path
       data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20",
       data.isSimulated && !isNew && "ring-4 ring-[#8ab4f8]/50 shadow-[0_0_20px_rgba(138,180,248,0.5)] z-40",
-      isNew && "ring-4 ring-strategic-teal/50 shadow-[0_0_20px_rgba(0,163,161,0.6)] z-50 animate-pulse"
+      isNew && "ring-4 ring-strategic-teal/50 shadow-[0_0_20px_rgba(0,163,161,0.6)] z-50 animate-pulse",
+      isRecentlyUpdated && "ring-4 ring-amber-400 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.8)] z-[60] animate-pulse transition-all duration-1000 scale-105 bg-gradient-to-br from-white to-amber-50"
     )}>
       {/* Background Progress Bar Wrapper (Refined Gradient) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-lg">

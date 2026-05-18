@@ -63,6 +63,8 @@ interface KpiStore {
   recalculateAllMonthsAction: () => void;
   smartAddMessages: { role: string; content: string }[];
   setSmartAddMessages: (messages: { role: string; content: string }[] | ((prev: { role: string; content: string }[]) => { role: string; content: string }[])) => void;
+  recentlyUpdatedNodes: string[];
+  setRecentlyUpdatedNodes: (nodes: string[]) => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -438,6 +440,8 @@ export const useKpiStore = create<KpiStore>()(
       setSmartAddMessages: (messages) => set((state) => ({ 
         smartAddMessages: typeof messages === 'function' ? messages(state.smartAddMessages) : messages 
       })),
+      recentlyUpdatedNodes: [],
+      setRecentlyUpdatedNodes: (nodes) => set({ recentlyUpdatedNodes: nodes }),
       pastStates: [],
       futureStates: [],
 
