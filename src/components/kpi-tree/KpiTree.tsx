@@ -303,7 +303,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const kpiNode = kpiData[node.id];
           return {
             ...node,
-            position: kpiNode.position || node.position,
+            position: (!kpiNode.position || (kpiNode.position.x === 0 && kpiNode.position.y === 0)) ? node.position : kpiNode.position,
             hidden,
             targetPosition: (isHorizontal ? 'left' : 'top') as any,
             sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
