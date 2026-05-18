@@ -1435,8 +1435,8 @@ export const useKpiStore = create<KpiStore>()(
 
         // 3. ツリー全体の再計算
         sanitizeKpiData(draft);
-        recalculateTree(draft, 'targetValue', state.currentPeriod);
-        recalculateTree(draft, 'actualValue', state.currentPeriod);
+        recalculateTree(draft, 'targetValue', currentState.currentPeriod);
+        recalculateTree(draft, 'actualValue', currentState.currentPeriod);
 
         // 4. DBへ同期
         syncToDB(currentState.currentProjectId, currentState.currentOrgId, { kpiData: draft, actions: newActions });
