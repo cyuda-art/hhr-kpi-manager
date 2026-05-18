@@ -419,6 +419,7 @@ const saveToProjectData = (state: any) => {
     }
   };
 };
+let isInitializingDB = false;
 
 export const useKpiStore = create<KpiStore>()(
   persist(
@@ -503,6 +504,8 @@ export const useKpiStore = create<KpiStore>()(
 
       initializeDB: async (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => {
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
+        if (isInitializingDB) return;
+        isInitializingDB = true;
         
         console.log(`🔄 [initializeDB] Starting load for project: ${projectId}`);
         const state = get();
@@ -753,6 +756,8 @@ export const useKpiStore = create<KpiStore>()(
           isPredictionMode: (pData as any)._tempPredictionMode !== undefined ? (pData as any)._tempPredictionMode : get().isPredictionMode,
           isDbInitialized: true 
         });
+
+        isInitializingDB = false;
       },
 
       setProjectInfo: (info) => set((state) => {
