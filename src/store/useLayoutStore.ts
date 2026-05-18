@@ -63,7 +63,8 @@ export const useLayoutStore = create<LayoutStore>()(
         showMiniMap: state.showMiniMap,
         autoCenter: state.autoCenter,
         themeColor: state.themeColor,
-        layoutDirection: state.layoutDirection
+        layoutDirection: state.layoutDirection,
+        showStatusLegend: state.showStatusLegend
       }),
     }
   )

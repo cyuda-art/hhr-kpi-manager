@@ -246,8 +246,12 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     const positionedNodesCount = Object.values(kpiData).filter(data => data.position && (data.position.x !== 0 || data.position.y !== 0)).length;
     const totalNodes = Object.keys(kpiData).length;
     
-    // 位置情報を持っていないノードが過半数の場合（初期生成直後や不具合による位置消失時）
-    if (totalNodes > 0 && positionedNodesCount <= totalNodes / 2) {
+    // DB上の座標が重複しているかチェック
+    const positionSet = new Set(Object.values(kpiData).map(n => n.position ? `${Math.round(n.position.x)},${Math.round(n.position.y)}` : '0,0'));
+    const isOverlapping = totalNodes > 1 && positionSet.size < totalNodes / 2;
+    
+    // 位置情報を持っていないノードが過半数の場合、または重なっている場合
+    if (totalNodes > 0 && (positionedNodesCount <= totalNodes / 2 || isOverlapping)) {
       console.log("Missing positions for many nodes. Saving initial layout to DB.");
       const positionsToSave = nodes.map(n => ({
         id: n.id,
@@ -306,9 +310,11 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const hidden = isNodeHidden(node.id);
 
           const kpiNode = kpiData[node.id];
+          const initPos = initialNodes.find(n => n.id === node.id)?.position;
+          
           return {
             ...node,
-            position: (!kpiNode.position || (kpiNode.position.x === 0 && kpiNode.position.y === 0)) ? node.position : kpiNode.position,
+            position: initPos || (!kpiNode.position || (kpiNode.position.x === 0 && kpiNode.position.y === 0)) ? node.position : kpiNode.position,
             hidden,
             targetPosition: (isHorizontal ? 'left' : 'top') as any,
             sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
@@ -328,7 +334,12 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const parentId = kpiData[id].parentId;
           let x = 500;
           let y = 650;
-          if (parentId) {
+          
+          const initNode = initialNodes.find(n => n.id === id);
+          if (initNode) {
+            x = initNode.position.x;
+            y = initNode.position.y;
+          } else if (parentId) {
             const parentNode = newNodes.find((n) => n.id === parentId);
             if (parentNode) {
               x = parentNode.position.x;
