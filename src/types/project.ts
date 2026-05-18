@@ -21,4 +21,9 @@ export interface Project {
   swot?: string;
   crossSwot?: string;
   ansoff?: string;
+
+  statusThresholds?: {
+    good: number;
+    warning: number;
+  };
 }

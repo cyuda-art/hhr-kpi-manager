@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
+import { useKpiStore } from '@/store/useKpiStore';
 import { Users, Shield, Link2, Copy, Check } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -22,6 +23,8 @@ export default function SettingsPage() {
   const [projectName, setProjectName] = useState('');
   const [projectDesc, setProjectDesc] = useState('');
   const [projectMvv, setProjectMvv] = useState('');
+  const [goodThreshold, setGoodThreshold] = useState(100);
+  const [warningThreshold, setWarningThreshold] = useState(80);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
@@ -29,6 +32,10 @@ export default function SettingsPage() {
       setProjectName(currentProject.name || '');
       setProjectDesc(currentProject.description || '');
       setProjectMvv(currentProject.mvv || '');
+      if (currentProject.statusThresholds) {
+        setGoodThreshold(currentProject.statusThresholds.good);
+        setWarningThreshold(currentProject.statusThresholds.warning);
+      }
     }
   }, [currentProject]);
 
@@ -40,7 +47,20 @@ export default function SettingsPage() {
       await updateProject(currentProjectId, currentOrgId, {
         name: projectName,
         description: projectDesc,
-        mvv: projectMvv
+        mvv: projectMvv,
+        statusThresholds: {
+          good: goodThreshold,
+          warning: warningThreshold
+        }
+      });
+      useKpiStore.getState().setProjectInfo({
+        name: projectName,
+        description: projectDesc,
+        mvv: projectMvv,
+        statusThresholds: {
+          good: goodThreshold,
+          warning: warningThreshold
+        }
       });
       alert('プロジェクト情報を更新しました');
     } catch (error) {
@@ -132,6 +152,46 @@ export default function SettingsPage() {
               />
               <p className="text-xs text-logic-slate dark:text-slate-400 mt-2">※ここを変更しても、すでに生成されたKPIツリーには反映されません。今後新しくKPIをAI生成する際の基準として保存されます。</p>
             </div>
+            
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+              <h3 className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">ステータス表示の基準値 (%)</h3>
+              <div className="flex flex-col sm:flex-row gap-6">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-2">
+                    <div className="w-3 h-1 bg-[#34d399] rounded-full"></div>順調 (Good)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={goodThreshold}
+                      onChange={(e) => setGoodThreshold(Number(e.target.value))}
+                      className="w-full px-4 py-2 bg-clean-canvas dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-strategic-teal"
+                      required
+                    />
+                    <span className="text-sm font-bold text-slate-500">% 以上</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-2">
+                    <div className="w-3 h-1 bg-[#fbbf24] rounded-full"></div>注意 (Warning)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={warningThreshold}
+                      onChange={(e) => setWarningThreshold(Number(e.target.value))}
+                      className="w-full px-4 py-2 bg-clean-canvas dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-strategic-teal"
+                      required
+                    />
+                    <span className="text-sm font-bold text-slate-500">% 以上</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-logic-slate dark:text-slate-400 mt-2">
+                ※「順調」と「注意」の基準値を設定します。「注意」未満の場合は自動的に「ボトルネック（赤）」となります。
+              </p>
+            </div>
+
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
               <button
                 type="submit"

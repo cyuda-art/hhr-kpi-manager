@@ -105,8 +105,10 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       displayAchievementRate = (displayActual / displayTarget) * 100;
     }
   }
-    
-  const displayStatus = displayAchievementRate >= 100 ? 'good' : displayAchievementRate >= 80 ? 'warning' : 'danger';
+  const projectInfo = useKpiStore((state) => state.currentProjectInfo);
+  const thresholds = projectInfo?.statusThresholds || { good: 100, warning: 80 };
+
+  const displayStatus = displayAchievementRate >= thresholds.good ? 'good' : displayAchievementRate >= thresholds.warning ? 'warning' : 'danger';
 
   const isAlert = displayTarget > 0 && displayAchievementRate < 50;
 

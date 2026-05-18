@@ -6,7 +6,8 @@ interface LayoutStore {
   isSidebarCollapsed: boolean;
   actionPanelWidth: number;
   isActionPanelCollapsed: boolean;
-  showMiniMap: boolean;
+  showStatusLegend: boolean;
+  toggleStatusLegend: () => void;
   setSidebarWidth: (width: number) => void;
   toggleSidebar: () => void;
   setActionPanelWidth: (width: number) => void;
@@ -30,6 +31,7 @@ export const useLayoutStore = create<LayoutStore>()(
       actionPanelWidth: 320, // default w-80 = 320px
       isActionPanelCollapsed: false,
       showMiniMap: true,
+      showStatusLegend: true,
       isMobileMenuOpen: false,
 
       setSidebarWidth: (width) => set({ sidebarWidth: Math.max(64, Math.min(width, 400)), isSidebarCollapsed: width < 100 }),
@@ -39,6 +41,7 @@ export const useLayoutStore = create<LayoutStore>()(
       toggleActionPanel: () => set((state) => ({ isActionPanelCollapsed: !state.isActionPanelCollapsed })),
 
       toggleMiniMap: () => set((state) => ({ showMiniMap: !state.showMiniMap })),
+      toggleStatusLegend: () => set((state) => ({ showStatusLegend: !state.showStatusLegend })),
       toggleMobileMenu: () => set((state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen })),
       
       autoCenter: true,

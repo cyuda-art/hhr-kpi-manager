@@ -7,7 +7,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { KpiNodeComponent } from './KpiNodeComponent';
 import dagre from 'dagre';
-import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight, Sparkles, Loader2, Bot } from 'lucide-react';
+import { Wand2, PanelRightClose, PanelRightOpen, Map, Focus, X, Undo2, Redo2, MoveDown, MoveRight, Sparkles, Loader2, Bot, Info } from 'lucide-react';
 import { getDisplayValue } from '@/lib/kpi-utils';
 import { AILoadingIndicator } from '@/components/ui/AILoadingIndicator';
 
@@ -97,7 +97,9 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
   const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates, currentPeriod } = useKpiStore();
-  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection } = useLayoutStore();
+  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection, showStatusLegend } = useLayoutStore();
+  const currentProjectInfo = useKpiStore((state) => state.currentProjectInfo);
+  const thresholds = currentProjectInfo?.statusThresholds || { good: 100, warning: 80 };
   
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -559,6 +561,13 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               <Map size={16} />
             </button>
             <button
+              onClick={toggleStatusLegend}
+              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showStatusLegend ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              title="ステータス凡例の表示/非表示"
+            >
+              <Info size={16} />
+            </button>
+            <button
               onClick={toggleActionPanel}
               className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${!isActionPanelCollapsed ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
               title="サイドパネル（右）の表示/非表示"
@@ -609,7 +618,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
 
         {/* 凡例（Legend） */}
-        {!previewMode && (
+        {!previewMode && showStatusLegend && (
           <div className="absolute bottom-4 left-4 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg text-[10px] sm:text-xs min-w-[200px]">
             <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2.5 border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
               <span>ステータスと線の意味</span>
@@ -621,21 +630,21 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                   <div className="w-6 h-[3px] bg-[#34d399] rounded-full"></div>
                   <span className="text-logic-slate dark:text-slate-400 font-medium">順調</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">100%〜</span>
+                <span className="text-[10px] text-slate-400 font-mono">{thresholds.good}%〜</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-6 h-[2.5px] bg-[#fbbf24] rounded-full"></div>
                   <span className="text-logic-slate dark:text-slate-400 font-medium">注意</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">80%〜99%</span>
+                <span className="text-[10px] text-slate-400 font-mono">{thresholds.warning}%〜{thresholds.good - 1}%</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-6 h-[3px] bg-[#f43f5e] rounded-full"></div>
                   <span className="text-rose-600 dark:text-rose-400 font-bold">ボトルネック / 不足</span>
                 </div>
-                <span className="text-[10px] text-rose-500 font-mono">〜79%</span>
+                <span className="text-[10px] text-rose-500 font-mono">〜{thresholds.warning - 1}%</span>
               </div>
               <div className="flex flex-col gap-2 pt-1 mt-0.5 border-t border-slate-100 dark:border-slate-800/50">
                 <div className="flex items-center gap-2.5">

@@ -142,7 +142,7 @@ const syncToDB = async (
   }
 };
 
-const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWithComputedAndInit => {
+const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>, customThresholds?: { good: number, warning: number }): KpiNodeWithComputedAndInit => {
   const actualValue = node.actualValue !== undefined && node.actualValue !== null ? node.actualValue : 0;
   const targetValue = node.targetValue !== undefined && node.targetValue !== null ? node.targetValue : 1;
   const initialActualValue = node.initialActualValue !== undefined && node.initialActualValue !== null ? node.initialActualValue : actualValue;
@@ -154,10 +154,12 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
     achievementRate = actualValue === 0 ? 0 : (targetValue / actualValue) * 100;
   }
 
+  const thresholds = customThresholds || useKpiStore.getState().currentProjectInfo?.statusThresholds || { good: 100, warning: 80 };
+
   let status: Status = 'good';
-  if (achievementRate < 80) {
+  if (achievementRate < thresholds.warning) {
     status = 'danger';
-  } else if (achievementRate < 100) {
+  } else if (achievementRate < thresholds.good) {
     status = 'warning';
   }
 
@@ -170,9 +172,9 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>): KpiNodeWi
       simulatedAchievementRate = node.simulatedValue === 0 ? 0 : (targetValue / node.simulatedValue) * 100;
     }
     simulatedStatus = 'good' as Status;
-    if (simulatedAchievementRate < 80) {
+    if (simulatedAchievementRate < thresholds.warning) {
       simulatedStatus = 'danger';
-    } else if (simulatedAchievementRate < 100) {
+    } else if (simulatedAchievementRate < thresholds.good) {
       simulatedStatus = 'warning';
     }
   }
@@ -762,10 +764,20 @@ export const useKpiStore = create<KpiStore>()(
 
       setProjectInfo: (info) => set((state) => {
         const newInfo = { ...(state.currentProjectInfo || { name: '', description: '' }), ...info };
-        const newState = { ...state, currentProjectInfo: newInfo };
-        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: state.kpiData, actions: state.actions, projectInfo: newInfo });
+        
+        // thresholdsが変更された場合は全ノードを再計算
+        const newKpiData = { ...state.kpiData };
+        if (info.statusThresholds) {
+          Object.keys(newKpiData).forEach(id => {
+            newKpiData[id] = calculateComputed(newKpiData[id], info.statusThresholds);
+          });
+        }
+        
+        const newState = { ...state, currentProjectInfo: newInfo, kpiData: newKpiData };
+        syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: newKpiData, actions: state.actions, projectInfo: newInfo });
         return {
           currentProjectInfo: newInfo,
+          kpiData: newKpiData,
           projectData: saveToProjectData(newState)
         };
       }),

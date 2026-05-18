@@ -91,6 +91,10 @@ export interface ProjectInfo {
   industry?: string;
   revenueScale?: string;
   currentIssues?: string;
+  statusThresholds?: {
+    good: number;
+    warning: number;
+  };
 }
 
 export interface WorkflowTask {
