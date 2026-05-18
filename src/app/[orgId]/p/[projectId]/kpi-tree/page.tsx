@@ -7,10 +7,12 @@ import { SimulationPanel } from '@/components/kpi-tree/SimulationPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
 import { CopilotSidebar } from '@/components/kpi-tree/CopilotSidebar';
 import { useKpiStore } from '@/store/useKpiStore';
+import { useLayoutStore } from '@/store/useLayoutStore';
 
 export default function KpiTreePage() {
   const isPredictionMode = useKpiStore(state => state.isPredictionMode);
   const isCopilotSidebarOpen = useKpiStore(state => state.isCopilotSidebarOpen);
+  const isActionPanelCollapsed = useLayoutStore(state => state.isActionPanelCollapsed);
   const [isMounted, setIsMounted] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(400); // 右サイドバー初期幅
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(250); // 左サイドバー初期幅
@@ -97,18 +99,23 @@ export default function KpiTreePage() {
         <KpiTree />
       </div>
 
-      {/* リサイズ用境界線（Resizer） */}
-      <div 
-        onMouseDown={handleMouseDown}
-        className={`w-1 cursor-col-resize shrink-0 z-10 hover:bg-primary-500/50 transition-colors border-l border-slate-200 dark:border-[#3c4043] ${
-          isDragging ? 'bg-primary-500' : 'bg-transparent'
-        }`}
-      />
+      {/* リサイズ用境界線（Resizer） - パネルが閉じている場合は非表示 */}
+      {!isActionPanelCollapsed || isCopilotSidebarOpen || isPredictionMode ? (
+        <div 
+          onMouseDown={handleMouseDown}
+          className={`w-1 cursor-col-resize shrink-0 z-10 hover:bg-primary-500/50 transition-colors border-l border-slate-200 dark:border-[#3c4043] ${
+            isDragging ? 'bg-primary-500' : 'bg-transparent'
+          }`}
+        />
+      ) : null}
 
       {/* 右サイドバー：アクションパネル or Copilot */}
       <div 
-        style={{ width: isPredictionMode ? '550px' : isCopilotSidebarOpen ? '450px' : `${sidebarWidth}px` }} 
-        className="shrink-0 bg-white dark:bg-[#2d2f31] flex flex-col h-full overflow-hidden"
+        style={{ 
+          width: isCopilotSidebarOpen ? '450px' : isPredictionMode ? '550px' : isActionPanelCollapsed ? '0px' : `${sidebarWidth}px`,
+          display: (!isCopilotSidebarOpen && !isPredictionMode && isActionPanelCollapsed) ? 'none' : 'flex'
+        }} 
+        className="shrink-0 bg-white dark:bg-[#2d2f31] flex-col h-full overflow-hidden transition-all duration-300"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           {isCopilotSidebarOpen ? (

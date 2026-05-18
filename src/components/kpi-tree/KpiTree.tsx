@@ -534,6 +534,13 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             >
               <Map size={16} />
             </button>
+            <button
+              onClick={toggleActionPanel}
+              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${!isActionPanelCollapsed ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              title="サイドパネル（右）の表示/非表示"
+            >
+              {!isActionPanelCollapsed ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
+            </button>
 
             {/* 期間切替ドロップダウン */}
             <div className="flex items-center ml-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
@@ -628,7 +635,12 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           onNodeDragStop={(_, node) => {
             useKpiStore.getState().updateKpiNodePosition(node.id, node.position);
           }}
-          onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+          onNodeClick={(_, node) => {
+            setSelectedNodeId(node.id);
+            if (isActionPanelCollapsed) {
+              toggleActionPanel();
+            }
+          }}
           onPaneClick={() => setSelectedNodeId(null)}
           onInit={setRfInstance}
           nodeTypes={nodeTypes}

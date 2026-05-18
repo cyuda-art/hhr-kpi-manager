@@ -4,7 +4,8 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { usePaywallStore } from '@/store/usePaywallStore';
-import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus, CheckSquare, User, Calendar } from 'lucide-react';
+import { useLayoutStore } from '@/store/useLayoutStore';
+import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus, CheckSquare, User, Calendar, X } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
 import { getDisplayValue, getStorageValue, shouldScaleWithPeriod } from '@/lib/kpi-utils';
@@ -308,19 +309,29 @@ export const ActionPanel = () => {
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#2d2f31] relative">
+      <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
+        {selectedKpi && selectedKpi.type !== 'KGI' && (
+          <button 
+            onClick={() => removeKpiNode(selectedKpi.id)}
+            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors"
+            title="このKPIを削除"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
+        <button 
+          onClick={() => useLayoutStore.getState().toggleActionPanel()}
+          className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+          title="パネルを閉じる"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
       {selectedKpi ? (
         <>
           {/* ヘッダー情報（常に表示） */}
-          <div className="mb-2">
-            {selectedKpi.type !== 'KGI' && (
-              <button 
-                onClick={() => removeKpiNode(selectedKpi.id)}
-                className="absolute top-2 right-2 p-1.5 text-slate-400 dark:text-logic-slate dark:text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors"
-                title="このKPIを削除"
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
+          <div className="mb-2 pr-12">
             <p className="text-[10px] font-bold text-slate-400 dark:text-logic-slate dark:text-slate-400 uppercase tracking-wider">{selectedKpi.businessUnit}</p>
             {selectedKpi.qualitativeName && (
               <h4 className="font-bold text-oxford-navy dark:text-slate-200 mt-1 break-words">
