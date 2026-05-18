@@ -4,7 +4,7 @@ import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { getDisplayValue, shouldScaleWithPeriod } from '@/lib/kpi-utils';
+import { getDisplayValue, shouldScaleWithPeriod, formatDisplayValue } from '@/lib/kpi-utils';
 import { ChevronDown, ChevronRight, Sparkles, History, Target, BarChart2, Calculator, Link2 } from 'lucide-react';
 import { AILoadingIndicator } from '@/components/ui/AILoadingIndicator';
 
@@ -201,7 +201,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             )}
             {hasShortfall && (
               <span className="text-[8px] bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 animate-pulse tracking-wider border border-red-200 dark:border-red-800" title="前月までの累計未達分">
-                ⚠️ 累計 {Math.round(shortfall).toLocaleString()} {data.unit}
+                ⚠️ 累計 {formatDisplayValue(shortfall, data.unit)} {data.unit}
               </span>
             )}
             <span className="text-[8px] bg-logic-slate/5 dark:bg-slate-700 text-logic-slate dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 tracking-wider">
@@ -242,7 +242,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           </div>
           {displayTarget > 0 && (displayActual - displayTarget) < 0 && (
             <div className="text-[10px] font-bold text-[#f43f5e] bg-[#f43f5e]/10 px-1.5 py-0.5 rounded">
-              不足: {Math.round(displayActual - displayTarget).toLocaleString()}
+              不足: {formatDisplayValue(displayActual - displayTarget, data.unit)}
             </div>
           )}
         </div>
@@ -255,12 +255,12 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {displayLabel}
           </span>
           <span className="font-bold text-oxford-navy dark:text-slate-100">
-            {displayActual.toLocaleString()} {data.unit}
+            {formatDisplayValue(displayActual, data.unit)} {data.unit}
           </span>
         </div>
         <div className="flex justify-between text-[11px] font-lato">
           <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
-          <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{displayTarget.toLocaleString()} {data.unit}</span>
+          <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} {data.unit}</span>
         </div>
 
         {readableFormula && (

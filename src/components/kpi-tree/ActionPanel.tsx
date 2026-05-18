@@ -8,7 +8,7 @@ import { useLayoutStore } from '@/store/useLayoutStore';
 import { Sparkles, Trash2, Edit2, CheckCircle2, Circle, AlertTriangle, Lightbulb, Calculator, Link2, ArchiveRestore, MessageSquare, Bot, Loader2, Plus, CheckSquare, User, Calendar, X } from 'lucide-react';
 import { TrendChart } from '../dashboard/TrendChart';
 import { WorkflowTask } from '@/types';
-import { getDisplayValue, getStorageValue, shouldScaleWithPeriod } from '@/lib/kpi-utils';
+import { getDisplayValue, getStorageValue, shouldScaleWithPeriod, formatDisplayValue } from '@/lib/kpi-utils';
 import { LinkKpiModal } from './LinkKpiModal';
 import { ReviveKpiModal } from './ReviveKpiModal';
 import { AILoadingIndicator } from '@/components/ui/AILoadingIndicator';
@@ -556,10 +556,10 @@ export const ActionPanel = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="text-xs text-logic-slate dark:text-slate-400">
-                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{Math.round(getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue')).toLocaleString()}</span> {selectedKpi.unit}
+                        目標: <span className="font-bold text-slate-700 dark:text-slate-300">{formatDisplayValue(getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue'), selectedKpi.unit)}</span> {selectedKpi.unit}
                       </div>
                       <div className="text-xs text-logic-slate dark:text-slate-400">
-                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-oxford-navy dark:text-slate-200">{Math.round(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue')).toLocaleString()}</span> {selectedKpi.unit}
+                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-oxford-navy dark:text-slate-200">{formatDisplayValue(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue'), selectedKpi.unit)}</span> {selectedKpi.unit}
                       </div>
                     </div>
                     <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded">
@@ -619,7 +619,7 @@ export const ActionPanel = () => {
                       未達残債アラート
                     </h5>
                     <p className="text-[11px] text-red-700/80 dark:text-red-400/80 mt-1 mb-2 leading-relaxed">
-                      前月までの累計で <span className="font-bold text-red-600 dark:text-red-400">{Math.round(shortfall).toLocaleString()} {selectedKpi.unit}</span> のショートフォールが発生しています。残りの期間でリカバリーするための目標再設定をAIにシミュレーションさせますか？
+                      前月までの累計で <span className="font-bold text-red-600 dark:text-red-400">{formatDisplayValue(shortfall, selectedKpi.unit)} {selectedKpi.unit}</span> のショートフォールが発生しています。残りの期間でリカバリーするための目標再設定をAIにシミュレーションさせますか？
                     </p>
                     <button 
                       onClick={handleAiRecovery}

@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
+import { formatDisplayValue } from '@/lib/kpi-utils';
 
 interface Props {
   actualValue: number;
@@ -78,7 +79,7 @@ export const TrendChart = ({ targetValue, unit, history, monthlyData }: Props) =
               />
               <Tooltip 
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                formatter={(value: any) => [`${Number(value).toLocaleString()}${unit}`, '']}
+                formatter={(value: any) => [`${formatDisplayValue(Number(value), unit)} ${unit}`, '']}
                 labelStyle={{ color: '#475569', fontWeight: 'bold', marginBottom: '4px' }}
               />
               <ReferenceLine y={targetValue} stroke="#cbd5e1" strokeDasharray="3 3" label={{ position: 'top', value: '目標', fill: '#94a3b8', fontSize: 10 }} />

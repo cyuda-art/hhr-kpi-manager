@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { X, Link2, Search, Target, BarChart2 } from 'lucide-react';
+import { formatDisplayValue } from '@/lib/kpi-utils';
 
 interface LinkKpiModalProps {
   isOpen: boolean;
@@ -164,7 +165,7 @@ export const LinkKpiModal = ({ isOpen, onClose, targetParentId }: LinkKpiModalPr
                             {node.name}
                           </span>
                           <span className="text-xs text-logic-slate dark:text-slate-400 mt-1">
-                            実績: {Number(node.actualValue).toLocaleString()} {node.unit} / 目標: {Number(node.targetValue).toLocaleString()} {node.unit}
+                            実績: {formatDisplayValue(node.actualValue, node.unit)} {node.unit} / 目標: {formatDisplayValue(node.targetValue, node.unit)} {node.unit}
                           </span>
                         </div>
                         <button 

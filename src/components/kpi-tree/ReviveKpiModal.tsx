@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { X, Search, Target, BarChart2, ArchiveRestore } from 'lucide-react';
+import { formatDisplayValue } from '@/lib/kpi-utils';
 
 interface ReviveKpiModalProps {
   isOpen: boolean;
@@ -90,7 +91,7 @@ export const ReviveKpiModal = ({ isOpen, onClose, targetParentId }: ReviveKpiMod
                           {node.name}
                         </span>
                         <span className="text-xs text-logic-slate dark:text-slate-400 mt-1">
-                          最新実績: {Number(node.actualValue).toLocaleString()} {node.unit} / 目標: {Number(node.targetValue).toLocaleString()} {node.unit}
+                          最新実績: {formatDisplayValue(node.actualValue, node.unit)} {node.unit} / 目標: {formatDisplayValue(node.targetValue, node.unit)} {node.unit}
                         </span>
                       </div>
                       <button 

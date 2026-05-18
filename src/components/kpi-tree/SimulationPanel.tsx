@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { X, Target, Zap, Bot } from 'lucide-react';
-import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
+import { getDisplayValue, getStorageValue, formatDisplayValue } from '@/lib/kpi-utils';
 
 export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
   const { kpiData, currentPeriod, updateSimulatedValue, updateSimulatedTarget, isPredictionMode, selectedNodeId, setSelectedNodeId } = useKpiStore();
@@ -76,7 +76,7 @@ export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
             <div className="flex flex-col gap-1 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Target size={12}/> 目標 (Top-Down)</span>
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{Math.round(displaySimTarget).toLocaleString()} {kpi.unit}</span>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{formatDisplayValue(displaySimTarget, kpi.unit)} {kpi.unit}</span>
               </div>
               <input 
                 type="range" 
@@ -88,8 +88,8 @@ export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
               />
               <div className="flex justify-between text-[9px] text-slate-400 mt-0.5">
                 <span>0</span>
-                <span>基準: {Math.round(displayTarget).toLocaleString()}</span>
-                <span>{Math.round(targetMax).toLocaleString()}</span>
+                <span>基準: {formatDisplayValue(displayTarget, kpi.unit)}</span>
+                <span>{formatDisplayValue(targetMax, kpi.unit)}</span>
               </div>
             </div>
 
@@ -97,7 +97,7 @@ export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
             <div className="flex flex-col gap-1 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-[#8ab4f8]/30 dark:border-[#8ab4f8]/30 shadow-sm">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-[10px] font-bold text-[#8ab4f8] flex items-center gap-1"><Zap size={12}/> 予測 (Bottom-Up)</span>
-                <span className="text-xs font-bold text-[#8ab4f8] dark:text-[#8ab4f8]">{Math.round(displaySimActual).toLocaleString()} {kpi.unit}</span>
+                <span className="text-xs font-bold text-[#8ab4f8] dark:text-[#8ab4f8]">{formatDisplayValue(displaySimActual, kpi.unit)} {kpi.unit}</span>
               </div>
               <input 
                 type="range" 
@@ -109,8 +109,8 @@ export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
               />
               <div className="flex justify-between text-[9px] text-slate-400 mt-0.5">
                 <span>0</span>
-                <span>基準: {Math.round(displayActual).toLocaleString()}</span>
-                <span>{Math.round(actualMax).toLocaleString()}</span>
+                <span>基準: {formatDisplayValue(displayActual, kpi.unit)}</span>
+                <span>{formatDisplayValue(actualMax, kpi.unit)}</span>
               </div>
             </div>
           </div>

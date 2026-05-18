@@ -144,3 +144,18 @@ export const getStorageValue = (
   }
   return displayValue / getPeriodMultiplier(currentPeriod);
 };
+
+/**
+ * 画面表示用に数値をフォーマットする（小数点以下の桁数制御）
+ */
+export const formatDisplayValue = (value: number, unit?: string): string => {
+  if (value === undefined || value === null || isNaN(value)) return '0';
+  
+  if (unit === '%' || unit === '％' || unit === 'pt') {
+    return value.toLocaleString(undefined, { maximumFractionDigits: 1 });
+  }
+  
+  // 円、人、件などは整数
+  return Math.round(value).toLocaleString();
+};
+
