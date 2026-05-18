@@ -673,11 +673,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               </div>
             </div>
           </div>
-              </div>
             )}
           </div>
         )}
-
         <ReactFlow
           nodes={nodes}
           edges={edges}
