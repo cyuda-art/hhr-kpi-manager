@@ -698,20 +698,19 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         </ReactFlow>
       </div>
 
-      {/* AI Smart Add Modal */}
+      {/* AI Smart Add Sidebar (Copilot) */}
       {isSmartAddModalOpen && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-[500px] max-w-[90vw] overflow-hidden border border-slate-200 dark:border-slate-700">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <Sparkles className="text-strategic-teal" size={18} />
-                AIスマート追加
-              </h3>
-              <button onClick={() => setIsSmartAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-6">
+        <div className="absolute top-0 right-0 h-full w-[450px] z-50 bg-white dark:bg-[#202124] shadow-2xl border-l border-slate-200 dark:border-slate-700 flex flex-col animate-in slide-in-from-right duration-300">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-strategic-teal/10 dark:bg-strategic-teal/10 flex justify-between items-center shrink-0">
+            <h3 className="font-bold text-strategic-teal flex items-center gap-2">
+              <Sparkles className="text-strategic-teal" size={18} />
+              AI戦略コンサルタント（Copilot）
+            </h3>
+            <button onClick={() => setIsSmartAddModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex-1 flex flex-col p-4 overflow-hidden relative">
               {isSmartAdding ? (
                 <AILoadingIndicator 
                   message="AI IS THINKING..." 
@@ -720,7 +719,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 />
               ) : (
                 <>
-                  <div className="h-64 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
+                  <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 mb-4 custom-scrollbar">
                     {smartAddMessages.length === 0 && (
                       <div className="text-[13px] text-slate-500 text-center mt-4 leading-relaxed">
                         追加したいKPIや要素を入力してください。AIが最適な階層への接続、中間KPIの生成、計算式の再構築を提案します。<br/>（例：「SNSマーケティングのKPIを追加したい」）
@@ -728,21 +727,21 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                     )}
                     {smartAddMessages.map((msg, idx) => (
                       <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${msg.role === 'user' ? 'bg-strategic-teal text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 whitespace-pre-wrap'}`}>
+                        <div className={`max-w-[85%] rounded-lg px-4 py-3 text-[13px] shadow-sm ${msg.role === 'user' ? 'bg-strategic-teal text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 whitespace-pre-wrap'}`}>
                           {msg.content}
                         </div>
                       </div>
                     ))}
                     {isSmartAddThinking && (
                       <div className="flex justify-start">
-                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                          <Loader2 size={14} className="animate-spin text-strategic-teal" /> AIが構成案を検討中...
+                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-[13px] flex items-center gap-2 text-slate-700 dark:text-slate-300 shadow-sm">
+                          <Loader2 size={14} className="animate-spin text-strategic-teal" /> AIアーキテクトが構成案を検討中...
                         </div>
                       </div>
                     )}
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 shrink-0">
                     <input 
                       type="text" 
                       placeholder="AIアーキテクトにチャットで相談..."
