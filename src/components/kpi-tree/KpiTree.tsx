@@ -97,7 +97,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
   const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates, currentPeriod } = useKpiStore();
-  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection, showStatusLegend } = useLayoutStore();
+  const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection, showStatusLegend, toggleStatusLegend } = useLayoutStore();
   const currentProjectInfo = useKpiStore((state) => state.currentProjectInfo);
   const thresholds = currentProjectInfo?.statusThresholds || { good: 100, warning: 80 };
   
