@@ -10,11 +10,14 @@ import { Settings, Users, Link as LinkIcon, Check, Copy, Save, Building2, Globe,
 export default function SettingsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { organizations, currentOrgId, updateOrganizationName, updateOrganizationMvv, isLoading } = useOrgStore();
+  const { organizations, currentOrgId, updateOrganizationSettings, isLoading } = useOrgStore();
   
   const [orgName, setOrgName] = useState('');
+  const [managementPhilosophy, setManagementPhilosophy] = useState('');
   const [masterMvv, setMasterMvv] = useState('');
   const [companyUrl, setCompanyUrl] = useState('');
+  const [businessDescription, setBusinessDescription] = useState('');
+  const [targetMarket, setTargetMarket] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -24,8 +27,11 @@ export default function SettingsPage() {
   useEffect(() => {
     if (currentOrg) {
       setOrgName(currentOrg.name);
+      setManagementPhilosophy(currentOrg.managementPhilosophy || '');
       setMasterMvv(currentOrg.masterMvv || '');
       setCompanyUrl(currentOrg.companyUrl || '');
+      setBusinessDescription(currentOrg.businessDescription || '');
+      setTargetMarket(currentOrg.targetMarket || '');
     }
   }, [currentOrg]);
 
@@ -79,8 +85,14 @@ export default function SettingsPage() {
     
     setIsSaving(true);
     try {
-      await updateOrganizationName(currentOrgId, orgName.trim());
-      await updateOrganizationMvv(currentOrgId, masterMvv.trim());
+      await updateOrganizationSettings(currentOrgId, {
+        name: orgName.trim(),
+        managementPhilosophy: managementPhilosophy.trim(),
+        masterMvv: masterMvv.trim(),
+        companyUrl: companyUrl.trim(),
+        businessDescription: businessDescription.trim(),
+        targetMarket: targetMarket.trim(),
+      });
       alert("組織設定を更新しました");
     } catch (error) {
       console.error("Failed to update organization settings:", error);
@@ -126,7 +138,7 @@ export default function SettingsPage() {
             <form onSubmit={handleSave} className="max-w-2xl space-y-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  組織名
+                  組織名 <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -139,23 +151,90 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Master MVV（組織全体のミッション・ビジョン・バリュー・制約条件）
+                  企業サイトURL
                 </label>
-                <p className="text-xs text-logic-slate dark:text-slate-400 mb-2">
-                  この組織配下で作成される全てのプロジェクト（部門KPIツリー）に、AIの推論時の「絶対的な制約・行動指針」として自動的に継承されます。
-                </p>
-                <textarea
-                  value={masterMvv}
-                  onChange={(e) => setMasterMvv(e.target.value)}
-                  rows={6}
-                  placeholder="例:&#13;&#10;【Mission】世界中の人々を笑顔にする&#13;&#10;【絶対の制約】短期的な利益のために顧客体験を犠牲にしてはならない。"
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                <input
+                  type="url"
+                  value={companyUrl}
+                  onChange={(e) => setCompanyUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full max-w-md px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
                 />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">企業理念・事業情報（AIコンテキスト用）</h3>
+                <p className="text-xs text-logic-slate dark:text-slate-400 mb-4">
+                  これらの情報は、AIエージェントがKPIツリーやマクロ環境を分析する際の「前提知識・絶対的な制約」として自動的に継承されます。
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      経営理念
+                    </label>
+                    <textarea
+                      value={managementPhilosophy}
+                      onChange={(e) => setManagementPhilosophy(e.target.value)}
+                      rows={2}
+                      placeholder="例: 全従業員の物心両面の幸福を追求すると同時に、人類、社会の進歩発展に貢献すること。"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      企業理念（Mission・Vision・Values）
+                    </label>
+                    <textarea
+                      value={masterMvv}
+                      onChange={(e) => setMasterMvv(e.target.value)}
+                      rows={4}
+                      placeholder="例:&#13;&#10;【Mission】世界中の人々を笑顔にする&#13;&#10;【Vision】業界No.1の顧客満足度&#13;&#10;【Values】挑戦を恐れない"
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        事業内容・中核となる強み
+                      </label>
+                      <textarea
+                        value={businessDescription}
+                        onChange={(e) => setBusinessDescription(e.target.value)}
+                        rows={3}
+                        placeholder="例: B2B向けSaaSの提供。独自のAIアルゴリズムによる高精度なデータ分析が強み。"
+                        className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        ターゲット市場・主要顧客
+                      </label>
+                      <textarea
+                        value={targetMarket}
+                        onChange={(e) => setTargetMarket(e.target.value)}
+                        rows={3}
+                        placeholder="例: 従業員100〜1000名規模の国内製造業。主にDX推進部門や経営企画室。"
+                        className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <button
                 type="submit"
-                disabled={isSaving || (orgName.trim() === currentOrg.name && masterMvv.trim() === (currentOrg.masterMvv || ''))}
+                disabled={
+                  isSaving || 
+                  (orgName.trim() === currentOrg.name && 
+                   masterMvv.trim() === (currentOrg.masterMvv || '') &&
+                   managementPhilosophy.trim() === (currentOrg.managementPhilosophy || '') &&
+                   companyUrl.trim() === (currentOrg.companyUrl || '') &&
+                   businessDescription.trim() === (currentOrg.businessDescription || '') &&
+                   targetMarket.trim() === (currentOrg.targetMarket || ''))
+                }
                 className="flex items-center gap-2 px-4 py-2 bg-strategic-teal hover:bg-strategic-teal disabled:opacity-50 disabled:hover:bg-strategic-teal text-white rounded-lg font-medium transition-colors"
               >
                 <Save size={18} />
@@ -177,23 +256,17 @@ export default function SettingsPage() {
             </p>
           </div>
           <div className="p-6 space-y-6">
-            <div className="flex gap-4 items-end max-w-2xl">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  企業サイトURL
-                </label>
-                <input
-                  type="url"
-                  value={companyUrl}
-                  onChange={(e) => setCompanyUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
-                />
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700 max-w-2xl">
+              <div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">分析対象のURL</p>
+                <p className="text-sm text-logic-slate dark:text-slate-400 mt-1">
+                  {companyUrl ? companyUrl : '基本情報で企業サイトURLを保存してください'}
+                </p>
               </div>
               <button
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || !companyUrl}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-oxford-navy to-strategic-teal hover:from-oxford-navy hover:to-strategic-teal disabled:opacity-50 text-white rounded-lg font-medium transition-all shadow-sm"
+                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-oxford-navy to-strategic-teal hover:from-oxford-navy hover:to-strategic-teal disabled:opacity-50 text-white rounded-lg font-medium transition-all shadow-sm whitespace-nowrap"
               >
                 {isAnalyzing ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
                 {isAnalyzing ? "分析中..." : "AI分析を実行"}

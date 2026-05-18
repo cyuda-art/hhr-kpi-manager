@@ -12,10 +12,15 @@ export interface Organization {
   ownerId: string;
   members: OrgMember[];
   membersUidList?: string[]; // クエリ用のUID配列
-  masterMvv?: string; // 組織全体のMission, Vision, Valuesおよび制約条件
+  
+  // 組織の基本理念・概要
+  managementPhilosophy?: string; // 経営理念
+  masterMvv?: string; // 企業理念（Mission, Vision, Values等）
+  companyUrl?: string; // 企業サイトURL
+  businessDescription?: string; // 事業内容（提案：AIのコンテキスト用）
+  targetMarket?: string; // ターゲット市場/主要顧客（提案：AIのコンテキスト用）
   
   // マクロ環境分析（羅針盤層）
-  companyUrl?: string;
   industry?: string;
   pest?: string;
   fiveForces?: string;
