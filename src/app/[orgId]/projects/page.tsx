@@ -24,6 +24,9 @@ export default function WorkspacePage() {
   const [manifestos, setManifestos] = useState<any[]>([]);
   const [selectedManifestoIndex, setSelectedManifestoIndex] = useState<number>(0);
   const [editableManifesto, setEditableManifesto] = useState<any>(null);
+  const [copilotMessages, setCopilotMessages] = useState<{role: string, content: string}[]>([]);
+  const [copilotInput, setCopilotInput] = useState('');
+  const [isCopilotThinking, setIsCopilotThinking] = useState(false);
 
   const [projectUrl, setProjectUrl] = useState('');
   const [kgiType, setKgiType] = useState('売上高');
@@ -57,6 +60,46 @@ export default function WorkspacePage() {
   const handleSelectProject = (projectId: string) => {
     setCurrentProjectId(projectId);
     router.push(`/${currentOrgId}/p/${projectId}/kpi-tree`);
+  };
+
+  const handleCopilotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!copilotInput.trim() || isCopilotThinking) return;
+
+    const userMessage = copilotInput;
+    setCopilotInput('');
+    setCopilotMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setIsCopilotThinking(true);
+
+    try {
+      const res = await fetch('/api/copilot-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          currentManifesto: editableManifesto,
+          history: copilotMessages
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setCopilotMessages(prev => [...prev, { role: 'model', content: data.text }]);
+      
+      // JSONで変更案が返ってきた場合は作戦テキストを自動アップデート
+      if (data.updatedManifesto) {
+        setEditableManifesto((prev: any) => ({
+          ...prev,
+          title: data.updatedManifesto.updatedTitle || prev.title,
+          description: data.updatedManifesto.updatedDescription || prev.description
+        }));
+      }
+    } catch (error) {
+      setCopilotMessages(prev => [...prev, { role: 'model', content: 'エラーが発生しました。もう一度お試しください。' }]);
+    } finally {
+      setIsCopilotThinking(false);
+    }
   };
 
   const [uploadedFileUrls, setUploadedFileUrls] = useState<string[]>([]);
@@ -727,9 +770,9 @@ export default function WorkspacePage() {
             </div>
 
             {/* 選択中のマニフェストの編集エリア */}
-            <div className="mb-6 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-clean-canvas dark:bg-slate-900/50">
+            <div className="mb-4 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-clean-canvas dark:bg-slate-900/50">
               <label className="block text-[13px] font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
-                選択中の作戦を微調整（任意）
+                選択中の作戦を微調整（直接編集またはAIと壁打ち）
               </label>
               <input 
                 type="text" 
@@ -743,6 +786,54 @@ export default function WorkspacePage() {
                 rows={3}
                 className="w-full text-[13px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal resize-none"
               />
+            </div>
+
+            {/* AI壁打ちチャットUI (Copilot) */}
+            <div className="mb-2 flex flex-col border border-strategic-teal/30 dark:border-strategic-teal/30 rounded-lg bg-white dark:bg-[#202124] overflow-hidden flex-shrink-0">
+              <div className="bg-strategic-teal/10 dark:bg-strategic-teal/10 px-4 py-2 flex items-center gap-2 border-b border-strategic-teal/20">
+                <Sparkles size={16} className="text-strategic-teal" />
+                <span className="text-[13px] font-bold text-strategic-teal">AI戦略コンサルタントと壁打ち（Copilot）</span>
+              </div>
+              
+              <div className="h-40 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50/50 dark:bg-[#282a2d]/50">
+                {copilotMessages.length === 0 && (
+                  <div className="text-[13px] text-logic-slate dark:text-slate-400 text-center mt-4">
+                    「もっとB2Bに特化させたい」「LTVより新規獲得を重視したい」など、<br/>作戦に対する要望を伝えるとAIが上の作戦案を自動でブラッシュアップします。
+                  </div>
+                )}
+                {copilotMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${msg.role === 'user' ? 'bg-strategic-teal text-white' : 'bg-white dark:bg-[#3c4043] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 whitespace-pre-wrap'}`}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+                {isCopilotThinking && (
+                  <div className="flex justify-start">
+                    <div className="bg-white dark:bg-[#3c4043] border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                      <Loader2 size={14} className="animate-spin text-strategic-teal" /> コンサルタントが思考中...
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <form onSubmit={handleCopilotSubmit} className="p-3 bg-white dark:bg-[#282a2d] border-t border-slate-200 dark:border-slate-700 flex gap-2">
+                <input
+                  type="text"
+                  value={copilotInput}
+                  onChange={e => setCopilotInput(e.target.value)}
+                  placeholder="作戦に対する要望や変更案をチャットで入力..."
+                  className="flex-1 px-3 py-2 text-[13px] bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal"
+                  disabled={isCopilotThinking}
+                />
+                <button
+                  type="submit"
+                  disabled={isCopilotThinking || !copilotInput.trim()}
+                  className="px-4 py-2 bg-strategic-teal text-white rounded-[4px] text-[13px] font-medium disabled:opacity-50 transition-colors"
+                >
+                  送信
+                </button>
+              </form>
             </div>
 
             <div className="flex justify-end gap-3 mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
