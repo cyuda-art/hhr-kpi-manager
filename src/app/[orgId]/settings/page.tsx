@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { OrgLayout } from '@/components/layout/OrgLayout';
+import { AiLoadingOverlay } from '@/components/ui/AiLoadingOverlay';
 import { Settings, Users, Link as LinkIcon, Check, Copy, Save, Building2, Globe, Sparkles, Loader2, Landmark, TrendingUp, Users2, Cpu, Swords, ShieldAlert, Replace, Truck, ShoppingCart, Gem, Star, Lock, LayoutTemplate } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -112,6 +113,11 @@ export default function SettingsPage() {
 
   return (
     <OrgLayout>
+      <AiLoadingOverlay 
+        isVisible={isAnalyzing} 
+        statusText="経営環境をAIで推論・分析中..." 
+        subText="指定された企業のWebサイト情報を読み込み、PEST分析、5Forces分析、VRIO分析を実行しています。"
+      />
       <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 text-oxford-navy dark:text-slate-200 font-sans p-6 md:p-12">
         <div className="max-w-4xl mx-auto space-y-8">
         
