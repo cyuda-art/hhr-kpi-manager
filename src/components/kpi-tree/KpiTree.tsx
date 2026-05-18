@@ -840,46 +840,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 </>
               )}
             </div>
-            <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
-              <button
-                onClick={() => setIsSmartAddModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                disabled={isSmartAdding}
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={async () => {
-                  if (!smartAddQuery.trim()) return;
-                  setIsSmartAdding(true);
-                  try {
-                    await useKpiStore.getState().smartAddKpi(smartAddQuery);
-                    setSmartAddQuery('');
-                    setIsSmartAddModalOpen(false);
-                  } catch (e) {
-                    console.error(e);
-                  } finally {
-                    setIsSmartAdding(false);
-                  }
-                }}
-                disabled={!smartAddQuery.trim() || isSmartAdding}
-                className="px-4 py-2 text-sm font-bold text-white bg-strategic-teal hover:bg-strategic-teal/90 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSmartAdding ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    自動構築中...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 size={16} />
-                    ツリーに自動追加
-                  </>
-                )}
-              </button>
-            </div>
           </div>
-        </div>
       )}
 
     </div>
