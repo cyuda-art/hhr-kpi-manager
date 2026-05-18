@@ -775,7 +775,7 @@ export default function WorkspacePage() {
 
               {/* 選択中のマニフェストの編集エリア */}
               <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-clean-canvas dark:bg-slate-900/50 flex flex-col gap-3">
-                <label className="block text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <label className="block text-[10px] tracking-widest uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
                   選択中の作戦を微調整（直接編集またはAIと壁打ち）
                 </label>
                 <input 

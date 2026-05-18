@@ -320,7 +320,7 @@ export const ActionPanel = () => {
 
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#2d2f31] relative">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/5 relative px-5 py-4">
       <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
         {selectedKpi && selectedKpi.type !== 'KGI' && (
           <button 

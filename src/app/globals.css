@@ -105,18 +105,18 @@
   --color-primary-800: var(--theme-primary-800);
   --color-primary-900: var(--theme-primary-900);
 
-  /* Override Slate palette to match Firebase Console Dark Theme */
-  --color-slate-950: #202124;
-  --color-slate-900: #282a2d;
-  --color-slate-800: #2d2f31;
-  --color-slate-700: #3c4043;
-  --color-slate-600: #5f6368;
-  --color-slate-500: #80868b;
-  --color-slate-400: #9aa0a6;
-  --color-slate-300: #bdc1c6;
-  --color-slate-200: #e8eaed;
-  --color-slate-100: #f1f3f4;
-  --color-slate-50: #ffffff;
+  /* Override Slate palette to match Modern Premium SaaS (Figma/Linear) Dark Theme */
+  --color-slate-950: #121214; /* Purest deep background */
+  --color-slate-900: #18181B; /* Main background */
+  --color-slate-800: #27272A; /* Elevated panels */
+  --color-slate-700: #3F3F46; /* Borders and subtle dividers */
+  --color-slate-600: #52525B; /* Muted icons/text */
+  --color-slate-500: #71717A;
+  --color-slate-400: #A1A1AA;
+  --color-slate-300: #D4D4D8;
+  --color-slate-200: #E4E4E7;
+  --color-slate-100: #F4F4F5;
+  --color-slate-50: #FAFAFA;
 }
 
 body {

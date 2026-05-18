@@ -22,14 +22,14 @@ export const CopilotSidebar = () => {
   if (!isCopilotSidebarOpen) return null;
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#202124]">
-      <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-strategic-teal/10 dark:bg-strategic-teal/10 flex justify-between items-center shrink-0">
-        <h3 className="font-bold text-strategic-teal flex items-center gap-2">
-          <Sparkles className="text-strategic-teal" size={18} />
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/5">
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 flex justify-between items-center shrink-0">
+        <h3 className="font-bold text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <Sparkles className="text-strategic-teal" size={12} />
           AI戦略コンサルタント (Copilot)
         </h3>
-        <button onClick={() => setIsCopilotSidebarOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">
-          <X size={20} />
+        <button onClick={() => setIsCopilotSidebarOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md">
+          <X size={16} />
         </button>
       </div>
       
