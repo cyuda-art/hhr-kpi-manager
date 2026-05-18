@@ -20,7 +20,8 @@ interface KpiStore {
   currentOrgId: string | null;
   currentProjectInfo: import('@/types').ProjectInfo | null;
   currentPeriod: string;
-  isPredictionMode: boolean;
+  isCopilotSidebarOpen: boolean;
+  setIsCopilotSidebarOpen: (isOpen: boolean) => void;
   setPeriod: (period: string) => void;
   togglePredictionMode: () => void;
   initializeDB: (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => Promise<void>;
@@ -430,6 +431,7 @@ export const useKpiStore = create<KpiStore>()(
       currentProjectInfo: null,
       currentPeriod: '2026-05',
       isPredictionMode: false,
+      isCopilotSidebarOpen: false,
       pastStates: [],
       futureStates: [],
 
@@ -487,6 +489,7 @@ export const useKpiStore = create<KpiStore>()(
         syncToDB(state.currentProjectId, state.currentOrgId, { isPredictionMode: isNowPrediction });
         return { isPredictionMode: isNowPrediction, kpiData: draft };
       }),
+      setIsCopilotSidebarOpen: (isOpen: boolean) => set({ isCopilotSidebarOpen: isOpen }),
 
       initializeDB: async (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => {
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
