@@ -58,7 +58,7 @@ interface KpiStore {
   reviveKpiNode: (id: string, newParentId: string | null) => void;
   expandKpiNode: (kpiId: string) => Promise<void>;
   smartAddKpi: (query: string) => Promise<void>;
-  applySmartAddPatch: (patchData: { updatedParent: any, newNodes: any[] }) => Promise<void>;
+  applySmartAddPatch: (patchData: { updatedParent?: any, updatedNodes?: any[], newNodes?: any[] }) => Promise<void>;
   applyRollingForecast: (kpiId: string, additionalTargetPerMonth: number, targetMonths: string[]) => void;
   recalculateAllMonthsAction: () => void;
   smartAddMessages: { role: string; content: string }[];
@@ -1306,11 +1306,11 @@ export const useKpiStore = create<KpiStore>()(
     }
   },
 
-  applySmartAddPatch: async (patchData: { updatedParent: any, newNodes: any[] }) => {
+  applySmartAddPatch: async (patchData: { updatedParent?: any, updatedNodes?: any[], newNodes?: any[] }) => {
     try {
-      const { updatedParent, newNodes } = patchData;
+      const { updatedParent, updatedNodes = [], newNodes = [] } = patchData;
 
-      if (!updatedParent || !updatedParent.id || !newNodes || !Array.isArray(newNodes) || newNodes.length === 0) {
+      if (!updatedParent && (!updatedNodes || updatedNodes.length === 0) && (!newNodes || newNodes.length === 0)) {
         throw new Error('Invalid patch format received from AI');
       }
 
@@ -1330,15 +1330,45 @@ export const useKpiStore = create<KpiStore>()(
           }
         });
 
+        // 1. 既存ノードのアップデート (updatedNodes)
+        updatedNodes.forEach((uNode: any) => {
+          if (draft[uNode.id]) {
+            const originalNode = draft[uNode.id];
+            
+            // updateKpiNodeのように処理
+            const updatedData = { ...originalNode };
+            if (uNode.targetValue !== undefined) updatedData.targetValue = uNode.targetValue;
+            if (uNode.actualValue !== undefined) updatedData.actualValue = uNode.actualValue;
+            if (uNode.name !== undefined) updatedData.name = uNode.name;
+            if (uNode.formula !== undefined) updatedData.formula = uNode.formula;
+            
+            draft[uNode.id] = calculateComputed(updatedData);
+
+            // 月次データが選択されている場合、monthlyDataも更新する
+            if (currentState.currentPeriod.match(/^\d{4}-\d{2}$/)) {
+              const month = currentState.currentPeriod;
+              const monthlyData = { ...(draft[uNode.id].monthlyData || {}) };
+              
+              if (!monthlyData[month]) {
+                monthlyData[month] = { month, targetValue: draft[uNode.id].targetValue, actualValue: draft[uNode.id].actualValue };
+              }
+              if (uNode.targetValue !== undefined) monthlyData[month].targetValue = uNode.targetValue;
+              if (uNode.actualValue !== undefined) monthlyData[month].actualValue = uNode.actualValue;
+              
+              draft[uNode.id] = calculateComputed({ ...draft[uNode.id], monthlyData });
+            }
+          }
+        });
+
         // 親ノードの数式（newFormula）のID置換
-        let finalNewFormula = updatedParent.newFormula;
+        let finalNewFormula = updatedParent?.newFormula;
         if (finalNewFormula) {
           Object.keys(idMap).forEach(oldId => {
             finalNewFormula = finalNewFormula.replace(new RegExp(`#{${oldId}}`, 'g'), `#{${idMap[oldId]}}`);
           });
         }
 
-        // 1. 新しいノードのフォーマットと追加
+        // 1.5. 新しいノードのフォーマットと追加
         newNodes.forEach((node: any) => {
           const safeId = node.id;
 
@@ -1394,7 +1424,7 @@ export const useKpiStore = create<KpiStore>()(
         });
 
         // 2. 親ノードの数式更新
-        if (draft[updatedParent.id] && finalNewFormula) {
+        if (updatedParent && draft[updatedParent.id] && finalNewFormula) {
           const updatedParentNode = {
             ...draft[updatedParent.id],
             isCalculated: true,

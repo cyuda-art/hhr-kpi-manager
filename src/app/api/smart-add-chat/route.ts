@@ -41,6 +41,12 @@ ${JSON.stringify(simplifiedTree, null, 2)}
     "id": "（接続先に選んだ既存のノードのID）",
     "newFormula": "（既存の式に新しいノードを組み込んだ数式。例: #{kpi_1} + #{kpi_smart_1}）"
   },
+  "updatedNodes": [
+    {
+      "id": "（目標数値を変更したい既存のKPIのID）",
+      "targetValue": 200000
+    }
+  ],
   "newNodes": [
     {
       "id": "kpi_smart_1",
@@ -64,7 +70,7 @@ ${JSON.stringify(simplifiedTree, null, 2)}
   ]
 }
 \`\`\`
-（※ルール: 絶対に "type": "KGI" を作成しないこと。中間ノードを作成する場合は必ず2つ以上の子ノードを作成すること）
+（※ルール: 既存ノードの目標数値を変更する場合は updatedNodes に含めてください。ツリー構造を変更しない場合は updatedParent や newNodes は省略（またはnull）可能です。絶対に "type": "KGI" を作成しないこと。）
 `;
 
     const formattedHistory = [
