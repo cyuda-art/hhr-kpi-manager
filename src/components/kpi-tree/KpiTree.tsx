@@ -165,15 +165,20 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const { nodes: genNodes, edges: genEdges } = generateNodesAndEdges(kpiData, layoutDirection);
     
-    // ノードの過半数が有効なpositionを持っているかチェック（一部だけ手動で動かして他が(0,0)の場合は未保存とみなす）
+    // ノードの過半数が有効なpositionを持っているかチェック
     const positionedNodesCount = genNodes.filter(n => n.position.x !== 0 || n.position.y !== 0).length;
-    const hasPositions = genNodes.length > 0 && positionedNodesCount > genNodes.length / 2;
+    
+    // 座標が重複しているかチェック（DBに同じ座標が保存されて重なってしまう不具合の対策）
+    const positionSet = new Set(genNodes.map(n => `${Math.round(n.position.x)},${Math.round(n.position.y)}`));
+    const isOverlapping = genNodes.length > 1 && positionSet.size < genNodes.length / 2;
+    
+    const hasPositions = genNodes.length > 0 && positionedNodesCount > genNodes.length / 2 && !isOverlapping;
     
     if (hasPositions) {
       return { nodes: genNodes, edges: genEdges };
     }
     
-    // 初期状態で位置情報がない場合のみ自動レイアウトを適用
+    // 初期状態で位置情報がない、または重なっている場合は自動レイアウトを適用
     return getLayoutedElements(genNodes, genEdges, layoutDirection);
   }, [layoutDirection]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -618,7 +623,17 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
 
         {/* 凡例（Legend） */}
-        {!previewMode && showStatusLegend && (
+        {!previewMode && (
+          <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2">
+            <button
+              onClick={toggleStatusLegend}
+              className="flex items-center justify-center gap-1.5 w-fit px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors backdrop-blur-md"
+            >
+              <Info size={14} />
+              {showStatusLegend ? '凡例を隠す' : '凡例を表示'}
+            </button>
+            
+            {showStatusLegend && (
           <div className="absolute bottom-4 left-4 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg text-[10px] sm:text-xs min-w-[200px]">
             <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2.5 border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
               <span>ステータスと線の意味</span>
@@ -657,6 +672,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 </div>
               </div>
             </div>
+          </div>
+              </div>
+            )}
           </div>
         )}
 
