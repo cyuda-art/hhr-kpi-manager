@@ -744,52 +744,55 @@ export default function WorkspacePage() {
 
       {/* 新規作成AIウィザード (STEP 2: マニフェスト選択) */}
       {wizardStep === 'select_manifesto' && (
-        <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#282a2d] rounded-[8px] p-6 w-full max-w-5xl shadow-2xl border border-slate-200 dark:border-[#3c4043] relative overflow-hidden flex flex-col max-h-[90vh]">
-            <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4] mb-2">AIが考案した3つの作戦（Manifesto）</h2>
-            <p className="text-sm text-logic-slate dark:text-slate-400 mb-6">組織のMaster MVVを遵守し、KGIを達成するための作戦です。方向性に最も近いものを1つ選び、必要に応じて修正してください。</p>
+        <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex justify-end z-50">
+          <div className="w-full max-w-[500px] bg-white dark:bg-[#282a2d] h-full shadow-2xl border-l border-slate-200 dark:border-[#3c4043] flex flex-col animate-in slide-in-from-right duration-300 relative">
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 overflow-y-auto pr-2">
-              {manifestos.map((m, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => {
-                    setSelectedManifestoIndex(idx);
-                    setEditableManifesto(manifestos[idx]);
-                  }}
-                  className={`p-5 rounded-xl border-2 cursor-pointer transition-all flex flex-col ${selectedManifestoIndex === idx ? 'border-strategic-teal bg-primary-50 dark:bg-primary-900/20 shadow-md' : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700'}`}
-                >
-                  <h3 className="font-bold text-lg text-oxford-navy dark:text-slate-200 mb-3 leading-tight">{m.title}</h3>
-                  <p className="text-[13px] text-logic-slate dark:text-slate-400 mb-4 flex-1 leading-relaxed">{m.description}</p>
-                  <div className="text-[12px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800">
-                    <strong className="block mb-1">なぜこの作戦か？</strong>
-                    {m.reason}
+            <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#282a2d] sticky top-0 z-10">
+              <h2 className="text-[18px] font-bold text-slate-900 dark:text-[#f1f3f4] mb-1">AIが考案した3つの作戦（Manifesto）</h2>
+              <p className="text-[12px] text-logic-slate dark:text-slate-400">組織のMaster MVVを遵守し、KGIを達成するための作戦です。方向性に最も近いものを1つ選び、必要に応じて修正してください。</p>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5 custom-scrollbar">
+              <div className="flex flex-col gap-3">
+                {manifestos.map((m, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => {
+                      setSelectedManifestoIndex(idx);
+                      setEditableManifesto(manifestos[idx]);
+                    }}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col ${selectedManifestoIndex === idx ? 'border-strategic-teal bg-primary-50 dark:bg-primary-900/20 shadow-md scale-[1.02]' : 'border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                  >
+                    <h3 className="font-bold text-[15px] text-oxford-navy dark:text-slate-200 mb-2 leading-tight">{m.title}</h3>
+                    <p className="text-[12px] text-logic-slate dark:text-slate-400 mb-3 flex-1 leading-relaxed">{m.description}</p>
+                    <div className="text-[11px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-800">
+                      <strong className="block mb-0.5">なぜこの作戦か？</strong>
+                      {m.reason}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {/* 選択中のマニフェストの編集エリア */}
-            <div className="mb-4 p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-clean-canvas dark:bg-slate-900/50">
-              <label className="block text-[13px] font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
-                選択中の作戦を微調整（直接編集またはAIと壁打ち）
-              </label>
-              <input 
-                type="text" 
-                value={editableManifesto?.title || ''} 
-                onChange={e => setEditableManifesto({...editableManifesto, title: e.target.value})}
-                className="w-full font-bold text-[15px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal mb-3"
-              />
-              <textarea 
-                value={editableManifesto?.description || ''} 
-                onChange={e => setEditableManifesto({...editableManifesto, description: e.target.value})}
-                rows={3}
-                className="w-full text-[13px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal resize-none"
-              />
-            </div>
-
+              {/* 選択中のマニフェストの編集エリア */}
+              <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-clean-canvas dark:bg-slate-900/50 flex flex-col gap-3">
+                <label className="block text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  選択中の作戦を微調整（直接編集またはAIと壁打ち）
+                </label>
+                <input 
+                  type="text" 
+                  value={editableManifesto?.title || ''} 
+                  onChange={e => setEditableManifesto({...editableManifesto, title: e.target.value})}
+                  className="w-full font-bold text-[14px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal"
+                />
+                <textarea 
+                  value={editableManifesto?.description || ''} 
+                  onChange={e => setEditableManifesto({...editableManifesto, description: e.target.value})}
+                  rows={4}
+                  className="w-full text-[13px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal resize-none"
+                />
+              </div>
             {/* AI壁打ちチャットUI (Copilot) */}
-            <div className="mb-2 flex flex-col border border-strategic-teal/30 dark:border-strategic-teal/30 rounded-lg bg-white dark:bg-[#202124] overflow-hidden flex-shrink-0">
+            <div className="flex flex-col border border-strategic-teal/30 dark:border-strategic-teal/30 rounded-lg bg-white dark:bg-[#202124] overflow-hidden flex-shrink-0">
               <div className="bg-strategic-teal/10 dark:bg-strategic-teal/10 px-4 py-2 flex items-center gap-2 border-b border-strategic-teal/20">
                 <Sparkles size={16} className="text-strategic-teal" />
                 <span className="text-[13px] font-bold text-strategic-teal">AI戦略コンサルタントと壁打ち（Copilot）</span>
@@ -835,25 +838,26 @@ export default function WorkspacePage() {
                 </button>
               </form>
             </div>
-
-            <div className="flex justify-end gap-3 mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
-              <button
-                type="button"
-                onClick={() => setWizardStep('input')}
-                className="px-4 py-2 text-[14px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px] transition-colors"
-              >
-                戻る
-              </button>
-              <button
-                onClick={handleGenerateTree}
-                className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-oxford-navy to-strategic-teal hover:from-oxford-navy hover:to-strategic-teal text-white rounded-[4px] shadow-lg transition-all flex items-center gap-2"
-              >
-                <Sparkles size={16} />
-                この作戦でKPIツリーを展開
-              </button>
-            </div>
+          </div>
+          
+          <div className="p-5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#282a2d] sticky bottom-0 z-10 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setWizardStep('input')}
+              className="px-4 py-2 text-[14px] font-medium text-slate-600 dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-[4px] transition-colors"
+            >
+              戻る
+            </button>
+            <button
+              onClick={handleGenerateTree}
+              className="px-4 py-2 text-[14px] font-medium bg-gradient-to-r from-oxford-navy to-strategic-teal hover:from-oxford-navy hover:to-strategic-teal text-white rounded-[4px] shadow-lg transition-all flex items-center gap-2"
+            >
+              <Sparkles size={16} />
+              この作戦でKPIツリーを展開
+            </button>
           </div>
         </div>
+      </div>
       )}
       </div>
       </OrgLayout>
