@@ -56,7 +56,7 @@ export const CopilotSidebar = () => {
           disabled={isSmartAddThinking || isSmartAdding}
           className="flex-1 px-4 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
           onKeyDown={async (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
               if (!smartAddQuery.trim() || isSmartAddThinking || isSmartAdding) return;
               
               const userQuery = smartAddQuery;
