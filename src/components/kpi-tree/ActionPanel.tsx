@@ -236,7 +236,8 @@ export const ActionPanel = () => {
       setEditQualitativeName(selectedKpi.qualitativeName || '');
       setEditUpdateFrequency(selectedKpi.updateFrequency || 'monthly');
       setEditCalculationFormula(selectedKpi.calculationFormula || '');
-      setEditIsCalculated(hasChildren ? true : (selectedKpi.isCalculated || false));
+      // 子ノードがあってもユーザーが手動でオフにできるように変更
+      setEditIsCalculated(selectedKpi.isCalculated || false);
       setEditFormula(selectedKpi.formula || '');
     }
   }, [selectedNodeId, kpiData, isPredictionMode, hasChildren, currentPeriod]);
@@ -494,16 +495,13 @@ export const ActionPanel = () => {
                               type="checkbox" 
                               checked={editIsCalculated} 
                               onChange={(e) => setEditIsCalculated(e.target.checked)} 
-                              disabled={isPredictionMode || hasChildren || !!selectedKpi.linkedSource}
+                              disabled={isPredictionMode || !!selectedKpi.linkedSource}
                               className="rounded border-slate-300 text-primary-500 focus:ring-strategic-teal disabled:opacity-50"
                             />
                             <span className="text-xs text-logic-slate dark:text-slate-400 font-bold flex items-center gap-1">
                               <Calculator size={12} /> 他のKPIから自動計算する (Formula)
                             </span>
                           </label>
-                          {hasChildren && (
-                            <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">※ 子ノードを持つ中間KPIは自動計算が必須です。</div>
-                          )}
                         </div>
                         {editIsCalculated && (
                           <div className="flex flex-col gap-1 p-2 bg-clean-canvas dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 dark:border-slate-700">
