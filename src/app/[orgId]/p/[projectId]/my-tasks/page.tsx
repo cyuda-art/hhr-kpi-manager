@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { CheckSquare, Calendar as CalendarIcon, User, Building, AlertCircle, LayoutGrid, Clock, ChevronDown, ChevronRight, Layers } from 'lucide-react';
 import { Action, KpiNodeData } from '@/types';
 
-type ViewMode = 'kanban' | 'timeline' | 'calendar';
+type ViewMode = 'kanban' | 'timeline' | 'calendar' | 'checklist';
 
 // ツリー構造用のノード型
 type TreeNode = {
@@ -83,7 +83,7 @@ const TaskCard = ({ action, kpiName, onDragStart, draggedTaskId, onClick }: { ac
 export default function MyTasksPage() {
   const { actions, setActionsBulk, kpiData } = useKpiStore();
   const [filterOwner, setFilterOwner] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('timeline'); // タイムラインをデフォルトに
+  const [viewMode, setViewMode] = useState<ViewMode>('checklist'); // ガイド付きチェックリストをデフォルトに
   const [isMounted, setIsMounted] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [groupByKpi, setGroupByKpi] = useState(true);
@@ -494,6 +494,117 @@ export default function MyTasksPage() {
     );
   };
 
+  // --- Checklist View ---
+  const renderChecklist = () => {
+    // 優先度マッピング
+    const priorityScore = {
+      'urgent_important': 1,
+      'not_urgent_important': 2,
+      'urgent_not_important': 3,
+      'unassigned': 4,
+      'not_urgent_not_important': 5
+    };
+
+    // タスクのソート（未完了を上、優先度順、期限順）
+    const sortedTasks = [...filteredActions].sort((a, b) => {
+      if (a.status === 'done' && b.status !== 'done') return 1;
+      if (a.status !== 'done' && b.status === 'done') return -1;
+      
+      const scoreA = priorityScore[a.priority as keyof typeof priorityScore] || 4;
+      const scoreB = priorityScore[b.priority as keyof typeof priorityScore] || 4;
+      if (scoreA !== scoreB) return scoreA - scoreB;
+
+      if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      
+      return 0;
+    });
+
+    return (
+      <div className="flex-1 bg-white dark:bg-[#202124] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col shadow-sm max-w-4xl mx-auto w-full">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-strategic-teal/10 to-transparent">
+          <h2 className="font-bold text-strategic-teal dark:text-teal-400 flex items-center gap-2">
+            <CheckSquare size={18} /> 次にやるべきアクション（優先順）
+          </h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            上から順にタスクを消化していくことで、事業全体のKPIが最短で改善するように設計されています。
+          </p>
+        </div>
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+          {sortedTasks.length === 0 ? (
+            <div className="text-center text-slate-500 py-10 text-sm">タスクがありません</div>
+          ) : (
+            sortedTasks.map((task, index) => {
+              const kpi = kpiData[task.kpiId];
+              const isDone = task.status === 'done';
+              return (
+                <div 
+                  key={task.id} 
+                  className={`flex items-start gap-4 p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer ${isDone ? 'bg-slate-50 border-slate-200 opacity-60 dark:bg-slate-900/30 dark:border-slate-800' : 'bg-white border-slate-200 dark:bg-[#282a2d] dark:border-slate-700 shadow-sm'}`}
+                  onClick={() => setEditingTask(task)}
+                >
+                  <div className="flex flex-col items-center gap-2 mt-1">
+                    <span className="text-xs font-bold text-slate-400">#{index + 1}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        useKpiStore.getState().updateAction(task.id, { status: isDone ? 'todo' : 'done' });
+                      }}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600 text-transparent hover:border-emerald-500'}`}
+                    >
+                      <CheckSquare size={14} />
+                    </button>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-xs font-bold truncate ${isDone ? 'line-through text-slate-500' : 'text-oxford-navy dark:text-slate-200'}`}>
+                        {task.title}
+                      </span>
+                      {task.priority && task.priority !== 'unassigned' && (
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${
+                          task.priority === 'urgent_important' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                          task.priority === 'not_urgent_important' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                          task.priority === 'urgent_not_important' ? 'bg-blue-100 text-strategic-teal dark:bg-blue-900/30 dark:text-blue-400' :
+                          'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {task.priority === 'urgent_important' ? '最優先' :
+                           task.priority === 'not_urgent_important' ? '重要・中長期' :
+                           task.priority === 'urgent_not_important' ? '急ぎ' : '後回し可'}
+                        </span>
+                      )}
+                    </div>
+                    {task.description && (
+                      <p className={`text-xs line-clamp-2 mb-2 ${isDone ? 'text-slate-400' : 'text-slate-600 dark:text-slate-400'}`}>
+                        {task.description}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-3 text-[11px]">
+                      {kpi && (
+                        <span className="flex items-center gap-1 text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded">
+                          <Building size={12} /> 紐付くKPI: {kpi.name}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 text-slate-500">
+                        <User size={12} /> {task.owner || '担当未定'}
+                      </span>
+                      {(task.startDate || task.dueDate) && (
+                        <span className={`flex items-center gap-1 font-medium ${task.dueDate && new Date(task.dueDate) < new Date() && !isDone ? 'text-rose-500' : 'text-slate-500'}`}>
+                          <CalendarIcon size={12} /> 
+                          {task.startDate ? task.startDate.split('T')[0] : ''} ~ {task.dueDate ? task.dueDate.split('T')[0] : '期限なし'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    );
+  };
+
   if (!isMounted) return null;
 
   return (
@@ -518,6 +629,12 @@ export default function MyTasksPage() {
           
           {/* View Toggle */}
           <div className="flex bg-clean-canvas dark:bg-slate-800 p-1 rounded-lg">
+            <button 
+              onClick={() => setViewMode('checklist')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'checklist' ? 'bg-white dark:bg-[#202124] text-strategic-teal shadow-sm' : 'text-logic-slate dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            >
+              <CheckSquare size={14} /> ガイド
+            </button>
             <button 
               onClick={() => setViewMode('timeline')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${viewMode === 'timeline' ? 'bg-white dark:bg-[#202124] text-strategic-teal shadow-sm' : 'text-logic-slate dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
@@ -569,6 +686,7 @@ export default function MyTasksPage() {
       </div>
 
       {/* Main Content Area */}
+      {viewMode === 'checklist' && renderChecklist()}
       {viewMode === 'kanban' && renderKanban()}
       {viewMode === 'timeline' && renderTimeline()}
       {viewMode === 'calendar' && renderCalendar()}

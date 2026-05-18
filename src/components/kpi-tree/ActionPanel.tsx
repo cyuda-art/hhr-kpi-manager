@@ -697,10 +697,19 @@ export const ActionPanel = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 {selectedKpiTasks.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                  <div className="flex flex-col items-center justify-center py-6 px-4 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                     <CheckSquare size={24} className="text-slate-300 dark:text-slate-600 mb-2" />
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">登録されたアクションはありません</p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">下のフォームからタスクを追加してください</p>
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300">登録されたアクションはありません</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 mb-4 leading-relaxed">
+                      KPIを改善するための具体的な施策（タスク）を追加しましょう。
+                    </p>
+                    <button 
+                      onClick={() => useKpiStore.getState().setIsCopilotSidebarOpen(true)}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] font-bold rounded-full shadow-sm transition-all"
+                    >
+                      <Sparkles size={12} />
+                      AIに改善施策を相談する
+                    </button>
                   </div>
                 ) : (
                   selectedKpiTasks.map(task => (
