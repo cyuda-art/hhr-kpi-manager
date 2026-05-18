@@ -105,6 +105,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
   const [isSmartAddModalOpen, setIsSmartAddModalOpen] = useState(false);
   const [smartAddQuery, setSmartAddQuery] = useState('');
+  const [smartAddMessages, setSmartAddMessages] = useState<{role: string, content: string}[]>([]);
+  const [isSmartAddThinking, setIsSmartAddThinking] = useState(false);
   const [isSmartAdding, setIsSmartAdding] = useState(false);
 
   const [isMobile, setIsMobile] = useState(true);
@@ -718,53 +720,124 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 />
               ) : (
                 <>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
-                    追加したいKPIや要素を入力してください。AIがツリー全体を分析し、最適な階層への接続、中間KPIの生成、計算式の再構築を全自動で行います。
-                  </p>
+                  <div className="h-64 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
+                    {smartAddMessages.length === 0 && (
+                      <div className="text-[13px] text-slate-500 text-center mt-4 leading-relaxed">
+                        追加したいKPIや要素を入力してください。AIが最適な階層への接続、中間KPIの生成、計算式の再構築を提案します。<br/>（例：「SNSマーケティングのKPIを追加したい」）
+                      </div>
+                    )}
+                    {smartAddMessages.map((msg, idx) => (
+                      <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${msg.role === 'user' ? 'bg-strategic-teal text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 whitespace-pre-wrap'}`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {isSmartAddThinking && (
+                      <div className="flex justify-start">
+                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                          <Loader2 size={14} className="animate-spin text-strategic-teal" /> AIが構成案を検討中...
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="例：SNSマーケティングのKPIを追加したい"
-                    value={smartAddQuery}
-                    onChange={(e) => setSmartAddQuery(e.target.value)}
-                    className="flex-1 px-4 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
-                    onKeyDown={async (e) => {
-                      if (e.key === 'Enter') {
-                        if (!smartAddQuery.trim()) return;
-                        setIsSmartAdding(true);
-                        try {
-                          await useKpiStore.getState().smartAddKpi(smartAddQuery);
+                    <input 
+                      type="text" 
+                      placeholder="AIアーキテクトにチャットで相談..."
+                      value={smartAddQuery}
+                      onChange={(e) => setSmartAddQuery(e.target.value)}
+                      disabled={isSmartAddThinking || isSmartAdding}
+                      className="flex-1 px-4 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          if (!smartAddQuery.trim() || isSmartAddThinking || isSmartAdding) return;
+                          
+                          const userQuery = smartAddQuery;
                           setSmartAddQuery('');
-                          setIsSmartAddModalOpen(false);
-                        } catch (err) {
-                          console.error(err);
-                        } finally {
-                          setIsSmartAdding(false);
+                          setSmartAddMessages(prev => [...prev, { role: 'user', content: userQuery }]);
+                          setIsSmartAddThinking(true);
+                          
+                          try {
+                            const res = await fetch('/api/smart-add-chat', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                message: userQuery,
+                                currentTree: Object.values(useKpiStore.getState().kpiData),
+                                history: smartAddMessages,
+                                businessUnit: useKpiStore.getState().currentProjectInfo?.name || 'company'
+                              })
+                            });
+                            
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error);
+                            
+                            setSmartAddMessages(prev => [...prev, { role: 'model', content: data.text }]);
+                            
+                            if (data.patchData) {
+                              // If AI outputted the patch JSON, we apply it and close the modal
+                              setIsSmartAdding(true);
+                              await useKpiStore.getState().applySmartAddPatch(data.patchData);
+                              setIsSmartAddModalOpen(false);
+                              setSmartAddMessages([]);
+                            }
+                          } catch (err) {
+                            setSmartAddMessages(prev => [...prev, { role: 'model', content: 'エラーが発生しました。' }]);
+                          } finally {
+                            setIsSmartAddThinking(false);
+                            setIsSmartAdding(false);
+                          }
                         }
-                      }
-                    }}
-                  />
-                  <button 
-                    disabled={!smartAddQuery.trim() || isSmartAdding}
-                    onClick={async () => {
-                      if (!smartAddQuery.trim()) return;
-                      setIsSmartAdding(true);
-                      try {
-                        await useKpiStore.getState().smartAddKpi(smartAddQuery);
-                        setSmartAddQuery('');
-                        setIsSmartAddModalOpen(false);
-                      } catch (err) {
-                        console.error(err);
-                      } finally {
-                        setIsSmartAdding(false);
-                      }
-                    }}
-                    className="px-6 py-2 bg-gradient-to-r from-strategic-teal to-blue-600 hover:from-strategic-teal/90 hover:to-blue-600/90 text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-md disabled:opacity-50"
-                  >
-                    <Sparkles size={16} />
-                    生成する
-                  </button>
-                </div>
+                      }}
+                    />
+                    <button 
+                      disabled={!smartAddQuery.trim() || isSmartAddThinking || isSmartAdding}
+                      onClick={async () => {
+                          if (!smartAddQuery.trim() || isSmartAddThinking || isSmartAdding) return;
+                          
+                          const userQuery = smartAddQuery;
+                          setSmartAddQuery('');
+                          setSmartAddMessages(prev => [...prev, { role: 'user', content: userQuery }]);
+                          setIsSmartAddThinking(true);
+                          
+                          try {
+                            const res = await fetch('/api/smart-add-chat', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                message: userQuery,
+                                currentTree: Object.values(useKpiStore.getState().kpiData),
+                                history: smartAddMessages,
+                                businessUnit: useKpiStore.getState().currentProjectInfo?.name || 'company'
+                              })
+                            });
+                            
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error);
+                            
+                            setSmartAddMessages(prev => [...prev, { role: 'model', content: data.text }]);
+                            
+                            if (data.patchData) {
+                              setIsSmartAdding(true);
+                              await useKpiStore.getState().applySmartAddPatch(data.patchData);
+                              setIsSmartAddModalOpen(false);
+                              setSmartAddMessages([]);
+                            }
+                          } catch (err) {
+                            setSmartAddMessages(prev => [...prev, { role: 'model', content: 'エラーが発生しました。' }]);
+                          } finally {
+                            setIsSmartAddThinking(false);
+                            setIsSmartAdding(false);
+                          }
+                      }}
+                      className="px-6 py-2 bg-gradient-to-r from-strategic-teal to-blue-600 hover:from-strategic-teal/90 hover:to-blue-600/90 text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-md disabled:opacity-50"
+                    >
+                      <Sparkles size={16} />
+                      送信
+                    </button>
+                  </div>
                 </>
               )}
             </div>

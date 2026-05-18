@@ -1,0 +1,118 @@
+import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
+
+export async function POST(req: Request) {
+  try {
+    const { message, currentTree, history, businessUnit } = await req.json();
+
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
+    }
+
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    // ツリー情報の軽量化
+    const simplifiedTree = currentTree.map((node: any) => ({
+      id: node.id,
+      name: node.name,
+      formula: node.formula,
+      parentId: node.parentId,
+      businessUnit: node.businessUnit
+    }));
+
+    const systemPrompt = `
+あなたはKPIツリーの構造を最適化するプロのAIアーキテクトです。
+ユーザーは既存のKPIツリーに新しい指標やプロセスを追加したいと考えており、その最適な配置や構造についてあなたと壁打ち（相談）をします。
+
+【現在のツリー構造】
+${JSON.stringify(simplifiedTree, null, 2)}
+
+ユーザーの要望に対して、「現在のツリー構造を見ると、〇〇のノードの下に△△という中間KPIを挟んで追加するのが論理的ですが、いかがでしょうか？」のように、コンサルタントとして最適な構造を提案してください。
+
+【絶対ルール】
+ユーザーと対話し、方針が決定・合意（例：「それでお願いします」「実行して」など）されたと判断した場合、必ず回答の「一番最後」に以下のJSONブロックを含めてください。システムがこれを検知してツリーを自動でパッチ更新します。
+合意に至るまでの議論段階では、JSONは絶対に出力せず、テキストのみで会話してください。
+
+\`\`\`json
+{
+  "updatedParent": {
+    "id": "（接続先に選んだ既存のノードのID）",
+    "newFormula": "（既存の式に新しいノードを組み込んだ数式。例: #{kpi_1} + #{kpi_smart_1}）"
+  },
+  "newNodes": [
+    {
+      "id": "kpi_smart_1",
+      "name": "追加した中間KPIまたは要望のKPI",
+      "qualitativeName": "定性的な目標・意味",
+      "businessUnit": "${businessUnit || 'company'}",
+      "type": "KPI",
+      "parentId": "（接続先に選んだ既存ノードのID、または他の中間ノードのID）",
+      "targetValue": 100,
+      "actualValue": 0,
+      "unit": "件",
+      "previousValue": 0,
+      "description": "AIによる自動生成",
+      "isCalculated": true,
+      "formula": "#{kpi_smart_2} + #{kpi_smart_3}",
+      "isKsf": false,
+      "trend_type": "steady_growth",
+      "volatility": 0.1,
+      "tasks": []
+    }
+  ]
+}
+\`\`\`
+（※ルール: 絶対に "type": "KGI" を作成しないこと。中間ノードを作成する場合は必ず2つ以上の子ノードを作成すること）
+`;
+
+    const formattedHistory = [
+      { role: 'user', parts: [{ text: systemPrompt }] },
+      { role: 'model', parts: [{ text: '理解しました。現在のツリー構造を把握した上で、最適なKPIの追加場所を議論します。' }] }
+    ];
+
+    if (history && history.length > 0) {
+      history.forEach((msg: any) => {
+        formattedHistory.push({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        });
+      });
+    }
+
+    const chat = model.startChat({
+      history: formattedHistory,
+      generationConfig: { temperature: 0.7 }
+    });
+
+    const result = await chat.sendMessage([{ text: message }]);
+    const responseText = result.response.text();
+
+    let patchData = null;
+    let cleanText = responseText;
+    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      try {
+        patchData = JSON.parse(jsonMatch[1]);
+        cleanText = responseText.replace(/```json\n([\s\S]*?)\n```/, '').trim();
+        
+        // Safety check for KGI
+        if (patchData.newNodes && Array.isArray(patchData.newNodes)) {
+          patchData.newNodes = patchData.newNodes.map((node: any) => {
+            if (node.type === 'KGI') node.type = 'KPI';
+            return node;
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to parse patch JSON', e);
+      }
+    }
+
+    return NextResponse.json({ text: cleanText, patchData });
+
+  } catch (error) {
+    console.error('Smart Add Chat error:', error);
+    return NextResponse.json({ error: 'Chat failed' }, { status: 500 });
+  }
+}

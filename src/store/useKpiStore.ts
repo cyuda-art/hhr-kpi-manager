@@ -57,6 +57,7 @@ interface KpiStore {
   reviveKpiNode: (id: string, newParentId: string | null) => void;
   expandKpiNode: (kpiId: string) => Promise<void>;
   smartAddKpi: (query: string) => Promise<void>;
+  applySmartAddPatch: (patchData: { updatedParent: any, newNodes: any[] }) => Promise<void>;
   applyRollingForecast: (kpiId: string, additionalTargetPerMonth: number, targetMonths: string[]) => void;
   recalculateAllMonthsAction: () => void;
 }
@@ -1296,25 +1297,9 @@ export const useKpiStore = create<KpiStore>()(
     }
   },
 
-  smartAddKpi: async (query: string) => {
+  applySmartAddPatch: async (patchData: { updatedParent: any, newNodes: any[] }) => {
     try {
-      const state = useKpiStore.getState();
-      const nodesArray = Object.values(state.kpiData);
-      
-      const response = await fetch('/api/smart-add-kpi', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentTree: nodesArray,
-          query: query,
-          businessUnit: state.currentProjectInfo?.name || 'company'
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to smart add KPI');
-
-      const data = await response.json();
-      const { updatedParent, newNodes } = data;
+      const { updatedParent, newNodes } = patchData;
 
       if (!updatedParent || !updatedParent.id || !newNodes || !Array.isArray(newNodes) || newNodes.length === 0) {
         throw new Error('Invalid patch format received from AI');
@@ -1419,6 +1404,33 @@ export const useKpiStore = create<KpiStore>()(
 
         return { kpiData: draft, actions: newActions, projectData: saveToProjectData({ ...currentState, kpiData: draft, actions: newActions }) };
       });
+
+    } catch (e) {
+      console.error("Smart Add KPI Patch error:", e);
+      alert("KPIの追加に失敗しました。");
+      throw e;
+    }
+  },
+
+  smartAddKpi: async (query: string) => {
+    try {
+      const state = useKpiStore.getState();
+      const nodesArray = Object.values(state.kpiData);
+      
+      const response = await fetch('/api/smart-add-kpi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentTree: nodesArray,
+          query: query,
+          businessUnit: state.currentProjectInfo?.name || 'company'
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to smart add KPI');
+
+      const data = await response.json();
+      await state.applySmartAddPatch(data);
 
     } catch (e) {
       console.error("Smart Add KPI error:", e);
