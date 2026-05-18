@@ -36,7 +36,7 @@ export const CopilotSidebar = () => {
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50/50 dark:bg-slate-900/50 custom-scrollbar">
         {smartAddMessages.length === 0 && (
           <div className="text-[13px] text-slate-500 text-center mt-4 leading-relaxed">
-            追加したいKPIや要素を入力してください。AIが最適な階層への接続、中間KPIの生成、計算式の再構築を提案します。<br/>（例：「SNSマーケティングのKPIを追加したい」）
+            追加したいKPIや要素、変更したい目標値などを入力してください。AIが最適な階層への接続、中間KPIの生成、既存KPIの目標値（Target Value）の再設定などを提案し、自動で反映します。<br/><br/>（例：「SNSマーケティングのKPIを追加したい」「営業利益の目標値を1日あたり10万円に変更して」）
           </div>
         )}
         {smartAddMessages.map((msg, idx) => (
