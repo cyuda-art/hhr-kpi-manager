@@ -290,6 +290,9 @@ export const ActionPanel = () => {
       // 目標値のシミュレーション編集は一旦省略（実績のシミュレーションのみ）
     } else {
       saveHistory(); // 値や数式の変更を履歴に積む
+      
+      const isMonth = currentPeriod.match(/^\d{4}-\d{2}$/);
+      
       updateKpiNode(selectedNodeId, {
         targetValue: storedTarget,
         actualValue: storedActual,
@@ -301,6 +304,15 @@ export const ActionPanel = () => {
         formula: editFormula,
         warning: undefined // 編集して保存したら警告を解除
       });
+
+      if (isMonth) {
+        useKpiStore.getState().bulkUpdateMonthlyData([{
+          kpiId: selectedNodeId,
+          month: currentPeriod,
+          targetValue: storedTarget,
+          actualValue: storedActual
+        }]);
+      }
     }
     setIsEditingValue(false);
   };

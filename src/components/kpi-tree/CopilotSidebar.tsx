@@ -5,9 +5,17 @@ import { useKpiStore } from '@/store/useKpiStore';
 import { Sparkles, Loader2, Wand2, X } from 'lucide-react';
 
 export const CopilotSidebar = () => {
-  const { isCopilotSidebarOpen, setIsCopilotSidebarOpen, kpiData, currentProjectInfo, applySmartAddPatch } = useKpiStore();
+  const { 
+    isCopilotSidebarOpen, 
+    setIsCopilotSidebarOpen, 
+    kpiData, 
+    currentProjectInfo, 
+    applySmartAddPatch,
+    smartAddMessages,
+    setSmartAddMessages
+  } = useKpiStore();
+  
   const [smartAddQuery, setSmartAddQuery] = useState('');
-  const [smartAddMessages, setSmartAddMessages] = useState<{role: string, content: string}[]>([]);
   const [isSmartAddThinking, setIsSmartAddThinking] = useState(false);
   const [isSmartAdding, setIsSmartAdding] = useState(false);
 

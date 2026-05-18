@@ -61,6 +61,8 @@ interface KpiStore {
   applySmartAddPatch: (patchData: { updatedParent: any, newNodes: any[] }) => Promise<void>;
   applyRollingForecast: (kpiId: string, additionalTargetPerMonth: number, targetMonths: string[]) => void;
   recalculateAllMonthsAction: () => void;
+  smartAddMessages: { role: string; content: string }[];
+  setSmartAddMessages: (messages: { role: string; content: string }[] | ((prev: { role: string; content: string }[]) => { role: string; content: string }[])) => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -432,6 +434,10 @@ export const useKpiStore = create<KpiStore>()(
       currentPeriod: '2026-05',
       isPredictionMode: false,
       isCopilotSidebarOpen: false,
+      smartAddMessages: [],
+      setSmartAddMessages: (messages) => set((state) => ({ 
+        smartAddMessages: typeof messages === 'function' ? messages(state.smartAddMessages) : messages 
+      })),
       pastStates: [],
       futureStates: [],
 
@@ -1460,7 +1466,8 @@ export const useKpiStore = create<KpiStore>()(
       name: 'kpi-storage',
       partialize: (state) => ({ 
         collapsedNodes: state.collapsedNodes,
-        currentPeriod: state.currentPeriod
+        currentPeriod: state.currentPeriod,
+        smartAddMessages: state.smartAddMessages
       }),
     }
   )
