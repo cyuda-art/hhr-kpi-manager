@@ -36,11 +36,12 @@ ${JSON.stringify(simplifiedTree, null, 2)}
 2. もし、その親ノードの下にいきなり要望のKPIを置くのが不自然な場合（論理の飛躍がある場合）、間に「中間ノード（上位・中位KPI）」を1〜2個作成して繋いでください。
 3. ユーザーが要望したKPI自体のノードを作成し、さらにその目標を達成するための「下位ノード（ドライバー要素やプロセス）」を2〜3個作成してください。
 4. 【大原則】新しく中間ノードを作成する場合は、必ず「2つ以上」の下位ノードに分解してください。1つの親に対して1つの子しか持たない（1対1の紐付け）状態は計算式が「A = B」となり無意味なため、絶対に避けてください。
-5. 【超重要・絶対ルール】既存の「親ノード」の計算式（formula）を、新しく追加する直下のノードのIDを含めた形にアップデートしてください。（例: 既存の計算式が "#{a} + #{b}" で、今回新たに "#{new_1}" を追加する場合、新しい計算式は "#{a} + #{b} + #{new_1}" となるように足し算で合流させてください）。
-6. 【超重要・絶対ルール】新しく作成するノードが子ノードを持つ（中間ノードになる）場合、必ず "isCalculated": true とし、その子ノードのIDを用いた計算式（例: "#{child_1} + #{child_2}"）を "formula" に設定してください。子ノードを持たない末端ノードの場合は "isCalculated": false とし "formula" は空文字にしてください。
-7. 以下のJSONフォーマット（"updatedParent" と "newNodes"）で出力してください。
-8. markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
-9. 新しく生成するノードのIDは、"kpi_smart_1", "kpi_smart_2" のように一意なものにしてください。
+5. 【超重要・絶対ルール】既存の「親ノード」の計算式（formula）を、新しく追加する直下のノードのIDを含めた形にアップデートしてください。
+6. 【超重要・絶対ルール】新しく作成するノードが子ノードを持つ（中間ノードになる）場合、必ず "isCalculated": true とし、その子ノードのIDを用いた計算式を "formula" に設定してください。
+7. 【超重要・絶対ルール】KGIはシステム全体で1つしか存在してはいけません。ユーザーが「KGIを追加して」と言った場合でも、絶対に "type": "KGI" を作成しないでください。新しく作成する全てのノードは必ず "type": "KPI" としてください。
+8. 以下のJSONフォーマット（"updatedParent" と "newNodes"）で出力してください。
+9. markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
+10. 新しく生成するノードのIDは、"kpi_smart_1", "kpi_smart_2" のように一意なものにしてください。
 
 【出力JSONフォーマット】
 {
@@ -67,9 +68,7 @@ ${JSON.stringify(simplifiedTree, null, 2)}
       "trend_type": "steady_growth",
       "volatility": 0.1,
       "tasks": []
-    },
-    ...
-    (末端のノードには tasks 配列にタスクを含めてください)
+    }
   ]
 }
     `;
@@ -92,6 +91,16 @@ ${JSON.stringify(simplifiedTree, null, 2)}
     } catch (e) {
       console.error("Failed to parse JSON:", text);
       throw new Error("AI output was not valid JSON");
+    }
+
+    // AIの暴走防止：万が一 type: "KGI" が含まれていた場合、強制的に KPI に変換する
+    if (data.newNodes && Array.isArray(data.newNodes)) {
+      data.newNodes = data.newNodes.map((node: any) => {
+        if (node.type === 'KGI') {
+          node.type = 'KPI';
+        }
+        return node;
+      });
     }
 
     return NextResponse.json(data);
