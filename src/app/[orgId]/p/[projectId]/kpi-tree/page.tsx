@@ -24,6 +24,12 @@ export default function KpiTreePage() {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if ((isCopilotSidebarOpen || isPredictionMode) && sidebarWidth < 350) {
+      setSidebarWidth(450);
+    }
+  }, [isCopilotSidebarOpen, isPredictionMode]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -36,13 +42,13 @@ export default function KpiTreePage() {
     if (isDragging) {
       // 右サイドバーの幅を計算
       const newWidth = containerRect.right - e.clientX;
-      if (newWidth >= 300 && newWidth <= 800) {
+      if (newWidth >= 10 && newWidth <= window.innerWidth - 100) {
         setSidebarWidth(newWidth);
       }
     } else if (isLeftDragging) {
       // 左サイドバーの幅を計算
       const newLeftWidth = e.clientX - containerRect.left;
-      if (newLeftWidth >= 200 && newLeftWidth <= 500) {
+      if (newLeftWidth >= 10 && newLeftWidth <= window.innerWidth - 100) {
         setLeftSidebarWidth(newLeftWidth);
       }
     }
@@ -112,10 +118,10 @@ export default function KpiTreePage() {
       {/* 右サイドバー：アクションパネル or Copilot */}
       <div 
         style={{ 
-          width: isCopilotSidebarOpen ? '450px' : isPredictionMode ? '550px' : isActionPanelCollapsed ? '0px' : `${sidebarWidth}px`,
+          width: isActionPanelCollapsed && !isCopilotSidebarOpen && !isPredictionMode ? '0px' : `${sidebarWidth}px`,
           display: (!isCopilotSidebarOpen && !isPredictionMode && isActionPanelCollapsed) ? 'none' : 'flex'
         }} 
-        className="shrink-0 bg-white dark:bg-[#2d2f31] flex-col h-full overflow-hidden transition-all duration-300"
+        className="shrink-0 bg-white dark:bg-[#2d2f31] flex-col h-full overflow-hidden"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           {isCopilotSidebarOpen ? (
