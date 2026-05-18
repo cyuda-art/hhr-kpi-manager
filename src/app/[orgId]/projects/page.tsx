@@ -101,6 +101,21 @@ export default function WorkspacePage() {
 
       const finalKgiType = kgiType === 'その他' && customKgiType.trim() !== '' ? customKgiType : kgiType;
 
+      // DBおよびAI推論のベースは「年間」であるため、ユーザーが入力した期間目標を年間目標に換算する
+      // （※率や単価など、スケールしない指標の場合はそのまま）
+      let isRateOrUnit = false;
+      if (finalKgiType.includes('率') || finalKgiType.includes('割合') || finalKgiType.includes('スコア') || finalKgiType.includes('単価') || finalKgiType.includes('LTV')) {
+        isRateOrUnit = true;
+      }
+      
+      let annualizedKgiTarget = Number(kgiTargetValue) || 0;
+      if (!isRateOrUnit) {
+        if (kgiPeriod === '半期') annualizedKgiTarget *= 2;
+        else if (kgiPeriod === '四半期') annualizedKgiTarget *= 4;
+        else if (kgiPeriod === '月間') annualizedKgiTarget *= 12;
+        else if (kgiPeriod === '1日あたり') annualizedKgiTarget *= 365;
+      }
+
       const res = await fetch('/api/generate-manifesto', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,7 +123,7 @@ export default function WorkspacePage() {
           masterMvv,
           orgContext,
           kgiType: finalKgiType,
-          kgiTargetValue: Number(kgiTargetValue) || 0,
+          kgiTargetValue: annualizedKgiTarget,
           projectUrl,
           customInstructions, // 追加指示
           fileUrls: urls // アップロードファイル
@@ -175,6 +190,20 @@ export default function WorkspacePage() {
 
       setUploadStatus('AIが選択された作戦に基づきKPIツリーを構築中...');
 
+      // DBおよびAI推論のベースは「年間」であるため、ユーザーが入力した期間目標を年間目標に換算する
+      let isRateOrUnit = false;
+      if (finalKgiType.includes('率') || finalKgiType.includes('割合') || finalKgiType.includes('スコア') || finalKgiType.includes('単価') || finalKgiType.includes('LTV')) {
+        isRateOrUnit = true;
+      }
+      
+      let annualizedKgiTarget = Number(kgiTargetValue) || 0;
+      if (!isRateOrUnit) {
+        if (kgiPeriod === '半期') annualizedKgiTarget *= 2;
+        else if (kgiPeriod === '四半期') annualizedKgiTarget *= 4;
+        else if (kgiPeriod === '月間') annualizedKgiTarget *= 12;
+        else if (kgiPeriod === '1日あたり') annualizedKgiTarget *= 365;
+      }
+
       // 2. APIを呼んでKPIツリーをAI生成
       const res = await fetch('/api/generate-kpi-tree', {
         method: 'POST',
@@ -183,7 +212,7 @@ export default function WorkspacePage() {
           projectUrl,
           kgiType: finalKgiType,
           kgiPeriod,
-          kgiTargetValue: Number(kgiTargetValue) || 0,
+          kgiTargetValue: annualizedKgiTarget,
           businessModelType,
           selectedManifesto: editableManifesto,
           customInstructions,
