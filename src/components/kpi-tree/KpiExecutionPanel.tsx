@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/store/useLayoutStore';
 import { Sparkles, Send, Bot, User, CheckCircle2, Circle, CheckSquare, X, Trash2 } from 'lucide-react';
 import { getDisplayValue, formatDisplayValue } from '@/lib/kpi-utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 
 export const KpiExecutionPanel = () => {
   const { kpiData, selectedNodeId, currentPeriod, addChatMessage, addAction } = useKpiStore();
@@ -13,8 +14,13 @@ export const KpiExecutionPanel = () => {
   
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [celebrations, setCelebrations] = useState<{id: number, emoji: string, startY: number}[]>([]);
+  const [celebrations, setCelebrations] = useState<{id: number}[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
   const isComputed = selectedKpi?.isCalculated || false;
@@ -172,44 +178,64 @@ export const KpiExecutionPanel = () => {
   };
 
   const triggerCelebration = () => {
-    const emojis = ['🦄', '🌈', '🚀', '🎉', '☄️', '🕊️'];
-    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
     const id = Date.now();
-    // 画面のランダムな高さからスタート
-    const startY = Math.random() * 60 + 20; 
-    setCelebrations(prev => [...prev, { id, emoji, startY }]);
+    setCelebrations(prev => [...prev, { id }]);
     
     // アニメーション終了後に要素を削除
     setTimeout(() => {
       setCelebrations(prev => prev.filter(c => c.id !== id));
-    }, 2500);
+    }, 3000);
   };
 
   const actualVal = getDisplayValue(selectedKpi.actualValue, selectedKpi, currentPeriod, 'actualValue');
   const targetVal = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue');
 
-  return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative overflow-hidden">
-      {/* セレブレーションアニメーション（Asana風） */}
-      <AnimatePresence>
+  // フルスクリーンCSSコンフェッティ（紙吹雪）の描画
+  const renderConfetti = () => {
+    if (!isMounted || typeof document === 'undefined' || celebrations.length === 0) return null;
+    
+    return createPortal(
+      <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
         {celebrations.map(c => (
-          <motion.div
-            key={c.id}
-            initial={{ x: '-10vw', y: `${c.startY}vh`, rotate: -20, scale: 0.5, opacity: 0 }}
-            animate={{ 
-              x: '110vw', 
-              y: `${c.startY - 30}vh`, 
-              rotate: 20, 
-              scale: [0.5, 2, 2.5, 2], 
-              opacity: [0, 1, 1, 0] 
-            }}
-            transition={{ duration: 1.8, ease: "easeInOut" }}
-            className="fixed z-50 text-6xl pointer-events-none drop-shadow-2xl"
-          >
-            {c.emoji}
-          </motion.div>
+          <div key={c.id} className="absolute inset-0">
+            {Array.from({ length: 60 }).map((_, i) => {
+              const colors = ['bg-emerald-400', 'bg-blue-400', 'bg-amber-400', 'bg-rose-400', 'bg-purple-400', 'bg-strategic-teal'];
+              const color = colors[i % colors.length];
+              const isCircle = i % 2 === 0;
+              
+              // 画面中央下部から放射状に広がる物理演算モック
+              const destX = (Math.random() - 0.5) * 120; // -60vw to 60vw
+              const destY = -(Math.random() * 80 + 20); // -20vh to -100vh
+              const scaleMax = Math.random() * 1.5 + 0.5;
+              
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ x: '50vw', y: '100vh', scale: 0, opacity: 1 }}
+                  animate={{ 
+                    x: `calc(50vw + ${destX}vw)`, 
+                    y: ['100vh', `calc(100vh + ${destY}vh)`, `calc(100vh + ${destY + 20}vh)`], 
+                    scale: [0, scaleMax, 0],
+                    rotate: Math.random() * 720 - 360
+                  }}
+                  transition={{ 
+                    duration: Math.random() * 1 + 1.5, 
+                    ease: [0.23, 1, 0.32, 1] // easeOutQuint
+                  }}
+                  className={`absolute w-3 h-3 ${color} ${isCircle ? 'rounded-full' : 'rounded-sm'} shadow-sm`}
+                />
+              );
+            })}
+          </div>
         ))}
-      </AnimatePresence>
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative">
+      {renderConfetti()}
 
       {/* ヘッダー部分（進捗サマリー） */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3 shrink-0">
