@@ -7,6 +7,27 @@ import { getDisplayValue, formatDisplayValue } from '@/lib/kpi-utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
+const TypewriterText = ({ text, animate }: { text: string, animate: boolean }) => {
+  const [displayedText, setDisplayedText] = useState(animate ? '' : text);
+  
+  useEffect(() => {
+    if (!animate) {
+      setDisplayedText(text);
+      return;
+    }
+    setDisplayedText('');
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayedText((prev) => text.substring(0, i));
+      if (i > text.length) clearInterval(interval);
+    }, 15);
+    return () => clearInterval(interval);
+  }, [text, animate]);
+
+  return <>{displayedText}</>;
+};
+
 export const KpiExecutionPanel = () => {
   const { kpiData, selectedNodeId, currentPeriod, addChatMessage, addAction } = useKpiStore();
   const { isActionPanelCollapsed, toggleActionPanel } = useLayoutStore();
@@ -233,9 +254,9 @@ export const KpiExecutionPanel = () => {
     );
   };
 
-  return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative">
-      {/* AI生成中の神々しい演出 */}
+  const renderAiProcessingEffect = () => {
+    if (!isMounted || typeof document === 'undefined') return null;
+    return createPortal(
       <AnimatePresence>
         {isProcessing && (
           <motion.div
@@ -243,13 +264,20 @@ export const KpiExecutionPanel = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="absolute inset-0 pointer-events-none z-40 rounded-none"
+            className="fixed inset-0 pointer-events-none z-[9999] rounded-none"
           >
             <div className="ai-caustic-surface" />
             <div className="ai-generating-border" />
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative">
+      {renderAiProcessingEffect()}
 
       {renderConfetti()}
 
@@ -423,7 +451,11 @@ export const KpiExecutionPanel = () => {
                 ? 'bg-strategic-teal text-white rounded-tr-sm' 
                 : 'bg-white dark:bg-[#3c4043] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-tl-sm shadow-sm'
             } whitespace-pre-wrap leading-relaxed`}>
-              {msg.content}
+              {msg.role === 'model' ? (
+                <TypewriterText text={msg.content} animate={msg.id === selectedKpi.chatMessages?.[selectedKpi.chatMessages.length - 1]?.id} />
+              ) : (
+                msg.content
+              )}
             </div>
             {msg.role === 'user' && (
               <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0 mt-1">

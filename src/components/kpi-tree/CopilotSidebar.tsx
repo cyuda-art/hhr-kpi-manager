@@ -1,9 +1,31 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { Sparkles, Loader2, Wand2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
+
+const TypewriterText = ({ text, animate }: { text: string, animate: boolean }) => {
+  const [displayedText, setDisplayedText] = useState(animate ? '' : text);
+  
+  useEffect(() => {
+    if (!animate) {
+      setDisplayedText(text);
+      return;
+    }
+    setDisplayedText('');
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayedText((prev) => text.substring(0, i));
+      if (i > text.length) clearInterval(interval);
+    }, 15);
+    return () => clearInterval(interval);
+  }, [text, animate]);
+
+  return <>{displayedText}</>;
+};
 
 export const CopilotSidebar = () => {
   const { 
@@ -19,12 +41,17 @@ export const CopilotSidebar = () => {
   const [smartAddQuery, setSmartAddQuery] = useState('');
   const [isSmartAddThinking, setIsSmartAddThinking] = useState(false);
   const [isSmartAdding, setIsSmartAdding] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   if (!isCopilotSidebarOpen) return null;
 
-  return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/5 relative">
-      {/* AI生成中の神々しい演出 */}
+  const renderAiProcessingEffect = () => {
+    if (!isMounted || typeof document === 'undefined') return null;
+    return createPortal(
       <AnimatePresence>
         {(isSmartAddThinking || isSmartAdding) && (
           <motion.div
@@ -32,13 +59,20 @@ export const CopilotSidebar = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="absolute inset-0 pointer-events-none z-40 rounded-none"
+            className="fixed inset-0 pointer-events-none z-[9999] rounded-none"
           >
             <div className="ai-caustic-surface" />
             <div className="ai-generating-border" />
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/5 relative">
+      {renderAiProcessingEffect()}
 
       <div className="relative z-10 px-5 py-4 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 flex justify-between items-center shrink-0">
         <h3 className="font-bold text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 flex items-center gap-2">
@@ -59,7 +93,11 @@ export const CopilotSidebar = () => {
         {smartAddMessages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] rounded-lg px-4 py-3 text-[13px] shadow-sm ${msg.role === 'user' ? 'bg-strategic-teal text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 whitespace-pre-wrap'}`}>
-              {msg.content}
+              {msg.role === 'model' ? (
+                <TypewriterText text={msg.content} animate={idx === smartAddMessages.length - 1} />
+              ) : (
+                msg.content
+              )}
             </div>
           </div>
         ))}
