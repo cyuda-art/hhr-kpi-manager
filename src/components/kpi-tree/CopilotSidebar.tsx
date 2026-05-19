@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { Sparkles, Loader2, Wand2, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const CopilotSidebar = () => {
   const { 
@@ -22,8 +23,24 @@ export const CopilotSidebar = () => {
   if (!isCopilotSidebarOpen) return null;
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/5">
-      <div className="px-5 py-4 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 flex justify-between items-center shrink-0">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/5 relative">
+      {/* AI生成中の神々しい演出 */}
+      <AnimatePresence>
+        {(isSmartAddThinking || isSmartAdding) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 pointer-events-none z-40 rounded-none"
+          >
+            <div className="ai-caustic-surface" />
+            <div className="ai-generating-border" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="relative z-10 px-5 py-4 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 flex justify-between items-center shrink-0">
         <h3 className="font-bold text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 flex items-center gap-2">
           <Sparkles className="text-strategic-teal" size={12} />
           AI戦略コンサルタント (Copilot)
@@ -55,7 +72,7 @@ export const CopilotSidebar = () => {
         )}
       </div>
       
-      <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex gap-2 shrink-0 bg-white dark:bg-[#202124]">
+      <div className="relative z-10 p-4 border-t border-slate-200 dark:border-slate-700 flex gap-2 shrink-0 bg-white dark:bg-[#202124]">
         <input 
           type="text" 
           placeholder="AIアーキテクトにチャットで相談..."
