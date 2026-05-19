@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { Sparkles, Send, Bot, User, CheckCircle2, Circle, CheckSquare, X, Trash2 } from 'lucide-react';
+import { Sparkles, Send, Bot, User, CheckCircle2, Circle, CheckSquare, X, Trash2, Zap } from 'lucide-react';
 import { getDisplayValue, formatDisplayValue } from '@/lib/kpi-utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
+import { AgentExecutionModal } from './AgentExecutionModal';
 
 const TypewriterText = ({ text, animate }: { text: string, animate: boolean }) => {
   const [displayedText, setDisplayedText] = useState(animate ? '' : text);
@@ -38,6 +39,7 @@ export const KpiExecutionPanel = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [celebrations, setCelebrations] = useState<{id: number}[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [executingActionId, setExecutingActionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -391,12 +393,24 @@ export const KpiExecutionPanel = () => {
                         );
                       })()}
                     </div>
+                    {action.status !== 'done' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExecutingActionId(action.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 rounded transition-all ml-auto shrink-0"
+                        title="AIで自律実行"
+                      >
+                        <Zap size={13} className="animate-pulse" />
+                      </button>
+                    )}
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         useKpiStore.getState().deleteAction(action.id);
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 transition-opacity ml-auto shrink-0"
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 transition-opacity shrink-0"
                       title="削除"
                     >
                       <Trash2 size={13} />
@@ -483,6 +497,15 @@ export const KpiExecutionPanel = () => {
           </button>
         </form>
       </div>
+
+      <AnimatePresence>
+        {executingActionId && (
+          <AgentExecutionModal
+            actionId={executingActionId}
+            onClose={() => setExecutingActionId(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
