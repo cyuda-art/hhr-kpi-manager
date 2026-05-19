@@ -13,6 +13,7 @@ export const KpiExecutionPanel = () => {
   
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [celebrations, setCelebrations] = useState<{id: number, emoji: string, startY: number}[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
@@ -156,6 +157,7 @@ export const KpiExecutionPanel = () => {
               evidenceText: `AIによるタスク完了: ${action.reason || 'チャット経由の報告'}`,
               source: 'user_chat'
             });
+            triggerCelebration();
           }
         });
       }
@@ -169,11 +171,46 @@ export const KpiExecutionPanel = () => {
     }
   };
 
+  const triggerCelebration = () => {
+    const emojis = ['🦄', '🌈', '🚀', '🎉', '☄️', '🕊️'];
+    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+    const id = Date.now();
+    // 画面のランダムな高さからスタート
+    const startY = Math.random() * 60 + 20; 
+    setCelebrations(prev => [...prev, { id, emoji, startY }]);
+    
+    // アニメーション終了後に要素を削除
+    setTimeout(() => {
+      setCelebrations(prev => prev.filter(c => c.id !== id));
+    }, 2500);
+  };
+
   const actualVal = getDisplayValue(selectedKpi.actualValue, selectedKpi, currentPeriod, 'actualValue');
   const targetVal = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue');
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#202124]">
+    <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative overflow-hidden">
+      {/* セレブレーションアニメーション（Asana風） */}
+      <AnimatePresence>
+        {celebrations.map(c => (
+          <motion.div
+            key={c.id}
+            initial={{ x: '-10vw', y: `${c.startY}vh`, rotate: -20, scale: 0.5, opacity: 0 }}
+            animate={{ 
+              x: '110vw', 
+              y: `${c.startY - 30}vh`, 
+              rotate: 20, 
+              scale: [0.5, 2, 2.5, 2], 
+              opacity: [0, 1, 1, 0] 
+            }}
+            transition={{ duration: 1.8, ease: "easeInOut" }}
+            className="fixed z-50 text-6xl pointer-events-none drop-shadow-2xl"
+          >
+            {c.emoji}
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
       {/* ヘッダー部分（進捗サマリー） */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3 shrink-0">
         <div className="flex justify-between items-start">
@@ -258,8 +295,8 @@ export const KpiExecutionPanel = () => {
                       opacity: 1, 
                       y: 0, 
                       scale: 1,
-                      // 追加されたばかり（現在時刻から1秒以内）ならシェイクする
-                      x: (Date.now() - (action.createdAt || Date.now())) < 1000 ? [0, -4, 4, -4, 4, 0] : 0 
+                      // 追加されたばかり（現在時刻から1秒以内かつcreatedAtが存在する）ならシェイクする
+                      x: (action.createdAt && (Date.now() - action.createdAt) < 1000) ? [0, -4, 4, -4, 4, 0] : 0 
                     }}
                     transition={{ 
                       duration: 0.3,
@@ -269,7 +306,11 @@ export const KpiExecutionPanel = () => {
                     className={`group flex items-start gap-2 p-2 rounded border ${action.status === 'done' ? 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 opacity-60' : 'bg-white border-slate-200 dark:bg-[#2d2f31] dark:border-slate-700'} transition-colors`}
                   >
                     <button 
-                      onClick={() => useKpiStore.getState().toggleActionStatus(action.id)}
+                      onClick={() => {
+                        const isCompleting = action.status !== 'done';
+                        useKpiStore.getState().toggleActionStatus(action.id);
+                        if (isCompleting) triggerCelebration();
+                      }}
                       className={`mt-0.5 shrink-0 ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 hover:text-emerald-400'}`}
                     >
                       {action.status === 'done' ? <CheckCircle2 size={14} /> : <Circle size={14} />}
