@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { Sparkles, Send, Bot, User, CheckCircle2, History, X } from 'lucide-react';
+import { Sparkles, Send, Bot, User, CheckCircle2, Circle, CheckSquare, X } from 'lucide-react';
 import { getDisplayValue, formatDisplayValue } from '@/lib/kpi-utils';
 
 export const KpiExecutionPanel = () => {
@@ -205,8 +205,55 @@ export const KpiExecutionPanel = () => {
         </div>
       </div>
 
+      {/* ToDoリストエリア */}
+      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 dark:bg-[#252628] dark:border-slate-800 shrink-0 max-h-48 overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+            <CheckSquare size={14} className="text-strategic-teal" /> 関連するToDo
+          </span>
+          {isComputed && (
+            <span className="text-[10px] text-slate-500">※子要素のタスクも含みます</span>
+          )}
+        </div>
+        
+        {useKpiStore.getState().actions.filter(a => 
+          !a.isArchived && 
+          (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId)))
+        ).length === 0 ? (
+          <div className="text-[11px] text-slate-400 text-center py-2 bg-white dark:bg-[#2d2f31] rounded border border-slate-100 dark:border-slate-800">
+            未完了のタスクはありません
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            {useKpiStore.getState().actions
+              .filter(a => !a.isArchived && (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId))))
+              .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
+              .map(action => (
+                <div key={action.id} className={`flex items-start gap-2 p-2 rounded border ${action.status === 'done' ? 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 opacity-60' : 'bg-white border-slate-200 dark:bg-[#2d2f31] dark:border-slate-700'} transition-all`}>
+                  <button 
+                    onClick={() => useKpiStore.getState().toggleActionStatus(action.id)}
+                    className={`mt-0.5 shrink-0 ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 hover:text-emerald-400'}`}
+                  >
+                    {action.status === 'done' ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                  </button>
+                  <div className="flex flex-col min-w-0">
+                    <span className={`text-xs ${action.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                      {action.title}
+                    </span>
+                    {action.kpiId !== selectedKpi.id && (
+                      <span className="text-[9px] text-slate-400 mt-0.5 truncate">
+                        対象: {kpiData[action.kpiId]?.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* チャットエリア */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar bg-slate-50/50 dark:bg-transparent">
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar bg-white dark:bg-transparent">
         {(!selectedKpi.chatMessages || selectedKpi.chatMessages.length === 0) && (
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
             <Bot size={32} className="text-slate-300 dark:text-slate-600 mb-2" />
