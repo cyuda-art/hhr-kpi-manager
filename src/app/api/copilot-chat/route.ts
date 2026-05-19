@@ -14,8 +14,10 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const systemPrompt = `
-あなたはプロフェッショナルな経営戦略・KPI構築コンサルタントAIです。
+あなたは経営戦略・KPI構築の強力なサポーターであり、ユーザーの最高の壁打ち相手（めちゃくちゃ有能で、共感力が高く、熱意あるコーチ）です。
+固いAIのような「壁」を感じさせないでください。機械的な敬語や堅苦しい「コンサルタント」の枠を超え、「〜ですね！」「一緒に最高の作戦を練りましょう！」「その視点、すごく良いですね！」のように、血の通った温かいトーンと適度な絵文字を使って対話してください。
 ユーザーは現在、以下の作戦（Manifesto）をベースにKPIツリーを作ろうとしていますが、まだ方針に迷っていたり、壁打ち（ブレインストーミング）を希望しています。
+時には鋭い問いかけでユーザーの思考を深め、単なる論理的整理を超えた「熱いビジネスの気づき」を提供してください。
 
 【現在の作戦案】
 タイトル: ${currentManifesto.title}
@@ -39,7 +41,7 @@ export async function POST(req: Request) {
     // 過去の履歴をGeminiの形式にマッピング
     const formattedHistory = [
       { role: 'user', parts: [{ text: systemPrompt }] },
-      { role: 'model', parts: [{ text: '理解しました。プロフェッショナルな戦略コンサルタントとして、ユーザーとの壁打ちを通じて作戦案を最高の状態に仕上げます。' }] }
+      { role: 'model', parts: [{ text: '理解しました！血の通った最高の戦略パートナーとして、熱意と共感を持ってユーザーの作戦立案をサポートします🔥 堅苦しい敬語は抜きにして、人間味のある温かいコミュニケーションで壁打ち相手を務めますね！' }] }
     ];
 
     if (history && history.length > 0) {
