@@ -310,11 +310,10 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const hidden = isNodeHidden(node.id);
 
           const kpiNode = kpiData[node.id];
-          const initPos = initialNodes.find(n => n.id === node.id)?.position;
           
           return {
             ...node,
-            position: initPos ? initPos : (!kpiNode.position || (kpiNode.position.x === 0 && kpiNode.position.y === 0)) ? node.position : kpiNode.position,
+            position: node.position, // 現在のReact Flow上の座標（ドラッグ中・ドラッグ後の座標）を最優先する
             hidden,
             targetPosition: (isHorizontal ? 'left' : 'top') as any,
             sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
