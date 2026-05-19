@@ -15,6 +15,10 @@ export const KpiExecutionPanel = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
+  const isComputed = selectedKpi?.isCalculated || false;
+
+  // 子KPIの取得
+  const childKpis = selectedKpi ? Object.values(kpiData).filter(node => node.parentId === selectedKpi.id && !node.isArchived) : [];
 
   // 自動スクロール
   useEffect(() => {
@@ -54,12 +58,24 @@ export const KpiExecutionPanel = () => {
         body: JSON.stringify({
           message: userMessage,
           kpiContext: {
+            id: selectedKpi.id,
             name: selectedKpi.name,
             targetValue: selectedKpi.targetValue,
             actualValue: selectedKpi.actualValue,
             unit: selectedKpi.unit,
-            description: selectedKpi.description
+            description: selectedKpi.description,
+            isCalculated: selectedKpi.isCalculated,
+            formula: selectedKpi.formula
           },
+          childKpis: childKpis.map(child => ({
+            id: child.id,
+            name: child.name,
+            targetValue: child.targetValue,
+            actualValue: child.actualValue,
+            unit: child.unit,
+            achievementRate: child.achievementRate,
+            status: child.status
+          })),
           actions: useKpiStore.getState().actions.filter(a => a.kpiId === selectedKpi.id && !a.isArchived),
           history: selectedKpi.chatMessages || []
         })
@@ -91,8 +107,9 @@ export const KpiExecutionPanel = () => {
               source: 'user_chat'
             });
           } else if (action.type === 'ADD_TODO') {
+            const targetKpiId = action.targetKpiId || selectedKpi.id;
             useKpiStore.getState().addAction({
-              kpiId: selectedKpi.id,
+              kpiId: targetKpiId,
               title: action.title,
               status: 'todo',
               dueDate: new Date().toISOString().split('T')[0],
@@ -100,7 +117,7 @@ export const KpiExecutionPanel = () => {
               owner: user?.displayName || 'Guest'
             });
             useKpiStore.getState().addAuditLog({
-              kpiId: selectedKpi.id,
+              kpiId: targetKpiId,
               userId: user?.uid || 'guest',
               userName: user?.displayName || 'Guest',
               action: 'ADD_TODO',
@@ -140,8 +157,19 @@ export const KpiExecutionPanel = () => {
       <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3 shrink-0">
         <div className="flex justify-between items-start">
           <div>
-            <div className="text-[10px] font-bold text-strategic-teal dark:text-primary-400 uppercase tracking-wider mb-1">
-              Selected {selectedKpi.type}
+            <div className="flex items-center gap-2 mb-1">
+              <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {selectedKpi.type}
+              </div>
+              {isComputed ? (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                  🟣 Computed Node (自動計算)
+                </span>
+              ) : (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                  🔵 Action Node (手動更新)
+                </span>
+              )}
             </div>
             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
               {selectedKpi.name}
