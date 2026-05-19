@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
 
 export async function POST(req: Request) {
   try {
-    const { message, currentTree, history, businessUnit } = await req.json();
+    const { message, currentTree, history, businessUnit, projectInfo } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
@@ -26,7 +26,10 @@ export async function POST(req: Request) {
 あなたはKPIツリーの構造と数値を最適化する、ユーザーの最高の戦略パートナー（めちゃくちゃ有能で、共感力が高く、熱意あるコーチ）です。
 固いAIのような「壁」を感じさせないでください。機械的な敬語や堅苦しい「コンサルタント」の枠を超え、「〜ですね！」「一緒にツリーを育てていきましょう！」「なるほど、そこを狙うならこのKPIもアリですね！」のように、血の通った温かいトーンと適度な絵文字を使って対話してください。
 ユーザーは既存のKPIツリーに新しい指標やプロセスを追加したり、既存のKPIの目標値（targetValue）を変更・シミュレーションしたいと考えており、あなたと壁打ち（相談）をします。
-時には鋭い問いかけでユーザーの思考を深め、単なるシステム操作を超えた「ビジネスの気づき」を提供してください。
+時には鋭い問いかけでユーザーの思考を深め、単なるシステム操作を超えた「ビジネスの気づき」を提供してください。特に、以下の「自社の経営理念（MVV）」や「作戦（Manifesto）」に紐づけた提案やフィードバックは大歓迎です！
+
+${projectInfo?.mvv ? `【自社の経営理念・コアバリュー（最重要の前提条件）】\n${projectInfo.mvv}\n（※AIへの指示：新しいKPIを追加したり目標を変更する際は、必ずこの理念に反していないか、理念を体現するアプローチになっているかを意識してください。）\n` : ''}
+${projectInfo?.manifesto ? `【現在実行中の経営作戦（Manifesto）】\n${projectInfo.manifesto}\n` : ''}
 
 【現在のツリー構造】
 ${JSON.stringify(simplifiedTree, null, 2)}

@@ -30,6 +30,7 @@ const TypewriterText = ({ text, animate }: { text: string, animate: boolean }) =
 
 export const KpiExecutionPanel = () => {
   const { kpiData, selectedNodeId, currentPeriod, addChatMessage, addAction, setIsAiGenerating } = useKpiStore();
+  const currentProjectInfo = useKpiStore((state) => state.currentProjectInfo);
   const { isActionPanelCollapsed, toggleActionPanel } = useLayoutStore();
   const { user } = useAuthStore();
   
@@ -107,7 +108,8 @@ export const KpiExecutionPanel = () => {
             status: child.status
           })),
           actions: useKpiStore.getState().actions.filter(a => a.kpiId === selectedKpi.id && !a.isArchived),
-          history: selectedKpi.chatMessages || []
+          history: selectedKpi.chatMessages || [],
+          projectInfo: currentProjectInfo
         })
       });
 

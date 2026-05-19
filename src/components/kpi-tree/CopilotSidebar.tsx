@@ -105,7 +105,8 @@ export const CopilotSidebar = () => {
                     message: userQuery,
                     currentTree: Object.values(kpiData),
                     history: smartAddMessages,
-                    businessUnit: currentProjectInfo?.name || 'company'
+                    businessUnit: currentProjectInfo?.name || 'company',
+                    projectInfo: currentProjectInfo
                   })
                 });
                 
@@ -163,7 +164,8 @@ export const CopilotSidebar = () => {
                     message: userQuery,
                     currentTree: Object.values(kpiData),
                     history: smartAddMessages,
-                    businessUnit: currentProjectInfo?.name || 'company'
+                    businessUnit: currentProjectInfo?.name || 'company',
+                    projectInfo: currentProjectInfo
                   })
                 });
                 
