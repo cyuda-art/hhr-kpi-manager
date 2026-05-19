@@ -30,6 +30,7 @@ interface KpiStore {
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
   updateAction: (id: string, updates: Partial<Action>) => void;
+  deleteAction: (id: string) => void;
   removeAction: (id: string) => void;
   toggleActionStatus: (actionId: string) => void;
   setActionsBulk: (actions: Action[]) => void;
@@ -803,6 +804,15 @@ export const useKpiStore = create<KpiStore>()(
       return { actions: newActions, projectData: saveToProjectData({ ...state, actions: newActions }) };
     });
   },
+
+  deleteAction: (id) => {
+    set((state) => {
+      const updatedActions = state.actions.filter(a => a.id !== id);
+      syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: state.kpiData, actions: updatedActions, projectInfo: state.currentProjectInfo });
+      return { actions: updatedActions, projectData: saveToProjectData({ ...state, actions: updatedActions }) };
+    });
+  },
+
   removeAction: (id) => {
     set((state) => {
       const newActions = state.actions.filter(a => a.id !== id);

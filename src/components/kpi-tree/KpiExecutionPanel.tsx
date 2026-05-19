@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { Sparkles, Send, Bot, User, CheckCircle2, Circle, CheckSquare, X } from 'lucide-react';
 import { getDisplayValue, formatDisplayValue } from '@/lib/kpi-utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const KpiExecutionPanel = () => {
   const { kpiData, selectedNodeId, currentPeriod, addChatMessage, addAction } = useKpiStore();
@@ -108,20 +109,40 @@ export const KpiExecutionPanel = () => {
             });
           } else if (action.type === 'ADD_TODO') {
             const targetKpiId = action.targetKpiId || selectedKpi.id;
-            useKpiStore.getState().addAction({
-              kpiId: targetKpiId,
-              title: action.title,
-              status: 'todo',
-              dueDate: new Date().toISOString().split('T')[0],
-              priority: action.priority || 'not_urgent_important',
-              owner: user?.displayName || 'Guest'
-            });
+            
+            // 冪等性の担保（既に同じタイトルの未完了タスクがある場合は追加しない）
+            const existingTasks = useKpiStore.getState().actions;
+            const isDuplicate = existingTasks.some(a => a.kpiId === targetKpiId && a.title === action.title && a.status === 'todo' && !a.isArchived);
+            
+            if (!isDuplicate) {
+              useKpiStore.getState().addAction({
+                kpiId: targetKpiId,
+                title: action.title,
+                status: 'todo',
+                dueDate: new Date().toISOString().split('T')[0],
+                priority: action.priority || 'not_urgent_important',
+                owner: user?.displayName || 'Guest'
+              });
+              useKpiStore.getState().addAuditLog({
+                kpiId: targetKpiId,
+                userId: user?.uid || 'guest',
+                userName: user?.displayName || 'Guest',
+                action: 'ADD_TODO',
+                evidenceText: `AIによるタスク追加: ${action.title}`,
+                source: 'user_chat'
+              });
+            } else {
+              console.log('Skipped duplicate ADD_TODO for:', action.title);
+            }
+          } else if (action.type === 'DELETE_TODO') {
+            useKpiStore.getState().deleteAction(action.actionId);
             useKpiStore.getState().addAuditLog({
-              kpiId: targetKpiId,
+              kpiId: selectedKpi.id,
               userId: user?.uid || 'guest',
               userName: user?.displayName || 'Guest',
-              action: 'ADD_TODO',
-              evidenceText: `AIによるタスク追加: ${action.title}`,
+              action: 'DELETE_TODO',
+              actionId: action.actionId,
+              evidenceText: `AIによるタスク削除: ${action.reason || 'チャット経由の指示'}`,
               source: 'user_chat'
             });
           } else if (action.type === 'COMPLETE_TODO') {
@@ -225,43 +246,61 @@ export const KpiExecutionPanel = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
-            {useKpiStore.getState().actions
-              .filter(a => !a.isArchived && (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId))))
-              .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
-              .map(action => (
-                <div key={action.id} className={`flex items-start gap-2 p-2 rounded border ${action.status === 'done' ? 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 opacity-60' : 'bg-white border-slate-200 dark:bg-[#2d2f31] dark:border-slate-700'} transition-all`}>
-                  <button 
-                    onClick={() => useKpiStore.getState().toggleActionStatus(action.id)}
-                    className={`mt-0.5 shrink-0 ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 hover:text-emerald-400'}`}
+            <AnimatePresence initial={false}>
+              {useKpiStore.getState().actions
+                .filter(a => !a.isArchived && (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId))))
+                .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
+                .map(action => (
+                  <motion.div 
+                    key={action.id} 
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0, 
+                      scale: 1,
+                      // 追加されたばかり（現在時刻から1秒以内）ならシェイクする
+                      x: (Date.now() - (action.createdAt || Date.now())) < 1000 ? [0, -4, 4, -4, 4, 0] : 0 
+                    }}
+                    transition={{ 
+                      duration: 0.3,
+                      x: { duration: 0.4, ease: "easeInOut" } // シェイク用のトランジション
+                    }}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                    className={`flex items-start gap-2 p-2 rounded border ${action.status === 'done' ? 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 opacity-60' : 'bg-white border-slate-200 dark:bg-[#2d2f31] dark:border-slate-700'} transition-colors`}
                   >
-                    {action.status === 'done' ? <CheckCircle2 size={14} /> : <Circle size={14} />}
-                  </button>
-                  <div className="flex flex-col min-w-0">
-                    <span className={`text-xs ${action.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
-                      {action.title}
-                    </span>
-                    {action.kpiId !== selectedKpi.id && (() => {
-                      const targetNode = kpiData[action.kpiId];
-                      if (!targetNode) return null;
-                      
-                      let badgeColor = 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
-                      if (targetNode.status === 'danger') {
-                        badgeColor = 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800';
-                      } else if (targetNode.status === 'warning') {
-                        badgeColor = 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800';
-                      } else if (targetNode.status === 'good') {
-                        badgeColor = 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-                      }
+                    <button 
+                      onClick={() => useKpiStore.getState().toggleActionStatus(action.id)}
+                      className={`mt-0.5 shrink-0 ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 hover:text-emerald-400'}`}
+                    >
+                      {action.status === 'done' ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                    </button>
+                    <div className="flex flex-col min-w-0">
+                      <span className={`text-xs ${action.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                        {action.title}
+                      </span>
+                      {action.kpiId !== selectedKpi.id && (() => {
+                        const targetNode = kpiData[action.kpiId];
+                        if (!targetNode) return null;
+                        
+                        let badgeColor = 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+                        if (targetNode.status === 'danger') {
+                          badgeColor = 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800';
+                        } else if (targetNode.status === 'warning') {
+                          badgeColor = 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+                        } else if (targetNode.status === 'good') {
+                          badgeColor = 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+                        }
 
-                      return (
-                        <span className={`text-[9px] mt-1 px-1.5 py-0.5 rounded border w-fit font-medium flex items-center gap-1 ${badgeColor} ${action.status === 'done' ? 'opacity-50' : ''}`}>
-                          対象: {targetNode.name} ({Math.round(targetNode.achievementRate || 0)}%)
-                        </span>
-                      );
-                    })()}
-                  </div>
-                </div>
-            ))}
+                        return (
+                          <span className={`text-[9px] mt-1 px-1.5 py-0.5 rounded border w-fit font-medium flex items-center gap-1 ${badgeColor} ${action.status === 'done' ? 'opacity-50' : ''}`}>
+                            対象: {targetNode.name} ({Math.round(targetNode.achievementRate || 0)}%)
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
