@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
-import { Sparkles, Send, Bot, User, CheckCircle2, Circle, CheckSquare, X } from 'lucide-react';
+import { Sparkles, Send, Bot, User, CheckCircle2, Circle, CheckSquare, X, Trash2 } from 'lucide-react';
 import { getDisplayValue, formatDisplayValue } from '@/lib/kpi-utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -266,7 +266,7 @@ export const KpiExecutionPanel = () => {
                       x: { duration: 0.4, ease: "easeInOut" } // シェイク用のトランジション
                     }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                    className={`flex items-start gap-2 p-2 rounded border ${action.status === 'done' ? 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 opacity-60' : 'bg-white border-slate-200 dark:bg-[#2d2f31] dark:border-slate-700'} transition-colors`}
+                    className={`group flex items-start gap-2 p-2 rounded border ${action.status === 'done' ? 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 opacity-60' : 'bg-white border-slate-200 dark:bg-[#2d2f31] dark:border-slate-700'} transition-colors`}
                   >
                     <button 
                       onClick={() => useKpiStore.getState().toggleActionStatus(action.id)}
@@ -274,7 +274,7 @@ export const KpiExecutionPanel = () => {
                     >
                       {action.status === 'done' ? <CheckCircle2 size={14} /> : <Circle size={14} />}
                     </button>
-                    <div className="flex flex-col min-w-0">
+                    <div className="flex flex-col min-w-0 flex-1">
                       <span className={`text-xs ${action.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
                         {action.title}
                       </span>
@@ -298,6 +298,16 @@ export const KpiExecutionPanel = () => {
                         );
                       })()}
                     </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        useKpiStore.getState().deleteAction(action.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 transition-opacity ml-auto shrink-0"
+                      title="削除"
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </motion.div>
               ))}
             </AnimatePresence>
