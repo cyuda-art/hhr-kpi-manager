@@ -24,7 +24,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   
   const isHorizontal = direction === 'LR';
-  dagreGraph.setGraph({ rankdir: direction, ranksep: 120, nodesep: 80 });
+  // 余白を広めに取って、KPI同士の間隔をゆったりとさせる（インダストリアルデザイン的な余白の美学）
+  dagreGraph.setGraph({ rankdir: direction, ranksep: 200, nodesep: 150 });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
