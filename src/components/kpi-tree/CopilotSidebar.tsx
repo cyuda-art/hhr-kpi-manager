@@ -1,10 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useKpiStore } from '@/store/useKpiStore';
 import { Sparkles, Loader2, Wand2, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createPortal } from 'react-dom';
 
 const TypewriterText = ({ text, animate }: { text: string, animate: boolean }) => {
   const [displayedText, setDisplayedText] = useState(animate ? '' : text);
@@ -35,45 +31,18 @@ export const CopilotSidebar = () => {
     currentProjectInfo, 
     applySmartAddPatch,
     smartAddMessages,
-    setSmartAddMessages
+    setSmartAddMessages,
+    setIsAiGenerating
   } = useKpiStore();
   
   const [smartAddQuery, setSmartAddQuery] = useState('');
   const [isSmartAddThinking, setIsSmartAddThinking] = useState(false);
   const [isSmartAdding, setIsSmartAdding] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   if (!isCopilotSidebarOpen) return null;
 
-  const renderAiProcessingEffect = () => {
-    if (!isMounted || typeof document === 'undefined') return null;
-    return createPortal(
-      <AnimatePresence>
-        {(isSmartAddThinking || isSmartAdding) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed inset-0 pointer-events-none z-[9999] rounded-none"
-          >
-            <div className="ai-caustic-surface" />
-            <div className="ai-generating-border" />
-          </motion.div>
-        )}
-      </AnimatePresence>,
-      document.body
-    );
-  };
-
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/5 relative">
-      {renderAiProcessingEffect()}
-
       <div className="relative z-10 px-5 py-4 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 flex justify-between items-center shrink-0">
         <h3 className="font-bold text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 flex items-center gap-2">
           <Sparkles className="text-strategic-teal" size={12} />
@@ -126,6 +95,7 @@ export const CopilotSidebar = () => {
               setSmartAddQuery('');
               setSmartAddMessages(prev => [...prev, { role: 'user', content: userQuery }]);
               setIsSmartAddThinking(true);
+              setIsAiGenerating(true);
               
               try {
                 const res = await fetch('/api/smart-add-chat', {
@@ -169,6 +139,7 @@ export const CopilotSidebar = () => {
               } finally {
                 setIsSmartAddThinking(false);
                 setIsSmartAdding(false);
+                setIsAiGenerating(false);
               }
             }
           }}
@@ -182,6 +153,7 @@ export const CopilotSidebar = () => {
               setSmartAddQuery('');
               setSmartAddMessages(prev => [...prev, { role: 'user', content: userQuery }]);
               setIsSmartAddThinking(true);
+              setIsAiGenerating(true);
               
               try {
                 const res = await fetch('/api/smart-add-chat', {
@@ -225,6 +197,7 @@ export const CopilotSidebar = () => {
               } finally {
                 setIsSmartAddThinking(false);
                 setIsSmartAdding(false);
+                setIsAiGenerating(false);
               }
           }}
           className="px-6 py-2 bg-gradient-to-r from-strategic-teal to-blue-600 hover:from-strategic-teal/90 hover:to-blue-600/90 text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-md disabled:opacity-50"

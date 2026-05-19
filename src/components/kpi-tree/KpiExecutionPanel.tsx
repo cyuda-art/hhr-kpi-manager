@@ -29,7 +29,7 @@ const TypewriterText = ({ text, animate }: { text: string, animate: boolean }) =
 };
 
 export const KpiExecutionPanel = () => {
-  const { kpiData, selectedNodeId, currentPeriod, addChatMessage, addAction } = useKpiStore();
+  const { kpiData, selectedNodeId, currentPeriod, addChatMessage, addAction, setIsAiGenerating } = useKpiStore();
   const { isActionPanelCollapsed, toggleActionPanel } = useLayoutStore();
   const { user } = useAuthStore();
   
@@ -76,6 +76,7 @@ export const KpiExecutionPanel = () => {
     const userMessage = input.trim();
     setInput('');
     setIsProcessing(true);
+    setIsAiGenerating(true);
 
     // 即座にUIに反映
     addChatMessage(selectedKpi.id, { role: 'user', content: userMessage });
@@ -190,11 +191,13 @@ export const KpiExecutionPanel = () => {
       }
 
       setIsProcessing(false);
+      setIsAiGenerating(false);
       
     } catch (error) {
       console.error(error);
       addChatMessage(selectedKpi.id, { role: 'model', content: 'エラーが発生しました。' });
       setIsProcessing(false);
+      setIsAiGenerating(false);
     }
   };
 
@@ -254,31 +257,8 @@ export const KpiExecutionPanel = () => {
     );
   };
 
-  const renderAiProcessingEffect = () => {
-    if (!isMounted || typeof document === 'undefined') return null;
-    return createPortal(
-      <AnimatePresence>
-        {isProcessing && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed inset-0 pointer-events-none z-[9999] rounded-none"
-          >
-            <div className="ai-caustic-surface" />
-            <div className="ai-generating-border" />
-          </motion.div>
-        )}
-      </AnimatePresence>,
-      document.body
-    );
-  };
-
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative">
-      {renderAiProcessingEffect()}
-
       {renderConfetti()}
 
       {/* ヘッダー部分（進捗サマリー） */}

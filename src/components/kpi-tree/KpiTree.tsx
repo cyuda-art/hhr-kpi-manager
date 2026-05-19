@@ -97,7 +97,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 };
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates, currentPeriod } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates, currentPeriod, isAiGenerating } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection, showStatusLegend, toggleStatusLegend } = useLayoutStore();
   const currentProjectInfo = useKpiStore((state) => state.currentProjectInfo);
   const thresholds = currentProjectInfo?.statusThresholds || { good: 100, warning: 80 };
@@ -510,7 +510,15 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
   return (
     <div className={`w-full h-full min-w-0 flex flex-col min-h-0 ${previewMode ? "fixed inset-0 z-50 m-0 p-0" : ""}`}>
-      <div className={`w-full h-full flex-1 min-w-0 min-h-0 bg-white dark:bg-[#2d2f31] overflow-hidden transition-colors relative ${isDashboard ? 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm' : ''}`}>
+      <div className={`w-full h-full flex-1 min-w-0 min-h-0 bg-white dark:bg-[#2d2f31] overflow-hidden transition-colors relative ${isDashboard ? 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm' : ''} ${isAiGenerating ? 'ai-global-processing-border' : ''}`}>
+        
+        {/* AI生成中キャンバス内のオーロラエフェクト */}
+        {isAiGenerating && (
+          <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden" style={{ borderRadius: 'inherit' }}>
+            <div className="ai-caustic-surface" style={{ mixBlendMode: 'overlay', opacity: 0.6 }} />
+          </div>
+        )}
+
         {!previewMode && (
           <div className="absolute top-4 left-4 z-10 flex gap-2">
             <div className="flex bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden">

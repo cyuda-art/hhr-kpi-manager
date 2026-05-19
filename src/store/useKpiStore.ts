@@ -22,6 +22,8 @@ interface KpiStore {
   currentPeriod: string;
   isCopilotSidebarOpen: boolean;
   setIsCopilotSidebarOpen: (isOpen: boolean) => void;
+  isAiGenerating: boolean;
+  setIsAiGenerating: (isGenerating: boolean) => void;
   setPeriod: (period: string) => void;
   togglePredictionMode: () => void;
   initializeDB: (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => Promise<void>;
@@ -443,6 +445,7 @@ export const useKpiStore = create<KpiStore>()(
       currentPeriod: '2026-05',
       isPredictionMode: false,
       isCopilotSidebarOpen: false,
+      isAiGenerating: false,
       smartAddMessages: [],
       setSmartAddMessages: (messages) => set((state) => ({ 
         smartAddMessages: typeof messages === 'function' ? messages(state.smartAddMessages) : messages 
@@ -507,6 +510,7 @@ export const useKpiStore = create<KpiStore>()(
         return { isPredictionMode: isNowPrediction, kpiData: draft };
       }),
       setIsCopilotSidebarOpen: (isOpen: boolean) => set({ isCopilotSidebarOpen: isOpen }),
+      setIsAiGenerating: (isGenerating: boolean) => set({ isAiGenerating: isGenerating }),
 
       initializeDB: async (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => {
         if (get().isDbInitialized && get().currentProjectId === projectId) return;
