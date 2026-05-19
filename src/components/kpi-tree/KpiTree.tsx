@@ -310,10 +310,13 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const hidden = isNodeHidden(node.id);
 
           const kpiNode = kpiData[node.id];
+          const hasValidDbPosition = kpiNode.position && (kpiNode.position.x !== 0 || kpiNode.position.y !== 0);
           
           return {
             ...node,
-            position: node.position, // 現在のReact Flow上の座標（ドラッグ中・ドラッグ後の座標）を最優先する
+            // ドラッグ中（dragging）はローカル座標を最優先しスナップバックを防ぐ。
+            // それ以外の通常時（初回ロード、別タブ同期、自動レイアウト直後）はDB座標を正とする。
+            position: node.dragging ? node.position : (hasValidDbPosition ? kpiNode.position : node.position),
             hidden,
             targetPosition: (isHorizontal ? 'left' : 'top') as any,
             sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
