@@ -197,8 +197,8 @@ export default function LandingPage() {
                 <div className="bg-[#111] p-4 font-mono text-[11px] text-slate-300 leading-relaxed border border-slate-800">
                   <span className="text-purple-400">const</span> <span className="text-blue-400">systemPrompt</span> = `<br />
                   あなたは当社の最高戦略責任者です。<br />
-                  <span className="text-strategic-teal">$\{projectInfo.mvv\}</span> に反する提案は絶対にしないでください。<br />
-                  現在のマニフェスト <span className="text-strategic-teal">$\{projectInfo.manifesto\}</span> に基づき、<br />
+                  <span className="text-strategic-teal">{"${projectInfo.mvv}"}</span> に反する提案は絶対にしないでください。<br />
+                  現在のマニフェスト <span className="text-strategic-teal">{"${projectInfo.manifesto}"}</span> に基づき、<br />
                   熱意を持って現場をコーチングしてください。`
                 </div>
               </div>
