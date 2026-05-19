@@ -44,6 +44,7 @@ export interface KpiNodeData {
   isKsf?: boolean; // AI戦略においてKey Success Factor（最重要ノード）と判定されたか
   addedAt?: number; // UI演出用の追加時刻タイムスタンプ
   monthlyData?: Record<string, MonthlyData>; // 月次データ（YYYY-MM形式をキーとする）
+  chatMessages?: KpiChatMessage[]; // 対話型PDCA用のチャット履歴
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース
@@ -119,5 +120,28 @@ export interface AiWorkflow {
   workflow: WorkflowPhase[];
   kpi_advice: string;
   generatedAt: number;
+}
+
+export interface AuditLog {
+  id: string;
+  projectId: string;
+  kpiId: string;
+  userId: string;
+  userName: string;
+  timestamp: number;
+  action: 'UPDATE_VALUE' | 'COMPLETE_TODO' | 'ADD_TODO' | 'OTHER';
+  previousValue?: number | string;
+  newValue?: number | string;
+  actionId?: string; // 関連するToDoのID
+  evidenceText?: string; // チャット内容や変更理由などの証拠
+  source: 'user_chat' | 'manual_edit' | 'ai_automation';
+}
+
+export interface KpiChatMessage {
+  id: string;
+  role: 'user' | 'model';
+  content: string;
+  timestamp: number;
+  toolCalls?: any[]; // For Function Calling
 }
 

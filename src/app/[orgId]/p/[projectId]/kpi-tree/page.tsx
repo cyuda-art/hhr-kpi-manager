@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
-import { ActionPanel } from '@/components/kpi-tree/ActionPanel';
+import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
 import { SimulationPanel } from '@/components/kpi-tree/SimulationPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
 import { CopilotSidebar } from '@/components/kpi-tree/CopilotSidebar';
@@ -129,8 +129,8 @@ export default function KpiTreePage() {
           ) : isPredictionMode ? (
             <SimulationPanel />
           ) : (
-            <div className="h-full overflow-y-auto p-4 custom-scrollbar">
-              <ActionPanel />
+            <div className="h-full overflow-hidden custom-scrollbar">
+              <KpiExecutionPanel />
             </div>
           )}
         </div>

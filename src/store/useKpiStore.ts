@@ -65,6 +65,9 @@ interface KpiStore {
   setSmartAddMessages: (messages: { role: string; content: string }[] | ((prev: { role: string; content: string }[]) => { role: string; content: string }[])) => void;
   recentlyUpdatedNodes: string[];
   setRecentlyUpdatedNodes: (nodes: string[]) => void;
+  addAuditLog: (log: Omit<import('@/types').AuditLog, 'id' | 'projectId' | 'timestamp'>) => Promise<void>;
+  fetchAuditLogs: (kpiId: string) => Promise<import('@/types').AuditLog[]>;
+  addChatMessage: (kpiId: string, message: Omit<import('@/types').KpiChatMessage, 'id' | 'timestamp'>) => void;
 }
 
 // データベース(Firestore)更新用のヘルパー関数
@@ -1497,6 +1500,70 @@ export const useKpiStore = create<KpiStore>()(
       alert("KPIの追加に失敗しました。詳細なプロンプトを試してください。");
       throw e;
     }
+  },
+  
+  addAuditLog: async (log) => {
+    const state = useKpiStore.getState();
+    if (!state.currentProjectId || !state.currentOrgId) return;
+    try {
+      const logId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+      const auditLog: import('@/types').AuditLog = {
+        ...log,
+        id: logId,
+        projectId: state.currentProjectId,
+        timestamp: Date.now()
+      };
+      const logRef = doc(db, 'organizations', state.currentOrgId, 'projects', state.currentProjectId, 'auditLogs', logId);
+      await setDoc(logRef, auditLog);
+    } catch (e) {
+      console.error("Failed to add audit log", e);
+    }
+  },
+
+  fetchAuditLogs: async (kpiId: string) => {
+    const state = useKpiStore.getState();
+    if (!state.currentProjectId || !state.currentOrgId) return [];
+    try {
+      // 本来はwhere句でkpiIdを絞り込みますが、今回はシンプルな実装とします。
+      const logsRef = collection(db, 'organizations', state.currentOrgId, 'projects', state.currentProjectId, 'auditLogs');
+      const snap = await getDocs(logsRef);
+      const logs: import('@/types').AuditLog[] = [];
+      snap.forEach(doc => {
+        const data = doc.data() as import('@/types').AuditLog;
+        if (data.kpiId === kpiId) {
+          logs.push(data);
+        }
+      });
+      // 新しい順にソート
+      return logs.sort((a, b) => b.timestamp - a.timestamp);
+    } catch (e) {
+      console.error("Failed to fetch audit logs", e);
+      return [];
+    }
+  },
+
+  addChatMessage: (kpiId, message) => {
+    set((state) => {
+      const draft = { ...state.kpiData };
+      if (!draft[kpiId]) return state;
+      
+      const newMessage: import('@/types').KpiChatMessage = {
+        ...message,
+        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+        timestamp: Date.now()
+      };
+      
+      const chatMessages = draft[kpiId].chatMessages ? [...draft[kpiId].chatMessages] : [];
+      chatMessages.push(newMessage);
+      
+      draft[kpiId] = {
+        ...draft[kpiId],
+        chatMessages
+      };
+      
+      syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
+      return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
+    });
   },
 
   toggleNodeCollapse: (id) => {
