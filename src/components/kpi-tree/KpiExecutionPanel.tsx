@@ -235,6 +235,22 @@ export const KpiExecutionPanel = () => {
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative">
+      {/* AI生成中の神々しい演出 */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 pointer-events-none z-40 rounded-none"
+          >
+            <div className="ai-caustic-surface" />
+            <div className="ai-generating-border" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {renderConfetti()}
 
       {/* ヘッダー部分（進捗サマリー） */}

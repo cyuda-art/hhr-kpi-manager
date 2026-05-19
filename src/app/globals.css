@@ -305,7 +305,89 @@ body {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
   100% { transform: translateY(0px); }
-}
 .anim-float {
   animation: animFloat 6s ease-in-out infinite;
+}
+
+/* AI生成中の演出（波のような光・屈折） */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spin-angle {
+  to { --angle: 360deg; }
+}
+
+.ai-generating-border {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px; /* 縁の太さ */
+  background: conic-gradient(
+    from var(--angle),
+    transparent 0%,
+    rgba(14, 165, 233, 0.1) 5%,
+    rgba(168, 85, 247, 0.8) 15%,
+    rgba(255, 255, 255, 1) 20%,
+    rgba(16, 185, 129, 0.8) 25%,
+    transparent 40%
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: spin-angle 2s linear infinite;
+  pointer-events: none;
+  z-index: 50;
+}
+
+@keyframes ai-caustic-wave {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+.ai-caustic-surface {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: 
+    repeating-linear-gradient(
+      115deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 5%,
+      rgba(14, 165, 233, 0.15) 10%,
+      transparent 20%
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0%,
+      rgba(168, 85, 247, 0.1) 5%,
+      rgba(16, 185, 129, 0.15) 15%,
+      transparent 25%
+    );
+  background-size: 200% 200%;
+  animation: ai-caustic-wave 6s linear infinite alternate;
+  mix-blend-mode: overlay;
+  z-index: 40;
+}
+.dark .ai-caustic-surface {
+  background: 
+    repeating-linear-gradient(
+      115deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 5%,
+      rgba(14, 165, 233, 0.1) 10%,
+      transparent 20%
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0%,
+      rgba(168, 85, 247, 0.1) 5%,
+      rgba(16, 185, 129, 0.1) 15%,
+      transparent 25%
+    );
+  mix-blend-mode: color-dodge;
 }
