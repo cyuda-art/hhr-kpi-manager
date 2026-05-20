@@ -16,10 +16,30 @@ model Organization {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   
+  // 組織のメタデータ（Firebaseから移行）
+  managementPhilosophy String?
+  masterMvv        String?
+  companyUrl       String?
+  businessDescription String?
+  targetMarket     String?
+  
+  // マクロ環境分析
+  industry         String?
+  pest             String?
+  fiveForces       String?
+  vrio             String?
+  
+  // AIバッチ等
+  lastCrawledAt    DateTime?
+  requiresStrategyReview Boolean @default(false)
+  
   // 💰 AIクレジットとエコノミクス（Phase 2）
   aiCreditBalance  Int        @default(1000) // 初回無料クレジット枠（原価コントロール）
   subscriptionPlan String     @default("FREE") // FREE, STARTER, BUSINESS
   stripeCustomerId String?    @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId    String?
+  stripeCurrentPeriodEnd DateTime?
   
   users            User[]
   projects         Project[]
@@ -159,3 +179,20 @@ model Task {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+// ==========================================
+// 5. 監査ログ（セキュリティ・操作履歴）
+// ==========================================
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  projectId      String?
+  userId         String
+  
+  action         String       // 例: "NODE_UPDATED", "PROJECT_CREATED"
+  details        String?      // JSON文字列で詳細を保存
+  
+  createdAt      DateTime     @default(now())
+}
+

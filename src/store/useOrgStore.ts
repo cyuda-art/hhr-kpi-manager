@@ -1,13 +1,12 @@
 import { create } from 'zustand';
-import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, getDoc, onSnapshot, query, where, arrayUnion } from 'firebase/firestore';
-import { Organization, OrgMember } from '@/types/organization';
+import { Organization } from '@/types/organization';
+import { useAuthStore } from './useAuthStore';
 
 interface OrgStore {
   organizations: Organization[];
   currentOrgId: string | null;
   isLoading: boolean;
-  initializeOrgs: (userId: string) => () => void;
+  initializeOrgs: (userId: string) => Promise<void>;
   setCurrentOrgId: (id: string | null) => void;
   createOrganization: (name: string, userId: string) => Promise<string>;
   joinOrganization: (orgId: string, userId: string) => Promise<void>;
@@ -22,90 +21,75 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
   currentOrgId: null,
   isLoading: true,
 
-  initializeOrgs: (userId: string) => {
+  initializeOrgs: async (userId: string) => {
     set({ isLoading: true });
     
-    // members配列内のuserIdが存在する組織を取得（Firebaseではオブジェクト配列の検索は難しいため、通常は別フィールドにUIDリストを持つか、サブコレクションにするが、今回は簡易的に ownerId か、別途UIDリストを持たせる運用にする必要がある。しかしここはZustand内でフロントエンドフィルタするか、データ構造を調整する）
-    // Firestoreでのクエリの制限を避けるため、membersUidListというstring配列を持たせることにする
-    const q = query(
-      collection(db, 'organizations'),
-      where('membersUidList', 'array-contains', userId)
-    );
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const orgs: Organization[] = [];
-      snapshot.forEach((doc) => {
-        orgs.push(doc.data() as Organization);
-      });
+    try {
+      const res = await fetch(`/api/organizations?userId=${userId}`);
+      if (!res.ok) throw new Error('Failed to fetch organizations');
+      const data = await res.json();
       
-      // デフォルトの組織を選択
+      const orgs: Organization[] = data.organizations || [];
+      
       const currentOrgId = get().currentOrgId;
       if (!currentOrgId && orgs.length > 0) {
         set({ currentOrgId: orgs[0].id });
       }
       
       set({ organizations: orgs, isLoading: false });
-    });
-
-    return unsubscribe;
+    } catch (error) {
+      console.error('Error initializing orgs:', error);
+      set({ isLoading: false });
+    }
   },
 
   setCurrentOrgId: (id) => set({ currentOrgId: id }),
 
   createOrganization: async (name, userId) => {
-    const newOrgId = Math.random().toString(36).substr(2, 9);
-    
-    const newMember: OrgMember = {
-      userId,
-      role: 'admin',
-      joinedAt: Date.now(),
-    };
-
-    const newOrg = {
-      id: newOrgId,
-      name,
-      ownerId: userId,
-      members: [newMember],
-      membersUidList: [userId], // クエリ用のUID配列
-      aiCreditBalance: 1000,
-      subscriptionPlan: 'FREE',
-      createdAt: Date.now(),
-    };
-
-    await setDoc(doc(db, 'organizations', newOrgId), newOrg);
-    set({ currentOrgId: newOrgId });
-    return newOrgId;
+    try {
+      const authUser = useAuthStore.getState().user;
+      const res = await fetch('/api/organizations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          userId,
+          email: authUser?.email,
+          userName: authUser?.displayName
+        })
+      });
+      if (!res.ok) throw new Error('Failed to create organization');
+      const newOrg = await res.json();
+      
+      // Update local state
+      set((state) => ({
+        organizations: [...state.organizations, newOrg],
+        currentOrgId: newOrg.id
+      }));
+      
+      return newOrg.id;
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      throw error;
+    }
   },
 
   joinOrganization: async (orgId: string, userId: string) => {
     try {
-      const newMember: OrgMember = {
-        userId,
-        role: 'viewer', // デフォルトはviewer
-        joinedAt: Date.now(),
-      };
+      const authUser = useAuthStore.getState().user;
+      const res = await fetch(`/api/organizations/${orgId}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          email: authUser?.email,
+          userName: authUser?.displayName
+        })
+      });
+      if (!res.ok) throw new Error('Failed to join organization');
       
-      const orgRef = doc(db, 'organizations', orgId);
-      
-      // 注意: arrayUnionを使ってオブジェクトを追加するのは値が完全一致する場合のみ機能するが、新規追加なら問題ない。
-      // もし重複チェック等を厳密にするなら、一度getDocして確認する必要がある。今回は簡略化。
-      // また、membersUidListも同時に更新する。
-      
-      const docSnap = await getDoc(orgRef);
-      if (!docSnap.exists()) throw new Error("Organization not found");
-      
-      const orgData = docSnap.data() as Organization;
-      const isAlreadyMember = orgData.membersUidList?.includes(userId);
-      
-      if (!isAlreadyMember) {
-        // FIXME: importに updateDoc 等を追加する必要があるが、ここは既存のsetDocを使うか、updateDocを使う
-        // useProjectStoreのように上部にupdateDocをインポートしたはずだが、無ければsetDoc(..., {merge: true})で代用
-        await setDoc(orgRef, {
-          members: arrayUnion(newMember),
-          membersUidList: arrayUnion(userId)
-        }, { merge: true });
-      }
-      
+      // Refresh organization list
+      await get().initializeOrgs(userId);
       set({ currentOrgId: orgId });
     } catch (error) {
       console.error("Error joining organization:", error);
@@ -114,19 +98,24 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
   },
 
   updateOrganizationName: async (orgId: string, name: string) => {
-    try {
-      const orgRef = doc(db, 'organizations', orgId);
-      await setDoc(orgRef, { name }, { merge: true });
-    } catch (error) {
-      console.error("Error updating organization name:", error);
-      throw error;
-    }
+    await get().updateOrganizationSettings(orgId, { name });
   },
 
   updateOrganizationSettings: async (orgId: string, data: Partial<Organization>) => {
     try {
-      const orgRef = doc(db, 'organizations', orgId);
-      await setDoc(orgRef, data, { merge: true });
+      const res = await fetch(`/api/organizations/${orgId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('Failed to update organization settings');
+      const updatedOrg = await res.json();
+      
+      set((state) => ({
+        organizations: state.organizations.map(org => 
+          org.id === orgId ? { ...org, ...updatedOrg } : org
+        )
+      }));
     } catch (error) {
       console.error("Error updating organization settings:", error);
       throw error;
@@ -134,22 +123,10 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
   },
 
   updateOrganizationMvv: async (orgId: string, masterMvv: string) => {
-    try {
-      const orgRef = doc(db, 'organizations', orgId);
-      await setDoc(orgRef, { masterMvv }, { merge: true });
-    } catch (error) {
-      console.error("Error updating organization MVV:", error);
-      throw error;
-    }
+    await get().updateOrganizationSettings(orgId, { masterMvv });
   },
 
   updateOrganizationFrameworks: async (orgId: string, data: Partial<Organization>) => {
-    try {
-      const orgRef = doc(db, 'organizations', orgId);
-      await setDoc(orgRef, data, { merge: true });
-    } catch (error) {
-      console.error("Error updating organization frameworks:", error);
-      throw error;
-    }
+    await get().updateOrganizationSettings(orgId, data);
   }
 }));

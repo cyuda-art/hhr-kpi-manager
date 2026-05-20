@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
 import { TEMPLATES } from '@/lib/templates';
 import { Sparkles, Bot, User, CheckCircle2, Building2, UserCircle, Hotel, Utensils, ShoppingBag, Monitor, Box } from 'lucide-react';
 import React from 'react';
@@ -145,9 +143,13 @@ export default function OnboardingChatPage() {
         };
       });
 
-      await setDoc(doc(db, 'projects', projectId, 'kpiData', 'main'), {
-        kpiData,
-        actions: []
+      await fetch(`/api/projects/${projectId}/kpi-data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kpiData,
+          actions: []
+        })
       });
 
       setCurrentProjectId(projectId);

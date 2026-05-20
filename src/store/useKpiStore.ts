@@ -1384,15 +1384,16 @@ export const useKpiStore = create<KpiStore>()(
     const state = useKpiStore.getState();
     if (!state.currentProjectId || !state.currentOrgId) return;
     try {
-      const logId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
-      const auditLog: import('@/types').AuditLog = {
-        ...log,
-        id: logId,
-        projectId: state.currentProjectId,
-        timestamp: Date.now()
-      };
-      const logRef = doc(db, 'organizations', state.currentOrgId, 'projects', state.currentProjectId, 'auditLogs', logId);
-      await setDoc(logRef, auditLog);
+      await fetch(`/api/projects/${state.currentProjectId}/audit-logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationId: state.currentOrgId,
+          userId: log.userId,
+          action: log.action,
+          details: { kpiId: log.kpiId, details: log.details }
+        })
+      });
     } catch (e) {
       console.error("Failed to add audit log", e);
     }
@@ -1402,18 +1403,25 @@ export const useKpiStore = create<KpiStore>()(
     const state = useKpiStore.getState();
     if (!state.currentProjectId || !state.currentOrgId) return [];
     try {
-      // 本来はwhere句でkpiIdを絞り込みますが、今回はシンプルな実装とします。
-      const logsRef = collection(db, 'organizations', state.currentOrgId, 'projects', state.currentProjectId, 'auditLogs');
-      const snap = await getDocs(logsRef);
-      const logs: import('@/types').AuditLog[] = [];
-      snap.forEach(doc => {
-        const data = doc.data() as import('@/types').AuditLog;
-        if (data.kpiId === kpiId) {
-          logs.push(data);
-        }
+      const res = await fetch(`/api/projects/${state.currentProjectId}/audit-logs`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      
+      const logs = data.logs.map((log: any) => {
+        let detailsObj = {};
+        try { detailsObj = JSON.parse(log.details || '{}'); } catch(e){}
+        return {
+          id: log.id,
+          kpiId: (detailsObj as any).kpiId || '',
+          action: log.action,
+          userId: log.userId,
+          details: (detailsObj as any).details || '',
+          timestamp: new Date(log.createdAt).getTime()
+        };
       });
-      // 新しい順にソート
-      return logs.sort((a, b) => b.timestamp - a.timestamp);
+      
+      // kpiId でフィルタリング
+      return logs.filter((log: any) => log.kpiId === kpiId);
     } catch (e) {
       console.error("Failed to fetch audit logs", e);
       return [];

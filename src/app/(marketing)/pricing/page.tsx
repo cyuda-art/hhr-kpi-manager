@@ -1,10 +1,61 @@
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Check, Loader2 } from 'lucide-react';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useOrgStore } from '@/store/useOrgStore';
 
 export default function PricingPage() {
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const { currentOrgId, organizations } = useOrgStore();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const currentOrg = organizations.find(o => o.id === currentOrgId);
+  const currentPlan = currentOrg?.subscriptionPlan || 'FREE';
+
+  const handleSubscribe = async (planName: string) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    if (!currentOrgId) {
+      alert("組織が選択されていません。ログインし直してください。");
+      return;
+    }
+
+    setLoadingPlan(planName);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orgId: currentOrgId,
+          planName: planName,
+          returnUrl: window.location.origin + `/${currentOrgId}/settings`,
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error('決済セッションの作成に失敗しました');
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error(error);
+      alert('エラーが発生しました。時間をおいて再度お試しください。');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#000a1f] text-slate-900 dark:text-slate-100 font-sans pt-32 pb-24">
       <MarketingHeader />
@@ -24,9 +75,21 @@ export default function PricingPage() {
               <span className="text-4xl font-black font-poppins">¥0</span>
               <span className="text-slate-500 text-sm"> / ずっと無料</span>
             </div>
-            <Link href="/login" className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-center rounded-full transition-colors mb-8">
-              無料で始める
-            </Link>
+            
+            {user && currentPlan === 'FREE' ? (
+              <button disabled className="w-full py-3 px-4 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold text-center rounded-full mb-8 cursor-not-allowed">
+                現在のプラン
+              </button>
+            ) : user && currentPlan !== 'FREE' ? (
+              <Link href={`/${currentOrgId}/settings`} className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-center rounded-full transition-colors mb-8">
+                ダウングレード（設定へ）
+              </Link>
+            ) : (
+              <Link href="/login" className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-center rounded-full transition-colors mb-8">
+                無料で始める
+              </Link>
+            )}
+
             <div className="space-y-4 flex-1">
               {['1プロジェクト（ツリー）', '個人利用（1ユーザー）', 'AIツリー自動生成（月3回まで）', '基本のタスク管理'].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-sm">
@@ -48,9 +111,21 @@ export default function PricingPage() {
               <span className="text-4xl font-black font-poppins">¥1,980</span>
               <span className="text-slate-500 text-sm"> / 月</span>
             </div>
-            <Link href="/login" className="w-full py-3 px-4 bg-strategic-teal hover:bg-strategic-teal/90 text-white font-bold text-center rounded-full transition-colors mb-8 shadow-md">
-              14日間無料で試す
-            </Link>
+            
+            {user && currentPlan === 'STARTER' ? (
+              <button disabled className="w-full py-3 px-4 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold text-center rounded-full mb-8 cursor-not-allowed">
+                現在のプラン
+              </button>
+            ) : (
+              <button 
+                onClick={() => handleSubscribe('STARTER')}
+                disabled={loadingPlan === 'STARTER'}
+                className="w-full py-3 px-4 flex justify-center items-center gap-2 bg-strategic-teal hover:bg-strategic-teal/90 text-white font-bold text-center rounded-full transition-colors mb-8 shadow-md disabled:opacity-70"
+              >
+                {loadingPlan === 'STARTER' ? <Loader2 className="animate-spin w-5 h-5" /> : (user ? 'このプランにアップグレード' : '14日間無料で試す')}
+              </button>
+            )}
+
             <div className="space-y-4 flex-1">
               {['無制限のプロジェクト', '最大5ユーザーまで招待可能', 'AIツリー自動生成（無制限）', 'AIローリングフォーキャスト（予測）', '過去履歴の保存と推移グラフ'].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-sm">
@@ -69,9 +144,21 @@ export default function PricingPage() {
               <span className="text-4xl font-black font-poppins">¥9,800</span>
               <span className="text-slate-500 text-sm"> / 月</span>
             </div>
-            <Link href="/login" className="w-full py-3 px-4 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-center rounded-full transition-colors mb-8">
-              14日間無料で試す
-            </Link>
+            
+            {user && currentPlan === 'BUSINESS' ? (
+              <button disabled className="w-full py-3 px-4 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold text-center rounded-full mb-8 cursor-not-allowed">
+                現在のプラン
+              </button>
+            ) : (
+              <button 
+                onClick={() => handleSubscribe('BUSINESS')}
+                disabled={loadingPlan === 'BUSINESS'}
+                className="w-full py-3 px-4 flex justify-center items-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-center rounded-full transition-colors mb-8 disabled:opacity-70"
+              >
+                {loadingPlan === 'BUSINESS' ? <Loader2 className="animate-spin w-5 h-5" /> : (user ? 'このプランにアップグレード' : '14日間無料で試す')}
+              </button>
+            )}
+
             <div className="space-y-4 flex-1">
               {['Starterの全機能', '最大30ユーザーまで招待可能', 'CSVデータ一括インポート', '組織階層のアクセス権限管理', '優先カスタマーサポート'].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-sm">

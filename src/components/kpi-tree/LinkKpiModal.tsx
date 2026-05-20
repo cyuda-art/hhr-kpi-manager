@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { X, Link2, Search, Target, BarChart2 } from 'lucide-react';
 import { formatDisplayValue } from '@/lib/kpi-utils';
 
@@ -33,9 +32,9 @@ export const LinkKpiModal = ({ isOpen, onClose, targetParentId }: LinkKpiModalPr
     const fetchProjectKpis = async () => {
       setIsLoading(true);
       try {
-        const kpiDataDoc = await getDoc(doc(db, 'organizations', currentOrgId, 'projects', selectedProjectId, 'kpiData', 'main'));
-        if (kpiDataDoc.exists()) {
-          const data = kpiDataDoc.data();
+        const res = await fetch(`/api/projects/${selectedProjectId}/nodes`);
+        if (res.ok) {
+          const data = await res.json();
           if (data.kpiData) {
             setTargetNodes(Object.values(data.kpiData));
           } else {

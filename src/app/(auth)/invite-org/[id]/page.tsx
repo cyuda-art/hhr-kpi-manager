@@ -5,8 +5,6 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { Users, LogIn, ArrowRight } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 
 export default function InviteOrgPage() {
   const router = useRouter();
@@ -24,10 +22,10 @@ export default function InviteOrgPage() {
   useEffect(() => {
     const fetchOrg = async () => {
       try {
-        const docRef = doc(db, 'organizations', orgId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setOrgName(docSnap.data().name);
+        const res = await fetch(`/api/organizations/${orgId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setOrgName(data.name);
         } else {
           setError("組織が見つかりません。リンクが無効か、削除された可能性があります。");
         }

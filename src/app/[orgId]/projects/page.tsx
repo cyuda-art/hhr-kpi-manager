@@ -7,10 +7,6 @@ import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { OrgLayout } from '@/components/layout/OrgLayout';
 import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical, Sparkles, Upload, X } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { AiLoadingOverlay } from '@/components/ui/AiLoadingOverlay';
 
 export default function WorkspacePage() {
@@ -18,6 +14,10 @@ export default function WorkspacePage() {
   const { user, logout } = useAuthStore();
   const { projects, isLoading, initializeProjects, setCurrentProjectId, createProject, duplicateProject, deleteProject } = useProjectStore();
   const { organizations, currentOrgId } = useOrgStore();
+
+  const currentOrg = organizations.find(o => o.id === currentOrgId);
+  const isFreePlan = currentOrg?.subscriptionPlan === 'FREE' || !currentOrg?.subscriptionPlan;
+  const hasReachedProjectLimit = isFreePlan && projects.length >= 1;
   
   type WizardStep = 'none' | 'input' | 'generating_manifestos' | 'select_manifesto' | 'generating_tree';
   const [wizardStep, setWizardStep] = useState<WizardStep>('none');
@@ -131,9 +131,16 @@ export default function WorkspacePage() {
 
       setUploadStatus('Master MVVと事業特性に基づく戦略アプローチを推論中...');
 
-      const orgRef = doc(db, 'organizations', currentOrgId);
-      const orgSnap = await getDoc(orgRef);
-      const orgData = orgSnap.exists() ? orgSnap.data() : {};
+      let orgData: any = {};
+      try {
+        const res = await fetch(`/api/organizations/${currentOrgId}`);
+        if (res.ok) {
+          orgData = await res.json();
+        }
+      } catch (e) {
+        console.warn('Failed to fetch org info', e);
+      }
+      
       const masterMvv = orgData.masterMvv || '';
       const orgContext = {
         pest: orgData.pest || '',
@@ -208,9 +215,9 @@ export default function WorkspacePage() {
       try {
         // 全プロジェクトの kpiData をフェッチしてアーカイブ済みKPIを収集
         for (const project of projects) {
-          const kpiDataDoc = await getDoc(doc(db, 'organizations', currentOrgId, 'projects', project.id, 'kpiData', 'main'));
-          if (kpiDataDoc.exists()) {
-            const data = kpiDataDoc.data();
+          const res = await fetch(`/api/projects/${project.id}/nodes`);
+          if (res.ok) {
+            const data = await res.json();
             if (data.kpiData) {
               Object.values(data.kpiData).forEach((k: any) => {
                 if (k.isArchived) {
@@ -487,8 +494,15 @@ export default function WorkspacePage() {
             
             {/* Create New Project Card (Dashed) */}
             <button 
-              onClick={() => setWizardStep('input')}
-              className="bg-transparent hover:bg-white dark:bg-[#282a2d] border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-strategic-teal dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group"
+              onClick={() => {
+                if (hasReachedProjectLimit) {
+                  alert('無料プラン（FREE）では作成できるプロジェクトは1つまでです。新しいプロジェクトを作成するにはアップグレードしてください。');
+                  router.push('/pricing');
+                  return;
+                }
+                setWizardStep('input');
+              }}
+              className="bg-transparent hover:bg-white dark:bg-[#282a2d] border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-strategic-teal dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group relative"
             >
               <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 text-strategic-teal dark:text-[#8ab4f8] bg-strategic-teal dark:bg-[#8ab4f8]/10 group-hover:bg-strategic-teal dark:bg-[#8ab4f8]/20 transition-colors">
                 <Plus size={24} />
@@ -496,6 +510,11 @@ export default function WorkspacePage() {
               <span className="text-[16px] font-medium text-strategic-teal dark:text-[#8ab4f8]">
                 AIでKGI/KPIを生成
               </span>
+              {hasReachedProjectLimit && (
+                <div className="absolute top-2 right-2 bg-rose-100 text-rose-600 text-[10px] px-2 py-0.5 rounded font-bold">
+                  上限到達
+                </div>
+              )}
             </button>
 
             {/* Existing Projects */}
@@ -538,7 +557,15 @@ export default function WorkspacePage() {
                       onClick={(e) => e.stopPropagation()} // ドロップダウン内クリックでカード遷移を防ぐ
                     >
                       <button 
-                        onMouseDown={(e) => { e.preventDefault(); handleDuplicate(e, project.id); }} // onMouseDownを使用してネイティブclickによる消滅を先行ブロック
+                        onMouseDown={(e) => { 
+                          e.preventDefault(); 
+                          if (hasReachedProjectLimit) {
+                            alert('無料プラン（FREE）では作成できるプロジェクトは1つまでです。複製するにはアップグレードしてください。');
+                            router.push('/pricing');
+                            return;
+                          }
+                          handleDuplicate(e, project.id); 
+                        }} // onMouseDownを使用してネイティブclickによる消滅を先行ブロック
                         className="w-full text-left px-4 py-2 text-[13px] text-slate-800 dark:text-[#e8eaed] hover:bg-slate-200 dark:bg-[#3c4043] flex items-center gap-2"
                       >
                         <Copy size={14} /> 複製する
