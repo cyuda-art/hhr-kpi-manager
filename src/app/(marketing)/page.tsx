@@ -291,11 +291,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="py-12 bg-[#050505] border-t border-slate-800 text-center text-slate-600 text-xs font-mono tracking-widest uppercase">
         <div className="flex items-center justify-center gap-2 font-bold mb-4">
           <Network className="w-4 h-4" />
           HHR-AGENT PLATFORM
+        </div>
+        <div className="flex items-center justify-center gap-6 mb-6">
+          <Link href="/terms" className="hover:text-slate-300 transition-colors">利用規約</Link>
+          <Link href="/privacy" className="hover:text-slate-300 transition-colors">プライバシーポリシー</Link>
         </div>
         <p>© 2026 HHR-AGENT. BUILT FOR THE FUTURE.</p>
       </footer>

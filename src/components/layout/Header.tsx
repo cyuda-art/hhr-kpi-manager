@@ -132,7 +132,7 @@ export const Header = () => {
             <button 
               onClick={async () => {
                 await logout();
-                window.location.href = '/lp';
+                window.location.href = '/';
               }}
               title="ログアウト"
               className="ml-2 p-2 text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] hover:bg-slate-100 dark:hover:bg-[#3c4043] rounded-full transition-all"

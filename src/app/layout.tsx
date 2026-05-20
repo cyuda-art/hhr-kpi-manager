@@ -27,8 +27,30 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Gnu.Done | 複合施設KPI管理",
-  description: "複合施設向けKPI/KGI管理ツール",
+  title: "Gnu.Done | 次世代の自律型KPIマネジメントSaaS",
+  description: "管理は終わった。AIが会社の理念を理解し、現場の実務を全自動で完遂する次世代エージェント・プラットフォーム。",
+  openGraph: {
+    title: "Gnu.Done | 次世代の自律型KPIマネジメントSaaS",
+    description: "管理は終わった。AIが会社の理念を理解し、現場の実務を全自動で完遂する次世代エージェント・プラットフォーム。",
+    url: "https://www.gnudone.com",
+    siteName: "Gnu.Done",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Gnu.Done - The End of Management",
+      },
+    ],
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Gnu.Done | 次世代の自律型KPIマネジメント",
+    description: "AIが現場の実務を全自動で完遂する次世代エージェント・プラットフォーム。",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({

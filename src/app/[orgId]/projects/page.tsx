@@ -454,7 +454,7 @@ export default function WorkspacePage() {
 
   const handleLogout = async () => {
     await logout();
-    window.location.href = '/lp';
+    window.location.href = '/';
   };
 
   if (isLoading) {

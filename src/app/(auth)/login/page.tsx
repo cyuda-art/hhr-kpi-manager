@@ -50,7 +50,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-clean-canvas dark:bg-[#000a1f] flex flex-col font-sans selection:bg-strategic-teal/30">
       <div className="absolute top-6 left-6 z-10">
-        <button onClick={() => router.push('/lp')} className="flex items-center gap-2 text-logic-slate dark:text-slate-400 hover:text-oxford-navy dark:hover:text-white text-sm font-bold transition-colors font-poppins tracking-widest">
+        <button onClick={() => router.push('/')} className="flex items-center gap-2 text-logic-slate dark:text-slate-400 hover:text-oxford-navy dark:hover:text-white text-sm font-bold transition-colors font-poppins tracking-widest">
           <ArrowRight className="w-4 h-4 rotate-180" />
           BACK TO TOP
         </button>
