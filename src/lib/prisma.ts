@@ -9,7 +9,10 @@ const globalForPrisma = globalThis as unknown as {
 const getPrismaClient = () => {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error("DATABASE_URL is not defined in environment variables");
+    // Vercelのビルド時（接続文字列がない環境）でインポートエラーになるのを防ぐためのダミーフォールバック
+    const dummyPool = new Pool({ connectionString: "postgresql://postgres:dummy@localhost:5432/dummy" });
+    const dummyAdapter = new PrismaPg(dummyPool);
+    return new PrismaClient({ adapter: dummyAdapter });
   }
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
