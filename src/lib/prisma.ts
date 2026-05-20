@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const getPrismaClient = () => {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
   if (!connectionString) {
     // Vercelのビルド時（接続文字列がない環境）でインポートエラーになるのを防ぐためのダミーフォールバック
     const dummyPool = new Pool({ connectionString: "postgresql://postgres:dummy@localhost:5432/dummy" });
