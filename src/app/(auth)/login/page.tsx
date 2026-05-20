@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useOrgStore } from '@/store/useOrgStore';
 import { Lock, Mail, ArrowRight, Network } from 'lucide-react';
 
 export default function LoginPage() {
@@ -13,9 +14,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [authSuccess, setAuthSuccess] = useState(false);
   
   const router = useRouter();
+  const { user } = useAuthStore();
   const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
+  const { currentOrgId, isLoading: isOrgLoading } = useOrgStore();
+
+  useEffect(() => {
+    if (authSuccess && user && !isOrgLoading) {
+      if (currentOrgId) {
+        router.push(`/${currentOrgId}/projects`);
+      } else {
+        router.push('/org-setup');
+      }
+    }
+  }, [authSuccess, user, isOrgLoading, currentOrgId, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +42,7 @@ export default function LoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push('/'); // ログイン後はルート(LP)へ遷移し、LP側で組織のダッシュボードへリダイレクトさせる
+      setAuthSuccess(true);
     } catch (err: any) {
       setError(err.message || '認証に失敗しました');
     } finally {
@@ -40,7 +54,7 @@ export default function LoginPage() {
     setError('');
     try {
       await loginWithGoogle();
-      router.push('/'); // ログイン後はルート(LP)へ遷移し、LP側で組織のダッシュボードへリダイレクトさせる
+      setAuthSuccess(true);
     } catch (err: any) {
       console.error("Google Login Error:", err);
       setError(`Googleログインに失敗しました: ${err.message || err.toString()}`);

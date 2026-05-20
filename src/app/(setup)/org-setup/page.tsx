@@ -14,9 +14,10 @@ export default function OrgSetupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // 既に組織を持っている場合はプロジェクト一覧へ
+    // 既に組織を持っている場合はその組織のプロジェクト一覧へ
     if (!isLoading && organizations.length > 0) {
-      router.push('/');
+      const targetOrg = organizations[0];
+      router.push(`/${targetOrg.id}/projects`);
     }
   }, [isLoading, organizations, router]);
 
@@ -26,9 +27,9 @@ export default function OrgSetupPage() {
 
     setIsSubmitting(true);
     try {
-      await createOrganization(orgName, user.uid);
-      // 作成成功したらプロジェクト一覧へ
-      router.push('/');
+      const newOrgId = await createOrganization(orgName, user.uid);
+      // 作成成功したら、直接その組織のプロジェクト一覧へ遷移
+      router.push(`/${newOrgId}/projects`);
     } catch (error) {
       console.error("Failed to create organization:", error);
       setIsSubmitting(false);

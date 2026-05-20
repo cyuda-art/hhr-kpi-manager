@@ -13,34 +13,18 @@ import {
   Network
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useOrgStore } from '@/store/useOrgStore';
 
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
-  const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuthStore();
-  const { currentOrgId, isLoading: isOrgLoading } = useOrgStore();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 既存ユーザーの自動リダイレクトロジック
-  useEffect(() => {
-    if (!mounted || isAuthLoading || isOrgLoading) return;
-    if (user) {
-      if (currentOrgId) {
-        router.replace(`/${currentOrgId}/projects`);
-      } else {
-        router.replace('/org-setup');
-      }
-    }
-  }, [mounted, isAuthLoading, isOrgLoading, user, currentOrgId, router]);
+
 
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
