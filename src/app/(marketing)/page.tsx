@@ -13,16 +13,34 @@ import {
   Network
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useOrgStore } from '@/store/useOrgStore';
 
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const { user, isLoading: isAuthLoading } = useAuthStore();
+  const { currentOrgId, isLoading: isOrgLoading } = useOrgStore();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // ログイン済みユーザーはルートURLアクセス時に自動的に適切な画面へワープさせる（以前の約束通りの挙動）
+  useEffect(() => {
+    if (!mounted || isAuthLoading || isOrgLoading) return;
+    if (user) {
+      if (currentOrgId) {
+        router.replace(`/${currentOrgId}/projects`);
+      } else {
+        router.replace('/org-setup');
+      }
+    }
+  }, [mounted, isAuthLoading, isOrgLoading, user, currentOrgId, router]);
 
 
 

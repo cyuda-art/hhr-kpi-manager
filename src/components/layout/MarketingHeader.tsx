@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Network, LayoutDashboard } from 'lucide-react';
+import { Network, Terminal } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 
@@ -42,8 +42,8 @@ export const MarketingHeader = () => {
               href={currentOrgId ? `/${currentOrgId}/projects` : '/org-setup'} 
               className="flex items-center gap-2 text-xs font-bold font-poppins tracking-wider bg-strategic-teal text-white px-5 py-2.5 rounded-full hover:bg-strategic-teal/90 transition-colors shadow-sm"
             >
-              <LayoutDashboard className="w-4 h-4" />
-              DASHBOARD
+              <Terminal className="w-4 h-4" />
+              OPEN CONSOLE
             </Link>
           ) : (
             <>
