@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
-import { Building2, ArrowRight } from 'lucide-react';
+import { Building2, ArrowRight, LogOut } from 'lucide-react';
 
 export default function OrgSetupPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { createOrganization, organizations, isLoading } = useOrgStore();
   const [orgName, setOrgName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,8 +40,24 @@ export default function OrgSetupPage() {
     return <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex items-center justify-center">Loading...</div>;
   }
 
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
   return (
     <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden transition-colors">
+      {/* ログアウトボタン（別アカウントへの切り替え用） */}
+      <div className="absolute top-6 left-6 z-20">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-logic-slate dark:text-slate-400 hover:text-oxford-navy dark:hover:text-white text-sm font-bold transition-colors font-poppins tracking-widest bg-white/50 dark:bg-slate-800/50 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700/50 backdrop-blur-sm shadow-sm"
+        >
+          <LogOut className="w-4 h-4" />
+          LOG OUT
+        </button>
+      </div>
+
       {/* Background Orbs */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary-500/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
