@@ -57,6 +57,7 @@ export async function GET(
         simulatedValue: node.simulatedValue || undefined,
         simulatedTargetValue: node.simulatedTargetValue || undefined,
         isKsf: node.type === 'KSF' || undefined, // KSFフラグ
+        position: { x: node.positionX || 0, y: node.positionY || 0 },
         monthlyData: monthlyDataMap,
       };
 

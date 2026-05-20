@@ -106,6 +106,10 @@ model KpiNode {
   description      String?
   warning          String?
 
+  // 画面上の表示座標
+  positionX        Float?       @default(0)
+  positionY        Float?       @default(0)
+
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 

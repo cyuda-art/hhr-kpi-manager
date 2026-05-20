@@ -52,6 +52,8 @@ export async function POST(
             formula: node.formula || null,
             description: node.description || null,
             warning: node.warning || null,
+            positionX: node.position?.x ?? 0,
+            positionY: node.position?.y ?? 0,
             parentId: null, // 後で設定
           },
           update: {
@@ -68,6 +70,8 @@ export async function POST(
             formula: node.formula || null,
             description: node.description || null,
             warning: node.warning || null,
+            positionX: node.position?.x ?? 0,
+            positionY: node.position?.y ?? 0,
           },
         });
       }
