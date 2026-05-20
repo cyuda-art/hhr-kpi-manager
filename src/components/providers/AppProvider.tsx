@@ -21,8 +21,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // 2. ユーザーが存在する場合、所属する組織リストをロード
   useEffect(() => {
     if (user) {
-      const unsubscribeOrgs = initializeOrgs(user.uid);
-      return () => unsubscribeOrgs();
+      initializeOrgs(user.uid);
     }
   }, [user, initializeOrgs]);
 

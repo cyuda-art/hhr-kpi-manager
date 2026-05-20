@@ -12,6 +12,7 @@ export default function OrgSetupPage() {
   const { createOrganization, organizations, isLoading } = useOrgStore();
   const [orgName, setOrgName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     // 既に組織を持っている場合はその組織のプロジェクト一覧へ
@@ -26,12 +27,14 @@ export default function OrgSetupPage() {
     if (!user || !orgName.trim()) return;
 
     setIsSubmitting(true);
+    setErrorMsg(null);
     try {
       const newOrgId = await createOrganization(orgName, user.uid);
       // 作成成功したら、直接その組織のプロジェクト一覧へ遷移
       router.push(`/${newOrgId}/projects`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create organization:", error);
+      setErrorMsg(error.message || "組織の登録に失敗しました。時間をおいて再度お試しください。");
       setIsSubmitting(false);
     }
   };
@@ -74,6 +77,12 @@ export default function OrgSetupPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          {errorMsg && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 text-sm rounded-xl border border-red-200 dark:border-red-800/50">
+              {errorMsg}
+            </div>
+          )}
+          
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               組織・会社名
