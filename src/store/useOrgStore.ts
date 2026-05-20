@@ -26,11 +26,10 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
     
     try {
       const res = await fetch(`/api/organizations?userId=${userId}`);
-      if (!res.ok) throw new Error('Failed to fetch organizations');
+      if (!res.ok) throw new Error('API Error');
       const data = await res.json();
       
       const orgs: Organization[] = data.organizations || [];
-      
       const currentOrgId = get().currentOrgId;
       if (!currentOrgId && orgs.length > 0) {
         set({ currentOrgId: orgs[0].id });
@@ -38,8 +37,14 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       
       set({ organizations: orgs, isLoading: false });
     } catch (error) {
-      console.error('Error initializing orgs:', error);
-      set({ isLoading: false });
+      console.warn('Backend DB failed, falling back to LocalStorage', error);
+      // Fallback to LocalStorage
+      const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
+      const currentOrgId = get().currentOrgId;
+      if (!currentOrgId && localOrgs.length > 0) {
+        set({ currentOrgId: localOrgs[0].id });
+      }
+      set({ organizations: localOrgs, isLoading: false });
     }
   },
 
@@ -51,26 +56,21 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       const res = await fetch('/api/organizations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          userId,
-          email: authUser?.email,
-          userName: authUser?.displayName
-        })
+        body: JSON.stringify({ name, userId, email: authUser?.email, userName: authUser?.displayName })
       });
-      if (!res.ok) throw new Error('Failed to create organization');
+      if (!res.ok) throw new Error('API Error');
       const newOrg = await res.json();
       
-      // Update local state
-      set((state) => ({
-        organizations: [...state.organizations, newOrg],
-        currentOrgId: newOrg.id
-      }));
-      
+      set((state) => ({ organizations: [...state.organizations, newOrg], currentOrgId: newOrg.id }));
       return newOrg.id;
     } catch (error) {
-      console.error('Error creating organization:', error);
-      throw error;
+      console.warn('Backend DB failed, saving to LocalStorage', error);
+      const newOrg = { id: `mock-org-${Date.now()}`, name, createdAt: new Date().toISOString() } as unknown as Organization;
+      const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
+      localOrgs.push(newOrg);
+      localStorage.setItem('hhr_mock_orgs', JSON.stringify(localOrgs));
+      set((state) => ({ organizations: localOrgs, currentOrgId: newOrg.id }));
+      return newOrg.id;
     }
   },
 

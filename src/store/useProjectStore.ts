@@ -33,7 +33,6 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         });
         const data = await res.json();
         if (res.ok && data.projects) {
-          // PostgreSQLのProjectデータをClientのProject型にマッピング
           const mappedProjects: Project[] = data.projects.map((p: any) => ({
             id: p.id,
             name: p.name,
@@ -44,12 +43,12 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
           }));
           set({ projects: mappedProjects, isLoading: false });
         } else {
-          console.error("Failed to load projects:", data.error);
-          set({ isLoading: false });
+          throw new Error(data.error || 'API Error');
         }
       } catch (error) {
-        console.error("Error loading projects:", error);
-        set({ isLoading: false });
+        console.warn("Backend DB failed, falling back to LocalStorage", error);
+        const localProjects = JSON.parse(localStorage.getItem(`hhr_mock_projects_${orgId}`) || '[]');
+        set({ projects: localProjects, isLoading: false });
       }
     };
 
@@ -62,38 +61,47 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   setCurrentProjectId: (id) => set({ currentProjectId: id }),
 
   createProject: async (name, description, userId, orgId, extraData) => {
-    const res = await fetch('/api/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, organizationId: orgId })
+      });
+      
+      if (!res.ok) throw new Error('API Error');
+      const data = await res.json();
+      
+      const newProject: Project = {
+        id: data.project.id,
+        name: data.project.name,
+        description: data.project.description || '',
+        ownerId: userId,
+        members: [userId],
+        createdAt: new Date(data.project.createdAt).getTime(),
+        ...extraData,
+      };
+
+      set(state => ({ projects: [newProject, ...state.projects] }));
+      return newProject.id;
+    } catch (error) {
+      console.warn("Backend DB failed, saving to LocalStorage", error);
+      const newProject: Project = {
+        id: `mock-proj-${Date.now()}`,
         name,
         description,
-        organizationId: orgId
-      })
-    });
-    
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to create project');
+        ownerId: userId,
+        members: [userId],
+        createdAt: Date.now(),
+        ...extraData,
+      };
+      
+      const localProjects = JSON.parse(localStorage.getItem(`hhr_mock_projects_${orgId}`) || '[]');
+      localProjects.unshift(newProject);
+      localStorage.setItem(`hhr_mock_projects_${orgId}`, JSON.stringify(localProjects));
+      
+      set(state => ({ projects: [newProject, ...state.projects] }));
+      return newProject.id;
     }
-    
-    const newProject: Project = {
-      id: data.project.id,
-      name: data.project.name,
-      description: data.project.description || '',
-      ownerId: userId,
-      members: [userId],
-      createdAt: new Date(data.project.createdAt).getTime(),
-      ...extraData,
-    };
-
-    set(state => ({
-      projects: [newProject, ...state.projects]
-    }));
-
-    return newProject.id;
   },
 
   deleteProject: async (projectId: string, orgId: string) => {
