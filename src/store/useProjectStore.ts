@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, getDoc, deleteDoc, updateDoc, arrayUnion, onSnapshot, query, where, or } from 'firebase/firestore';
 import { Project } from '@/types/project';
 
 interface ProjectStore {
@@ -25,44 +23,93 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   initializeProjects: (orgId: string) => {
     set({ isLoading: true });
-    // 組織内のプロジェクトを全取得（セキュリティルールで組織メンバーのみアクセス可能にする前提）
-    const q = query(collection(db, 'organizations', orgId, 'projects'));
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const projects: Project[] = [];
-      snapshot.forEach((doc) => {
-        projects.push(doc.data() as Project);
-      });
-      set({ projects, isLoading: false });
-    });
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch('/api/projects', {
+          headers: {
+            'x-organization-id': orgId
+          }
+        });
+        const data = await res.json();
+        if (res.ok && data.projects) {
+          // PostgreSQLのProjectデータをClientのProject型にマッピング
+          const mappedProjects: Project[] = data.projects.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            description: p.description || '',
+            ownerId: p.ownerId || 'admin',
+            members: [p.ownerId || 'admin'],
+            createdAt: new Date(p.createdAt).getTime(),
+          }));
+          set({ projects: mappedProjects, isLoading: false });
+        } else {
+          console.error("Failed to load projects:", data.error);
+          set({ isLoading: false });
+        }
+      } catch (error) {
+        console.error("Error loading projects:", error);
+        set({ isLoading: false });
+      }
+    };
 
-    return unsubscribe;
+    fetchProjects();
+
+    // クリーンアップ関数（モック）
+    return () => {};
   },
 
   setCurrentProjectId: (id) => set({ currentProjectId: id }),
 
   createProject: async (name, description, userId, orgId, extraData) => {
-    const newProjectId = Math.random().toString(36).substr(2, 9);
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        organizationId: orgId
+      })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to create project');
+    }
+    
     const newProject: Project = {
-      id: newProjectId,
-      name,
-      description,
+      id: data.project.id,
+      name: data.project.name,
+      description: data.project.description || '',
       ownerId: userId,
-      members: [userId], // 作成者もメンバーに含める
-      createdAt: Date.now(),
+      members: [userId],
+      createdAt: new Date(data.project.createdAt).getTime(),
       ...extraData,
     };
 
-    await setDoc(doc(db, 'organizations', orgId, 'projects', newProjectId), newProject);
-    return newProjectId;
+    set(state => ({
+      projects: [newProject, ...state.projects]
+    }));
+
+    return newProject.id;
   },
 
   deleteProject: async (projectId: string, orgId: string) => {
     try {
-      // 1. KPIデータの削除
-      await deleteDoc(doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main'));
-      // 2. プロジェクト自体の削除
-      await deleteDoc(doc(db, 'organizations', orgId, 'projects', projectId));
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete project');
+      }
+
+      set(state => ({
+        projects: state.projects.filter(p => p.id !== projectId)
+      }));
       
       const { currentProjectId, setCurrentProjectId } = get();
       if (currentProjectId === projectId) {
@@ -76,26 +123,61 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   duplicateProject: async (projectId: string, userId: string, orgId: string) => {
     try {
-      // 1. 元プロジェクトの情報を取得
-      const projectDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', projectId));
-      if (!projectDoc.exists()) throw new Error("Project not found");
-      const originalProject = projectDoc.data() as Project;
+      // 1. 元プロジェクト情報をローカルのstateから探すか、API経由で取得
+      const original = get().projects.find(p => p.id === projectId);
+      if (!original) throw new Error("Project not found in store");
 
-      // 2. 新しいプロジェクトを作成
-      const newProjectId = Math.random().toString(36).substr(2, 9);
-      const newProject: Project = {
-        ...originalProject,
-        id: newProjectId,
-        name: `${originalProject.name} のコピー`,
-        ownerId: userId, // 複製した人がオーナーになる
-        createdAt: Date.now(),
-      };
-      await setDoc(doc(db, 'organizations', orgId, 'projects', newProjectId), newProject);
+      // 2. 新しいプロジェクトを複製名で作成
+      const newProjectId = await get().createProject(
+        `${original.name} のコピー`,
+        original.description,
+        userId,
+        orgId
+      );
 
-      // 3. 元のKPIデータを取得してコピー
-      const kpiDataDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main'));
-      if (kpiDataDoc.exists()) {
-        await setDoc(doc(db, 'organizations', orgId, 'projects', newProjectId, 'kpiData', 'main'), kpiDataDoc.data());
+      // 3. 元のKPIデータとタスクデータを取得
+      const resNodes = await fetch(`/api/projects/${projectId}/nodes`);
+      if (resNodes.ok) {
+        const data = await resNodes.json();
+        // 取得したデータを新しいプロジェクトID配下で保存
+        if (data.kpiData) {
+          // ノードのIDをすべて新規のIDにマッピングし直す（主キー重複回避）
+          const oldToNewIdMap: Record<string, string> = {};
+          const newKpiData: Record<string, any> = {};
+
+          Object.keys(data.kpiData).forEach(oldId => {
+            const newId = Math.random().toString(36).substr(2, 9);
+            oldToNewIdMap[oldId] = newId;
+          });
+
+          Object.keys(data.kpiData).forEach(oldId => {
+            const node = data.kpiData[oldId];
+            const newId = oldToNewIdMap[oldId];
+            newKpiData[newId] = {
+              ...node,
+              id: newId,
+              parentId: node.parentId ? (oldToNewIdMap[node.parentId] || null) : null
+            };
+          });
+
+          const newActions = (data.actions || []).map((act: any) => ({
+            ...act,
+            id: Math.random().toString(36).substr(2, 9),
+            kpiId: oldToNewIdMap[act.kpiId] || act.kpiId
+          }));
+
+          // コピー先プロジェクトに保存
+          await fetch(`/api/projects/${newProjectId}/kpi-data`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              kpiData: newKpiData,
+              actions: newActions
+            })
+          });
+        }
       }
 
       return newProjectId;
@@ -106,21 +188,31 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   joinProject: async (projectId: string, userId: string, orgId: string) => {
-    try {
-      const projectRef = doc(db, 'organizations', orgId, 'projects', projectId);
-      await updateDoc(projectRef, {
-        members: arrayUnion(userId)
-      });
-    } catch (error) {
-      console.error("Error joining project:", error);
-      throw error;
-    }
+    // PostgreSQL / Prismaモデルでは組織内の全プロジェクトが全ユーザーに紐付くため、joinはダミー処理とする
+    return Promise.resolve();
   },
 
   updateProject: async (projectId: string, orgId: string, data: Partial<Project>) => {
     try {
-      const projectRef = doc(db, 'organizations', orgId, 'projects', projectId);
-      await updateDoc(projectRef, data);
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: data.name,
+          description: data.description
+        })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to update project');
+      }
+
+      set(state => ({
+        projects: state.projects.map(p => p.id === projectId ? { ...p, ...data } : p)
+      }));
     } catch (error) {
       console.error("Error updating project:", error);
       throw error;

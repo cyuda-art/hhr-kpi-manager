@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { KpiNodeData, KpiNodeWithComputed, Status, Action, AiWorkflow } from '@/types';
-import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, collection, getDocs } from 'firebase/firestore';
+
 
 export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
   initialActualValue: number;
@@ -73,7 +72,7 @@ interface KpiStore {
   addChatMessage: (kpiId: string, message: Omit<import('@/types').KpiChatMessage, 'id' | 'timestamp'>) => void;
 }
 
-// データベース(Firestore)更新用のヘルパー関数
+// データベース(PostgreSQL API)更新用のヘルパー関数
 const syncToDB = async (
   projectId: string | null, 
   orgId: string | null, 
@@ -88,63 +87,38 @@ const syncToDB = async (
 ) => {
   if (!projectId || !orgId) return;
   
-  // 初期化完了前にUI側のイベント(ReactFlowのonNodesChangeなど)で
-  // 意図せずsyncToDBが発火し、空データで上書きされるのを防ぐ
-  // （forceフラグがある場合＝initializeDB内からの初回保存時のみ許可）
   const isForce = (updates as any)._forceSync === true;
   if (!isForce && !useKpiStore.getState().isDbInitialized) {
     console.log("syncToDB aborted: DB is not initialized yet.");
     return;
   }
-  
-  // 保存データから_forceSyncフラグを取り除く
-  const dataToSave: any = {
-    ...updates,
-    updatedAt: Date.now()
-  };
-  delete dataToSave._forceSync;
 
-  console.log("🚀 [syncToDB] Start syncing. updates keys:", Object.keys(updates));
+  console.log("🚀 [syncToDB] Start syncing to PostgreSQL. updates keys:", Object.keys(updates));
 
   try {
-    // kpiDataからhistoryを分離してデータサイズを圧縮する（1MB制限の回避）
-    const historyData: Record<string, any[]> = {};
-    if (dataToSave.kpiData) {
-      console.log("📦 [syncToDB] Starting deep copy of kpiData...");
-      try {
-        // コピーを作って元のstateを破壊しないようにする
-        const kpiDataCopy = JSON.parse(JSON.stringify(dataToSave.kpiData));
-        Object.keys(kpiDataCopy).forEach(kpiId => {
-          if (kpiDataCopy[kpiId].history) {
-            historyData[kpiId] = kpiDataCopy[kpiId].history;
-            delete kpiDataCopy[kpiId].history; // mainドキュメントからは除外
-          }
-        });
-        dataToSave.kpiData = kpiDataCopy;
-        console.log("✅ [syncToDB] Deep copy & separation successful. Extracted history for nodes:", Object.keys(historyData).length);
-      } catch (parseError) {
-        console.error("❌ [syncToDB] Deep copy failed. JSON stringify error?", parseError);
-        // フォールバック：ディープコピーが失敗した場合は分離せずそのまま保存を試みる
-      }
-    }
+    const storeState = useKpiStore.getState();
+    const kpiDataToSend = updates.kpiData || storeState.kpiData;
+    const actionsToSend = updates.actions || storeState.actions;
 
-    console.log("🌐 [syncToDB] Saving main document to Firestore...");
-    const kpiDataRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main');
-    await setDoc(kpiDataRef, dataToSave, { merge: true });
-    console.log("✅ [syncToDB] Main document saved.");
+    const res = await fetch(`/api/projects/${projectId}/kpi-data`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        kpiData: kpiDataToSend,
+        actions: actionsToSend
+      })
+    });
 
-    // historyをサブコレクション(kpi_history)に各KPIごとに分離して保存
-    if (Object.keys(historyData).length > 0) {
-      console.log(`🌐 [syncToDB] Saving ${Object.keys(historyData).length} history subcollections...`);
-      const historyPromises = Object.keys(historyData).map(kpiId => {
-        const historyRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpi_history', kpiId);
-        return setDoc(historyRef, { history: historyData[kpiId] }, { merge: true });
-      });
-      await Promise.all(historyPromises);
-      console.log("✅ [syncToDB] All subcollections saved.");
+    if (!res.ok) {
+      const errData = await res.json();
+      console.error("❌ [syncToDB] API Error:", errData.error);
+    } else {
+      console.log("✅ [syncToDB] Successfully synced to PostgreSQL.");
     }
   } catch (error) {
-    console.error("❌ [syncToDB] Firestore Sync Error:", error);
+    console.error("❌ [syncToDB] PostgreSQL Sync Error:", error);
   }
 };
 
@@ -525,142 +499,32 @@ export const useKpiStore = create<KpiStore>()(
         let actions = [...pData.actions];
         let workflows = { ...(pData.workflows || {}) };
         
-        // --- Firestore から最新データを取得 (Read) ---
+        // --- PostgreSQL (API) から最新データを取得 (Read) ---
         try {
-          console.log("🌐 [initializeDB] Fetching main document...");
-          const kpiDataDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', projectId, 'kpiData', 'main'));
-          if (kpiDataDoc.exists()) {
-            console.log("✅ [initializeDB] Main document found. Parsing data...");
-            const data = kpiDataDoc.data();
-            if (data.kpiData && Object.keys(data.kpiData).length > 0) kpiData = data.kpiData;
-            if (data.actions) actions = data.actions;
-            if (data.workflows) workflows = data.workflows;
-            
-            const newCollapsedNodes = data.collapsedNodes !== undefined ? data.collapsedNodes : get().collapsedNodes;
-            const newPredictionMode = data.isPredictionMode !== undefined ? data.isPredictionMode : get().isPredictionMode;
-            
-            (pData as any)._tempCollapsedNodes = newCollapsedNodes;
-            (pData as any)._tempPredictionMode = newPredictionMode;
+          console.log("🌐 [initializeDB] Fetching nodes and actions from PostgreSQL...");
+          const res = await fetch(`/api/projects/${projectId}/nodes`);
+          if (res.ok) {
+            const data = await res.json();
+            console.log("✅ [initializeDB] Nodes received. Parsing data...");
+            if (data.kpiData && Object.keys(data.kpiData).length > 0) {
+              kpiData = data.kpiData;
+            }
+            if (data.actions) {
+              actions = data.actions;
+            }
+
+            // 各ノードの computed 値と履歴の初期化
+            Object.keys(kpiData).forEach(id => {
+              kpiData[id] = calculateComputed(kpiData[id]);
+            });
 
             sanitizeKpiData(kpiData as Record<string, KpiNodeWithComputedAndInit>);
-            
-            // 各KPIのhistoryをサブコレクションから取得して結合する
-            if (Object.keys(kpiData).length > 0) {
-              console.log(`🌐 [initializeDB] Fetching history for ${Object.keys(kpiData).length} KPIs...`);
-              let loadedHistoryCount = 0;
-              const historyPromises = Object.keys(kpiData).map(async (kpiId) => {
-                try {
-                  const historyRef = doc(db, 'organizations', orgId, 'projects', projectId, 'kpi_history', kpiId);
-                  const historySnap = await getDoc(historyRef);
-                  if (historySnap.exists()) {
-                    const historyData = historySnap.data().history;
-                    if (historyData) {
-                      kpiData[kpiId].history = historyData;
-                      loadedHistoryCount++;
-                    }
-                  }
-                } catch (err) {
-                  console.error(`❌ [initializeDB] Failed to load history for ${kpiId}:`, err);
-                }
-              });
-              await Promise.all(historyPromises);
-              console.log(`✅ [initializeDB] Successfully loaded history for ${loadedHistoryCount} KPIs.`);
-              
-              // --- 破損データの自動修復（自己修復機能） ---
-              const kgiNode = Object.values(kpiData).find((n: any) => n.type === 'KGI');
-              const isCorrupted = kgiNode && (!kgiNode.monthlyData || !kgiNode.monthlyData['2026-04'] || kgiNode.monthlyData['2026-04'].targetValue === 0);
-              
-              if (isCorrupted) {
-                console.log("🛠️ [initializeDB] Detecting corrupted monthlyData. Running auto-repair...");
-                const allMonths = [
-                  "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
-                  "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
-                ];
-                Object.values(kpiData).forEach((node: any) => {
-                  const isPercentage = node.unit === '%' || node.unit === '％';
-                  const monthlyData: any = {};
-                  allMonths.forEach(m => {
-                    monthlyData[m] = {
-                      targetValue: isPercentage ? (node.targetValue || 0) : ((node.targetValue || 0) / 12),
-                      actualValue: 0
-                    };
-                  });
-                  if (node.history && Array.isArray(node.history)) {
-                    const sortedHistory = [...node.history].sort((a, b) => a.date.localeCompare(b.date));
-                    const endOfMonthValues: Record<string, number> = {};
-                    sortedHistory.forEach(record => {
-                      const m = record.date.substring(0, 7);
-                      endOfMonthValues[m] = record.actualValue;
-                    });
-                    let previousCumValue = 0;
-                    allMonths.forEach(m => {
-                      if (endOfMonthValues[m] !== undefined) {
-                        const cumValue = endOfMonthValues[m];
-                        if (isPercentage) {
-                          monthlyData[m].actualValue = cumValue;
-                        } else {
-                          monthlyData[m].actualValue = Math.max(0, cumValue - previousCumValue);
-                        }
-                        previousCumValue = cumValue;
-                      }
-                    });
-                  }
-                  node.monthlyData = monthlyData;
-                });
-                recalculateAllMonths(kpiData as any);
-                // force sync to DB
-                setTimeout(() => {
-                  syncToDB(projectId, orgId, { kpiData: kpiData as any, _forceSync: true } as any);
-                }, 1000);
-              } else {
-                recalculateAllMonths(kpiData as any);
-              }
-            }
+            recalculateAllMonths(kpiData as any);
           } else {
-            console.log("⚠️ [initializeDB] Main document NOT found.");
+            console.log("⚠️ [initializeDB] API returned non-ok status.");
           }
-
-          // リンクノードの値を同期
-          if (Object.keys(kpiData).length > 0) {
-            console.log(`🌐 [initializeDB] Checking for linked nodes to sync...`);
-            let hasLinkedUpdates = false;
-            const linkPromises = Object.values(kpiData).map(async (node) => {
-              if (node.linkedSource && node.linkedSource.projectId && node.linkedSource.kpiId) {
-                try {
-                  const linkedDoc = await getDoc(doc(db, 'organizations', orgId, 'projects', node.linkedSource.projectId, 'kpiData', 'main'));
-                  if (linkedDoc.exists()) {
-                    const linkedData = linkedDoc.data().kpiData;
-                    const sourceNode = linkedData?.[node.linkedSource.kpiId];
-                    if (sourceNode) {
-                      // ソースノードから値を取得してローカルを更新
-                      if (node.actualValue !== sourceNode.actualValue || node.targetValue !== sourceNode.targetValue) {
-                        kpiData[node.id] = calculateComputed({
-                          ...node,
-                          actualValue: sourceNode.actualValue,
-                          targetValue: sourceNode.targetValue,
-                          name: sourceNode.name,
-                          unit: sourceNode.unit,
-                          initialActualValue: sourceNode.actualValue
-                        });
-                        hasLinkedUpdates = true;
-                      }
-                    }
-                  }
-                } catch (err) {
-                  console.error(`❌ [initializeDB] Failed to sync linked node ${node.id}:`, err);
-                }
-              }
-            });
-            await Promise.all(linkPromises);
-            
-            if (hasLinkedUpdates) {
-              recalculateAllMonths(kpiData as any);
-              syncToDB(projectId, orgId, { kpiData: kpiData } as any);
-            }
-          }
-
         } catch (error) {
-          console.error("❌ [initializeDB] Failed to load KPI Data from Firestore", error);
+          console.error("❌ [initializeDB] Failed to load KPI Data from API", error);
         }
 
         // SessionStorageにAI生成された初期データがあるかチェック
