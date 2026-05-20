@@ -35,6 +35,16 @@ export async function POST(request: Request) {
     }
     const { prisma } = await import('@/lib/prisma');
 
+    // プロジェクト作成前に、紐づくOrganizationが存在するか確認し、なければ自動生成する（外部キーエラー回避）
+    await prisma.organization.upsert({
+      where: { id: organizationId },
+      update: {},
+      create: {
+        id: organizationId,
+        name: 'My Organization', // Firebase側の名称が不明なため初期名を設定
+      },
+    });
+
     const project = await prisma.project.create({
       data: {
         name,
