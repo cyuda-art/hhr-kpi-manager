@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Network } from 'lucide-react';
+import { Network, LayoutDashboard } from 'lucide-react';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export const MarketingHeader = () => {
   const pathname = usePathname();
+  const { user, isLoading } = useAuthStore();
 
   const navLinks = [
     { href: '/product', label: '製品' },
@@ -33,12 +35,21 @@ export const MarketingHeader = () => {
           ))}
         </nav>
         <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-bold font-poppins text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors hidden md:block">
-            ログイン
-          </Link>
-          <Link href="/login" className="text-xs font-bold font-poppins tracking-wider bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm">
-            無料トライアル
-          </Link>
+          {!isLoading && user ? (
+            <Link href="/dashboard" className="flex items-center gap-2 text-xs font-bold font-poppins tracking-wider bg-strategic-teal text-white px-5 py-2.5 rounded-full hover:bg-strategic-teal/90 transition-colors shadow-sm">
+              <LayoutDashboard className="w-4 h-4" />
+              DASHBOARD
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm font-bold font-poppins text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors hidden md:block">
+                ログイン
+              </Link>
+              <Link href="/login" className="text-xs font-bold font-poppins tracking-wider bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm">
+                無料トライアル
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
