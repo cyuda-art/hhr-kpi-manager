@@ -11,6 +11,14 @@ export async function GET(
   try {
     const { projectId } = await params;
 
+    // 自己修復ロジック：マイグレーションがスキップされた環境のために、直接カラムを追加する
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "KpiNode" ADD COLUMN IF NOT EXISTS "positionX" DOUBLE PRECISION DEFAULT 0;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "KpiNode" ADD COLUMN IF NOT EXISTS "positionY" DOUBLE PRECISION DEFAULT 0;`);
+    } catch (e) {
+      console.warn("Auto-migration failed in GET (columns might already exist):", e);
+    }
+
     // Prismaを利用して指定されたプロジェクトの全KPIノード、月次データ、およびタスクを取得
     const nodesFromDb = await prisma.kpiNode.findMany({
       where: { projectId: projectId },

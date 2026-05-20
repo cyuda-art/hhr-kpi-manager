@@ -313,15 +313,11 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           const kpiNode = kpiData[node.id];
           // DBの座標が有効かどうか（0,0でないか）
           const hasValidDbPosition = kpiNode.position && (kpiNode.position.x !== 0 || kpiNode.position.y !== 0);
-          
-          // 既にReact Flow上に配置されている（座標が計算済み）なら、それを維持する。
-          // 初回マウント時で、まだDagreが走っていない等、React Flow側の座標も初期値(0,0)の場合はDB座標を使う。
-          const useReactFlowPosition = node.position && (node.position.x !== 0 || node.position.y !== 0);
 
           return {
             ...node,
-            // 既に分散配置されている座標（node.position）を最優先することで、DBの重複座標（500,650等）による団子状態化を防ぐ
-            position: node.dragging || useReactFlowPosition ? node.position : (hasValidDbPosition ? kpiNode.position : node.position),
+            // 基本はDB座標を最優先する。DBに座標がない（0,0）場合はReact Flow側（Dagre等）の座標を使う
+            position: node.dragging ? node.position : (hasValidDbPosition ? kpiNode.position : node.position),
             hidden,
             targetPosition: (isHorizontal ? 'left' : 'top') as any,
             sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,

@@ -21,6 +21,14 @@ export async function POST(
     const incomingNodeIds = Object.keys(kpiData);
     const incomingActionIds = actions ? actions.map(a => a.id) : [];
 
+    // 自己修復ロジック：マイグレーションがスキップされた環境のために、直接カラムを追加する（すでに存在する場合は無視される）
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "KpiNode" ADD COLUMN IF NOT EXISTS "positionX" DOUBLE PRECISION DEFAULT 0;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "KpiNode" ADD COLUMN IF NOT EXISTS "positionY" DOUBLE PRECISION DEFAULT 0;`);
+    } catch (e) {
+      console.warn("Auto-migration failed (columns might already exist):", e);
+    }
+
     // トランザクションでアトミックに実行
     await prisma.$transaction(async (tx) => {
       // 1. 今回のリクエストに含まれないノードを削除
