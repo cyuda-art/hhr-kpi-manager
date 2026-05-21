@@ -28,22 +28,55 @@ export default function LoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push('/dashboard');
+      
+      const userId = auth.currentUser?.uid;
+      if (userId) {
+        const orgStore = (await import('@/store/useOrgStore')).useOrgStore;
+        await orgStore.getState().initializeOrgs(userId);
+        const { organizations, currentOrgId } = orgStore.getState();
+        
+        if (currentOrgId) {
+          router.push(`/${currentOrgId}/dashboard`);
+        } else if (organizations.length > 0) {
+          router.push(`/${organizations[0].id}/dashboard`);
+        } else {
+          router.push('/org-setup');
+        }
+      } else {
+        router.push('/org-setup');
+      }
     } catch (err: any) {
       setError(err.message || '認証に失敗しました');
-    } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     setError('');
+    setIsLoading(true);
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
+      
+      const userId = auth.currentUser?.uid;
+      if (userId) {
+        const orgStore = (await import('@/store/useOrgStore')).useOrgStore;
+        await orgStore.getState().initializeOrgs(userId);
+        const { organizations, currentOrgId } = orgStore.getState();
+        
+        if (currentOrgId) {
+          router.push(`/${currentOrgId}/dashboard`);
+        } else if (organizations.length > 0) {
+          router.push(`/${organizations[0].id}/dashboard`);
+        } else {
+          router.push('/org-setup');
+        }
+      } else {
+        router.push('/org-setup');
+      }
     } catch (err: any) {
       console.error("Google Login Error:", err);
       setError(`Googleログインに失敗しました: ${err.message || err.toString()}`);
+      setIsLoading(false);
     }
   };
 

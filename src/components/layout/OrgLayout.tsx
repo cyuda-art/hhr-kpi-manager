@@ -16,7 +16,7 @@ export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex flex-col font-sans transition-colors">
       <header className="h-16 bg-white dark:bg-[#202124] border-b border-slate-200 dark:border-[#3c4043] flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-colors">
         <div className="flex items-center gap-3">
-          <Link href={currentOrgId ? `/${currentOrgId}/projects` : '/'} className="flex items-center gap-2">
+          <Link href={currentOrgId ? `/${currentOrgId}/dashboard` : '/'} className="flex items-center gap-2">
             <div className="w-8 h-8 bg-strategic-teal rounded flex items-center justify-center">
               <Hexagon className="text-white" size={20} />
             </div>

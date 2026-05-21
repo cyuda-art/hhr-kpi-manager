@@ -39,7 +39,7 @@ export const MarketingHeader = () => {
         <div className="flex items-center gap-4">
           {!isLoading && user ? (
             <Link 
-              href="/dashboard"
+              href={currentOrgId ? `/${currentOrgId}/dashboard` : '/login'}
               className="flex items-center gap-2 text-xs font-bold font-poppins tracking-wider bg-strategic-teal text-white px-5 py-2.5 rounded-full hover:bg-strategic-teal/90 transition-colors shadow-sm"
             >
               <LayoutDashboard className="w-4 h-4" />

@@ -35,7 +35,7 @@ export const Header = () => {
 
         {/* ロゴ / 管理コンソールへのリンク */}
         <Link 
-          href={currentOrgId ? `/${currentOrgId}/projects` : '/'} 
+          href={currentOrgId ? `/${currentOrgId}/dashboard` : '/'} 
           className="hidden md:flex items-center gap-2 mr-4 group"
           title="管理コンソールへ戻る"
         >
@@ -100,7 +100,7 @@ export const Header = () => {
         
         {/* 管理コンソールへのリンク（アイコン） */}
         <Link 
-          href={currentOrgId ? `/${currentOrgId}/projects` : '/'} 
+          href={currentOrgId ? `/${currentOrgId}/dashboard` : '/'} 
           title="管理コンソール（プロジェクト一覧）" 
           className="text-slate-500 dark:text-[#9aa0a6] hover:text-slate-800 dark:hover:text-[#f1f3f4] transition-colors"
         >

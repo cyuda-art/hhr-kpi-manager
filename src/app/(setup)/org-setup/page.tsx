@@ -18,7 +18,7 @@ export default function OrgSetupPage() {
     // 既に組織を持っている場合はその組織のプロジェクト一覧へ
     if (!isLoading && organizations.length > 0) {
       const targetOrg = organizations[0];
-      router.push(`/${targetOrg.id}/projects`);
+      router.push(`/${targetOrg.id}/dashboard`);
     }
   }, [isLoading, organizations, router]);
 
@@ -31,7 +31,7 @@ export default function OrgSetupPage() {
     try {
       const newOrgId = await createOrganization(orgName, user.uid);
       // 作成成功したら、直接その組織のプロジェクト一覧へ遷移
-      router.push(`/${newOrgId}/projects`);
+      router.push(`/${newOrgId}/dashboard`);
     } catch (error: any) {
       console.error("Failed to create organization:", error);
       setErrorMsg(error.message || "組織の登録に失敗しました。時間をおいて再度お試しください。");
