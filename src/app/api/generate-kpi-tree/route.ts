@@ -192,8 +192,44 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
       throw new Error("AI output was not valid JSON");
     }
     // 元のフロントエンドの実装が nodes 配列を期待しているため、data.nodes を返す
-    // 思考プロセスもあわせてフロントエンドに返却する
-    const nodes = data.nodes || data;
+    let nodes = data.nodes || data;
+
+    // AIのハルシネーション対策（正規化）
+    // ルートノード（parentId === null）が複数生成されてしまった場合、強制的に1つの全社KGIで束ねる
+    const rootNodes = nodes.filter((n: any) => n.parentId === null || n.parentId === undefined);
+    if (rootNodes.length > 1) {
+      const kgiMainId = 'kgi_main_auto_injected_' + Date.now();
+      
+      const totalTargetValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.targetValue) || 0), 0);
+      const totalActualValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.actualValue) || 0), 0);
+      const totalPrevValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.previousValue) || 0), 0);
+      
+      const newRoot = {
+        id: kgiMainId,
+        name: kgiType || "全社KGI",
+        qualitativeName: "全社目標の達成",
+        businessUnit: "company",
+        type: "KGI",
+        parentId: null,
+        targetValue: totalTargetValue > 0 ? totalTargetValue : (kgiTargetValue || 100000000),
+        actualValue: totalActualValue,
+        previousValue: totalPrevValue,
+        unit: rootNodes[0]?.unit || "円",
+        description: "AIが生成した複数の事業部KPIを束ねるための自動生成ノード",
+        isCalculated: true,
+        formula: rootNodes.map((n: any) => `#{${n.id}}`).join(' + '),
+        isKsf: false
+      };
+      
+      nodes = nodes.map((n: any) => {
+        if (n.parentId === null || n.parentId === undefined) {
+          return { ...n, parentId: kgiMainId, type: n.type === 'KGI' ? 'KPI' : n.type };
+        }
+        return n;
+      });
+      
+      nodes.unshift(newRoot);
+    }
 
     return NextResponse.json({ nodes, thinkingProcess: data.thinking_process });
 
