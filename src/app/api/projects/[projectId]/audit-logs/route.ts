@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request, { params }: { params: { projectId: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
-    const { projectId } = params;
+    const { projectId } = await params;
 
     const logs = await prisma.auditLog.findMany({
       where: { projectId },
@@ -17,9 +17,9 @@ export async function GET(req: Request, { params }: { params: { projectId: strin
   }
 }
 
-export async function POST(req: Request, { params }: { params: { projectId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ projectId: string }> }) {
   try {
-    const { projectId } = params;
+    const { projectId } = await params;
     const body = await req.json();
     const { organizationId, userId, action, details } = body;
 

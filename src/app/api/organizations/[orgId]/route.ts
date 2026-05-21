@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request, { params }: { params: { orgId: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ orgId: string }> }) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
 
     const org = await prisma.organization.findUnique({
       where: { id: orgId },
@@ -24,9 +24,9 @@ export async function GET(req: Request, { params }: { params: { orgId: string } 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { orgId: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ orgId: string }> }) {
   try {
-    const { orgId } = params;
+    const { orgId } = await params;
     const data = await req.json();
     
     // 不要なIDフィールドなどは弾いて安全に更新する
