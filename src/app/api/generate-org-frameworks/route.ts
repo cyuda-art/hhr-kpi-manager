@@ -15,11 +15,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '有効なURLを入力してください' }, { status: 400 });
     }
 
-    // URLからテキスト抽出
+    // URLからテキスト抽出（失敗してもエラーで止めず、AIの推論に任せる）
     let extractedText = "";
     try {
       const fetchRes = await fetch(url, { 
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, 
+        headers: { 
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'ja,en-US;q=0.7,en;q=0.3'
+        }, 
         signal: AbortSignal.timeout(8000) 
       });
       if (fetchRes.ok) {
@@ -35,11 +39,12 @@ export async function POST(req: Request) {
             .substring(0, 8000); // 8000文字まで抽出
         }
       } else {
-         return NextResponse.json({ error: 'URLの読み込みに失敗しました (ステータス: ' + fetchRes.status + ')' }, { status: 400 });
+         console.warn(`URL fetch returned status ${fetchRes.status}`);
+         extractedText = "※セキュリティ設定等によりウェブサイトの直接読み込みがブロックされました。企業名およびURLのドメイン情報から事業内容を推論してください。";
       }
     } catch (e) {
       console.warn("URL fetch failed:", e);
-      return NextResponse.json({ error: 'URLの読み込みに失敗しました' }, { status: 400 });
+      extractedText = "※セキュリティ設定等によりウェブサイトの直接読み込みがブロックされました。企業名およびURLのドメイン情報から事業内容を推論してください。";
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
