@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useOrgStore } from '@/store/useOrgStore';
 import { Lock, Mail, ArrowRight, Network } from 'lucide-react';
 
 export default function LoginPage() {
@@ -31,9 +32,8 @@ export default function LoginPage() {
       
       const userId = auth.currentUser?.uid;
       if (userId) {
-        const orgStore = (await import('@/store/useOrgStore')).useOrgStore;
-        await orgStore.getState().initializeOrgs(userId);
-        const { organizations, currentOrgId } = orgStore.getState();
+        await useOrgStore.getState().initializeOrgs(userId);
+        const { organizations, currentOrgId } = useOrgStore.getState();
         
         if (currentOrgId) {
           router.push(`/${currentOrgId}/dashboard`);
@@ -59,9 +59,8 @@ export default function LoginPage() {
       
       const userId = auth.currentUser?.uid;
       if (userId) {
-        const orgStore = (await import('@/store/useOrgStore')).useOrgStore;
-        await orgStore.getState().initializeOrgs(userId);
-        const { organizations, currentOrgId } = orgStore.getState();
+        await useOrgStore.getState().initializeOrgs(userId);
+        const { organizations, currentOrgId } = useOrgStore.getState();
         
         if (currentOrgId) {
           router.push(`/${currentOrgId}/dashboard`);
