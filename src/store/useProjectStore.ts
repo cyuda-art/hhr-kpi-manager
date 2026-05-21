@@ -106,6 +106,22 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   deleteProject: async (projectId: string, orgId: string) => {
     try {
+      if (projectId.startsWith('mock-proj-')) {
+        const localProjects = JSON.parse(localStorage.getItem(`hhr_mock_projects_${orgId}`) || '[]');
+        const updatedLocalProjects = localProjects.filter((p: any) => p.id !== projectId);
+        localStorage.setItem(`hhr_mock_projects_${orgId}`, JSON.stringify(updatedLocalProjects));
+        
+        set(state => ({
+          projects: state.projects.filter(p => p.id !== projectId)
+        }));
+        
+        const { currentProjectId, setCurrentProjectId } = get();
+        if (currentProjectId === projectId) {
+          setCurrentProjectId(null);
+        }
+        return;
+      }
+
       const res = await fetch(`/api/projects/${projectId}`, {
         method: 'DELETE',
       });
@@ -202,6 +218,19 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   updateProject: async (projectId: string, orgId: string, data: Partial<Project>) => {
     try {
+      if (projectId.startsWith('mock-proj-')) {
+        const localProjects = JSON.parse(localStorage.getItem(`hhr_mock_projects_${orgId}`) || '[]');
+        const updatedLocalProjects = localProjects.map((p: any) => 
+          p.id === projectId ? { ...p, ...data } : p
+        );
+        localStorage.setItem(`hhr_mock_projects_${orgId}`, JSON.stringify(updatedLocalProjects));
+        
+        set(state => ({
+          projects: state.projects.map(p => p.id === projectId ? { ...p, ...data } : p)
+        }));
+        return;
+      }
+
       const res = await fetch(`/api/projects/${projectId}`, {
         method: 'PATCH',
         headers: {

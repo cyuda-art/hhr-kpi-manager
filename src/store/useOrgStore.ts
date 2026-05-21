@@ -103,6 +103,22 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
 
   updateOrganizationSettings: async (orgId: string, data: Partial<Organization>) => {
     try {
+      // 🚨 LocalStorage fallback for mock orgs
+      if (orgId.startsWith('mock-org-')) {
+        const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
+        const updatedLocalOrgs = localOrgs.map((org: any) => 
+          org.id === orgId ? { ...org, ...data } : org
+        );
+        localStorage.setItem('hhr_mock_orgs', JSON.stringify(updatedLocalOrgs));
+        
+        set((state) => ({
+          organizations: state.organizations.map(org => 
+            org.id === orgId ? { ...org, ...data } : org
+          )
+        }));
+        return;
+      }
+
       const res = await fetch(`/api/organizations/${orgId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
