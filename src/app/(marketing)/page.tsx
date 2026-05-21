@@ -78,12 +78,12 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link 
+            <a 
               href="/login"
               className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-200 text-[#050505] rounded-sm font-bold text-sm tracking-[0.15em] transition-all flex items-center justify-center gap-3 font-mono"
             >
               DEPLOY AGENT <ChevronRight size={18} />
-            </Link>
+            </a>
             <Link 
               href="#architecture"
               className="w-full sm:w-auto px-8 py-4 bg-transparent hover:bg-white/5 text-white border border-slate-700 rounded-sm font-bold text-sm tracking-[0.15em] transition-all flex items-center justify-center gap-3 font-mono"
@@ -283,12 +283,12 @@ export default function LandingPage() {
             あなたの会社の戦略を、今日から「動くエージェント」に変えませんか？
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link 
+            <a 
               href="/login"
               className="px-10 py-5 bg-white hover:bg-slate-200 text-[#050505] rounded-sm font-bold text-sm tracking-[0.15em] transition-all flex items-center gap-3 font-mono"
             >
               REQUEST DEMO <ArrowRight size={18} />
-            </Link>
+            </a>
           </div>
         </div>
       </section>
