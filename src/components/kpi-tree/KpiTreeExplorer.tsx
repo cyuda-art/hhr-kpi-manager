@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from 'react';
 import { useKpiStore } from '@/store/useKpiStore';
-import { ChevronRight, ChevronDown, Target, ListChecks, TrendingUp, Search } from 'lucide-react';
+import { ChevronRight, ChevronDown, Target, ListChecks, TrendingUp, Search, CheckSquare, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ExplorerNode = ({ nodeId, level = 0 }: { nodeId: string, level?: number }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, actions } = useKpiStore();
   const [isExpanded, setIsExpanded] = useState(true);
   
   const node = kpiData[nodeId];
@@ -35,34 +35,57 @@ const ExplorerNode = ({ nodeId, level = 0 }: { nodeId: string, level?: number })
 
   const statusColor = node.status === 'danger' ? 'bg-rose-500' : node.status === 'warning' ? 'bg-amber-400' : 'bg-emerald-500';
 
+  const nodeActions = actions.filter(a => a.kpiId === nodeId && !a.isArchived);
+  const taskCount = nodeActions.length;
+  const assignees = Array.from(new Set(nodeActions.map(a => a.owner).filter(Boolean)));
+  const assigneeText = assignees.length > 1 ? '複数名' : assignees.length === 1 ? assignees[0] : '未定';
+
   return (
-    <div className="select-none">
+    <div className="select-none mb-0.5">
       <div 
-        className={`flex items-center py-1.5 px-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700' : ''}`}
+        className={`flex flex-col py-1.5 px-2 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700' : ''}`}
         style={{ paddingLeft: `${level * 12 + 8}px` }}
         onClick={() => setSelectedNodeId(nodeId)}
       >
-        <div 
-          className="w-4 h-4 flex items-center justify-center mr-1 cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (hasChildren) setIsExpanded(!isExpanded);
-          }}
-        >
-          {hasChildren && (
-            isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />
+        <div className="flex items-center">
+          <div 
+            className="w-4 h-4 flex items-center justify-center mr-1 cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (hasChildren) setIsExpanded(!isExpanded);
+            }}
+          >
+            {hasChildren && (
+              isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />
+            )}
+          </div>
+          
+          <div className="mr-2">
+            {getIcon()}
+          </div>
+          
+          <div className="flex-1 truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+            {node.name || "名称未設定"}
+          </div>
+        </div>
+
+        {/* 2段目：ステータス・タスク・担当者 */}
+        <div className="flex items-center mt-1.5 gap-2.5 text-[10px] text-slate-500 dark:text-slate-400" style={{ paddingLeft: '28px' }}>
+          <span className="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+            <div className={`w-1.5 h-1.5 rounded-full ${statusColor} shrink-0`}></div>
+            {node.achievementRate !== undefined ? `${node.achievementRate.toFixed(1)}%` : '0.0%'}
+          </span>
+          
+          {taskCount > 0 && (
+            <span className="flex items-center gap-0.5 bg-slate-200/70 dark:bg-slate-700/60 px-1 py-0.5 rounded-sm text-slate-600 dark:text-slate-300 font-medium">
+              <CheckSquare size={10} /> {taskCount}
+            </span>
           )}
+          
+          <span className="flex items-center gap-1 truncate max-w-[80px]">
+            <User size={10} /> {assigneeText}
+          </span>
         </div>
-        
-        <div className="mr-2">
-          {getIcon()}
-        </div>
-        
-        <div className="flex-1 truncate text-xs font-medium text-slate-700 dark:text-slate-300">
-          {node.name || "名称未設定"}
-        </div>
-        
-        <div className={`w-1.5 h-1.5 rounded-full ${statusColor} ml-2 shrink-0`}></div>
       </div>
       
       <AnimatePresence>
