@@ -289,7 +289,7 @@ export default function WorkspacePage() {
 
       if (!res.ok || data.error) throw new Error(data.error || 'Failed to generate');
 
-      // AIのハルシネーション対策（正規化）
+      // AIのハルシネーション対策（正規化とツリー構造の修復）
       let nodes = data.nodes || data;
       if (!Array.isArray(nodes)) {
         if (typeof nodes === 'object' && nodes !== null) {
@@ -299,12 +299,30 @@ export default function WorkspacePage() {
         }
       }
 
+      // 1. 存在しない親IDを参照しているノードのparentIdをnullクリアする（孤児ノード対策）
+      const nodeIds = new Set(nodes.map((n: any) => n.id));
+      nodes = nodes.map((n: any) => {
+        if (n.parentId && !nodeIds.has(n.parentId)) {
+          return { ...n, parentId: null };
+        }
+        // 文字列の"null"や空文字も念のためnullに変換
+        if (n.parentId === "null" || n.parentId === "") {
+          return { ...n, parentId: null };
+        }
+        return n;
+      });
+
+      // 2. ルートノードの特定
       const rootNodes = nodes.filter((n: any) => n.parentId === null || n.parentId === undefined);
-      if (rootNodes.length > 1) {
+      
+      // 3. ルートノードが複数ある、またはルートノードがない（循環参照など）場合は、絶対的なKGIノードを1つ自動生成して束ねる
+      if (rootNodes.length > 1 || rootNodes.length === 0) {
         const kgiMainId = 'kgi_main_auto_injected_' + Date.now();
-        const totalTargetValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.targetValue) || 0), 0);
-        const totalActualValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.actualValue) || 0), 0);
-        const totalPrevValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.previousValue) || 0), 0);
+        const nodesToBind = rootNodes.length > 1 ? rootNodes : nodes; // ルートがない場合は全ノードを新ルートに紐づける
+        
+        const totalTargetValue = nodesToBind.reduce((sum: number, n: any) => sum + (Number(n.targetValue) || 0), 0);
+        const totalActualValue = nodesToBind.reduce((sum: number, n: any) => sum + (Number(n.actualValue) || 0), 0);
+        const totalPrevValue = nodesToBind.reduce((sum: number, n: any) => sum + (Number(n.previousValue) || 0), 0);
         
         const newRoot = {
           id: kgiMainId,
@@ -316,10 +334,10 @@ export default function WorkspacePage() {
           targetValue: totalTargetValue > 0 ? totalTargetValue : (annualizedKgiTarget || 100000000),
           actualValue: totalActualValue,
           previousValue: totalPrevValue,
-          unit: rootNodes[0]?.unit || "円",
+          unit: nodesToBind[0]?.unit || "円",
           description: "AIが生成した複数の事業部KPIを束ねるための自動生成ノード",
           isCalculated: true,
-          formula: rootNodes.map((n: any) => `#{${n.id}}`).join(' + '),
+          formula: nodesToBind.map((n: any) => `#{${n.id}}`).join(' + '),
           isKsf: false
         };
         
@@ -331,6 +349,14 @@ export default function WorkspacePage() {
         });
         
         nodes.unshift(newRoot);
+      } else if (rootNodes.length === 1) {
+        // ルートノードが1つの場合は、それを確実にKGIとする
+        nodes = nodes.map((n: any) => {
+          if (n.id === rootNodes[0].id) {
+            return { ...n, type: 'KGI' };
+          }
+          return n;
+        });
       }
 
       data.nodes = nodes;
