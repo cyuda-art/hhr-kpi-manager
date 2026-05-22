@@ -299,6 +299,33 @@ export default function WorkspacePage() {
         }
       }
 
+      // 【DB設計の脆弱性パッチ】AIが生成した固定ID（kgi_main等）が他のプロジェクトと競合して
+      // PrismaのUpsert時に他プロジェクトのノードを上書き＆自プロジェクトから消失するバグを防ぐため、
+      // 全ノードのIDをこの時点でグローバルユニークに変換する
+      const idMap: Record<string, string> = {};
+      nodes.forEach((n: any) => {
+        if (n.id) {
+          idMap[n.id] = `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+      });
+
+      nodes = nodes.map((n: any) => {
+        let newFormula = n.formula;
+        if (newFormula && typeof newFormula === 'string') {
+          Object.keys(idMap).forEach(oldId => {
+            // formulaの中の #{old_id} を #{new_id} に置換
+            newFormula = newFormula.replace(new RegExp(`\\#\\{${oldId}\\}`, 'g'), `#{${idMap[oldId]}}`);
+          });
+        }
+        
+        return {
+          ...n,
+          id: idMap[n.id] || n.id,
+          parentId: n.parentId && idMap[n.parentId] ? idMap[n.parentId] : n.parentId,
+          formula: newFormula
+        };
+      });
+
       // 1. 存在しない親IDを参照しているノードのparentIdをnullクリアする（孤児ノード対策）
       const nodeIds = new Set(nodes.map((n: any) => n.id));
       nodes = nodes.map((n: any) => {
