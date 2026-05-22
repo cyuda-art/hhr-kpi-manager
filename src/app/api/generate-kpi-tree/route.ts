@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export const maxDuration = 60; // Vercel Serverless Function timeout limit
+export const runtime = 'edge';
+export const maxDuration = 60; // Edge Functions support up to 25s on Hobby, or more on Pro.
+
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
 
@@ -68,7 +79,7 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
 【出力要件】
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
 - markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
-- "nodes" 配列内のノードは合計で5個〜10個程度作成してください。今回は「全体像（構造）」を作るフェーズです。
+- "nodes" 配列内のノードは合計で4個〜7個程度作成してください。今回は「全体像（構造）」を作るフェーズです。
 - 階層構造と数式に関する【絶対ルール】（MECEとロジックツリーの完全連動）:
   - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main"、nameは "${kgiType}"、targetValueは ${kgiTargetValue || 100000000} としてください。
   - 各ノードの qualitativeName には、目標達成のための定性的な成功要因やプロセス名を設定してください（重要: 「KSF:」や「プロセス:」といった接頭辞は絶対に付けないこと）。
@@ -157,10 +168,9 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
           if (fileRes.ok) {
             const arrayBuffer = await fileRes.arrayBuffer();
             const mimeType = fileRes.headers.get('content-type') || 'application/octet-stream';
-            // Gemini 1.5は画像、PDF、テキストなどのinlineDataをサポート
             promptParts.push({
               inlineData: {
-                data: Buffer.from(arrayBuffer).toString('base64'),
+                data: arrayBufferToBase64(arrayBuffer),
                 mimeType
               }
             });
