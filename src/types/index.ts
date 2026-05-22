@@ -39,7 +39,6 @@ export interface KpiNodeData {
   position?: { x: number; y: number }; // React Flow上の座標
   linkedSource?: { projectId: string; kpiId: string; orgId?: string }; // 他プロジェクトからの同期用リンク情報
   warning?: string; // アラートメッセージ（例: 子要素削除による数式エラーなど）
-  isArchived?: boolean; // 論理削除（アーカイブ）フラグ
   mappedSourceId?: string; // AI生成時に既存のアーカイブKPIを復活させた場合の元ID
   isKsf?: boolean; // AI戦略においてKey Success Factor（最重要ノード）と判定されたか
   addedAt?: number; // UI演出用の追加時刻タイムスタンプ
@@ -71,7 +70,6 @@ export interface Action {
   dueDate: string;
   status: 'todo' | 'in_progress' | 'done';
   priority?: TaskPriority;
-  isArchived?: boolean; // 論理削除フラグ
   mappedSourceId?: string; // AI生成時に既存のアーカイブActionを復活させた場合の元ID
   
   // 自律型エージェント用拡張 (Agentic Pivot)

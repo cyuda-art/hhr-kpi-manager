@@ -14,14 +14,14 @@ const ExplorerNode = ({ nodeId, level = 0 }: { nodeId: string, level?: number })
   // Find children
   const childrenIds = useMemo(() => {
     return Object.keys(kpiData)
-      .filter(id => kpiData[id] && !kpiData[id].isArchived && kpiData[id].parentId === nodeId)
+      .filter(id => kpiData[id] && kpiData[id].parentId === nodeId)
       .sort((a, b) => {
         // Sort by order or name
         return (kpiData[a].name || "").localeCompare(kpiData[b].name || "");
       });
   }, [kpiData, nodeId]);
 
-  if (!node || node.isArchived) return null;
+  if (!node) return null;
 
   const hasChildren = childrenIds.length > 0;
   const isSelected = selectedNodeId === nodeId;
@@ -35,7 +35,7 @@ const ExplorerNode = ({ nodeId, level = 0 }: { nodeId: string, level?: number })
 
   const statusColor = node.status === 'danger' ? 'bg-rose-500' : node.status === 'warning' ? 'bg-amber-400' : 'bg-emerald-500';
 
-  const nodeActions = actions.filter(a => a.kpiId === nodeId && !a.isArchived);
+  const nodeActions = actions.filter(a => a.kpiId === nodeId);
   const taskCount = nodeActions.length;
   const assignees = Array.from(new Set(nodeActions.map(a => a.owner).filter(Boolean)));
   const assigneeText = assignees.length > 1 ? '複数名' : assignees.length === 1 ? assignees[0] : '未定';
@@ -115,7 +115,7 @@ export const KpiTreeExplorer = () => {
   const rootNodeIds = useMemo(() => {
     return Object.keys(kpiData).filter(id => {
       const node = kpiData[id];
-      if (!node || node.isArchived) return false;
+      if (!node) return false;
       
       if (searchQuery) {
         return node.name?.toLowerCase().includes(searchQuery.toLowerCase());

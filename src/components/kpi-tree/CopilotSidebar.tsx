@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from 'react';
+import { useKpiStore } from '@/store/useKpiStore';
 import { Sparkles, Loader2, Wand2, X } from 'lucide-react';
 
 const TypewriterText = ({ text, animate }: { text: string, animate: boolean }) => {

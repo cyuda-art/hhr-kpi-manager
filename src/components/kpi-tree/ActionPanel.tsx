@@ -74,7 +74,7 @@ export const ActionPanel = () => {
     if (!selectedKpi) return;
     
     // 直下の子要素を取得
-    const children = Object.values(kpiData).filter(node => node.parentId === selectedKpi.id && !node.isArchived);
+    const children = Object.values(kpiData).filter(node => node.parentId === selectedKpi.id);
     if (children.length === 0) return;
 
     // --- 過去データ退避（バックフィル）ロジック ---

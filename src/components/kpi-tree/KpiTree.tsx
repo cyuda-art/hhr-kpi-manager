@@ -70,7 +70,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 
   Object.keys(kpiData).forEach(id => {
     const data = kpiData[id];
-    if (!data || data.isArchived) return;
+    if (!data) return;
 
     nodes.push({
       id,
@@ -82,7 +82,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
     });
 
     // 親ノードが存在する場合のみエッジを追加（AI生成ミスによる存在しない親への参照を防ぐ）
-    if (data.parentId && kpiData[data.parentId] && !kpiData[data.parentId].isArchived) {
+    if (data.parentId && kpiData[data.parentId]) {
       edges.push({
         id: `e-${data.parentId}-${id}`,
         source: data.parentId,
@@ -292,7 +292,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       // 下位方向（子孫）の取得
       const getDescendants = (parentId: string) => {
         Object.keys(kpiData).forEach(id => {
-          if (kpiData[id] && kpiData[id].parentId === parentId && !kpiData[id].isArchived) {
+          if (kpiData[id] && kpiData[id].parentId === parentId) {
             highlightedNodeIds.add(id);
             getDescendants(id);
           }
@@ -304,7 +304,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     setNodes((nds) => {
       const isHorizontal = layoutDirection === 'LR';
       const newNodes = nds
-        .filter((node) => kpiData[node.id] && !kpiData[node.id].isArchived)
+        .filter((node) => !!kpiData[node.id])
         .map((node) => {
           const hasChildren = Object.values(kpiData).some(k => k.parentId === node.id);
           const isCollapsed = collapsedNodes.includes(node.id);
@@ -333,7 +333,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
       const existingIds = new Set(newNodes.map((n) => n.id));
       Object.keys(kpiData).forEach((id) => {
-        if (!existingIds.has(id) && !kpiData[id].isArchived) {
+        if (!existingIds.has(id)) {
           const parentId = kpiData[id].parentId;
           let x = 500;
           let y = 650;
@@ -350,7 +350,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             }
           }
           
-          const hasChildren = Object.values(kpiData).some(k => k.parentId === id && !k.isArchived);
+          const hasChildren = Object.values(kpiData).some(k => k.parentId === id);
           const isCollapsed = collapsedNodes.includes(id);
           const hidden = isNodeHidden(id);
 
@@ -458,7 +458,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
     setEdges((eds) => {
       const newEdges = eds
-        .filter((edge) => kpiData[edge.target] && !kpiData[edge.target].isArchived && kpiData[edge.source] && !kpiData[edge.source].isArchived)
+        .filter((edge) => kpiData[edge.target] && kpiData[edge.source])
         .map((edge) => {
           const hidden = isNodeHidden(edge.target);
           const { style, animated } = getEdgeStyle(edge.source, edge.target);
@@ -473,9 +473,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
       const existingEdgeIds = new Set(newEdges.map((e) => e.id));
       Object.keys(kpiData).forEach((id) => {
-        if (kpiData[id].isArchived) return;
+        if (!kpiData[id]) return;
         const parentId = kpiData[id].parentId;
-        if (parentId && kpiData[parentId] && !kpiData[parentId].isArchived) {
+        if (parentId && kpiData[parentId]) {
           const edgeId = `e-${parentId}-${id}`;
           if (!existingEdgeIds.has(edgeId)) {
             const hidden = isNodeHidden(id);

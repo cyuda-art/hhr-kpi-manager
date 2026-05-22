@@ -13,12 +13,12 @@ export const SimulationPanel = ({ onClose }: { onClose?: () => void }) => {
   }, [kpiData]);
 
   const getChildren = (parentId: string) => {
-    return Object.values(kpiData).filter(k => k.parentId === parentId && !k.isArchived);
+    return Object.values(kpiData).filter(k => k.parentId === parentId);
   };
 
   const renderKpiRow = (id: string, depth: number = 0) => {
     const kpi = kpiData[id];
-    if (!kpi || kpi.isArchived) return null;
+    if (!kpi) return null;
 
     const children = getChildren(id);
 

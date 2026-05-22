@@ -50,7 +50,7 @@ export const KpiExecutionPanel = () => {
   const isComputed = selectedKpi?.isCalculated || false;
 
   // 子KPIの取得
-  const childKpis = selectedKpi ? Object.values(kpiData).filter(node => node.parentId === selectedKpi.id && !node.isArchived) : [];
+  const childKpis = selectedKpi ? Object.values(kpiData).filter(node => node.parentId === selectedKpi.id) : [];
 
   // 自動スクロール
   useEffect(() => {
@@ -109,7 +109,7 @@ export const KpiExecutionPanel = () => {
             achievementRate: child.achievementRate,
             status: child.status
           })),
-          actions: useKpiStore.getState().actions.filter(a => a.kpiId === selectedKpi.id && !a.isArchived),
+          actions: useKpiStore.getState().actions.filter(a => a.kpiId === selectedKpi.id),
           history: selectedKpi.chatMessages || [],
           projectInfo: currentProjectInfo
         })
@@ -145,7 +145,7 @@ export const KpiExecutionPanel = () => {
             
             // 冪等性の担保（既に同じタイトルの未完了タスクがある場合は追加しない）
             const existingTasks = useKpiStore.getState().actions;
-            const isDuplicate = existingTasks.some(a => a.kpiId === targetKpiId && a.title === action.title && a.status === 'todo' && !a.isArchived);
+            const isDuplicate = existingTasks.some(a => a.kpiId === targetKpiId && a.title === action.title && a.status === 'todo');
             
             if (!isDuplicate) {
               useKpiStore.getState().addAction({
@@ -329,7 +329,7 @@ export const KpiExecutionPanel = () => {
         </div>
         
         {useKpiStore.getState().actions.filter(a => 
-          !a.isArchived && 
+
           (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId)))
         ).length === 0 ? (
           <div className="text-[11px] text-slate-400 text-center py-2 bg-white dark:bg-[#2d2f31] rounded border border-slate-100 dark:border-slate-800">
@@ -339,7 +339,7 @@ export const KpiExecutionPanel = () => {
           <div className="flex flex-col gap-1.5">
             <AnimatePresence initial={false}>
               {useKpiStore.getState().actions
-                .filter(a => !a.isArchived && (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId))))
+                .filter(a => (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId))))
                 .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
                 .map(action => (
                   <motion.div 

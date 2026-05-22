@@ -10,7 +10,6 @@ export default function DashboardPage() {
   const { kpiData, currentPeriod, applyRollingForecast } = useKpiStore();
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'rate'>('actual');
-  const [showArchived, setShowArchived] = useState(false);
 
   // Executive Summary Calculations
   const summary = useMemo(() => {
@@ -18,7 +17,6 @@ export default function DashboardPage() {
     let statusCounts = { good: 0, warning: 0, danger: 0 };
     
     Object.values(kpiData).forEach(node => {
-      if (node.isArchived && !showArchived) return;
       if (node.type === 'KGI') kgiNode = node;
       
       if (node.status === 'good') statusCounts.good++;
@@ -27,7 +25,7 @@ export default function DashboardPage() {
     });
 
     return { kgiNode, statusCounts };
-  }, [kpiData, showArchived]);
+  }, [kpiData]);
 
   // Current logical period for rolling forecast
   const cp = currentPeriod.match(/^\d{4}-\d{2}$/) ? currentPeriod : "2026-06"; // Fallback to a mid-year month
@@ -35,7 +33,6 @@ export default function DashboardPage() {
   // KPIs with Shortfall (Leaderboard)
   const shortfallLeaderboard = useMemo(() => {
     const list = Object.values(kpiData).filter(node => {
-      if (node.isArchived && !showArchived) return false;
       if (!shouldScaleWithPeriod(node as any)) return false;
       if (!node.monthlyData) return false;
       return true;
@@ -53,11 +50,11 @@ export default function DashboardPage() {
     }).filter(item => item.shortfall < 0);
 
     return list.sort((a, b) => a.shortfall - b.shortfall); // Most negative first (worst)
-  }, [kpiData, showArchived, cp]);
+  }, [kpiData, cp]);
 
   const kpiList = useMemo(() => {
-    return Object.values(kpiData).filter(node => showArchived || !node.isArchived);
-  }, [kpiData, showArchived]);
+    return Object.values(kpiData);
+  }, [kpiData]);
 
   // Heatmap Data (Macro View)
   const heatmapData = useMemo(() => {

@@ -984,26 +984,24 @@ export const useKpiStore = create<KpiStore>()(
         }
       }
 
-      // 再帰的な子ノードのアーカイブ処理と、関連するタスク（Action）のアーカイブ処理
-      let archivedNodeIds = new Set<string>();
+      // 再帰的な子ノードの削除処理
+      let deletedNodeIds = new Set<string>();
       
-      const archiveRecursive = (nodeId: string) => {
-        archivedNodeIds.add(nodeId);
+      const deleteRecursive = (nodeId: string) => {
+        deletedNodeIds.add(nodeId);
         Object.keys(draft).forEach(key => {
-          if (draft[key].parentId === nodeId && !draft[key].isArchived) {
-            archiveRecursive(key);
+          if (draft[key].parentId === nodeId) {
+            deleteRecursive(key);
           }
         });
-        // 物理削除ではなく、論理削除（アーカイブ）フラグを立てる
-        draft[nodeId] = { ...draft[nodeId], isArchived: true };
+        // 物理削除
+        delete draft[nodeId];
       };
       
-      archiveRecursive(id);
+      deleteRecursive(id);
       
-      // アーカイブされたノードに紐づくタスクも論理削除（アーカイブ）とする
-      const newActions = state.actions.map(a => 
-        archivedNodeIds.has(a.kpiId) ? { ...a, isArchived: true } : a
-      );
+      // 削除されたノードに紐づくタスクも物理削除する
+      const newActions = state.actions.filter(a => !deletedNodeIds.has(a.kpiId));
       
       const newSelected = state.selectedNodeId === id ? null : state.selectedNodeId;
       
@@ -1013,30 +1011,6 @@ export const useKpiStore = create<KpiStore>()(
       
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: newActions, projectInfo: state.currentProjectInfo });
       return { kpiData: draft, actions: newActions, selectedNodeId: newSelected, projectData: saveToProjectData({ ...state, kpiData: draft, actions: newActions }) };
-    });
-  },
-
-  reviveKpiNode: (id, newParentId) => {
-    set((state) => {
-      const draft = { ...state.kpiData };
-      if (!draft[id]) return state;
-
-      state.saveHistory();
-
-      // アーカイブ状態を解除し、新しい親に紐付ける
-      draft[id] = { ...draft[id], isArchived: false, parentId: newParentId, warning: undefined };
-
-      // 紐づいていたタスクのアーカイブ状態も解除する
-      const newActions = state.actions.map(a => 
-        a.kpiId === id ? { ...a, isArchived: false } : a
-      );
-
-      // 再計算をトリガー
-      recalculateTree(draft, 'actualValue', state.currentPeriod);
-      recalculateTree(draft, 'targetValue', state.currentPeriod);
-
-      syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: newActions, projectInfo: state.currentProjectInfo });
-      return { kpiData: draft, actions: newActions, projectData: saveToProjectData({ ...state, kpiData: draft, actions: newActions }) };
     });
   },
   

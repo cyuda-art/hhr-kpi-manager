@@ -218,32 +218,7 @@ export default function WorkspacePage() {
       if (!currentOrgId) throw new Error("No organization selected");
 
       setUploadStatus('過去のアーカイブ資産を走査中...');
-      const archivedKpis: any[] = [];
-      try {
-        // 全プロジェクトの kpiData をフェッチしてアーカイブ済みKPIを収集
-        for (const project of projects) {
-          const res = await fetch(`/api/projects/${project.id}/nodes`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.kpiData) {
-              Object.values(data.kpiData).forEach((k: any) => {
-                if (k.isArchived) {
-                  archivedKpis.push({
-                    id: k.id,
-                    projectId: project.id,
-                    name: k.name,
-                    qualitativeName: k.qualitativeName,
-                    unit: k.unit,
-                    type: k.type
-                  });
-                }
-              });
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('Failed to fetch archived KPIs', e);
-      }
+
 
       setUploadStatus('AIが選択された作戦に基づきKPIツリーを構築中...');
 
@@ -273,8 +248,7 @@ export default function WorkspacePage() {
           businessModelType,
           selectedManifesto: editableManifesto,
           customInstructions,
-          fileUrls: uploadedFileUrls, // 事前アップロード済みのURLを使用
-          archivedKpis // 集めたアーカイブKPIをコンテキストとして渡す
+          fileUrls: uploadedFileUrls // 事前アップロード済みのURLを使用
         })
       });
 

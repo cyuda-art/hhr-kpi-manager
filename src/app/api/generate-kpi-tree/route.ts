@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const runtime = 'edge';
-export const maxDuration = 60; // Edge Functions support up to 25s on Hobby, or more on Pro.
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   let binary = '';
@@ -18,7 +17,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
 
 export async function POST(req: Request) {
   try {
-    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, selectedManifesto, customInstructions, fileUrls, archivedKpis } = await req.json();
+    const { projectUrl, kgiType, kgiPeriod, kgiTargetValue, businessModelType, selectedManifesto, customInstructions, fileUrls } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
@@ -71,10 +70,6 @@ ${selectedManifesto ? `タイトル: ${selectedManifesto.title}\n内容: ${selec
 ステップ1: 添付ファイル（もしあれば）の解析 - 画像、PDF、CSVなどの参照資料から、事業特性や既存の数値を読み解く。
 ステップ2: 環境分析と作戦の解読 - 選択された作戦（Manifesto）を深く読み解き、その作戦を成功させるために最も重要となるプロセス（KSF: Key Success Factor）を特定する。
 ステップ3: 階層構造の数式設計 - ユーザー指定の作戦とビジネスモデルに基づき、KGIを分解。作戦で強調されている指標をツリーの中心に据える。
-ステップ4: アーカイブ資産の引き継ぎ判定 - 【アーカイブ済みKPIカタログ】が提供されている場合、新しく作成しようとしているKPIの意味と完全に合致する過去のKPIが存在するかを判定し、存在する場合はそのIDを mappedSourceId として出力する。
-
-【アーカイブ済みKPIカタログ（再利用候補）】
-${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: any) => ({ id: k.id, name: k.name, qualitativeName: k.qualitativeName })), null, 2) : '再利用可能なアーカイブKPIはありません。'}
 
 【出力要件】
 - 以下のJSONフォーマット（"thinking_process"と"nodes"を含むオブジェクト）で出力してください。
@@ -97,7 +92,6 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
 - businessUnitは "company", "hotel", "spa", "restaurant", "shop", "kitchen", "cross" のいずれかを指定してください。
 - 数値（targetValue, actualValue, previousValue）は、親ノードの計算式（formula）と完全に整合性が取れるように設定してください。計算が合わない数値はエラーになります。
 - 【重要】単位（unit）が「%」の指標（商談化率、利益率など）の場合、数値は0.2のような小数ではなく、必ず100倍した数値（例: 20%の場合は「20」）で設定してください。
-- アーカイブKPIと文脈が完全に合致すると判断した場合のみ、そのアーカイブKPIのIDを "mappedSourceId" に指定してください。合致しない場合は指定しないでください（nullまたは省略）。
 - 1年間のダミーデータをフロントエンドで生成するため、各ノードに事業特性を表す "trend_type" (steady_growth, seasonal_summer, seasonal_winter, flat_random のいずれか) と、日々の数値のブレ幅を表す "volatility" (0.05〜0.3の数値) を必ず含めてください。
 - 末端のKPIノードには、現場が実行すべき具体的な「タスク（ToDo）」を1〜3個程度、"tasks" 配列として付与してください。
 
