@@ -339,7 +339,11 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           let y = 650;
           
           const initNode = initialNodes.find(n => n.id === id);
-          if (initNode) {
+          
+          if (kpiData[id]?.position && (kpiData[id].position.x !== 0 || kpiData[id].position.y !== 0)) {
+            x = kpiData[id].position.x;
+            y = kpiData[id].position.y;
+          } else if (initNode) {
             x = initNode.position.x;
             y = initNode.position.y;
           } else if (parentId) {
