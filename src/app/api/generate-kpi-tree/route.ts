@@ -193,6 +193,13 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
     }
     // 元のフロントエンドの実装が nodes 配列を期待しているため、data.nodes を返す
     let nodes = data.nodes || data;
+    if (!Array.isArray(nodes)) {
+      if (typeof nodes === 'object' && nodes !== null) {
+        nodes = Object.values(nodes);
+      } else {
+        nodes = [];
+      }
+    }
 
     // AIのハルシネーション対策（正規化）
     // ルートノード（parentId === null）が複数生成されてしまった場合、強制的に1つの全社KGIで束ねる
@@ -233,8 +240,8 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
 
     return NextResponse.json({ nodes, thinkingProcess: data.thinking_process });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to generate KPI tree:', error);
-    return NextResponse.json({ error: 'Failed to generate KPI tree' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Failed to generate KPI tree' }, { status: 500 });
   }
 }

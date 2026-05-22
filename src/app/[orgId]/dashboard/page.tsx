@@ -180,7 +180,14 @@ export default function WorkspacePage() {
         })
       });
 
-      const data = await res.json();
+      const textResponse = await res.text();
+      let data;
+      try {
+        data = JSON.parse(textResponse);
+      } catch (e) {
+        throw new Error(`Server returned non-JSON response: ${textResponse.substring(0, 100)}`);
+      }
+
       if (!res.ok) throw new Error(data.error || 'Failed to generate manifesto');
 
       if (data.manifestos && data.manifestos.length > 0) {
@@ -193,9 +200,9 @@ export default function WorkspacePage() {
       } else {
         throw new Error('マニフェストが生成されませんでした');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('エラーが発生しました');
+      alert(`エラーが発生しました: ${error?.message || String(error)}`);
       setWizardStep('input');
     }
   };
@@ -271,7 +278,14 @@ export default function WorkspacePage() {
         })
       });
 
-      const data = await res.json();
+      const textResponse = await res.text();
+      let data;
+      try {
+        data = JSON.parse(textResponse);
+      } catch (e) {
+        throw new Error(`Server returned non-JSON response: ${textResponse.substring(0, 100)}`);
+      }
+
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
 
       // AIからの返答に mappedSourceId があれば linkedSource に変換する
@@ -411,9 +425,9 @@ export default function WorkspacePage() {
 
       router.push(`/${currentOrgId}/p/${newId}/kpi-tree`);
       setWizardStep('none');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('エラーが発生しました');
+      alert(`エラーが発生しました: ${error?.message || String(error)}`);
       setWizardStep('select_manifesto');
     }
   };
