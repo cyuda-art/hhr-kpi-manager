@@ -181,74 +181,32 @@ ${archivedKpis && archivedKpis.length > 0 ? JSON.stringify(archivedKpis.map((k: 
       }
     }
 
-    const result = await model.generateContent({
+    const result = await model.generateContentStream({
       contents: [{ role: "user", parts: promptParts }],
       generationConfig: {
         responseMimeType: "application/json",
         temperature: 0.7
       }
     });
-    const response = await result.response;
-    let text = response.text();
 
-    // markdownコードブロックが含まれている場合は除去する
-    text = text.replace(new RegExp('\`\`\`json', 'g'), '').replace(new RegExp('\`\`\`', 'g'), '').trim();
-
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("Failed to parse JSON:", text);
-      throw new Error("AI output was not valid JSON");
-    }
-    // 元のフロントエンドの実装が nodes 配列を期待しているため、data.nodes を返す
-    let nodes = data.nodes || data;
-    if (!Array.isArray(nodes)) {
-      if (typeof nodes === 'object' && nodes !== null) {
-        nodes = Object.values(nodes);
-      } else {
-        nodes = [];
-      }
-    }
-
-    // AIのハルシネーション対策（正規化）
-    // ルートノード（parentId === null）が複数生成されてしまった場合、強制的に1つの全社KGIで束ねる
-    const rootNodes = nodes.filter((n: any) => n.parentId === null || n.parentId === undefined);
-    if (rootNodes.length > 1) {
-      const kgiMainId = 'kgi_main_auto_injected_' + Date.now();
-      
-      const totalTargetValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.targetValue) || 0), 0);
-      const totalActualValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.actualValue) || 0), 0);
-      const totalPrevValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.previousValue) || 0), 0);
-      
-      const newRoot = {
-        id: kgiMainId,
-        name: kgiType || "全社KGI",
-        qualitativeName: "全社目標の達成",
-        businessUnit: "company",
-        type: "KGI",
-        parentId: null,
-        targetValue: totalTargetValue > 0 ? totalTargetValue : (kgiTargetValue || 100000000),
-        actualValue: totalActualValue,
-        previousValue: totalPrevValue,
-        unit: rootNodes[0]?.unit || "円",
-        description: "AIが生成した複数の事業部KPIを束ねるための自動生成ノード",
-        isCalculated: true,
-        formula: rootNodes.map((n: any) => `#{${n.id}}`).join(' + '),
-        isKsf: false
-      };
-      
-      nodes = nodes.map((n: any) => {
-        if (n.parentId === null || n.parentId === undefined) {
-          return { ...n, parentId: kgiMainId, type: n.type === 'KGI' ? 'KPI' : n.type };
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          // VercelのInitial Response Timeout（10秒の壁）を即座に突破するため、最初に空白を送信
+          controller.enqueue(new TextEncoder().encode(" "));
+          
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            controller.enqueue(new TextEncoder().encode(chunkText));
+          }
+          controller.close();
+        } catch (e) {
+          controller.error(e);
         }
-        return n;
-      });
-      
-      nodes.unshift(newRoot);
-    }
+      }
+    });
 
-    return NextResponse.json({ nodes, thinkingProcess: data.thinking_process });
+    return new Response(stream, { headers: { 'Content-Type': 'text/plain' } });
 
   } catch (error: any) {
     console.error('Failed to generate KPI tree:', error);

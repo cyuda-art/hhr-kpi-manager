@@ -279,14 +279,61 @@ export default function WorkspacePage() {
       });
 
       const textResponse = await res.text();
-      let data;
+      let cleanText = textResponse.replace(new RegExp('\`\`\`json', 'g'), '').replace(new RegExp('\`\`\`', 'g'), '').trim();
+      let data: any;
       try {
-        data = JSON.parse(textResponse);
+        data = JSON.parse(cleanText);
       } catch (e) {
-        throw new Error(`Server returned non-JSON response: ${textResponse.substring(0, 100)}`);
+        throw new Error(`AIの出力が不正です: ${cleanText.substring(0, 100)}`);
       }
 
-      if (!res.ok) throw new Error(data.error || 'Failed to generate');
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to generate');
+
+      // AIのハルシネーション対策（正規化）
+      let nodes = data.nodes || data;
+      if (!Array.isArray(nodes)) {
+        if (typeof nodes === 'object' && nodes !== null) {
+          nodes = Object.values(nodes);
+        } else {
+          nodes = [];
+        }
+      }
+
+      const rootNodes = nodes.filter((n: any) => n.parentId === null || n.parentId === undefined);
+      if (rootNodes.length > 1) {
+        const kgiMainId = 'kgi_main_auto_injected_' + Date.now();
+        const totalTargetValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.targetValue) || 0), 0);
+        const totalActualValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.actualValue) || 0), 0);
+        const totalPrevValue = rootNodes.reduce((sum: number, n: any) => sum + (Number(n.previousValue) || 0), 0);
+        
+        const newRoot = {
+          id: kgiMainId,
+          name: finalKgiType || "全社KGI",
+          qualitativeName: "全社目標の達成",
+          businessUnit: "company",
+          type: "KGI",
+          parentId: null,
+          targetValue: totalTargetValue > 0 ? totalTargetValue : (annualizedKgiTarget || 100000000),
+          actualValue: totalActualValue,
+          previousValue: totalPrevValue,
+          unit: rootNodes[0]?.unit || "円",
+          description: "AIが生成した複数の事業部KPIを束ねるための自動生成ノード",
+          isCalculated: true,
+          formula: rootNodes.map((n: any) => `#{${n.id}}`).join(' + '),
+          isKsf: false
+        };
+        
+        nodes = nodes.map((n: any) => {
+          if (n.parentId === null || n.parentId === undefined) {
+            return { ...n, parentId: kgiMainId, type: n.type === 'KGI' ? 'KPI' : n.type };
+          }
+          return n;
+        });
+        
+        nodes.unshift(newRoot);
+      }
+
+      data.nodes = nodes;
 
       // AIからの返答に mappedSourceId があれば linkedSource に変換する
       if (data.nodes && Array.isArray(data.nodes)) {
