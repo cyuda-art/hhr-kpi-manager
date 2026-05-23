@@ -14,10 +14,14 @@ interface Particle {
   alpha: number;
   angle: number;
   speed: number;
-  color: string;
+  colorType: number; // 0-3のインデックスで基本色を保持
 }
 
-export const InteractiveParticles = () => {
+interface InteractiveParticlesProps {
+  kpiStatus?: 'good' | 'warning' | 'danger' | 'unassigned';
+}
+
+export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
 
@@ -41,22 +45,25 @@ export const InteractiveParticles = () => {
 
     const isDark = document.documentElement.classList.contains('dark') || theme === 'dark';
 
-    // プレミアムなパーティクルカラーパレット
-    const colors = isDark 
-      ? ['rgba(255,255,255,0.8)', 'rgba(147,197,253,0.6)', 'rgba(196,181,253,0.5)', 'rgba(96,165,250,0.7)'] 
-      : ['rgba(30,58,138,0.6)', 'rgba(59,130,246,0.5)', 'rgba(139,92,246,0.4)', 'rgba(14,165,233,0.5)'];
+    // プレミアムなパーティクルカラーパレット（基本テーマ用）
+    const baseColors = isDark 
+      ? ['255,255,255', '147,197,253', '196,181,253', '96,165,250'] 
+      : ['30,58,138', '59,130,246', '139,92,246', '14,165,233'];
+
+    // ステータスごとのカラー（光らせるためのRGB）
+    const statusColors = {
+      good: ['52, 211, 153', '16, 185, 129', '6, 95, 70'], // Emerald
+      warning: ['251, 191, 36', '245, 158, 11', '180, 83, 9'], // Amber
+      danger: ['244, 63, 94', '225, 29, 72', '159, 18, 57'], // Rose
+    };
 
     const initParticles = () => {
       particles = [];
-      // パーティクルの数を画面サイズに合わせて適切に設定（多すぎず、少なすぎず）
       const numberOfParticles = Math.floor((canvas.width * canvas.height) / 8000); 
       
       for (let i = 0; i < numberOfParticles; i++) {
-        // 画面全体に散らすが、少し波を打つような初期配置
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        
-        // Z軸（奥行き）をシミュレート。0.1(奥) 〜 1.0(手前)
         const z = Math.random() * 0.9 + 0.1;
         
         particles.push({
@@ -66,11 +73,11 @@ export const InteractiveParticles = () => {
           baseY: y,
           vx: 0,
           vy: 0,
-          size: (Math.random() * 2 + 0.5) * z, // 手前のものほど大きい
-          alpha: z * 0.8, // 手前のものほどくっきり
+          size: (Math.random() * 2.5 + 0.5) * z,
+          alpha: z * 0.8,
           angle: Math.random() * Math.PI * 2,
-          speed: (Math.random() * 0.2 + 0.05) * z, // 手前のものほど速く漂う
-          color: colors[Math.floor(Math.random() * colors.length)],
+          speed: (Math.random() * 0.3 + 0.05) * z,
+          colorType: Math.floor(Math.random() * 4),
         });
       }
     };
@@ -94,74 +101,95 @@ export const InteractiveParticles = () => {
     };
 
     const draw = () => {
-      // 残像効果（Trailing effect）で流体のような滑らかさを演出
-      ctx.fillStyle = isDark ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)';
+      ctx.fillStyle = isDark ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       time += 0.005;
 
       particles.forEach((p) => {
-        // --- 1. 自然な漂い（Perlin Noise風の波） ---
-        // 時間経過と自身の座標に基づいた波の動き
+        // --- 気候（KPIステータス）による重力の計算 ---
+        let gravityY = 0;
+        let activeColorArray = baseColors;
+        
+        if (kpiStatus === 'good') {
+          gravityY = -0.5 * p.speed; // 上昇気流
+          activeColorArray = statusColors.good;
+        } else if (kpiStatus === 'danger') {
+          gravityY = 1.0 * p.speed; // 強い下降気流（火の粉）
+          activeColorArray = statusColors.danger;
+        } else if (kpiStatus === 'warning') {
+          gravityY = 0; // 停滞
+          activeColorArray = statusColors.warning;
+        }
+
+        // パーティクルの個別色を決定
+        const colorRgb = activeColorArray[p.colorType % activeColorArray.length];
+
         const waveX = Math.sin(time + p.baseY * 0.005) * 0.5;
         const waveY = Math.cos(time + p.baseX * 0.005) * 0.5;
         
         p.x += Math.cos(p.angle) * p.speed + waveX;
-        p.y += Math.sin(p.angle) * p.speed + waveY;
+        p.y += Math.sin(p.angle) * p.speed + waveY + gravityY;
         p.angle += 0.01;
 
-        // --- 2. マウスインタラクション（流体的な反発と引力） ---
         const dx = mouse.x - p.x;
         const dy = mouse.y - p.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < mouse.radius) {
-          // マウスとの距離に応じた力の強さ
           const force = (mouse.radius - distance) / mouse.radius;
           const angleToMouse = Math.atan2(dy, dx);
           
           if (mouse.isMoving) {
-            // マウスが動いている時は、水をかき分けるように「反発（斥力）」する
             p.vx -= Math.cos(angleToMouse) * force * 1.5;
             p.vy -= Math.sin(angleToMouse) * force * 1.5;
           } else {
-            // マウスが止まっている時は、ゆっくりと「集まる（引力）」
-            // ただし中心には近づきすぎないように渦を巻く
-            p.vx += Math.cos(angleToMouse + Math.PI/4) * force * 0.5;
-            p.vy += Math.sin(angleToMouse + Math.PI/4) * force * 0.5;
+            // スフィア（球体）を形成するように渦を巻く
+            p.vx += Math.cos(angleToMouse + Math.PI/3) * force * 1.0;
+            p.vy += Math.sin(angleToMouse + Math.PI/3) * force * 1.0;
+            // さらに中心に少し引き寄せる
+            p.vx += Math.cos(angleToMouse) * force * 0.2;
+            p.vy += Math.sin(angleToMouse) * force * 0.2;
           }
         }
 
-        // --- 3. ホームポジションへの緩やかな回帰 ---
-        // 画面外に出たり、離れすぎたらゆっくり元の位置に戻る
-        const distToBaseX = p.baseX - p.x;
-        const distToBaseY = p.baseY - p.y;
-        p.vx += distToBaseX * 0.0005;
-        p.vy += distToBaseY * 0.0005;
+        // ホームポジションへの緩やかな回帰（気候変動中は弱める）
+        if (!kpiStatus) {
+          const distToBaseX = p.baseX - p.x;
+          const distToBaseY = p.baseY - p.y;
+          p.vx += distToBaseX * 0.0002;
+          p.vy += distToBaseY * 0.0002;
+        }
 
-        // --- 4. 摩擦（減衰）と位置更新 ---
         p.vx *= 0.92;
         p.vy *= 0.92;
         p.x += p.vx;
         p.y += p.vy;
 
-        // 画面端のループ処理（シームレスな移動）
+        // 画面端のループ
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
-        // --- 5. 描画 ---
+        // 描画（個々の粒子の発光を表現）
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         
-        // マウスの近くの粒子は少し明るく輝く
-        const glow = distance < mouse.radius ? (1 - distance/mouse.radius) * 0.5 : 0;
+        // Glowエフェクト（KPI選択中やマウス周辺で強く発光）
+        const glowStrength = distance < mouse.radius ? (1 - distance/mouse.radius) : (kpiStatus ? 0.5 : 0.1);
         
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.min(1, p.alpha + glow);
+        // パフォーマンスを考慮し、手前の粒子のみ強くBlurをかける
+        if (p.size > 1.5) {
+          ctx.shadowBlur = p.size * 5 * (1 + glowStrength);
+          ctx.shadowColor = `rgba(${colorRgb}, 1)`;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+        
+        ctx.fillStyle = `rgba(${colorRgb}, ${Math.min(1, p.alpha + glowStrength * 0.5)})`;
         ctx.fill();
-        ctx.globalAlpha = 1.0;
+        ctx.shadowBlur = 0; // 他の描画に影響しないようにリセット
       });
 
       animationFrameId = requestAnimationFrame(draw);
@@ -181,12 +209,12 @@ export const InteractiveParticles = () => {
       clearTimeout(mouseTimeout);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [theme]);
+  }, [theme, kpiStatus]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none z-0 mix-blend-screen dark:mix-blend-color-dodge"
+      className="absolute inset-0 w-full h-full pointer-events-none z-0 mix-blend-screen dark:mix-blend-color-dodge transition-opacity duration-1000"
     />
   );
 };
