@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
-import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
+import { ActionPanel } from '@/components/kpi-tree/ActionPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { useKpiStore } from '@/store/useKpiStore';
@@ -118,7 +118,7 @@ export default function KpiTreePage() {
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden custom-scrollbar">
-            <KpiExecutionPanel />
+            <ActionPanel />
           </div>
         </div>
       </div>
