@@ -630,17 +630,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                     ステータス凡例
                   </div>
                 </div>
-                <div className="relative group flex items-center justify-center">
-                  <button
-                    onClick={toggleActionPanel}
-                    className={`flex items-center justify-center w-9 h-9 rounded-full transition-all ${!isActionPanelCollapsed ? 'bg-primary-50 dark:bg-primary-900/50 text-strategic-teal dark:text-primary-400' : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                  >
-                    {!isActionPanelCollapsed ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
-                  </button>
-                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
-                    右サイドパネル
-                  </div>
-                </div>
+
 
                 <div className="w-[1px] h-5 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
 
