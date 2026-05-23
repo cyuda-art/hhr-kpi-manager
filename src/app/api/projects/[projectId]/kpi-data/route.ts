@@ -25,6 +25,7 @@ export async function POST(
     try {
       await prisma.$executeRawUnsafe(`ALTER TABLE "KpiNode" ADD COLUMN IF NOT EXISTS "positionX" DOUBLE PRECISION DEFAULT 0;`);
       await prisma.$executeRawUnsafe(`ALTER TABLE "KpiNode" ADD COLUMN IF NOT EXISTS "positionY" DOUBLE PRECISION DEFAULT 0;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "KpiNode" ADD COLUMN IF NOT EXISTS "aggregationType" TEXT DEFAULT 'sum';`);
     } catch (e) {
       console.warn("Auto-migration failed (columns might already exist):", e);
     }
