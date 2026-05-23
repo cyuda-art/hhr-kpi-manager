@@ -1,5 +1,8 @@
 "use client";
 
+import { useParams, useRouter } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
@@ -8,6 +11,9 @@ import { useLayoutStore } from '@/store/useLayoutStore';
 import { useKpiStore } from '@/store/useKpiStore';
 
 export default function KpiTreePage() {
+  const params = useParams();
+  const router = useRouter();
+  const orgId = params?.orgId as string;
   const isActionPanelCollapsed = useLayoutStore(state => state.isActionPanelCollapsed);
   const { selectedNodeId, kpiData } = useKpiStore();
   const [isMounted, setIsMounted] = useState(false);
@@ -90,7 +96,7 @@ export default function KpiTreePage() {
   };
 
   return (
-    <div ref={containerRef} className={`h-[calc(100vh-4rem)] overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
+    <div ref={containerRef} className={`h-screen overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
       
       {/* 背景の呼吸するメッシュグラデーション（全画面） */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-100 dark:opacity-60">
@@ -107,6 +113,15 @@ export default function KpiTreePage() {
         )}
       </div>
 
+      {/* 戻るボタン（フローティング） */}
+      <button 
+        onClick={() => router.push(`/${orgId}/dashboard`)}
+        className="absolute top-6 left-6 z-50 flex items-center justify-center w-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-3xl rounded-full border border-white/50 dark:border-white/10 shadow-lg text-slate-700 dark:text-slate-200 hover:bg-white/60 dark:hover:bg-black/60 transition-all group pointer-events-auto"
+        title="ダッシュボードへ戻る"
+      >
+        <ChevronLeft className="group-hover:-translate-x-0.5 transition-transform" size={20} />
+      </button>
+
       {/* メインエリア：KPIツリー (全画面キャンバス) */}
       <div className="absolute inset-0 z-10 flex flex-col">
         <KpiTree />
@@ -115,7 +130,7 @@ export default function KpiTreePage() {
       {/* 左サイドバー：KPIエクスプローラー (フローティング) */}
       <div 
         style={{ width: `${leftSidebarWidth}px` }} 
-        className="hidden lg:flex absolute top-4 bottom-4 left-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_16px_48px_rgba(0,0,0,0.16)] pointer-events-auto"
+        className="hidden lg:flex absolute top-20 bottom-4 left-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_16px_48px_rgba(0,0,0,0.16)] pointer-events-auto"
       >
         <KpiTreeExplorer />
       </div>
@@ -138,7 +153,7 @@ export default function KpiTreePage() {
           opacity: (isActionPanelCollapsed || !selectedNodeId) ? 0 : 1,
           pointerEvents: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'auto'
         }} 
-        className="hidden lg:flex absolute top-4 bottom-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
+        className="hidden lg:flex absolute top-20 bottom-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden custom-scrollbar">
