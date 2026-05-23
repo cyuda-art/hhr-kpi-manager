@@ -516,7 +516,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               >
                 {isToolbarOpen ? <ChevronLeft size={16} /> : <Menu size={16} />}
               </button>
-              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+              <div className="absolute top-full mt-2 left-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                 {isToolbarOpen ? 'ツールバーを閉じる' : 'ツールバーを開く'}
               </div>
             </div>
@@ -647,7 +647,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 {/* 期間切替ドロップダウン */}
                 <div className="relative group flex items-center justify-center mr-1">
                   <select
-                    value={useKpiStore((state) => state.currentPeriod)}
+                    value={currentPeriod}
                     onChange={(e) => useKpiStore.getState().setPeriod(e.target.value)}
                     className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 dark:text-slate-300 py-1.5 px-2 focus:ring-0 cursor-pointer appearance-none text-center"
                     style={{ textAlignLast: 'center' }}
@@ -693,13 +693,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         {/* 凡例（Legend） */}
         {!previewMode && (
           <div className="absolute bottom-[140px] left-4 z-10 flex flex-col-reverse items-start gap-2">
-            <button
-              onClick={toggleStatusLegend}
-              className="flex items-center justify-center gap-1.5 w-fit px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors backdrop-blur-md"
-            >
-              <Info size={14} />
-              {showStatusLegend ? '凡例を隠す' : '凡例を表示'}
-            </button>
+
             
             {showStatusLegend && (
               <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg text-[10px] sm:text-xs min-w-[200px]">
