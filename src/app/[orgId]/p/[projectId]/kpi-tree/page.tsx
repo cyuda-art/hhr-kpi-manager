@@ -76,15 +76,16 @@ export default function KpiTreePage() {
   const getGlobalBackground = () => {
     const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
     if (!selectedKpi) {
-      return "bg-gradient-to-br from-slate-200/80 via-blue-100/60 to-purple-100/50 dark:from-[#121212] dark:to-slate-900/80";
+      // 非選択時：鮮やかな青〜紫〜ピンクのグラデーション（VisionOS風）
+      return "bg-gradient-to-br from-indigo-200/90 via-purple-200/80 to-pink-200/90 dark:from-[#0d1321] dark:via-[#1a1025] dark:to-[#170c1e]";
     }
     
     if (selectedKpi.status === 'good') {
-      return "bg-gradient-to-br from-emerald-200/80 via-teal-100/70 to-cyan-200/60 dark:from-[#0a241f] dark:via-[#0c1a24] dark:to-[#121212]";
+      return "bg-gradient-to-br from-emerald-300/90 via-teal-200/80 to-cyan-300/90 dark:from-[#0a241f] dark:via-[#0c1a24] dark:to-[#121212]";
     } else if (selectedKpi.status === 'warning') {
-      return "bg-gradient-to-br from-amber-200/80 via-orange-100/70 to-rose-200/60 dark:from-[#2e1f0f] dark:via-[#1f1416] dark:to-[#121212]";
+      return "bg-gradient-to-br from-amber-300/90 via-orange-200/80 to-rose-300/90 dark:from-[#2e1f0f] dark:via-[#1f1416] dark:to-[#121212]";
     } else {
-      return "bg-gradient-to-br from-rose-200/80 via-red-100/70 to-purple-200/60 dark:from-[#2a1116] dark:via-[#1e1026] dark:to-[#121212]";
+      return "bg-gradient-to-br from-rose-300/90 via-red-200/80 to-purple-300/90 dark:from-[#2a1116] dark:via-[#1e1026] dark:to-[#121212]";
     }
   };
 
@@ -92,9 +93,9 @@ export default function KpiTreePage() {
     <div ref={containerRef} className={`h-[calc(100vh-4rem)] flex overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
       
       {/* 背景の呼吸するメッシュグラデーション（全画面） */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-60 dark:opacity-40 mix-blend-multiply dark:mix-blend-screen">
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-400 dark:bg-blue-600/60 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-1/4 -right-20 w-[30rem] h-[30rem] bg-purple-400 dark:bg-purple-600/60 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-100 dark:opacity-60">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-400/80 dark:bg-blue-600/60 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-1/4 -right-20 w-[30rem] h-[30rem] bg-fuchsia-400/80 dark:bg-purple-600/60 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'good' && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-emerald-400/80 dark:bg-emerald-600/50 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
         )}
@@ -102,7 +103,7 @@ export default function KpiTreePage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-amber-400/80 dark:bg-amber-600/50 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
         )}
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'danger' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-rose-400/80 dark:bg-rose-600/50 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-rose-500/80 dark:bg-rose-600/50 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
         )}
       </div>
 
