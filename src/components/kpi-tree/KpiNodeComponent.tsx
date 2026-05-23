@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, useStore } from '@xyflow/react';
 import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
 import { clsx } from 'clsx';
@@ -17,6 +17,8 @@ interface NodeProps {
   targetPosition?: Position;
   sourcePosition?: Position;
 }
+
+const zoomSelector = (s: any) => s.transform[2];
 
 export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePosition = Position.Bottom }: NodeProps) => {
   // getStatusBorder は不要になったため削除します
@@ -155,47 +157,69 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   const readableFormula = getReadableFormula();
 
+  const zoom = useStore(zoomSelector);
+  const viewMode = zoom < 0.35 ? 'macro' : zoom < 0.75 ? 'mid' : 'micro';
+
   const isHighlighted = (data as any).isHighlighted;
   const isDimmed = (data as any).isDimmed;
   
   const recentlyUpdatedNodes = useKpiStore((state) => state.recentlyUpdatedNodes);
   const isRecentlyUpdated = recentlyUpdatedNodes.includes(data.id);
 
+  const containerStyle = viewMode === 'macro'
+    ? "w-12 h-12 rounded-full flex items-center justify-center bg-transparent"
+    : "w-64 bg-white/40 dark:bg-black/30 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] hover:bg-white/50 dark:hover:bg-black/40";
+
   return (
     <div className={cn(
-      "group w-64 bg-white/40 dark:bg-black/30 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 transition-all duration-500 ease-out relative hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] hover:bg-white/50 dark:hover:bg-black/40",
+      "group transition-all duration-700 ease-out relative",
+      containerStyle,
       isDimmed ? "opacity-30" : "opacity-100",
-      isSelected && getHighlightGlow(displayStatus, true),
-      !isSelected && isHighlighted && getHighlightGlow(displayStatus, false),
-      data.isKsf && "ring-1 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
-      isNew && "ring-2 ring-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.4)] z-50 animate-pulse",
-      isRecentlyUpdated && "ring-2 ring-amber-400/50 shadow-[0_0_30px_rgba(251,191,36,0.4)] z-[60] animate-pulse transition-all duration-1000 scale-105"
+      viewMode !== 'macro' && isSelected && getHighlightGlow(displayStatus, true),
+      viewMode !== 'macro' && !isSelected && isHighlighted && getHighlightGlow(displayStatus, false),
+      viewMode !== 'macro' && data.isKsf && "ring-1 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
+      viewMode !== 'macro' && isNew && "ring-2 ring-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.4)] z-50 animate-pulse",
+      viewMode !== 'macro' && isRecentlyUpdated && "ring-2 ring-amber-400/50 shadow-[0_0_30px_rgba(251,191,36,0.4)] z-[60] animate-pulse transition-all duration-1000 scale-105"
     )}>
       {/* 2. 内側から溢れるステータス・オーラ（Glowing Aura） */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-2xl">
+      <div className={cn("absolute inset-0 pointer-events-none z-0 overflow-hidden", viewMode === 'macro' ? "rounded-full" : "rounded-2xl")}>
         <div 
           className={cn(
-            "absolute -inset-4 blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-700 ease-in-out",
-            displayStatus === 'good' ? "bg-gradient-to-br from-emerald-400/40 via-teal-400/20 to-transparent" :
-            displayStatus === 'warning' ? "bg-gradient-to-br from-amber-400/40 via-orange-400/20 to-transparent" :
-            "bg-gradient-to-br from-rose-500/40 via-red-500/20 to-transparent"
+            "absolute transition-all duration-700 ease-in-out",
+            viewMode === 'macro' ? "-inset-2 blur-xl opacity-80" : "-inset-4 blur-2xl opacity-40 group-hover:opacity-60",
+            displayStatus === 'good' ? "bg-gradient-to-br from-emerald-400/60 via-teal-400/40 to-transparent" :
+            displayStatus === 'warning' ? "bg-gradient-to-br from-amber-400/60 via-orange-400/40 to-transparent" :
+            "bg-gradient-to-br from-rose-500/60 via-red-500/40 to-transparent"
           )}
         />
         {/* プログレスバーの代わりの極細の光るライン */}
-        <div 
-          className={cn(
-            "absolute bottom-0 left-0 h-[2px] transition-all duration-1000 ease-out opacity-80",
-            displayStatus === 'good' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" :
-            displayStatus === 'warning' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" :
-            "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
-          )}
-          style={{ width: `${Math.min(100, Math.max(0, displayAchievementRate))}%` }}
-        />
+        {viewMode !== 'macro' && (
+          <div 
+            className={cn(
+              "absolute bottom-0 left-0 h-[2px] transition-all duration-1000 ease-out opacity-80",
+              displayStatus === 'good' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" :
+              displayStatus === 'warning' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" :
+              "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+            )}
+            style={{ width: `${Math.min(100, Math.max(0, displayAchievementRate))}%` }}
+          />
+        )}
       </div>
 
-      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none relative z-10" />
+      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none relative z-10" style={{ opacity: viewMode === 'macro' ? 0.3 : 1 }} />
       
-      <div className="relative z-10 flex justify-between items-start mb-2">
+      {/* MACRO VIEW: 名前だけのミニマル表示 */}
+      {viewMode === 'macro' && (
+        <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap z-20 pointer-events-none">
+          <span className="text-[14px] sm:text-[18px] font-black text-slate-800 dark:text-slate-100 bg-white/70 dark:bg-black/50 px-3 py-1 rounded-full backdrop-blur-md shadow-lg font-sans">
+            {data.name}
+          </span>
+        </div>
+      )}
+
+      {/* MID & MICRO VIEW: メインコンテンツ */}
+      {viewMode !== 'macro' && (
+        <div className="relative z-10 flex justify-between items-start mb-2 transition-opacity duration-500">
         <div className="flex flex-col flex-1 min-w-0 pr-2">
           <div className="flex items-center gap-1.5 mb-2 flex-wrap font-poppins">
             <span className="text-[9px] font-bold text-strategic-teal uppercase tracking-widest">{data.businessUnit}</span>
@@ -257,66 +281,74 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           )}
         </div>
       </div>
+      )}
 
-      <div className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043]">
-        <div className="flex justify-between text-[11px] items-center font-lato">
-          <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
-            {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}
-            {displayLabel}
-          </span>
-          <span className="font-bold text-oxford-navy dark:text-slate-100">
-            {formatDisplayValue(displayActual, data.unit)} {data.unit}
-          </span>
-        </div>
-        <div className="flex justify-between text-[11px] font-lato">
-          <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
-          <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} {data.unit}</span>
-        </div>
-
-        {readableFormula && (
-          <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-            <div className="text-[10px] bg-clean-canvas dark:bg-slate-900 p-1.5 rounded-md border border-slate-100 dark:border-slate-700 break-words font-formula italic text-logic-slate dark:text-slate-300">
-              {readableFormula}
-            </div>
+      {/* MICRO VIEW のみ: 詳細な数値と計算式 */}
+      {viewMode === 'micro' && (
+        <div className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-500">
+          <div className="flex justify-between text-[11px] items-center font-lato">
+            <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
+              {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}
+              {displayLabel}
+            </span>
+            <span className="font-bold text-oxford-navy dark:text-slate-100">
+              {formatDisplayValue(displayActual, data.unit)} {data.unit}
+            </span>
           </div>
-        )}
-      </div>
+          <div className="flex justify-between text-[11px] font-lato">
+            <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
+            <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} {data.unit}</span>
+          </div>
+
+          {readableFormula && (
+            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+              <div className="text-[10px] bg-clean-canvas dark:bg-slate-900 p-1.5 rounded-md border border-slate-100 dark:border-slate-700 break-words font-formula italic text-logic-slate dark:text-slate-300">
+                {readableFormula}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       
       {data.hasChildren ? (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleNodeCollapse(data.id);
-          }}
-          className={cn(
-            "absolute w-5 h-5 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all z-20 shadow-sm",
-            sourcePosition === Position.Right ? "-right-2.5 top-1/2 -translate-y-1/2" : "-bottom-2.5 left-1/2 -translate-x-1/2"
-          )}
-        >
-          {data.isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-        </button>
+        viewMode !== 'macro' && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleNodeCollapse(data.id);
+            }}
+            className={cn(
+              "absolute w-5 h-5 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all z-20 shadow-sm",
+              sourcePosition === Position.Right ? "-right-2.5 top-1/2 -translate-y-1/2" : "-bottom-2.5 left-1/2 -translate-x-1/2"
+            )}
+          >
+            {data.isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+          </button>
+        )
       ) : (
-        <button
-          onClick={async (e) => {
-            e.stopPropagation();
-            if (isExpanding) return;
-            setIsExpanding(true);
-            try {
-              await useKpiStore.getState().expandKpiNode(data.id);
-            } catch (err) {
-              console.error(err);
-            } finally {
-              setIsExpanding(false);
-            }
-          }}
-          title="AIでさらに要素分解する"
-          className={cn(
-            "absolute w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-strategic-teal hover:bg-strategic-teal hover:text-white hover:border-strategic-teal transition-all z-20 shadow-sm group",
-            sourcePosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
-          )}
-        >
-          <Sparkles size={12} className="group-hover:animate-spin" />
-        </button>
+        viewMode !== 'macro' && (
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (isExpanding) return;
+              setIsExpanding(true);
+              try {
+                await useKpiStore.getState().expandKpiNode(data.id);
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setIsExpanding(false);
+              }
+            }}
+            title="AIでさらに要素分解する"
+            className={cn(
+              "absolute w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-strategic-teal hover:bg-strategic-teal hover:text-white hover:border-strategic-teal transition-all z-20 shadow-sm group",
+              sourcePosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
+            )}
+          >
+            <Sparkles size={12} className="group-hover:animate-spin" />
+          </button>
+        )
       )}
 
       {isExpanding && (
@@ -330,6 +362,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       )}
 
       <Handle type="source" position={sourcePosition} className="w-3 h-3 !bg-transparent border-none opacity-0" />
+
     </div>
   );
 };
