@@ -115,7 +115,7 @@ export default function KpiTreePage() {
       {/* 左サイドバー：KPIエクスプローラー (フローティング) */}
       <div 
         style={{ width: `${leftSidebarWidth}px` }} 
-        className="absolute top-4 bottom-4 left-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_16px_48px_rgba(0,0,0,0.16)] pointer-events-auto"
+        className="hidden lg:flex absolute top-4 bottom-4 left-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_16px_48px_rgba(0,0,0,0.16)] pointer-events-auto"
       >
         <KpiTreeExplorer />
       </div>
@@ -124,7 +124,7 @@ export default function KpiTreePage() {
       <div 
         style={{ left: `calc(1rem + ${leftSidebarWidth}px - 0.25rem)` }}
         onMouseDown={(e) => { e.preventDefault(); setIsLeftDragging(true); }}
-        className="absolute top-1/2 -translate-y-1/2 w-3 h-12 cursor-col-resize z-30 flex justify-center items-center group pointer-events-auto"
+        className="hidden lg:flex absolute top-1/2 -translate-y-1/2 w-3 h-12 cursor-col-resize z-30 justify-center items-center group pointer-events-auto"
       >
         <div className={`w-[3px] h-10 rounded-full transition-all ${isLeftDragging ? 'bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)] scale-y-110' : 'bg-white/50 dark:bg-white/20 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)] backdrop-blur-md border border-white/20'}`} />
       </div>
@@ -138,7 +138,7 @@ export default function KpiTreePage() {
           opacity: (isActionPanelCollapsed || !selectedNodeId) ? 0 : 1,
           pointerEvents: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'auto'
         }} 
-        className="absolute top-4 bottom-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
+        className="hidden lg:flex absolute top-4 bottom-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden custom-scrollbar">
@@ -152,7 +152,7 @@ export default function KpiTreePage() {
         <div 
           style={{ right: `calc(1rem + ${sidebarWidth}px - 0.25rem)` }}
           onMouseDown={handleMouseDown}
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-12 cursor-col-resize z-30 flex justify-center items-center group pointer-events-auto transition-all duration-500"
+          className="hidden lg:flex absolute top-1/2 -translate-y-1/2 w-3 h-12 cursor-col-resize z-30 justify-center items-center group pointer-events-auto transition-all duration-500"
         >
           <div className={`w-[3px] h-10 rounded-full transition-all ${isDragging ? 'bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)] scale-y-110' : 'bg-white/50 dark:bg-white/20 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)] backdrop-blur-md border border-white/20'}`} />
         </div>

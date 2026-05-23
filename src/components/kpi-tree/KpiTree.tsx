@@ -508,7 +508,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         )}
 
         {!previewMode && (
-          <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20">
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
             {/* Toolbar Toggle */}
             <div className="relative group flex items-center justify-center">
               <button

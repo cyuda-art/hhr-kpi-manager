@@ -161,7 +161,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   const recentlyUpdatedNodes = useKpiStore((state) => state.recentlyUpdatedNodes);
   const isRecentlyUpdated = recentlyUpdatedNodes.includes(data.id);
 
-  const containerStyle = "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:w-12 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:h-12 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:rounded-full [.kpi-tree-wrapper[data-zoom-view='macro']_&]:bg-transparent [.kpi-tree-wrapper[data-zoom-view='macro']_&]:border-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:shadow-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:!ring-0 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:p-0 w-64 bg-white/40 dark:bg-black/30 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] hover:bg-white/50 dark:hover:bg-black/40";
+  // Macro時はコンテナサイズを縮小せず（ReactFlowの再計算・カクツキを防止）、透明にして内部要素だけを中央に配置する
+  const containerStyle = "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:bg-transparent [.kpi-tree-wrapper[data-zoom-view='macro']_&]:border-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:shadow-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:!ring-0 w-64 bg-white/40 dark:bg-black/30 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] hover:bg-white/50 dark:hover:bg-black/40";
 
   return (
     <div className={cn(
@@ -175,11 +176,11 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       isRecentlyUpdated && "ring-2 ring-amber-400/50 shadow-[0_0_30px_rgba(251,191,36,0.4)] z-[60] animate-pulse transition-all duration-1000 scale-105"
     )}>
       {/* 2. 内側から溢れるステータス・オーラ（Glowing Aura） */}
-      <div className={cn("absolute inset-0 pointer-events-none z-0 overflow-hidden", "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:rounded-full rounded-2xl")}>
+      <div className={cn("absolute pointer-events-none z-0 overflow-hidden", "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:rounded-full [.kpi-tree-wrapper[data-zoom-view='macro']_&]:left-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:top-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:-translate-x-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:-translate-y-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:w-14 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:h-14 inset-0 rounded-2xl")}>
         <div 
           className={cn(
             "absolute transition-all duration-700 ease-in-out",
-            "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:-inset-2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:blur-xl [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-80 -inset-4 blur-2xl opacity-40 group-hover:opacity-60",
+            "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:inset-0 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:blur-md [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-90 -inset-4 blur-2xl opacity-40 group-hover:opacity-60",
             displayStatus === 'good' ? "bg-gradient-to-br from-emerald-400/60 via-teal-400/40 to-transparent" :
             displayStatus === 'warning' ? "bg-gradient-to-br from-amber-400/60 via-orange-400/40 to-transparent" :
             "bg-gradient-to-br from-rose-500/60 via-red-500/40 to-transparent"
@@ -197,10 +198,10 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         />
       </div>
 
-      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none relative z-10 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-30 opacity-100" />
+      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none relative z-10 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-0 opacity-100" />
       
       {/* MACRO VIEW: 名前だけのミニマル表示 */}
-      <div className="hidden [.kpi-tree-wrapper[data-zoom-view='macro']_&]:block absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap z-20 pointer-events-none">
+      <div className="hidden [.kpi-tree-wrapper[data-zoom-view='macro']_&]:flex absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-8 whitespace-nowrap z-20 pointer-events-none">
         <span className="text-[14px] sm:text-[18px] font-black text-slate-800 dark:text-slate-100 bg-white/70 dark:bg-black/50 px-3 py-1 rounded-full backdrop-blur-md shadow-lg font-sans">
           {data.name}
         </span>
