@@ -98,15 +98,15 @@ export default function KpiTreePage() {
       </div>
 
       {/* 2. アクセント環境：KPIステータス連動型のオーラ（選択したKPIの状態を空間に反映） */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen dark:mix-blend-color-dodge opacity-80 transition-opacity duration-1000">
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-100 transition-opacity duration-1000">
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'good' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] min-w-[600px] min-h-[600px] bg-emerald-500/60 dark:bg-emerald-400/40 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] min-w-[800px] min-h-[800px] bg-emerald-400/50 dark:bg-emerald-500/40 rounded-full blur-[100px] animate-pulse mix-blend-plus-lighter" style={{ animationDuration: '6s' }} />
         )}
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'warning' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] min-w-[600px] min-h-[600px] bg-amber-500/60 dark:bg-amber-400/40 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] min-w-[800px] min-h-[800px] bg-amber-400/50 dark:bg-amber-500/40 rounded-full blur-[100px] animate-pulse mix-blend-plus-lighter" style={{ animationDuration: '6s' }} />
         )}
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'danger' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] min-w-[600px] min-h-[600px] bg-rose-600/60 dark:bg-rose-500/40 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] min-w-[800px] min-h-[800px] bg-rose-500/50 dark:bg-rose-600/40 rounded-full blur-[100px] animate-pulse mix-blend-plus-lighter" style={{ animationDuration: '6s' }} />
         )}
       </div>
 
