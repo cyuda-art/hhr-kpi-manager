@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export const runtime = 'edge';
+// export const runtime = 'edge'; // Edgeでクラッシュ/タイムアウトする可能性を排除
+export const maxDuration = 60; // Vercel Hobbyで最大60秒まで許可
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
 
