@@ -506,78 +506,97 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         )}
 
         {!previewMode && (
-          <div className="absolute top-4 left-4 z-10 flex gap-2">
-            <div className="flex bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden">
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20">
+            {/* Undo/Redo */}
+            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-full border border-slate-200/50 dark:border-slate-700/50">
               <button
                 onClick={undo}
                 disabled={pastStates.length === 0}
-                className="flex items-center justify-center w-8 h-8 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="flex items-center justify-center w-8 h-8 rounded-full text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all disabled:opacity-30 disabled:hover:bg-transparent"
                 title="元に戻す (Cmd+Z)"
               >
-                <Undo2 size={16} />
+                <Undo2 size={14} />
               </button>
-              <div className="w-[1px] bg-slate-200 dark:bg-slate-700"></div>
               <button
                 onClick={redo}
                 disabled={futureStates.length === 0}
-                className="flex items-center justify-center w-8 h-8 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-200 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="flex items-center justify-center w-8 h-8 rounded-full text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all disabled:opacity-30 disabled:hover:bg-transparent"
                 title="やり直す (Cmd+Shift+Z)"
               >
-                <Redo2 size={16} />
+                <Redo2 size={14} />
               </button>
             </div>
+            
+            <div className="w-[1px] h-5 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+
+            {/* Layout Options */}
             <button
               onClick={() => handleAutoLayout()}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-strategic-teal dark:hover:text-primary-400 transition-colors text-xs font-bold"
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-strategic-teal dark:text-slate-400 transition-colors group"
+              title="ツリーを自動整列"
             >
-              <Wand2 size={14} />
-              自動整列 (Auto Layout)
+              <Wand2 size={16} className="group-hover:scale-110 transition-transform" />
             </button>
-
             <button
               onClick={toggleAutoCenter}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-colors text-xs font-bold ${autoCenter ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-all ${autoCenter ? 'bg-primary-50 dark:bg-primary-900/50 text-strategic-teal dark:text-primary-400' : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
               title="選択時の自動センタリングのオン/オフ"
             >
-              <Focus size={14} />
-              自動フォーカス
+              <Focus size={16} />
             </button>
-            <button
-              onClick={toggleDirection}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-strategic-teal dark:hover:text-primary-400 transition-colors text-xs font-bold"
-              title="レイアウトの方向（縦・横）を切り替え"
-            >
-              {layoutDirection === 'TB' ? <MoveDown size={14} /> : <MoveRight size={14} />}
-              方向: {layoutDirection === 'TB' ? '縦 (Top to Bottom)' : '横 (Left to Right)'}
-            </button>
+
+            {/* Layout Direction Segmented Control */}
+            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+              <button
+                onClick={() => layoutDirection !== 'LR' && toggleDirection()}
+                className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${layoutDirection === 'LR' ? 'bg-white dark:bg-slate-700 shadow-sm text-strategic-teal dark:text-primary-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                title="横方向レイアウト"
+              >
+                <MoveRight size={14} />
+              </button>
+              <button
+                onClick={() => layoutDirection !== 'TB' && toggleDirection()}
+                className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${layoutDirection === 'TB' ? 'bg-white dark:bg-slate-700 shadow-sm text-strategic-teal dark:text-primary-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                title="縦方向レイアウト"
+              >
+                <MoveDown size={14} />
+              </button>
+            </div>
+
+            <div className="w-[1px] h-5 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+
+            {/* Tools */}
             <button
               onClick={toggleMiniMap}
-              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showMiniMap ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-all ${showMiniMap ? 'bg-primary-50 dark:bg-primary-900/50 text-strategic-teal dark:text-primary-400' : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
               title="ミニマップの表示/非表示"
             >
               <Map size={16} />
             </button>
             <button
               onClick={toggleStatusLegend}
-              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${showStatusLegend ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-all ${showStatusLegend ? 'bg-primary-50 dark:bg-primary-900/50 text-strategic-teal dark:text-primary-400' : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
               title="ステータス凡例の表示/非表示"
             >
               <Info size={16} />
             </button>
             <button
               onClick={toggleActionPanel}
-              className={`flex items-center justify-center w-8 h-8 rounded-lg shadow-sm border transition-colors ${!isActionPanelCollapsed ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-800 text-strategic-teal dark:text-primary-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-              title="サイドパネル（右）の表示/非表示"
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-all ${!isActionPanelCollapsed ? 'bg-primary-50 dark:bg-primary-900/50 text-strategic-teal dark:text-primary-400' : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+              title="右サイドパネルの表示/非表示"
             >
               {!isActionPanelCollapsed ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
             </button>
 
+            <div className="w-[1px] h-5 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+
             {/* 期間切替ドロップダウン */}
-            <div className="flex items-center ml-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 shadow-sm overflow-hidden">
+            <div className="flex items-center mr-1">
               <select
                 value={useKpiStore((state) => state.currentPeriod)}
                 onChange={(e) => useKpiStore.getState().setPeriod(e.target.value)}
-                className="bg-transparent border-none outline-none text-xs font-bold text-logic-slate dark:text-slate-400 px-3 py-1.5 focus:ring-0 cursor-pointer"
+                className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 dark:text-slate-300 py-1.5 px-2 focus:ring-0 cursor-pointer appearance-none text-center"
+                style={{ textAlignLast: 'center' }}
               >
                 <option value="year">年次 (1年) - 累積</option>
                 <optgroup label="サマリー (FY26)">
@@ -607,8 +626,6 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 </optgroup>
               </select>
             </div>
-            
-            {/* スマート検索バー */}
           </div>
         )}
 
