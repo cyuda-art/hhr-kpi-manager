@@ -133,7 +133,7 @@ export default function KpiTreePage() {
       {/* 左サイドバー：KPIエクスプローラー (フローティング) */}
       <div 
         style={{ width: `${leftSidebarWidth}px` }} 
-        className="hidden lg:flex absolute top-20 bottom-4 left-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_16px_48px_rgba(0,0,0,0.16)] pointer-events-auto"
+        className="hidden lg:flex absolute top-20 bottom-20 left-4 z-20 bg-white/10 dark:bg-black/20 backdrop-blur-lg flex-col overflow-hidden border border-white/40 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_16px_48px_rgba(0,0,0,0.16)] pointer-events-auto"
       >
         <KpiTreeExplorer />
       </div>
@@ -156,7 +156,7 @@ export default function KpiTreePage() {
           opacity: (isActionPanelCollapsed || !selectedNodeId) ? 0 : 1,
           pointerEvents: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'auto'
         }} 
-        className="hidden lg:flex absolute top-20 bottom-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
+        className="hidden lg:flex absolute top-20 bottom-20 z-20 bg-white/10 dark:bg-black/20 backdrop-blur-lg flex-col overflow-hidden border border-white/40 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden custom-scrollbar">
@@ -165,9 +165,9 @@ export default function KpiTreePage() {
         </div>
       </div>
 
-      {/* ボトムドック（ナビゲーション） */}
-      <div className="hidden lg:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-        <div className="flex items-center bg-white/60 dark:bg-black/60 backdrop-blur-3xl p-1.5 rounded-full border border-white/50 dark:border-white/10 shadow-2xl">
+      {/* トップドック（ナビゲーション） */}
+      <div className="hidden lg:flex absolute top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        <div className="flex items-center bg-white/20 dark:bg-black/30 backdrop-blur-xl p-1.5 rounded-full border border-white/40 dark:border-white/10 shadow-2xl">
           <Link href={`/${orgId}/p/${projectId}`} title="ダッシュボード" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
             <LayoutDashboard size={16} /> <span className="hidden xl:inline">ダッシュボード</span>
           </Link>

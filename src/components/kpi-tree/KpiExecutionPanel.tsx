@@ -94,7 +94,7 @@ export const KpiExecutionPanel = () => {
 
   if (!selectedKpi) {
     return (
-      <div className="flex flex-col h-full bg-gradient-to-b from-white to-blue-50/50 dark:from-[#121212] dark:to-blue-950/20 items-center justify-center p-6 text-center relative overflow-hidden">
+      <div className="flex flex-col h-full bg-gradient-to-b from-white/30 to-white/10 dark:from-black/30 dark:to-black/10 items-center justify-center p-6 text-center relative overflow-hidden backdrop-blur-md">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
           <div className="w-64 h-64 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
           <div className="absolute w-48 h-48 bg-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', transform: 'translate(40px, -40px)' }} />
@@ -222,7 +222,7 @@ export const KpiExecutionPanel = () => {
         {isSettingsOpen && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="absolute inset-0 z-50 bg-white/95 dark:bg-[#121212]/95 backdrop-blur-xl flex flex-col h-full"
+            className="absolute inset-0 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-2xl flex flex-col h-full"
           >
             <div className="p-4 flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800/50">
               <h3 className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-slate-200 dark:to-slate-400 flex items-center gap-2">
@@ -286,7 +286,7 @@ export const KpiExecutionPanel = () => {
                 {selectedKpi.type}
               </div>
               {isComputed ? (
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/50 text-slate-600 dark:bg-black/40 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50">
                   自動計算
                 </span>
               ) : (
@@ -376,7 +376,7 @@ export const KpiExecutionPanel = () => {
                 .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
                 .map(action => (
                   <motion.div key={action.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                    className={`group flex items-start gap-3 p-2.5 rounded-lg border transition-all ${action.status === 'done' ? 'bg-white/20 border-white/20 dark:bg-black/20 dark:border-white/5 opacity-50' : 'bg-white/50 border-white/40 dark:bg-black/40 dark:border-white/10 shadow-sm hover:shadow-md'}`}
+                    className={`group flex items-start gap-3 p-2.5 rounded-lg border transition-all ${action.status === 'done' ? 'bg-white/10 border-white/20 dark:bg-black/10 dark:border-white/5 opacity-50' : 'bg-white/40 border-white/30 dark:bg-black/30 dark:border-white/10 shadow-sm hover:shadow-md'}`}
                   >
                     <button onClick={() => { const isCompleting = action.status !== 'done'; useKpiStore.getState().toggleActionStatus(action.id); if (isCompleting) triggerCelebration(); }} className={`mt-0.5 shrink-0 transition-colors ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>
                       {action.status === 'done' ? <CheckCircle2 size={16} /> : <Circle size={16} />}
@@ -433,7 +433,7 @@ export const KpiExecutionPanel = () => {
               <div className={`max-w-[85%] relative ${msg.role === 'user' ? '' : 'p-[1px] bg-gradient-to-br from-white/40 to-white/0 dark:from-white/10 dark:to-white/0 rounded-r-2xl rounded-bl-2xl shadow-sm'}`}>
                 <div className={`px-4 py-3 text-[13px] ${
                   msg.role === 'user' 
-                    ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-l-2xl rounded-br-2xl shadow-sm' 
+                    ? 'bg-slate-800/80 dark:bg-slate-200/80 text-white dark:text-slate-900 rounded-l-2xl rounded-br-2xl shadow-sm' 
                     : 'bg-white/60 dark:bg-black/40 text-slate-800 dark:text-slate-200 rounded-r-2xl rounded-bl-2xl'
                 } whitespace-pre-wrap leading-relaxed`}>
                   {msg.role === 'model' ? (
@@ -444,7 +444,7 @@ export const KpiExecutionPanel = () => {
                 </div>
               </div>
               {msg.role === 'user' && (
-                <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                <div className="w-7 h-7 rounded-lg bg-white/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                   <User size={14} className="text-slate-500 dark:text-slate-400" />
                 </div>
               )}
