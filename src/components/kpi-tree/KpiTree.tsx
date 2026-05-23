@@ -413,28 +413,31 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     const getEdgeStyle = (sourceId: string, targetId: string) => {
       const targetData = kpiData[targetId];
       let targetStatus = targetData?.status || 'danger';
-      let strokeColor = '#cbd5e1'; // default slate-300
-      let strokeWidth = 2;
+      let strokeColor = '#94a3b8'; // darker default
+      let strokeWidth = 3; // increased for better visibility
       let strokeDasharray = undefined as string | undefined;
       let animated = false;
-      let filter = undefined as string | undefined;
+      let filter: string | undefined = 'drop-shadow(0px 2px 4px rgba(0,0,0,0.3))'; // default shadow
 
       const isNew = targetData?.addedAt && Date.now() - targetData.addedAt < 5000;
 
       if (isNew) {
         strokeColor = '#00A3A1';
-        strokeWidth = 3;
+        strokeWidth = 4;
         animated = true;
         filter = 'drop-shadow(0 0 6px rgba(0, 163, 161, 0.6))';
       } else if (targetStatus === 'danger') {
         strokeColor = '#f43f5e'; // Solid red for bottleneck
-        strokeWidth = 2.5;
+        strokeWidth = 3.5;
+        filter = 'drop-shadow(0px 2px 6px rgba(244,63,94,0.4))';
       } else if (targetStatus === 'warning') {
         strokeColor = `url(#edge-progress-${targetId})`;
-        strokeWidth = 2.5;
+        strokeWidth = 3.5;
+        filter = 'drop-shadow(0px 2px 6px rgba(245,158,11,0.4))';
       } else if (targetStatus === 'good') {
         strokeColor = `url(#edge-progress-${targetId})`;
-        strokeWidth = 3;
+        strokeWidth = 4;
+        filter = 'drop-shadow(0px 2px 6px rgba(16,185,129,0.4))';
       }
 
       // 選択中ノードとその影響範囲（上位・下位すべて）を点線にして発光させる

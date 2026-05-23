@@ -162,7 +162,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   const isRecentlyUpdated = recentlyUpdatedNodes.includes(data.id);
 
   // Macro時はコンテナサイズを縮小せず（ReactFlowの再計算・カクツキを防止）、透明にして内部要素だけを中央に配置する
-  const containerStyle = "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:bg-transparent [.kpi-tree-wrapper[data-zoom-view='macro']_&]:border-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:shadow-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:!ring-0 w-64 bg-white/40 dark:bg-black/30 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] hover:bg-white/50 dark:hover:bg-black/40";
+  const containerStyle = "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:bg-transparent [.kpi-tree-wrapper[data-zoom-view='macro']_&]:border-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:shadow-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:!ring-0 w-[280px] bg-white/95 dark:bg-slate-900/90 backdrop-blur-3xl rounded-2xl border border-white/80 dark:border-slate-700/80 shadow-[0_16px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.5)] p-5 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_24px_60px_rgba(0,0,0,0.6)] hover:bg-white dark:hover:bg-slate-800/95";
 
   // Z軸の奥行き計算（期間によって深度を変える）
   const getZDepth = (depth: number) => {
@@ -257,8 +257,8 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
                   {data.isKsf ? "Key Success Factor" : getQualitativeLabel()}
                 </p>
                 <p className={cn(
-                  "font-bold text-[13px] leading-snug break-words font-sans",
-                  data.isKsf ? "text-oxford-navy dark:text-slate-100" : "text-oxford-navy dark:text-slate-100/90 dark:text-slate-200"
+                  "font-black text-[14px] leading-snug break-words font-sans",
+                  data.isKsf ? "text-oxford-navy dark:text-slate-100" : "text-oxford-navy dark:text-slate-100"
                 )}>
                   {(data.qualitativeName || '未設定').replace(/^(KSF|プロセス|Goal|Process)[:：\s]*/i, '')}
                 </p>
@@ -268,12 +268,12 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             {/* 定量（KGI/KPI）部分 */}
             <div>
               <p className="text-[9px] text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold mb-0.5 flex items-center gap-1 font-poppins tracking-wider uppercase"><BarChart2 size={10} /> {data.type === 'KGI' ? 'Quantitative KGI' : 'Quantitative KPI'}</p>
-              <p className="font-bold text-oxford-navy dark:text-slate-100 text-[12px] leading-snug break-words font-sans">{data.name}</p>
+              <p className="font-black text-oxford-navy dark:text-slate-100 text-[14px] leading-snug break-words font-sans">{data.name}</p>
             </div>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <div className={cn("px-2 py-0.5 rounded-[4px] text-[11px] font-bold text-[#202124]", getStatusBg(displayStatus))}>
+          <div className={cn("px-2.5 py-1 rounded-[6px] text-[13px] font-black tracking-wide text-[#202124] shadow-sm", getStatusBg(displayStatus))}>
             {displayAchievementRate.toFixed(1)}%
           </div>
           {displayTarget > 0 && (displayActual - displayTarget) < 0 && (
@@ -289,18 +289,18 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-700 ease-out [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden [.kpi-tree-wrapper[data-zoom-view='mid']_&]:hidden"
         style={{ transform: getZDepth(30) }}
       >
-          <div className="flex justify-between text-[11px] items-center font-lato">
+          <div className="flex justify-between text-[12px] items-center font-lato">
             <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
               {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}
               {displayLabel}
             </span>
-            <span className="font-bold text-oxford-navy dark:text-slate-100">
-              {formatDisplayValue(displayActual, data.unit)} {data.unit}
+            <span className="font-black text-oxford-navy dark:text-slate-100 text-[13px]">
+              {formatDisplayValue(displayActual, data.unit)} <span className="text-[10px] font-bold text-logic-slate dark:text-slate-400">{data.unit}</span>
             </span>
           </div>
-          <div className="flex justify-between text-[11px] font-lato">
+          <div className="flex justify-between text-[12px] font-lato">
             <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
-            <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} {data.unit}</span>
+            <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} <span className="text-[10px]">{data.unit}</span></span>
           </div>
 
           {readableFormula && (
