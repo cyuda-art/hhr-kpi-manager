@@ -25,7 +25,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
   
   const isHorizontal = direction === 'LR';
   // 余白を広めに取って、KPI同士の間隔をゆったりとさせる（インダストリアルデザイン的な余白の美学）
-  dagreGraph.setGraph({ rankdir: direction, ranksep: 200, nodesep: 150 });
+  dagreGraph.setGraph({ rankdir: direction === 'TB' ? 'BT' : 'RL', ranksep: 200, nodesep: 150 });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
@@ -50,8 +50,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
 
     const newNode = {
       ...node,
-      targetPosition: (isHorizontal ? 'left' : 'top') as any,
-      sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
+      targetPosition: (isHorizontal ? 'right' : 'bottom') as any,
+      sourcePosition: (isHorizontal ? 'left' : 'top') as any,
       position: {
         x: nodeWithPosition.x - nodeWidth / 2,
         y: nodeWithPosition.y - nodeHeight / 2,
@@ -76,19 +76,18 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
       id,
       type: 'kpiNode',
       position: data.position || { x: 0, y: 0 },
-      targetPosition: (isHorizontal ? 'left' : 'top') as any,
-      sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
+      targetPosition: (isHorizontal ? 'right' : 'bottom') as any,
+      sourcePosition: (isHorizontal ? 'left' : 'top') as any,
       data,
     });
 
     // 親ノードが存在する場合のみエッジを追加（AI生成ミスによる存在しない親への参照を防ぐ）
     if (data.parentId && kpiData[data.parentId]) {
       edges.push({
-        id: `e-${data.parentId}-${id}`,
-        source: data.parentId,
-        target: id,
+        id: `e-${id}-${data.parentId}`,
+        source: id,
+        target: data.parentId,
         animated: true, // データの流れを表現するアニメーション
-        className: 'reverse-animation', // データを末端から吸い上げるため逆流させる
         style: { stroke: 'rgba(148, 163, 184, 0.5)', strokeWidth: 2 },
       });
     }
@@ -350,8 +349,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             // 基本はDB座標を最優先する。DBに座標がない（0,0）場合はReact Flow側（Dagre等）の座標を使う
             position: node.dragging ? node.position : (hasValidDbPosition && kpiNode.position ? kpiNode.position : node.position),
             hidden,
-            targetPosition: (isHorizontal ? 'left' : 'top') as any,
-            sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
+            targetPosition: (isHorizontal ? 'right' : 'bottom') as any,
+            sourcePosition: (isHorizontal ? 'left' : 'top') as any,
             data: {
               ...kpiNode,
               hasChildren,
@@ -395,8 +394,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             id,
             type: 'kpiNode',
             position: { x, y },
-            targetPosition: (isHorizontal ? 'left' : 'top') as any,
-            sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,
+            targetPosition: (isHorizontal ? 'right' : 'bottom') as any,
+            sourcePosition: (isHorizontal ? 'left' : 'top') as any,
             hidden,
             data: {
               ...kpiData[id],
@@ -473,8 +472,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       const newEdges = eds
         .filter((edge) => kpiData[edge.target] && kpiData[edge.source])
         .map((edge) => {
-          const hidden = isNodeHidden(edge.target);
-          const { style, animated } = getEdgeStyle(edge.source, edge.target);
+          const hidden = isNodeHidden(edge.source);
+          const { style, animated } = getEdgeStyle(edge.target, edge.source);
 
           return {
             ...edge,
@@ -489,17 +488,16 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         if (!kpiData[id]) return;
         const parentId = kpiData[id].parentId;
         if (parentId && kpiData[parentId]) {
-          const edgeId = `e-${parentId}-${id}`;
+          const edgeId = `e-${id}-${parentId}`;
           if (!existingEdgeIds.has(edgeId)) {
             const hidden = isNodeHidden(id);
             const { style, animated } = getEdgeStyle(parentId, id);
             newEdges.push({
               id: edgeId,
-              source: parentId,
-              target: id,
+              source: id,
+              target: parentId,
               hidden,
               animated,
-              className: 'reverse-animation', // データを末端から吸い上げるため逆流させる
               style,
             });
           }

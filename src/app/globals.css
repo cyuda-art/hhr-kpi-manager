@@ -164,11 +164,6 @@ body {
   fill: rgba(0, 0, 0, 0.3) !important;
 }
 
-/* データの流れ（下から上へ）を表現するためエッジのアニメーションを逆再生するクラス */
-.react-flow__edge.animated.reverse-animation path.react-flow__edge-path {
-  animation-direction: reverse !important;
-}
-
 /* AI起動時のSiri風アニメーション */
 @keyframes siriWave {
   0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: scale(1); }
