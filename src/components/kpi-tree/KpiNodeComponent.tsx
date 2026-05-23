@@ -215,7 +215,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         type="target" 
         position={targetPosition} 
         className="w-0 h-0 min-w-0 min-h-0 border-none z-10 opacity-0"
-        style={targetPosition === Position.Right ? { right: '-10px' } : { bottom: '-10px' }}
+        style={targetPosition === Position.Right ? { right: '0px' } : { bottom: '0px' }}
       />
       
       {/* MACRO VIEW: 名前だけのミニマル表示 */}
