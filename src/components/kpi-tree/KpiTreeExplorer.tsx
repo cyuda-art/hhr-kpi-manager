@@ -6,8 +6,8 @@ import { ChevronRight, ChevronDown, Target, ListChecks, TrendingUp, Search, Chec
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ExplorerNode = ({ nodeId, level = 0 }: { nodeId: string, level?: number }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId, actions } = useKpiStore();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { kpiData, selectedNodeId, setSelectedNodeId, actions, collapsedNodes, toggleNodeCollapse } = useKpiStore();
+  const isExpanded = !collapsedNodes.includes(nodeId);
   
   const node = kpiData[nodeId];
   
@@ -52,7 +52,7 @@ const ExplorerNode = ({ nodeId, level = 0 }: { nodeId: string, level?: number })
             className="w-4 h-4 flex items-center justify-center mr-1 cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             onClick={(e) => {
               e.stopPropagation();
-              if (hasChildren) setIsExpanded(!isExpanded);
+              if (hasChildren) toggleNodeCollapse(nodeId);
             }}
           >
             {hasChildren && (
