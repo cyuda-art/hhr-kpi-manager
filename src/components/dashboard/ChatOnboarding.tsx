@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 
 type Message = {
@@ -12,25 +12,14 @@ type ChatOnboardingProps = {
   onCancel: () => void;
 };
 
-const STEP_DEFINITIONS = [
-  { step: 1, key: 'vision', name: 'VISION（究極の目的）' },
-  { step: 2, key: 'mission', name: 'MISSION（価値観・使命）' },
-  { step: 3, key: 'manifesto', name: 'MANIFESTO（作戦）' },
-  { step: 4, key: 'goal', name: 'GOAL（定性ゴール）' },
-  { step: 5, key: 'kgi', name: 'KGI（定量目標）' },
-  { step: 6, key: 'ksf', name: 'KSF（重要成功要因）' },
-  { step: 7, key: 'kpi', name: 'KPI（行動指標）' }
-];
-
 export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
   const { user } = useAuthStore();
-  const [step, setStep] = useState(1);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: `こんにちは、${user?.displayName || 'ゲスト'}さん！\nこれから一緒に、あなたの目標達成に向けたロードマップ（KPIツリー）を作成していきましょう。\n\nまずは【Step 1: VISION】からです。\nあなたが最終的に成し遂げたいこと、究極の目的は何ですか？（例：健康寿命を延ばしたい、売上を倍増させて業界No.1になりたい など）` }
+    { role: 'assistant', content: `こんにちは、${user?.displayName || 'ゲスト'}さん！\nあなたが達成したい目標や、解決したい課題を自由に入力してください。\n\n（例: 会社の売上を倍にしたい、3ヶ月で英語を話せるようになりたい、10kg痩せたい など）` }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [collectedData, setCollectedData] = useState<Record<string, string>>({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -44,55 +33,23 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isTyping) return;
+    if (!input.trim() || isTyping || hasSubmitted) return;
 
     const userMessage = input.trim();
     setInput('');
+    setHasSubmitted(true);
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsTyping(true);
 
-    try {
-      const res = await fetch('/api/chat-onboarding/evaluate-step', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          step,
-          userInput: userMessage,
-          chatHistory: messages,
-          collectedData
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      if (data.isComplete && data.extractedValue) {
-        const currentKey = STEP_DEFINITIONS.find(s => s.step === step)?.key;
-        if (currentKey) {
-          const newCollectedData = { ...collectedData, [currentKey]: data.extractedValue };
-          setCollectedData(newCollectedData);
-          
-          if (step < 7) {
-            setStep(s => s + 1);
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
-          } else {
-            // All steps completed!
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply + '\n\nすべてのヒヤリングが完了しました！これより、あなたの回答をもとにKPIツリーを自動構築します...' }]);
-            setTimeout(() => {
-              onComplete(newCollectedData);
-            }, 2000);
-          }
-        }
-      } else {
-        // Not complete, AI asks follow up question
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
-      }
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'すみません、エラーが発生しました。もう一度入力していただけますか？' }]);
-    } finally {
-      setIsTyping(false);
-    }
+    // AIの即座のリアクションを演出
+    setTimeout(() => {
+      setMessages(prev => [...prev, { role: 'assistant', content: '承知いたしました。\n入力いただいた情報から、あなたの目標達成に必要なVISIONからKPIまでの全7階層を推論し、最適な戦略ツリーを構築します。\n\n少々お待ちください...' }]);
+      
+      // 親コンポーネントへ入力内容を渡してAPI呼び出し（generate-universal-tree）をトリガーする
+      setTimeout(() => {
+        onComplete({ userGoal: userMessage });
+      }, 1500);
+    }, 800);
   };
 
   return (
@@ -106,19 +63,9 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="text-[18px] font-bold text-slate-900 dark:text-[#f1f3f4]">目標設定ウィザード</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex gap-1">
-                  {STEP_DEFINITIONS.map(s => (
-                    <div 
-                      key={s.step} 
-                      className={`h-1.5 w-6 rounded-full transition-colors ${s.step < step ? 'bg-strategic-teal dark:bg-[#8ab4f8]' : s.step === step ? 'bg-strategic-teal/50 dark:bg-[#8ab4f8]/50 animate-pulse' : 'bg-slate-200 dark:bg-[#3c4043]'}`}
-                    />
-                  ))}
-                </div>
-                <span className="text-[12px] text-slate-500 dark:text-[#9aa0a6] font-medium ml-2">
-                  Step {step}/7: {STEP_DEFINITIONS.find(s => s.step === step)?.name}
-                </span>
+              <h2 className="text-[18px] font-bold text-slate-900 dark:text-[#f1f3f4]">目標設定（AIワンショット生成）</h2>
+              <div className="text-[12px] text-slate-500 dark:text-[#9aa0a6] font-medium mt-1">
+                あなたの思いをAIが7階層のツリーに具現化します
               </div>
             </div>
           </div>
@@ -147,7 +94,7 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
               </div>
               <div className="bg-white dark:bg-[#282a2d] border border-slate-200 dark:border-[#3c4043] shadow-sm rounded-[12px] p-4 flex items-center gap-2">
                 <Loader2 size={16} className="animate-spin text-strategic-teal dark:text-[#8ab4f8]" />
-                <span className="text-[14px] text-slate-500 dark:text-[#9aa0a6]">AIが考え中...</span>
+                <span className="text-[14px] text-slate-500 dark:text-[#9aa0a6]">ツリーを構築中...</span>
               </div>
             </div>
           )}
@@ -161,26 +108,18 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={isTyping || step > 7}
+              disabled={isTyping || hasSubmitted}
               placeholder="ここに回答を入力してください..."
               className="w-full pl-4 pr-14 py-4 bg-slate-50 dark:bg-[#202124] border border-slate-300 dark:border-[#5f6368] text-slate-900 dark:text-[#f1f3f4] rounded-full focus:outline-none focus:border-strategic-teal dark:focus:border-[#8ab4f8] focus:ring-1 focus:ring-strategic-teal dark:focus:ring-[#8ab4f8] transition-all disabled:opacity-50"
             />
             <button
               type="submit"
-              disabled={!input.trim() || isTyping || step > 7}
+              disabled={!input.trim() || isTyping || hasSubmitted}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center bg-strategic-teal text-white hover:bg-strategic-teal/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <Send size={18} className="ml-1" />
             </button>
           </form>
-          <div className="mt-3 flex flex-wrap gap-2 justify-center">
-            {collectedData.vision && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> VISION完了</div>}
-            {collectedData.mission && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> MISSION完了</div>}
-            {collectedData.manifesto && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> MANIFESTO完了</div>}
-            {collectedData.goal && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> GOAL完了</div>}
-            {collectedData.kgi && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> KGI完了</div>}
-            {collectedData.ksf && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> KSF完了</div>}
-          </div>
         </div>
 
       </div>
