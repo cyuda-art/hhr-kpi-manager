@@ -981,20 +981,18 @@ export default function WorkspacePage() {
       
       {wizardStep === 'chat_onboarding' && (
         <ChatOnboarding 
-          onComplete={async ({ userGoal }) => {
+          onComplete={async (collectedData) => {
             if (!user || !currentOrgId) return;
             setWizardStep('generating_tree');
-            setUploadStatus('AIが目標から全階層（VISION〜KPI）の戦略ツリーを推論・構築中...');
+            setUploadStatus('AIが回答をもとにKPIツリーを構築中...');
             
             try {
-              // 簡単なプロジェクト名を作成（最大15文字程度で切り詰め）
-              const shortGoal = userGoal.length > 15 ? userGoal.substring(0, 15) + '...' : userGoal;
-              const projectName = `【AI】${shortGoal} プロジェクト`;
+              const projectName = `${collectedData.kgi || '目標'}達成プロジェクト`;
               
               const res = await fetch('/api/generate-universal-tree', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userGoal })
+                body: JSON.stringify({ collectedData })
               });
               
               const data = await res.json();
@@ -1022,9 +1020,9 @@ export default function WorkspacePage() {
                 };
               });
 
-              const newId = await createProject(projectName, 'AIワンショット自動生成', user.uid, currentOrgId, {
-                description: userGoal,
-                manifesto: '',
+              const newId = await createProject(projectName, 'ハイブリッドAIオンボーディングから生成', user.uid, currentOrgId, {
+                description: collectedData.goal || '',
+                manifesto: collectedData.manifesto || '',
                 kgiType: 'カスタム',
                 kgiPeriod: 'カスタム',
                 kgiTargetValue: 0,

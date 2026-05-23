@@ -25,10 +25,10 @@ AIはこのファイルを読み込むことで、過去の文脈を失わずに
   * 一部のAI処理APIで `dummy_key` がフォールバックとして使われている。
 
 ## 3.5 最近のシステムアップデート影響範囲 (Recent System Update Impact)
-* **機能**: AIによるワンショット全自動ツリー構築（One-Shot Onboarding）
+* **機能**: キャッチボール ＋ サジェスト駆動型AIオンボーディング
 * **影響範囲の確認**:
-  * **フロントエンド**: `ChatOnboarding.tsx` を大幅に簡略化し、単一のテキスト入力だけで完結するように変更。`page.tsx` のペイロードも `userGoal` のみに変更。
-  * **バックエンド**: `/api/generate-universal-tree` を強化し、単一プロンプトから全7階層を推論するよう改修。不要となった `evaluate-step` API は削除。
+  * **フロントエンド**: `ChatOnboarding.tsx` を改修し、AIのメッセージの下にクリック可能なサジェストチップを表示。`page.tsx` のAPIペイロードを再度 `collectedData` へ変更。
+  * **バックエンド**: `evaluate-step` APIを復活させ、会話文脈から `reply` と `suggestions` を生成する処理を追加。ツリー生成APIは集めた7階層から構築するロジックへ回帰。
   * **データベース**: DBスキーマ（KpiNode）や保存処理（syncToDB）に変更なし。不整合が生じないことを確認済み。
 
 ## 4. AIへの絶対の指示事項 (AI Core Instructions)
