@@ -88,6 +88,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
         source: data.parentId,
         target: id,
         animated: true, // データの流れを表現するアニメーション
+        className: 'reverse-animation', // データを末端から吸い上げるため逆流させる
         style: { stroke: 'rgba(148, 163, 184, 0.5)', strokeWidth: 2 },
       });
     }
@@ -498,6 +499,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               target: id,
               hidden,
               animated,
+              className: 'reverse-animation', // データを末端から吸い上げるため逆流させる
               style,
             });
           }
