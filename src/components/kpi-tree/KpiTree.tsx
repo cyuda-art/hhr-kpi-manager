@@ -783,7 +783,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               })}
             </defs>
           </svg>
-          <Background color="#94a3b8" gap={16} />
+          <Background color="rgba(148, 163, 184, 0.2)" gap={24} size={1} />
           <Controls className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-slate-200 dark:border-slate-700 fill-slate-700 dark:fill-slate-300 shadow-lg" />
           {showMiniMap && (
             <MiniMap 

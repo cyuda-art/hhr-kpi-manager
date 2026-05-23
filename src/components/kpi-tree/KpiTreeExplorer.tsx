@@ -43,7 +43,7 @@ const ExplorerNode = ({ nodeId, level = 0 }: { nodeId: string, level?: number })
   return (
     <div className="select-none mb-0.5">
       <div 
-        className={`flex flex-col py-1.5 px-2 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700' : ''}`}
+        className={`flex flex-col py-1.5 px-2 hover:bg-white/40 dark:hover:bg-black/20 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-white/60 dark:bg-black/40 ring-1 ring-white/50 dark:ring-white/10 shadow-sm' : ''}`}
         style={{ paddingLeft: `${level * 12 + 8}px` }}
         onClick={() => setSelectedNodeId(nodeId)}
       >
@@ -126,8 +126,8 @@ export const KpiTreeExplorer = () => {
   }, [kpiData, searchQuery]);
 
   return (
-    <div className="h-full flex flex-col bg-slate-50 dark:bg-[#202124] border-r border-slate-200 dark:border-slate-800">
-      <div className="p-3 border-b border-slate-200 dark:border-slate-800">
+    <div className="h-full flex flex-col bg-transparent">
+      <div className="p-3 border-b border-white/20 dark:border-white/5">
         <div className="relative">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input 
@@ -135,7 +135,7 @@ export const KpiTreeExplorer = () => {
             placeholder="KPIを検索..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 rounded-md py-1.5 pl-8 pr-3 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal transition-all"
+            className="w-full bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-md py-1.5 pl-8 pr-3 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-all shadow-sm"
           />
         </div>
       </div>

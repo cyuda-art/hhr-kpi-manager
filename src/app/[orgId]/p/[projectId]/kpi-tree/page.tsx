@@ -9,7 +9,7 @@ import { useKpiStore } from '@/store/useKpiStore';
 
 export default function KpiTreePage() {
   const isActionPanelCollapsed = useLayoutStore(state => state.isActionPanelCollapsed);
-  const selectedNodeId = useKpiStore(state => state.selectedNodeId);
+  const { selectedNodeId, kpiData } = useKpiStore();
   const [isMounted, setIsMounted] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(400); // 右サイドバー初期幅
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(250); // 左サイドバー初期幅
@@ -20,8 +20,6 @@ export default function KpiTreePage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -75,46 +73,78 @@ export default function KpiTreePage() {
 
   if (!isMounted) return null;
 
+  // 1. 全体背景の動的グラデーション
+  const getGlobalBackground = () => {
+    const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
+    if (!selectedKpi) {
+      return "bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-[#121212] dark:to-slate-900/50";
+    }
+    
+    if (selectedKpi.status === 'good') {
+      return "bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-blue-50/20 dark:from-[#081a17] dark:via-[#0c1a24] dark:to-[#121212]";
+    } else if (selectedKpi.status === 'warning') {
+      return "bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/20 dark:from-[#241a0e] dark:via-[#1f1416] dark:to-[#121212]";
+    } else {
+      return "bg-gradient-to-br from-rose-50/50 via-red-50/30 to-purple-50/20 dark:from-[#261014] dark:via-[#1e1026] dark:to-[#121212]";
+    }
+  };
+
   return (
-    <div ref={containerRef} className="h-[calc(100vh-4rem)] flex overflow-hidden bg-white dark:bg-[#1e1e20] relative">
-      {/* 左サイドバー：KPIエクスプローラー */}
+    <div ref={containerRef} className={`h-[calc(100vh-4rem)] flex overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
+      
+      {/* 背景の呼吸するメッシュグラデーション（全画面） */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-30 mix-blend-multiply dark:mix-blend-screen">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-300 dark:bg-blue-600/40 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-1/4 -right-20 w-[30rem] h-[30rem] bg-purple-300 dark:bg-purple-600/40 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
+        {selectedNodeId && kpiData[selectedNodeId]?.status === 'good' && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-emerald-200 dark:bg-emerald-700/30 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+        )}
+        {selectedNodeId && kpiData[selectedNodeId]?.status === 'warning' && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-amber-200 dark:bg-amber-700/30 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+        )}
+        {selectedNodeId && kpiData[selectedNodeId]?.status === 'danger' && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-rose-200 dark:bg-rose-700/30 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+        )}
+      </div>
+
+      {/* 左サイドバー：KPIエクスプローラー (グラスモーフィズム) */}
       <div 
         style={{ width: `${leftSidebarWidth}px` }} 
-        className="shrink-0 bg-slate-50 dark:bg-[#2d2f31] flex flex-col h-full overflow-hidden"
+        className="shrink-0 bg-white/40 dark:bg-black/20 backdrop-blur-2xl flex flex-col h-full overflow-hidden border-r border-white/40 dark:border-white/5 relative z-10 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]"
       >
         <KpiTreeExplorer />
       </div>
 
-      {/* 左リサイズ用境界線（Resizer） */}
+      {/* 左リサイズ用境界線（スリット調） */}
       <div 
         onMouseDown={(e) => { e.preventDefault(); setIsLeftDragging(true); }}
-        className={`w-1 cursor-col-resize shrink-0 z-10 hover:bg-primary-500/50 transition-colors border-r border-slate-200 dark:border-[#3c4043] ${
-          isLeftDragging ? 'bg-primary-500' : 'bg-transparent'
-        }`}
-      />
+        className="w-2 -ml-1 cursor-col-resize shrink-0 z-20 flex justify-center items-center group relative"
+      >
+        <div className={`w-[2px] h-12 rounded-full transition-colors ${isLeftDragging ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-slate-300/50 dark:bg-slate-600/50 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)]'}`} />
+      </div>
 
-      {/* メインエリア：KPIツリー */}
-      <div className="flex-1 bg-white dark:bg-[#2d2f31] flex flex-col min-w-0 h-full relative">
+      {/* メインエリア：KPIツリー (透明) */}
+      <div className="flex-1 bg-transparent flex flex-col min-w-0 h-full relative z-10">
         <KpiTree />
       </div>
 
-      {/* リサイズ用境界線（Resizer） - パネルが閉じている場合または未選択時は非表示 */}
+      {/* 右リサイズ用境界線（スリット調） */}
       {!isActionPanelCollapsed && selectedNodeId ? (
         <div 
           onMouseDown={handleMouseDown}
-          className={`w-1 cursor-col-resize shrink-0 z-10 hover:bg-primary-500/50 transition-colors border-l border-slate-200 dark:border-[#3c4043] ${
-            isDragging ? 'bg-primary-500' : 'bg-transparent'
-          }`}
-        />
+          className="w-2 -mr-1 cursor-col-resize shrink-0 z-20 flex justify-center items-center group relative"
+        >
+          <div className={`w-[2px] h-12 rounded-full transition-colors ${isDragging ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-slate-300/50 dark:bg-slate-600/50 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)]'}`} />
+        </div>
       ) : null}
 
-      {/* 右サイドバー：アクションパネル */}
+      {/* 右サイドバー：アクションパネル (グラスモーフィズム) */}
       <div 
         style={{ 
           width: (isActionPanelCollapsed || !selectedNodeId) ? '0px' : `${sidebarWidth}px`,
           display: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'flex'
         }} 
-        className="shrink-0 bg-white dark:bg-[#2d2f31] flex-col h-full overflow-hidden"
+        className="shrink-0 bg-white/40 dark:bg-black/20 backdrop-blur-2xl flex-col h-full overflow-hidden border-l border-white/40 dark:border-white/5 relative z-10 shadow-[-4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden custom-scrollbar">

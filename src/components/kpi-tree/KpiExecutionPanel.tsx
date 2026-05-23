@@ -210,19 +210,11 @@ export const KpiExecutionPanel = () => {
     );
   };
 
-  // 1. コンテキストに連動したグラデーション背景の設定
-  const getPanelBackground = () => {
-    if (selectedKpi.status === 'good') {
-      return "bg-gradient-to-b from-emerald-50/40 via-white to-white dark:from-[#0d1f1c] dark:via-[#121212] dark:to-[#121212]";
-    } else if (selectedKpi.status === 'warning') {
-      return "bg-gradient-to-b from-amber-50/40 via-white to-white dark:from-[#241a0e] dark:via-[#121212] dark:to-[#121212]";
-    } else {
-      return "bg-gradient-to-b from-rose-50/40 via-white to-white dark:from-[#261014] dark:via-[#121212] dark:to-[#121212]";
-    }
-  };
+  // グローバルグラデーションはpage.tsxで管理するため、ローカルの背景設定は不要になりました。
+  // 透過して親のグラスモーフィズムを活かします。
 
   return (
-    <div className={`flex flex-col h-full relative ${getPanelBackground()} transition-colors duration-1000`}>
+    <div className="flex flex-col h-full relative bg-transparent transition-colors duration-1000">
       {renderConfetti()}
 
       {/* 設定モーダル（Plan） */}
@@ -286,7 +278,7 @@ export const KpiExecutionPanel = () => {
       </AnimatePresence>
 
       {/* ヘッダー部分 */}
-      <div className="p-5 border-b border-slate-200/50 dark:border-slate-800/50 flex flex-col gap-4 shrink-0 bg-white/40 dark:bg-[#121212]/40 backdrop-blur-md relative z-20">
+      <div className="p-5 border-b border-white/20 dark:border-white/5 flex flex-col gap-4 shrink-0 bg-white/20 dark:bg-black/10 relative z-20">
         <div className="flex justify-between items-start">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
@@ -307,7 +299,7 @@ export const KpiExecutionPanel = () => {
               {selectedKpi.name}
             </h2>
           </div>
-          <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 rounded-full p-1 border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
+          <div className="flex items-center gap-1 bg-white/40 dark:bg-black/20 rounded-full p-1 border border-white/30 dark:border-white/10 shadow-sm">
             <button onClick={() => setIsSettingsOpen(true)} className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-all">
               <Settings size={14} />
             </button>
@@ -343,10 +335,10 @@ export const KpiExecutionPanel = () => {
       </div>
 
       {/* トレンドチャート (Why/Check) */}
-      <div className="bg-white/40 dark:bg-[#121212]/40 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shrink-0 relative z-20">
+      <div className="bg-white/10 dark:bg-black/10 border-b border-white/20 dark:border-white/5 shrink-0 relative z-20">
         <button 
           onClick={() => setIsChartOpen(!isChartOpen)}
-          className="w-full flex items-center justify-between px-5 py-3 hover:bg-white/60 dark:hover:bg-slate-900/40 transition-colors"
+          className="w-full flex items-center justify-between px-5 py-3 hover:bg-white/30 dark:hover:bg-black/20 transition-colors"
         >
           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
             <BarChart3 size={14} className="text-slate-400" /> パフォーマンス推移
@@ -365,7 +357,7 @@ export const KpiExecutionPanel = () => {
       </div>
 
       {/* ToDoリストエリア (How/Do) */}
-      <div className="px-5 py-4 bg-white/20 dark:bg-[#121212]/20 backdrop-blur-sm border-b border-slate-200/30 dark:border-slate-800/30 shrink-0 max-h-48 overflow-y-auto custom-scrollbar relative z-20">
+      <div className="px-5 py-4 bg-white/10 dark:bg-black/10 border-b border-white/20 dark:border-white/5 shrink-0 max-h-48 overflow-y-auto custom-scrollbar relative z-20">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
             <CheckSquare size={14} className="text-slate-400" /> 進行中のタスク
@@ -384,7 +376,7 @@ export const KpiExecutionPanel = () => {
                 .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
                 .map(action => (
                   <motion.div key={action.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                    className={`group flex items-start gap-3 p-2.5 rounded-lg border backdrop-blur-sm transition-all ${action.status === 'done' ? 'bg-white/30 border-slate-200/30 dark:bg-slate-900/30 dark:border-slate-800/30 opacity-50' : 'bg-white/70 border-slate-200/70 dark:bg-slate-800/70 dark:border-slate-700/70 shadow-sm hover:shadow-md'}`}
+                    className={`group flex items-start gap-3 p-2.5 rounded-lg border transition-all ${action.status === 'done' ? 'bg-white/20 border-white/20 dark:bg-black/20 dark:border-white/5 opacity-50' : 'bg-white/50 border-white/40 dark:bg-black/40 dark:border-white/10 shadow-sm hover:shadow-md'}`}
                   >
                     <button onClick={() => { const isCompleting = action.status !== 'done'; useKpiStore.getState().toggleActionStatus(action.id); if (isCompleting) triggerCelebration(); }} className={`mt-0.5 shrink-0 transition-colors ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>
                       {action.status === 'done' ? <CheckCircle2 size={16} /> : <Circle size={16} />}
@@ -438,11 +430,11 @@ export const KpiExecutionPanel = () => {
                 </div>
               )}
               {/* 4. ソリッドグラデーションの境界線（AIのみ） */}
-              <div className={`max-w-[85%] relative ${msg.role === 'user' ? '' : 'p-[1px] bg-gradient-to-br from-slate-200 to-white/0 dark:from-slate-700 dark:to-slate-800/0 rounded-r-2xl rounded-bl-2xl shadow-sm'}`}>
+              <div className={`max-w-[85%] relative ${msg.role === 'user' ? '' : 'p-[1px] bg-gradient-to-br from-white/40 to-white/0 dark:from-white/10 dark:to-white/0 rounded-r-2xl rounded-bl-2xl shadow-sm'}`}>
                 <div className={`px-4 py-3 text-[13px] ${
                   msg.role === 'user' 
                     ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-l-2xl rounded-br-2xl shadow-sm' 
-                    : 'bg-white/90 dark:bg-[#1a1c2e]/90 backdrop-blur-md text-slate-800 dark:text-slate-200 rounded-r-2xl rounded-bl-2xl'
+                    : 'bg-white/60 dark:bg-black/40 text-slate-800 dark:text-slate-200 rounded-r-2xl rounded-bl-2xl'
                 } whitespace-pre-wrap leading-relaxed`}>
                   {msg.role === 'model' ? (
                     <TypewriterText text={msg.content} animate={msg.id === selectedKpi.chatMessages?.[selectedKpi.chatMessages.length - 1]?.id} />
@@ -464,8 +456,8 @@ export const KpiExecutionPanel = () => {
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
                 <Zap size={14} className="text-white dark:text-slate-900" />
               </div>
-              <div className="p-[1px] bg-gradient-to-br from-slate-200 to-white/0 dark:from-slate-700 dark:to-slate-800/0 rounded-r-2xl rounded-bl-2xl shadow-sm">
-                <div className="bg-white/90 dark:bg-[#1a1c2e]/90 backdrop-blur-md px-5 py-4 rounded-r-2xl rounded-bl-2xl flex items-center gap-1.5">
+              <div className="p-[1px] bg-gradient-to-br from-white/40 to-white/0 dark:from-white/10 dark:to-white/0 rounded-r-2xl rounded-bl-2xl shadow-sm">
+                <div className="bg-white/60 dark:bg-black/40 px-5 py-4 rounded-r-2xl rounded-bl-2xl flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -478,7 +470,7 @@ export const KpiExecutionPanel = () => {
       </div>
 
       {/* 5. フローティング・ピル型 入力フォームとサジェストチップ */}
-      <div className="absolute bottom-0 left-0 w-full px-5 pb-6 pt-10 bg-gradient-to-t from-white/90 via-white/70 to-transparent dark:from-[#121212]/90 dark:via-[#121212]/70 dark:to-transparent flex flex-col gap-3 z-30 pointer-events-none">
+      <div className="absolute bottom-0 left-0 w-full px-5 pb-6 pt-10 bg-gradient-to-t from-white/60 via-white/40 to-transparent dark:from-black/60 dark:via-black/40 dark:to-transparent flex flex-col gap-3 z-30 pointer-events-none">
         
         {/* 3. グラスモーフィズムのサジェストチップ */}
         <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1 pointer-events-auto">
