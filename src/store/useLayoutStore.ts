@@ -51,7 +51,7 @@ export const useLayoutStore = create<LayoutStore>()(
       themeColor: 'indigo', // デフォルトテーマ
       setThemeColor: (color) => set({ themeColor: color }),
 
-      layoutDirection: 'TB',
+      layoutDirection: 'LR',
       setLayoutDirection: (dir) => set({ layoutDirection: dir }),
     }),
     {

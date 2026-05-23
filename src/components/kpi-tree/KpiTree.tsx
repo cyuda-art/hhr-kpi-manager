@@ -216,6 +216,13 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             rfInstance.setCenter(focusNode.position.x + 180, focusNode.position.y + 110, { zoom: 1.0, duration: 800 });
             return;
           }
+        } else {
+          // 新規追加ノードがない場合（初回ロード時など）はKGIにフォーカス
+          const kgiNode = layoutedNodes.find(n => n.data?.type === 'KGI' || !n.data?.parentId);
+          if (kgiNode) {
+            rfInstance.setCenter(kgiNode.position.x + 180, kgiNode.position.y + 110, { zoom: 0.9, duration: 800 });
+            return;
+          }
         }
         
         rfInstance.fitView({ padding: 0.2, duration: 800 });
@@ -230,7 +237,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   };
 
   const nodeCount = Object.keys(kpiData).length;
-  const previousNodeCountRef = useRef(nodeCount);
+  const previousNodeCountRef = useRef(0); // 初期値を0にして、初回マウント時に自動レイアウト＆フォーカスが発火するようにする
 
   useEffect(() => {
     if (nodeCount > previousNodeCountRef.current) {
