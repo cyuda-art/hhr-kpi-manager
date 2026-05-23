@@ -98,8 +98,8 @@ export default function KpiTreePage() {
         <AmbientSky />
       </div>
 
-      {/* 1.5. アンチグラビティ・パーティクル（マウスとKPIに反応する粒子） */}
-      <InteractiveParticles kpiStatus={selectedNodeId ? kpiData[selectedNodeId]?.status : undefined} />
+      {/* 一時的にパーティクル機能をオフにしています（後日実装予定） */}
+      {/* <InteractiveParticles kpiStatus={selectedNodeId ? kpiData[selectedNodeId]?.status : undefined} /> */}
 
       {/* 戻るボタン（フローティング） */}
       <button 
