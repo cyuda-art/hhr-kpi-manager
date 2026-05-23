@@ -164,17 +164,27 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   // Macro時はコンテナサイズを縮小せず（ReactFlowの再計算・カクツキを防止）、透明にして内部要素だけを中央に配置する
   const containerStyle = "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:bg-transparent [.kpi-tree-wrapper[data-zoom-view='macro']_&]:border-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:shadow-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:!ring-0 w-64 bg-white/40 dark:bg-black/30 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] hover:bg-white/50 dark:hover:bg-black/40";
 
+  // Z軸の奥行き計算（期間によって深度を変える）
+  const getZDepth = (depth: number) => {
+    if (currentPeriod === 'year') return 'translateZ(0px)';
+    if (currentPeriod === 'today') return `translateZ(${depth}px)`;
+    return `translateZ(${depth / 2}px)`; // 月次やQ次
+  };
+
   return (
-    <div className={cn(
-      "group transition-all duration-700 ease-out relative",
-      containerStyle,
-      isDimmed ? "opacity-30" : "opacity-100",
-      isSelected && getHighlightGlow(displayStatus, true),
-      !isSelected && isHighlighted && getHighlightGlow(displayStatus, false),
-      data.isKsf && "ring-1 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
-      isNew && "ring-2 ring-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.4)] z-50 animate-pulse",
-      isRecentlyUpdated && "ring-2 ring-amber-400/50 shadow-[0_0_30px_rgba(251,191,36,0.4)] z-[60] animate-pulse transition-all duration-1000 scale-105"
-    )}>
+    <div 
+      className={cn(
+        "group transition-all duration-700 ease-out relative",
+        containerStyle,
+        isDimmed ? "opacity-30" : "opacity-100",
+        isSelected && getHighlightGlow(displayStatus, true),
+        !isSelected && isHighlighted && getHighlightGlow(displayStatus, false),
+        data.isKsf && "ring-1 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
+        isNew && "ring-2 ring-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.4)] z-50 animate-pulse",
+        isRecentlyUpdated && "ring-2 ring-amber-400/50 shadow-[0_0_30px_rgba(251,191,36,0.4)] z-[60] animate-pulse transition-all duration-1000 scale-105"
+      )}
+      style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
+    >
       {/* 2. 内側から溢れるステータス・オーラ（Glowing Aura） */}
       <div className={cn("absolute pointer-events-none z-0 overflow-hidden", "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:rounded-full [.kpi-tree-wrapper[data-zoom-view='macro']_&]:left-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:top-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:-translate-x-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:-translate-y-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:w-14 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:h-14 inset-0 rounded-2xl")}>
         <div 
@@ -208,7 +218,10 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       </div>
 
       {/* MID & MICRO VIEW: メインコンテンツ */}
-      <div className="relative z-10 flex justify-between items-start mb-2 transition-opacity duration-500 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden">
+      <div 
+        className="relative z-10 flex justify-between items-start mb-2 transition-all duration-700 ease-out [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden"
+        style={{ transform: getZDepth(15) }}
+      >
         <div className="flex flex-col flex-1 min-w-0 pr-2">
           <div className="flex items-center gap-1.5 mb-2 flex-wrap font-poppins">
             <span className="text-[9px] font-bold text-strategic-teal uppercase tracking-widest">{data.businessUnit}</span>
@@ -272,7 +285,10 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       </div>
 
       {/* MICRO VIEW のみ: 詳細な数値と計算式 */}
-      <div className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-500 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden [.kpi-tree-wrapper[data-zoom-view='mid']_&]:hidden">
+      <div 
+        className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-700 ease-out [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden [.kpi-tree-wrapper[data-zoom-view='mid']_&]:hidden"
+        style={{ transform: getZDepth(30) }}
+      >
           <div className="flex justify-between text-[11px] items-center font-lato">
             <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
               {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}

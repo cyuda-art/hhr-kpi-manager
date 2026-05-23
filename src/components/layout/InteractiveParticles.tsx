@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
+import { useKpiStore } from '@/store/useKpiStore';
 
 interface Particle {
   x: number;
@@ -24,6 +25,27 @@ interface InteractiveParticlesProps {
 export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
+  const { currentPeriod } = useKpiStore();
+  const prevPeriodRef = useRef(currentPeriod);
+  
+  // ワープエフェクトの状態管理（0〜1、1が最大ワープ）
+  const warpStrengthRef = useRef(0);
+  const warpDirectionRef = useRef(1); // 1 = 画面手前へ迫る（ミクロへ）、-1 = 画面奥へ引っ込む（マクロへ）
+
+  useEffect(() => {
+    // 期間が変更された時にワープエフェクトをトリガー
+    if (prevPeriodRef.current !== currentPeriod) {
+      // 年間(year)は奥、今日(today)は手前、その他は中間の深さ
+      const getDepth = (p: string) => p === 'year' ? 0 : p === 'today' ? 2 : 1;
+      const prevDepth = getDepth(prevPeriodRef.current);
+      const currentDepth = getDepth(currentPeriod);
+      
+      warpDirectionRef.current = currentDepth > prevDepth ? 1 : -1;
+      warpStrengthRef.current = 1.0; // ワープ開始
+      
+      prevPeriodRef.current = currentPeriod;
+    }
+  }, [currentPeriod]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -131,6 +153,19 @@ export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) =
         p.y += Math.sin(p.angle) * p.speed + waveY + gravityY;
         p.angle += 0.01;
 
+        // --- ワープ効果（期間変更時） ---
+        if (warpStrengthRef.current > 0.01) {
+          const dxCenter = p.x - canvas.width / 2;
+          const dyCenter = p.y - canvas.height / 2;
+          const distFromCenter = Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
+          
+          // 中心からの距離に応じた放射状の力
+          const warpForce = warpStrengthRef.current * 15 * warpDirectionRef.current * (distFromCenter / 500);
+          
+          p.vx += (dxCenter / distFromCenter) * warpForce;
+          p.vy += (dyCenter / distFromCenter) * warpForce;
+        }
+
         const dx = mouse.x - p.x;
         const dy = mouse.y - p.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -171,9 +206,14 @@ export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) =
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
+        // ワープ強度を徐々に減衰
+        warpStrengthRef.current *= 0.9;
+
         // 描画（個々の粒子の発光を表現）
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        // ワープ中は粒子が手前に引き伸ばされる表現
+        const stretch = 1 + warpStrengthRef.current * 2;
+        ctx.arc(p.x, p.y, p.size * (warpDirectionRef.current > 0 ? stretch : 1), 0, Math.PI * 2);
         
         // Glowエフェクト（KPI選択中やマウス周辺で強く発光）
         const glowStrength = distance < mouse.radius ? (1 - distance/mouse.radius) : (kpiStatus ? 0.5 : 0.1);

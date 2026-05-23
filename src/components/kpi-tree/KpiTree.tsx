@@ -98,6 +98,27 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
   const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, undo, redo, pastStates, futureStates, currentPeriod, isAiGenerating } = useKpiStore();
+
+  // 期間変更時のダイブ（没入）トランジション状態
+  const [isDiving, setIsDiving] = useState(false);
+  const prevPeriodRef = useRef(currentPeriod);
+
+  useEffect(() => {
+    if (prevPeriodRef.current !== currentPeriod) {
+      setIsDiving(true);
+      const timer = setTimeout(() => setIsDiving(false), 400); // ワープアニメーション時間と同期
+      prevPeriodRef.current = currentPeriod;
+      return () => clearTimeout(timer);
+    }
+  }, [currentPeriod]);
+
+  // Z軸（奥行き）のスケール計算
+  const getDepthScale = () => {
+    if (currentPeriod === 'year') return 'scale-[0.92]'; // 一番奥（マクロ）
+    if (currentPeriod === 'today') return 'scale-[1.08]'; // 一番手前（ミクロ）
+    return 'scale-100'; // 中間（Qや月）
+  };
+
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection, showStatusLegend, toggleStatusLegend } = useLayoutStore();
   const currentProjectInfo = useKpiStore((state) => state.currentProjectInfo);
   const thresholds = currentProjectInfo?.statusThresholds || { good: 100, warning: 80 };
@@ -726,8 +747,12 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             )}
           </div>
         )}
-        <ReactFlow
-          nodes={nodes}
+        <div 
+          className={`absolute inset-0 transition-all duration-700 ease-out ${getDepthScale()} ${isDiving ? 'blur-[8px] opacity-80' : 'blur-0 opacity-100'}`}
+          style={{ transformOrigin: 'center center' }}
+        >
+          <ReactFlow
+            nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -802,14 +827,11 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 if (node.data?.status === 'good') return '#10b981';
                 return '#6366f1';
               }}
-              maskColor="rgba(0, 0, 0, 0.1)"
             />
           )}
         </ReactFlow>
+        </div>
       </div>
-
-
-
     </div>
   );
 };
