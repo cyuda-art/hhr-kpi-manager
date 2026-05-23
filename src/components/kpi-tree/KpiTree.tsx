@@ -497,7 +497,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
   return (
     <div className={`w-full h-full min-w-0 flex flex-col min-h-0 ${previewMode ? "fixed inset-0 z-50 m-0 p-0" : ""}`}>
-      <div className={`w-full h-full flex-1 min-w-0 min-h-0 bg-white dark:bg-[#2d2f31] overflow-hidden transition-colors relative ${isDashboard ? 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm' : ''} ${isAiGenerating ? 'ai-global-processing-border' : ''}`}>
+      <div className={`w-full h-full flex-1 min-w-0 min-h-0 bg-transparent overflow-hidden transition-colors relative ${isDashboard ? 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm' : ''} ${isAiGenerating ? 'ai-global-processing-border' : ''}`}>
         
         {/* AI生成中キャンバス内のオーロラエフェクト */}
         {isAiGenerating && (
