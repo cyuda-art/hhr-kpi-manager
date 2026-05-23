@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { KpiNodeWithComputed } from '@/types';
 import { useKpiStore } from '@/store/useKpiStore';
+import { useLayoutStore } from '@/store/useLayoutStore';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getDisplayValue, shouldScaleWithPeriod, formatDisplayValue } from '@/lib/kpi-utils';
@@ -14,11 +15,13 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 
 interface NodeProps {
   data: KpiNodeWithComputed & { hasChildren?: boolean; isCollapsed?: boolean };
-  targetPosition?: Position;
-  sourcePosition?: Position;
 }
 
-export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePosition = Position.Bottom }: NodeProps) => {
+export const KpiNodeComponent = ({ data }: NodeProps) => {
+  const layoutDirection = useLayoutStore((state) => state.layoutDirection);
+  const isHorizontal = layoutDirection === 'LR';
+  const targetPosition = isHorizontal ? Position.Right : Position.Bottom;
+  const sourcePosition = isHorizontal ? Position.Left : Position.Top;
   // getStatusBorder は不要になったため削除します
 
   const getStatusBg = (status: string) => {
@@ -208,7 +211,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
         />
       </div>
 
-      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none relative z-10 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-0 opacity-100" />
+      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none z-10 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-0 opacity-100" />
       
       {/* MACRO VIEW: 名前だけのミニマル表示 */}
       <div className="hidden [.kpi-tree-wrapper[data-zoom-view='macro']_&]:flex absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-8 whitespace-nowrap z-20 pointer-events-none">
@@ -320,7 +323,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           }}
           className={cn(
             "absolute w-5 h-5 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all z-20 shadow-sm [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden",
-            sourcePosition === Position.Right ? "-right-2.5 top-1/2 -translate-y-1/2" : "-bottom-2.5 left-1/2 -translate-x-1/2"
+            targetPosition === Position.Right ? "-right-2.5 top-1/2 -translate-y-1/2" : "-bottom-2.5 left-1/2 -translate-x-1/2"
           )}
         >
           {data.isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
@@ -342,7 +345,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           title="AIでさらに要素分解する"
           className={cn(
             "absolute w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-strategic-teal hover:bg-strategic-teal hover:text-white hover:border-strategic-teal transition-all z-20 shadow-sm group [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden",
-            sourcePosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
+            targetPosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
           )}
         >
           <Sparkles size={12} className="group-hover:animate-spin" />
