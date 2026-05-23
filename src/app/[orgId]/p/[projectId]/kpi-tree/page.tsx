@@ -90,7 +90,7 @@ export default function KpiTreePage() {
   };
 
   return (
-    <div ref={containerRef} className={`h-[calc(100vh-4rem)] flex overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
+    <div ref={containerRef} className={`h-[calc(100vh-4rem)] overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
       
       {/* 背景の呼吸するメッシュグラデーション（全画面） */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-100 dark:opacity-60">
@@ -107,44 +107,38 @@ export default function KpiTreePage() {
         )}
       </div>
 
-      {/* 左サイドバー：KPIエクスプローラー (グラスモーフィズム) */}
+      {/* メインエリア：KPIツリー (全画面キャンバス) */}
+      <div className="absolute inset-0 z-10 flex flex-col">
+        <KpiTree />
+      </div>
+
+      {/* 左サイドバー：KPIエクスプローラー (フローティング) */}
       <div 
         style={{ width: `${leftSidebarWidth}px` }} 
-        className="shrink-0 bg-white/40 dark:bg-black/40 backdrop-blur-2xl flex flex-col h-full overflow-hidden border-r border-white/50 dark:border-white/10 relative z-10 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]"
+        className="absolute top-4 bottom-4 left-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_16px_48px_rgba(0,0,0,0.16)] pointer-events-auto"
       >
         <KpiTreeExplorer />
       </div>
 
-      {/* 左リサイズ用境界線（スリット調） */}
+      {/* 左リサイズ用ハンドル */}
       <div 
+        style={{ left: `calc(1rem + ${leftSidebarWidth}px - 0.25rem)` }}
         onMouseDown={(e) => { e.preventDefault(); setIsLeftDragging(true); }}
-        className="w-2 -ml-1 cursor-col-resize shrink-0 z-20 flex justify-center items-center group relative"
+        className="absolute top-1/2 -translate-y-1/2 w-3 h-12 cursor-col-resize z-30 flex justify-center items-center group pointer-events-auto"
       >
-        <div className={`w-[2px] h-12 rounded-full transition-colors ${isLeftDragging ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-slate-300/50 dark:bg-slate-600/50 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)]'}`} />
+        <div className={`w-[3px] h-10 rounded-full transition-all ${isLeftDragging ? 'bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)] scale-y-110' : 'bg-white/50 dark:bg-white/20 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)] backdrop-blur-md border border-white/20'}`} />
       </div>
 
-      {/* メインエリア：KPIツリー (透明) */}
-      <div className="flex-1 bg-transparent flex flex-col min-w-0 h-full relative z-10">
-        <KpiTree />
-      </div>
-
-      {/* 右リサイズ用境界線（スリット調） */}
-      {!isActionPanelCollapsed && selectedNodeId ? (
-        <div 
-          onMouseDown={handleMouseDown}
-          className="w-2 -mr-1 cursor-col-resize shrink-0 z-20 flex justify-center items-center group relative"
-        >
-          <div className={`w-[2px] h-12 rounded-full transition-colors ${isDragging ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-slate-300/50 dark:bg-slate-600/50 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)]'}`} />
-        </div>
-      ) : null}
-
-      {/* 右サイドバー：アクションパネル (グラスモーフィズム) */}
+      {/* 右サイドバー：アクションパネル (フローティング) */}
       <div 
         style={{ 
-          width: (isActionPanelCollapsed || !selectedNodeId) ? '0px' : `${sidebarWidth}px`,
-          display: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'flex'
+          width: `${sidebarWidth}px`,
+          right: '1rem',
+          transform: (isActionPanelCollapsed || !selectedNodeId) ? 'translateX(120%)' : 'translateX(0)',
+          opacity: (isActionPanelCollapsed || !selectedNodeId) ? 0 : 1,
+          pointerEvents: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'auto'
         }} 
-        className="shrink-0 bg-white/40 dark:bg-black/40 backdrop-blur-2xl flex-col h-full overflow-hidden border-l border-white/50 dark:border-white/10 relative z-10 shadow-[-4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300"
+        className="absolute top-4 bottom-4 z-20 bg-white/40 dark:bg-black/40 backdrop-blur-3xl flex flex-col overflow-hidden border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden custom-scrollbar">
@@ -152,6 +146,17 @@ export default function KpiTreePage() {
           </div>
         </div>
       </div>
+
+      {/* 右リサイズ用ハンドル */}
+      {!isActionPanelCollapsed && selectedNodeId && (
+        <div 
+          style={{ right: `calc(1rem + ${sidebarWidth}px - 0.25rem)` }}
+          onMouseDown={handleMouseDown}
+          className="absolute top-1/2 -translate-y-1/2 w-3 h-12 cursor-col-resize z-30 flex justify-center items-center group pointer-events-auto transition-all duration-500"
+        >
+          <div className={`w-[3px] h-10 rounded-full transition-all ${isDragging ? 'bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)] scale-y-110' : 'bg-white/50 dark:bg-white/20 group-hover:bg-blue-400 group-hover:shadow-[0_0_8px_rgba(96,165,250,0.8)] backdrop-blur-md border border-white/20'}`} />
+        </div>
+      )}
     </div>
   );
 }
