@@ -61,6 +61,7 @@ export async function POST(
             warning: node.warning || null,
             positionX: node.position?.x ?? 0,
             positionY: node.position?.y ?? 0,
+            aggregationType: node.aggregationType || 'sum',
             parentId: null, // 後で設定
           },
           update: {
@@ -78,6 +79,7 @@ export async function POST(
             warning: node.warning || null,
             positionX: node.position?.x ?? 0,
             positionY: node.position?.y ?? 0,
+            aggregationType: node.aggregationType || 'sum',
           },
         });
       }
@@ -129,6 +131,43 @@ export async function POST(
           await tx.monthlyData.createMany({
             data: createData,
           });
+
+          // DailyRecordの生成 (Bulk Upsert)
+          // PostgreSQLの ON CONFLICT を利用して、既存の実績値(actualValue)を保護しつつ目標値(targetValue)を日割りで更新する
+          const dailyValues: string[] = [];
+          
+          for (const monthKey of Object.keys(node.monthlyData)) {
+            const md = node.monthlyData[monthKey];
+            const targetVal = md.targetValue || 0;
+            const [yearStr, monthStr] = monthKey.split('-');
+            const year = parseInt(yearStr);
+            const month = parseInt(monthStr);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const dailyTgt = targetVal / daysInMonth;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+              const dateStr = `${yearStr}-${monthStr}-${String(day).padStart(2, '0')}`;
+              // cuid を手動生成するのは面倒なので、PostgreSQL側の gen_random_uuid() を利用するか、
+              // prisma.$executeRawUnsafe で UUID を発行する。ここでは簡易的に c${Date.now()}${Math.random().toString(36).substr(2, 9)} 的なものを生成
+              const fakeId = `c${Date.now()}${Math.random().toString(36).substring(2, 10)}`;
+              dailyValues.push(`('${fakeId}', '${nodeId}', '${dateStr}'::date, ${dailyTgt}, 0, false)`);
+            }
+          }
+
+          if (dailyValues.length > 0) {
+            // chunking to prevent too large queries if needed (max 1000 params, but raw string has no param limit, though statement size matters)
+            const chunkSize = 1000;
+            for (let i = 0; i < dailyValues.length; i += chunkSize) {
+              const chunk = dailyValues.slice(i, i + chunkSize);
+              const query = `
+                INSERT INTO "DailyRecord" (id, "nodeId", date, "targetValue", "actualValue", "isApiSourced")
+                VALUES ${chunk.join(',')}
+                ON CONFLICT ("nodeId", date) DO UPDATE 
+                SET "targetValue" = EXCLUDED."targetValue";
+              `;
+              await tx.$executeRawUnsafe(query);
+            }
+          }
         }
       }
 

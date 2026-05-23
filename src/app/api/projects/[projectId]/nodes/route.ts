@@ -19,11 +19,13 @@ export async function GET(
       console.warn("Auto-migration failed in GET (columns might already exist):", e);
     }
 
-    // Prismaを利用して指定されたプロジェクトの全KPIノード、月次データ、およびタスクを取得
+    // Prismaを利用して指定されたプロジェクトの全KPIノード、日次データ、およびタスクを取得
     const nodesFromDb = await prisma.kpiNode.findMany({
       where: { projectId: projectId },
       include: {
-        monthlyData: true,
+        dailyRecords: {
+          orderBy: { date: 'asc' }
+        },
         tasks: true,
       },
     });
@@ -32,18 +34,49 @@ export async function GET(
     const actions: Action[] = [];
 
     for (const node of nodesFromDb) {
-      // monthlyDataをRecord形式に変換
+      // dailyRecordsから月次データ（monthlyDataMap）を動的に集計
       const monthlyDataMap: Record<string, ClientMonthlyData> = {};
-      node.monthlyData.forEach(md => {
-        // period: 202604 -> "2026-04"
-        const year = Math.floor(md.period / 100);
-        const monthNum = md.period % 100;
+      const aggType = node.aggregationType || 'sum';
+
+      // 1. レコードを月ごとにグループ化
+      const recordsByMonth: Record<string, { actuals: number[], targets: number[] }> = {};
+      
+      node.dailyRecords.forEach(dr => {
+        const d = new Date(dr.date);
+        const year = d.getUTCFullYear();
+        const monthNum = d.getUTCMonth() + 1;
         const monthStr = `${year}-${String(monthNum).padStart(2, '0')}`;
         
+        if (!recordsByMonth[monthStr]) {
+          recordsByMonth[monthStr] = { actuals: [], targets: [] };
+        }
+        recordsByMonth[monthStr].actuals.push(dr.actualValue);
+        recordsByMonth[monthStr].targets.push(dr.targetValue);
+      });
+
+      // 2. aggregationType に応じて集計
+      Object.keys(recordsByMonth).forEach(monthStr => {
+        const data = recordsByMonth[monthStr];
+        let aggActual = 0;
+        let aggTarget = 0;
+
+        if (data.actuals.length > 0) {
+          if (aggType === 'sum') {
+            aggActual = data.actuals.reduce((a, b) => a + b, 0);
+            aggTarget = data.targets.reduce((a, b) => a + b, 0);
+          } else if (aggType === 'average') {
+            aggActual = data.actuals.reduce((a, b) => a + b, 0) / data.actuals.length;
+            aggTarget = data.targets.reduce((a, b) => a + b, 0) / data.targets.length;
+          } else if (aggType === 'latest') {
+            aggActual = data.actuals[data.actuals.length - 1]; // orderBy date asc されている前提
+            aggTarget = data.targets[data.targets.length - 1];
+          }
+        }
+
         monthlyDataMap[monthStr] = {
           month: monthStr,
-          actualValue: md.actualValue,
-          targetValue: md.targetValue,
+          actualValue: aggActual,
+          targetValue: aggTarget,
         };
       });
 
@@ -61,6 +94,7 @@ export async function GET(
         description: node.description || '',
         isCalculated: node.isCalculated,
         formula: node.formula || '',
+        aggregationType: node.aggregationType || 'sum',
         warning: node.warning || undefined,
         simulatedValue: node.simulatedValue || undefined,
         simulatedTargetValue: node.simulatedTargetValue || undefined,

@@ -44,6 +44,7 @@ export interface KpiNodeData {
   addedAt?: number; // UI演出用の追加時刻タイムスタンプ
   monthlyData?: Record<string, MonthlyData>; // 月次データ（YYYY-MM形式をキーとする）
   chatMessages?: KpiChatMessage[]; // 対話型PDCA用のチャット履歴
+  aggregationType?: 'sum' | 'average' | 'latest'; // 日次データから月次/年次データへの集計方法
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース

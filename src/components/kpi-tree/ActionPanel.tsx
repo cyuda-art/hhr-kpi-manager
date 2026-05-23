@@ -63,6 +63,85 @@ export const ActionPanel = () => {
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
+  // Daily Record States
+  const [dailyRecords, setDailyRecords] = useState<any[]>([]);
+  const [quickDate, setQuickDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [quickActual, setQuickActual] = useState('');
+  const [quickComment, setQuickComment] = useState('');
+  const [isSavingDaily, setIsSavingDaily] = useState(false);
+  const [isDailyOpen, setIsDailyOpen] = useState(true);
+
+  const fetchDailyRecords = async () => {
+    if (selectedNodeId) {
+      try {
+        const res = await fetch(`/api/nodes/${selectedNodeId}/daily`);
+        const data = await res.json();
+        if (data.records) setDailyRecords(data.records);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchDailyRecords();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedNodeId]);
+
+  const handleQuickSave = async () => {
+    if (!selectedNodeId || !quickDate || !quickActual) return;
+    setIsSavingDaily(true);
+    try {
+      const res = await fetch(`/api/nodes/${selectedNodeId}/daily`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: quickDate,
+          actualValue: Number(quickActual),
+          comment: quickComment
+        })
+      });
+      if (res.ok) {
+        await fetchDailyRecords();
+        if (currentProjectId && currentOrgId) {
+           await useKpiStore.getState().initializeDB(currentProjectId, currentOrgId);
+        }
+        setQuickActual('');
+        setQuickComment('');
+      }
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setIsSavingDaily(false);
+    }
+  };
+
+  const handleEditHistory = (r: any) => {
+    setQuickDate(new Date(r.date).toISOString().split('T')[0]);
+    setQuickActual(r.actualValue.toString());
+    setQuickComment(r.comment || '');
+  };
+
+  const handleExportCSV = () => {
+    if (dailyRecords.length === 0) return;
+    const header = "Date,ActualValue,Comment\n";
+    const rows = dailyRecords.map(r => {
+      const d = new Date(r.date).toISOString().split('T')[0];
+      const comment = (r.comment || '').replace(/"/g, '""');
+      return `${d},${r.actualValue},"${comment}"`;
+    }).join('\n');
+    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${selectedKpi?.name || 'kpi'}_daily_records.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isReviveModalOpen, setIsReviveModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -350,6 +429,110 @@ export const ActionPanel = () => {
 
           {/* Scrollable Inspector Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+
+            {/* --- 0. Record (実績クイック入力) --- */}
+            <section className="bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+              <button 
+                onClick={() => setIsDailyOpen(!isDailyOpen)}
+                className="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <Edit2 size={14} className="text-primary-500"/> 実績クイック入力 (Daily)
+                </h3>
+                {isDailyOpen ? <ChevronDown size={14} className="text-slate-400"/> : <ChevronRight size={14} className="text-slate-400"/>}
+              </button>
+              
+              {isDailyOpen && (
+                <div className="p-4 space-y-4">
+                  {selectedKpi.isCalculated || !!selectedKpi.linkedSource ? (
+                    <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded text-center text-xs text-slate-500">
+                      {selectedKpi.isCalculated 
+                        ? 'この指標は子KPIから自動計算されるため、直接入力できません。' 
+                        : 'この指標は外部システムから自動同期されています。'}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2 items-end">
+                        <div className="space-y-1 w-1/3">
+                          <label className="text-[10px] font-bold text-slate-500">日付</label>
+                          <input 
+                            type="date" 
+                            value={quickDate}
+                            onChange={(e) => setQuickDate(e.target.value)}
+                            className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1 flex-1">
+                          <label className="text-[10px] font-bold text-slate-500">実績値 ({selectedKpi.unit})</label>
+                          <input 
+                            type="number" 
+                            value={quickActual}
+                            onChange={(e) => setQuickActual(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleQuickSave()}
+                            placeholder="例: 1500"
+                            className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 items-end">
+                        <div className="space-y-1 flex-1">
+                          <label className="text-[10px] font-bold text-slate-500">要因・メモ (任意)</label>
+                          <input 
+                            type="text" 
+                            value={quickComment}
+                            onChange={(e) => setQuickComment(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleQuickSave()}
+                            placeholder="キャンペーンが好調など"
+                            className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
+                          />
+                        </div>
+                        <button 
+                          onClick={handleQuickSave}
+                          disabled={!quickActual || isSavingDaily}
+                          className="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white text-xs font-bold px-4 py-1.5 rounded h-[28px] shrink-0 transition-colors"
+                        >
+                          {isSavingDaily ? <Loader2 size={14} className="animate-spin" /> : '保存'}
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-[10px] font-bold text-slate-400">直近の入力履歴</h4>
+                      <button 
+                        onClick={handleExportCSV}
+                        className="text-[10px] text-primary-500 hover:text-primary-600 flex items-center gap-1"
+                      >
+                        CSV出力
+                      </button>
+                    </div>
+                    {dailyRecords.length === 0 ? (
+                      <p className="text-[10px] text-slate-400">履歴はありません</p>
+                    ) : (
+                      <div className="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
+                        {dailyRecords.map((r, i) => (
+                          <div 
+                            key={i} 
+                            onClick={() => handleEditHistory(r)}
+                            className="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded px-2 py-1.5 cursor-pointer hover:border-primary-300 transition-colors"
+                            title="クリックして編集"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-slate-500">{new Date(r.date).toISOString().split('T')[0]}</span>
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{r.actualValue.toLocaleString()}</span>
+                            </div>
+                            {r.comment && (
+                              <span className="text-[10px] text-slate-400 truncate max-w-[100px] ml-2" title={r.comment}>{r.comment}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
             
             {/* --- 1. Plan (計画) --- */}
             <section className="bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
