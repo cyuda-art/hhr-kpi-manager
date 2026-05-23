@@ -87,8 +87,8 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
         id: `e-${data.parentId}-${id}`,
         source: data.parentId,
         target: id,
-        animated: false,
-        style: { stroke: '#cbd5e1', strokeWidth: 2 },
+        animated: true, // データの流れを表現するアニメーション
+        style: { stroke: 'rgba(148, 163, 184, 0.5)', strokeWidth: 2 },
       });
     }
   });

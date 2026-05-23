@@ -19,14 +19,7 @@ interface NodeProps {
 }
 
 export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePosition = Position.Bottom }: NodeProps) => {
-  const getStatusBorder = (status: string) => {
-    switch (status) {
-      case 'good': return 'border-strategic-teal/60';
-      case 'warning': return 'border-amber-500/60';
-      case 'danger': return 'border-red-600/60';
-      default: return 'border-slate-300';
-    }
-  };
+  // getStatusBorder は不要になったため削除します
 
   const getStatusBg = (status: string) => {
     switch (status) {
@@ -40,16 +33,16 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
   const getHighlightGlow = (status: string, isSelectedNode: boolean = false) => {
     if (isSelectedNode) {
       switch (status) {
-        case 'good': return "ring-4 ring-strategic-teal border-strategic-teal shadow-[0_0_20px_rgba(0,163,161,0.6)] z-30 scale-105";
-        case 'warning': return "ring-4 ring-amber-500 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.6)] z-30 scale-105";
-        case 'danger': return "ring-4 ring-red-600 border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.6)] z-30 scale-105";
-        default: return "ring-4 ring-slate-400 border-slate-400 shadow-md z-30 scale-105";
+        case 'good': return "ring-2 ring-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.4)] z-30 scale-105 bg-white/60 dark:bg-black/50";
+        case 'warning': return "ring-2 ring-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.4)] z-30 scale-105 bg-white/60 dark:bg-black/50";
+        case 'danger': return "ring-2 ring-rose-500 shadow-[0_0_30px_rgba(244,63,94,0.4)] z-30 scale-105 bg-white/60 dark:bg-black/50";
+        default: return "ring-2 ring-blue-400 shadow-[0_0_30px_rgba(96,165,250,0.4)] z-30 scale-105 bg-white/60 dark:bg-black/50";
       }
     } else {
       switch (status) {
-        case 'good': return "ring-2 ring-strategic-teal/50 shadow-[0_0_15px_rgba(0,163,161,0.35)] border-strategic-teal/50 z-20";
-        case 'warning': return "ring-2 ring-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.35)] border-amber-500/50 z-20";
-        case 'danger': return "ring-2 ring-red-600/50 shadow-[0_0_15px_rgba(220,38,38,0.35)] border-red-600/50 z-20";
+        case 'good': return "ring-1 ring-emerald-400/50 shadow-[0_0_20px_rgba(52,211,153,0.2)] z-20";
+        case 'warning': return "ring-1 ring-amber-400/50 shadow-[0_0_20px_rgba(251,191,36,0.2)] z-20";
+        case 'danger': return "ring-1 ring-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.2)] z-20";
         default: return "";
       }
     }
@@ -170,24 +163,31 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   return (
     <div className={cn(
-      "w-64 bg-white dark:bg-slate-800 rounded-lg dark:border-slate-700 shadow-sm border p-4 transition-all duration-300 relative",
-      isDimmed ? "opacity-30" : "opacity-100", // Dim nodes outside the highlighted path
-      getStatusBorder(displayStatus),
-      isAlert ? "bg-red-50/50 border-red-600" : "",
+      "group w-64 bg-white/40 dark:bg-black/30 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-5 transition-all duration-500 ease-out relative hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] hover:bg-white/50 dark:hover:bg-black/40",
+      isDimmed ? "opacity-30" : "opacity-100",
       isSelected && getHighlightGlow(displayStatus, true),
       !isSelected && isHighlighted && getHighlightGlow(displayStatus, false),
-      data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20",
-      isNew && "ring-4 ring-strategic-teal/50 shadow-[0_0_20px_rgba(0,163,161,0.6)] z-50 animate-pulse",
-      isRecentlyUpdated && "ring-4 ring-amber-400 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.8)] z-[60] animate-pulse transition-all duration-1000 scale-105 bg-gradient-to-br from-white to-amber-50"
+      data.isKsf && "ring-1 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
+      isNew && "ring-2 ring-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.4)] z-50 animate-pulse",
+      isRecentlyUpdated && "ring-2 ring-amber-400/50 shadow-[0_0_30px_rgba(251,191,36,0.4)] z-[60] animate-pulse transition-all duration-1000 scale-105"
     )}>
-      {/* Background Progress Bar Wrapper (Refined Gradient) */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-lg">
+      {/* 2. 内側から溢れるステータス・オーラ（Glowing Aura） */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-2xl">
         <div 
           className={cn(
-            "absolute top-0 left-0 h-full opacity-10 transition-all duration-1000 ease-out",
-            displayStatus === 'good' ? "bg-gradient-to-r from-strategic-teal to-strategic-teal/60" :
-            displayStatus === 'warning' ? "bg-gradient-to-r from-amber-500 to-amber-400" :
-            "bg-gradient-to-r from-red-600 to-red-400"
+            "absolute -inset-4 blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-700 ease-in-out",
+            displayStatus === 'good' ? "bg-gradient-to-br from-emerald-400/40 via-teal-400/20 to-transparent" :
+            displayStatus === 'warning' ? "bg-gradient-to-br from-amber-400/40 via-orange-400/20 to-transparent" :
+            "bg-gradient-to-br from-rose-500/40 via-red-500/20 to-transparent"
+          )}
+        />
+        {/* プログレスバーの代わりの極細の光るライン */}
+        <div 
+          className={cn(
+            "absolute bottom-0 left-0 h-[2px] transition-all duration-1000 ease-out opacity-80",
+            displayStatus === 'good' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" :
+            displayStatus === 'warning' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" :
+            "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
           )}
           style={{ width: `${Math.min(100, Math.max(0, displayAchievementRate))}%` }}
         />
@@ -289,8 +289,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
             toggleNodeCollapse(data.id);
           }}
           className={cn(
-            "absolute w-5 h-5 bg-white border rounded-full flex items-center justify-center text-logic-slate dark:text-slate-300 hover:text-oxford-navy dark:text-slate-100 hover:border-oxford-navy transition-all z-20 shadow-sm",
-            getStatusBorder(displayStatus),
+            "absolute w-5 h-5 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all z-20 shadow-sm",
             sourcePosition === Position.Right ? "-right-2.5 top-1/2 -translate-y-1/2" : "-bottom-2.5 left-1/2 -translate-x-1/2"
           )}
         >
