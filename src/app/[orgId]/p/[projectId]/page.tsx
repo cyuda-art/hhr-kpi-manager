@@ -338,62 +338,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* DEBUG: 月次データ再生成ボタン */}
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-xl">
-            <h3 className="text-[13px] font-bold text-amber-800 dark:text-amber-400 mb-2">デバッグ・ツール</h3>
-            <button
-              onClick={() => {
-                if (!confirm('全ての指標の月次データ（monthlyData）を再生成し、ツリー全体を再計算します。よろしいですか？')) return;
-                const draft = { ...kpiData };
-                const allMonths = [
-                  "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
-                  "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
-                ];
-                Object.values(draft).forEach(node => {
-                  const isPercentage = node.unit === '%' || node.unit === '％';
-                  const monthlyData: any = {};
-                  allMonths.forEach(m => {
-                    monthlyData[m] = {
-                      targetValue: isPercentage ? (node.targetValue || 0) : ((node.targetValue || 0) / 12),
-                      actualValue: 0
-                    };
-                  });
-                  
-                  // Extract end-of-month cumulative values from history
-                  if (node.history && Array.isArray(node.history)) {
-                    const sortedHistory = [...node.history].sort((a, b) => a.date.localeCompare(b.date));
-                    const endOfMonthValues: Record<string, number> = {};
-                    sortedHistory.forEach(record => {
-                      const m = record.date.substring(0, 7);
-                      endOfMonthValues[m] = record.actualValue; // will overwrite, leaving the last day's value
-                    });
-                    
-                    let previousCumValue = 0;
-                    allMonths.forEach(m => {
-                      if (endOfMonthValues[m] !== undefined) {
-                        const cumValue = endOfMonthValues[m];
-                        if (isPercentage) {
-                          monthlyData[m].actualValue = cumValue;
-                        } else {
-                          monthlyData[m].actualValue = Math.max(0, cumValue - previousCumValue);
-                        }
-                        previousCumValue = cumValue;
-                      }
-                    });
-                  }
-                  draft[node.id] = { ...node, monthlyData };
-                });
-                
-                useKpiStore.setState({ kpiData: draft });
-                useKpiStore.getState().recalculateAllMonthsAction();
-                
-                alert('月次データの再生成とツリー全体の再計算が完了しました！グラフが正常化されたか確認してください。');
-              }}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-bold py-2 rounded"
-            >
-              全データ再計算＆バグ修正ツール
-            </button>
-          </div>
+
 
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
             <h3 className="font-bold text-[14px] mb-4 flex items-center gap-1.5 text-slate-800 dark:text-[#e8eaed]">

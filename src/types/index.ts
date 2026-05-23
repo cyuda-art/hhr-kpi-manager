@@ -44,15 +44,15 @@ export interface KpiNodeData {
   addedAt?: number; // UI演出用の追加時刻タイムスタンプ
   monthlyData?: Record<string, MonthlyData>; // 月次データ（YYYY-MM形式をキーとする）
   chatMessages?: KpiChatMessage[]; // 対話型PDCA用のチャット履歴
+  simulatedValue?: number; // シミュレーションモード中の仮想実績値
+  simulatedTargetValue?: number; // シミュレーションモード中の仮想目標値
+  isSimulated?: boolean;
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース
 export interface KpiNodeWithComputed extends KpiNodeData {
   achievementRate: number;
   status: Status;
-  isSimulated?: boolean;
-  simulatedValue?: number; // シミュレーションモード中の仮想実績値
-  simulatedTargetValue?: number; // シミュレーションモード中の仮想目標値
   simulatedAchievementRate?: number; // シミュレーションモード中の仮想達成率
   simulatedStatus?: Status; // シミュレーションモード中の仮想ステータス
 }
@@ -76,6 +76,7 @@ export interface Action {
   isAiAgentTask?: boolean; // 人間ではなくAIエージェントが実行するか
   agentStatus?: 'PENDING' | 'EXECUTING' | 'SUCCESS' | 'FAILED';
   agentLog?: string; // ターミナルログ
+  createdAt?: number;
 }
 
 export interface ProjectInfo {
@@ -127,11 +128,12 @@ export interface AuditLog {
   userId: string;
   userName: string;
   timestamp: number;
-  action: 'UPDATE_VALUE' | 'COMPLETE_TODO' | 'ADD_TODO' | 'OTHER';
+  action: 'UPDATE_VALUE' | 'COMPLETE_TODO' | 'ADD_TODO' | 'DELETE_TODO' | 'OTHER';
   previousValue?: number | string;
   newValue?: number | string;
   actionId?: string; // 関連するToDoのID
   evidenceText?: string; // チャット内容や変更理由などの証拠
+  details?: string; // その他の詳細情報（JSON等）
   source: 'user_chat' | 'manual_edit' | 'ai_automation';
 }
 

@@ -1,0 +1,38 @@
+# KPI Manager - Project Status & AI Instructions
+
+このファイルは、AIアシスタントが毎日のセッション開始時にプロジェクトの全体像、現在の進捗、および優先事項を瞬時に把握するためのドキュメントです。
+AIはこのファイルを読み込むことで、過去の文脈を失わずにシームレスに開発を再開できます。
+
+## 1. プロジェクト概要 (Project Overview)
+* **アプリ名称**: KPI Manager (kpi-tree-app)
+* **主な機能**: KPIツリーの構築・シミュレーション、KSF（アクション）の管理、ダッシュボードでの進捗可視化、ローリング・フォーキャスト
+* **技術スタック**: Next.js (App Router), TypeScript, Tailwind CSS, Zustand, Recharts, Stripe (Mock), Google Generative AI (Gemini)
+
+## 2. 現在の最優先目標 (Current Top Priority)
+**「Vercelの本番環境（Production）への正常なデプロイを再開させること」**
+* ユーザーは常に本番環境のアップデートを想定しています。
+* 現在、コードベース内に深刻なTypeScriptエラーが存在するため、Vercelのビルド（`npm run build`）が失敗し、Pushしても本番環境が更新されない状態に陥っています。
+* **直近のアクション**: `npx tsc --noEmit` で発生している型エラー（主に `useKpiStore` や `KpiTree` 周辺）を全て解消すること。
+
+## 3. 既知の問題・未完了タスク (Known Issues / Pending Tasks)
+* **🚨 重大なビルドエラー (Type Errors)**:
+  * `useKpiStore.ts`: `KpiStore` 型に存在しない `isPredictionMode` へのアクセスエラー、`fetchAuditLogs` 等の `any` 型エラー。
+  * `useLayoutStore.ts`: 型定義に存在しない `showMiniMap` プロパティの使用。
+  * `KpiTree.tsx`, `SimulationPanel.tsx`: `unknown` や `any` による型エラー。
+* **🚧 仮実装（Mock）の残存**:
+  * 組織（Organization）やプロジェクト（Project）のデータ保存が `localStorage` に依存している（`hhr_mock_orgs` など）。
+  * Stripe決済処理がモック実装（`price_starter_mock` など）のまま。
+  * 一部のAI処理APIで `dummy_key` がフォールバックとして使われている。
+
+## 4. AIへの絶対の指示事項 (AI Core Instructions)
+新しく会話をスタートする際、AIアシスタントは以下のルールを必ず守ってください。
+
+1. **常に本番デプロイ（Vercel）を意識する**
+   * コードを変更する際は、必ず型エラー（TypeScript）やLintエラーが出ないように実装し、「ビルドが通る状態」を維持してください。
+2. **モックから本番仕様への移行を念頭に置く**
+   * 現在の仮実装（ローカルストレージやダミーボタン）は、いずれ正規のデータベース通信に置き換える必要があります。仕様を追加・変更する際はこの前提を考慮してください。
+3. **会話リセット時の確認**
+   * 新しいセッションが始まったら、まずこの `PROJECT_STATUS.md` の内容を踏まえ、「現在はVercelのビルドエラー解消（または次の目標）に向けて作業中ですね」と文脈を共有してから作業に入ってください。
+
+---
+*最終更新: 2026年5月*

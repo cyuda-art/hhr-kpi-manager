@@ -19,6 +19,7 @@ interface KpiStore {
   currentOrgId: string | null;
   currentProjectInfo: import('@/types').ProjectInfo | null;
   currentPeriod: string;
+  isPredictionMode: boolean;
   isCopilotSidebarOpen: boolean;
   setIsCopilotSidebarOpen: (isOpen: boolean) => void;
   isAiGenerating: boolean;
@@ -426,6 +427,7 @@ export const useKpiStore = create<KpiStore>()(
       })),
       recentlyUpdatedNodes: [],
       setRecentlyUpdatedNodes: (nodes) => set({ recentlyUpdatedNodes: nodes }),
+      reviveKpiNode: (id, newParentId) => {},
       pastStates: [],
       futureStates: [],
 
@@ -1098,7 +1100,7 @@ export const useKpiStore = create<KpiStore>()(
   }),
 
   expandKpiNode: async (kpiId: string) => {
-    const state = useKpiStore.getState();
+    const state = get();
     const parentNode = state.kpiData[kpiId];
     if (!parentNode) return;
 
@@ -1114,7 +1116,7 @@ export const useKpiStore = create<KpiStore>()(
       const { nodes, parentFormula } = await res.json();
       if (!nodes || nodes.length === 0) return;
 
-      useKpiStore.setState((currentState) => {
+      set((currentState: KpiStore) => {
         currentState.saveHistory();
         const draft = { ...currentState.kpiData };
         let newActions = [...currentState.actions];
@@ -1190,7 +1192,7 @@ export const useKpiStore = create<KpiStore>()(
         throw new Error('Invalid patch format received from AI');
       }
 
-      useKpiStore.setState((currentState) => {
+      set((currentState: KpiStore) => {
         currentState.saveHistory();
         const draft = { ...currentState.kpiData };
         const newActions = [...currentState.actions];
@@ -1329,7 +1331,7 @@ export const useKpiStore = create<KpiStore>()(
 
   smartAddKpi: async (query: string) => {
     try {
-      const state = useKpiStore.getState();
+      const state = get();
       const nodesArray = Object.values(state.kpiData);
       
       const response = await fetch('/api/smart-add-kpi', {
@@ -1355,7 +1357,7 @@ export const useKpiStore = create<KpiStore>()(
   },
   
   addAuditLog: async (log) => {
-    const state = useKpiStore.getState();
+    const state = get();
     if (!state.currentProjectId || !state.currentOrgId) return;
     try {
       await fetch(`/api/projects/${state.currentProjectId}/audit-logs`, {
@@ -1374,7 +1376,7 @@ export const useKpiStore = create<KpiStore>()(
   },
 
   fetchAuditLogs: async (kpiId: string) => {
-    const state = useKpiStore.getState();
+    const state = get();
     if (!state.currentProjectId || !state.currentOrgId) return [];
     try {
       const res = await fetch(`/api/projects/${state.currentProjectId}/audit-logs`);
@@ -1402,7 +1404,7 @@ export const useKpiStore = create<KpiStore>()(
     }
   },
 
-  addChatMessage: (kpiId, message) => {
+  addChatMessage: (kpiId: string, message: Omit<import('@/types').KpiChatMessage, 'id' | 'timestamp'>) => {
     set((state) => {
       const draft = { ...state.kpiData };
       if (!draft[kpiId]) return state;

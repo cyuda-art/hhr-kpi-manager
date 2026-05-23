@@ -6,8 +6,10 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { OrgLayout } from '@/components/layout/OrgLayout';
-import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical, Sparkles, Upload, X } from 'lucide-react';
+import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical, Sparkles, Upload, X, Loader2 } from 'lucide-react';
 import { AiLoadingOverlay } from '@/components/ui/AiLoadingOverlay';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -363,6 +365,7 @@ export default function WorkspacePage() {
       data.nodes = nodes;
 
       // AIからの返答に mappedSourceId があれば linkedSource に変換する
+      const archivedKpis: any[] = [];
       if (data.nodes && Array.isArray(data.nodes)) {
         data.nodes = data.nodes.map((node: any) => {
           if (node.mappedSourceId) {

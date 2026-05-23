@@ -154,7 +154,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       // 2. 新しいプロジェクトを複製名で作成
       const newProjectId = await get().createProject(
         `${original.name} のコピー`,
-        original.description,
+        original.description || '',
         userId,
         orgId
       );

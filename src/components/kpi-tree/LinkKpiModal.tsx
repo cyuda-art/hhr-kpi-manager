@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useKpiStore } from '@/store/useKpiStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useAuthStore } from '@/store/useAuthStore';
 import { X, Link2, Search, Target, BarChart2 } from 'lucide-react';
 import { formatDisplayValue } from '@/lib/kpi-utils';
 

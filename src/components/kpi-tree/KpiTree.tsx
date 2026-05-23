@@ -317,7 +317,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           return {
             ...node,
             // 基本はDB座標を最優先する。DBに座標がない（0,0）場合はReact Flow側（Dagre等）の座標を使う
-            position: node.dragging ? node.position : (hasValidDbPosition ? kpiNode.position : node.position),
+            position: node.dragging ? node.position : (hasValidDbPosition && kpiNode.position ? kpiNode.position : node.position),
             hidden,
             targetPosition: (isHorizontal ? 'left' : 'top') as any,
             sourcePosition: (isHorizontal ? 'right' : 'bottom') as any,

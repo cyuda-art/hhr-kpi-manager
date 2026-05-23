@@ -12,6 +12,7 @@ interface LayoutStore {
   toggleSidebar: () => void;
   setActionPanelWidth: (width: number) => void;
   toggleActionPanel: () => void;
+  showMiniMap: boolean;
   toggleMiniMap: () => void;
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
