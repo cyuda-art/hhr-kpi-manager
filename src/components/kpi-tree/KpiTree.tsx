@@ -616,7 +616,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
         {/* 凡例（Legend） */}
         {!previewMode && (
-          <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2">
+          <div className="absolute bottom-[140px] left-4 z-10 flex flex-col-reverse items-start gap-2">
             <button
               onClick={toggleStatusLegend}
               className="flex items-center justify-center gap-1.5 w-fit px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors backdrop-blur-md"
@@ -626,7 +626,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
             </button>
             
             {showStatusLegend && (
-          <div className="absolute bottom-4 left-4 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg text-[10px] sm:text-xs min-w-[200px]">
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-lg text-[10px] sm:text-xs min-w-[200px]">
             <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2.5 border-b border-slate-100 dark:border-slate-800 pb-1.5 flex items-center justify-between">
               <span>ステータスと線の意味</span>
               <span className="text-[9px] font-normal text-slate-400">達成率</span>
