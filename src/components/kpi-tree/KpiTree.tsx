@@ -504,9 +504,16 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
     });
   }, [kpiData, setNodes, setEdges, collapsedNodes, selectedNodeId]);
 
+  const prevSelectedNodeIdRef = useRef<string | null>(null);
+  const prevAutoCenterRef = useRef<boolean>(autoCenter);
+
   // 選択されたノードが変更されたらセンタリングするアニメーション
   useEffect(() => {
-    if (autoCenter && selectedNodeId && rfInstance) {
+    const shouldCenter = 
+      (autoCenter && selectedNodeId !== prevSelectedNodeIdRef.current) || 
+      (autoCenter && !prevAutoCenterRef.current && selectedNodeId);
+
+    if (shouldCenter && selectedNodeId && rfInstance) {
       const node = nodes.find(n => n.id === selectedNodeId);
       if (node) {
         // ノードの中心座標を計算してセンタリング
@@ -515,6 +522,9 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         rfInstance.setCenter(x, y, { zoom: 1.1, duration: 800 });
       }
     }
+
+    prevSelectedNodeIdRef.current = selectedNodeId;
+    prevAutoCenterRef.current = autoCenter;
   }, [selectedNodeId, rfInstance, nodes, autoCenter]);
 
   return (
