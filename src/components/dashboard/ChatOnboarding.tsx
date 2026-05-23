@@ -15,12 +15,8 @@ type ChatOnboardingProps = {
 
 const STEP_DEFINITIONS = [
   { step: 1, key: 'vision', name: 'VISION（究極の目的）' },
-  { step: 2, key: 'mission', name: 'MISSION（価値観・使命）' },
-  { step: 3, key: 'manifesto', name: 'MANIFESTO（作戦）' },
-  { step: 4, key: 'goal', name: 'GOAL（定性ゴール）' },
-  { step: 5, key: 'kgi', name: 'KGI（定量目標）' },
-  { step: 6, key: 'ksf', name: 'KSF（重要成功要因）' },
-  { step: 7, key: 'kpi', name: 'KPI（行動指標）' }
+  { step: 2, key: 'goal', name: 'GOAL（目指す状態）' },
+  { step: 3, key: 'kgi', name: 'KGI（定量目標）' }
 ];
 
 export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
@@ -29,7 +25,7 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'assistant', 
-      content: `こんにちは、${user?.displayName || 'ゲスト'}さん！\nこれから一緒に、あなたの目標達成に向けた「戦略ツリー」を作っていきましょう。\n\nまずは【Step 1: VISION】からです。\nあなたが最終的に成し遂げたいこと、究極の目的は何ですか？\n下の提案から選ぶか、自由にテキストで教えてください！`,
+      content: `こんにちは、${user?.displayName || 'ゲスト'}さん！\nあなたの「意志」をAIが形にします。まずは【Step 1: VISION】です。\n\nあなたが最終的に成し遂げたいこと、究極の目的は何ですか？\n下の提案から選ぶか、自由にテキストで教えてください！`,
       suggestions: ['個人のスキルアップ・キャリア形成', '会社の売上拡大・事業成長', '健康的な肉体改造・ダイエット', '全く新しいプロジェクトの立ち上げ']
     }
   ]);
@@ -54,7 +50,6 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
 
     setInput('');
     setMessages(prev => {
-      // ユーザーが送信したら、直前のサジェストチップは非表示にする（履歴として残さない）
       const newPrev = [...prev];
       if (newPrev.length > 0 && newPrev[newPrev.length - 1].role === 'assistant') {
         newPrev[newPrev.length - 1] = { ...newPrev[newPrev.length - 1], suggestions: undefined };
@@ -84,18 +79,17 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
           const newCollectedData = { ...collectedData, [currentKey]: data.extractedValue };
           setCollectedData(newCollectedData);
           
-          if (step < 7) {
+          if (step < 3) {
             setStep(s => s + 1);
             setMessages(prev => [...prev, { role: 'assistant', content: data.reply, suggestions: data.suggestions }]);
           } else {
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply + '\n\nすべてのヒヤリングが完了しました！これより、あなたの回答をもとにKPIツリーを自動構築します...' }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: data.reply + '\n\n【ヒヤリング完了】\nお疲れ様でした！いただいた情熱をもとに、現状を打破する作戦（MANIFESTO）と、それを達成するためのKSF・KPIをAIが全自動で論理分解します！\n数秒お待ちください...' }]);
             setTimeout(() => {
               onComplete(newCollectedData);
             }, 2000);
           }
         }
       } else {
-        // Not complete, keep at same step
         setMessages(prev => [...prev, { role: 'assistant', content: data.reply, suggestions: data.suggestions }]);
       }
     } catch (error) {
@@ -117,18 +111,18 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="text-[18px] font-bold text-slate-900 dark:text-[#f1f3f4]">目標設定（ハイブリッドAI）</h2>
+              <h2 className="text-[18px] font-bold text-slate-900 dark:text-[#f1f3f4]">目標設定（KGIから全自動生成）</h2>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex gap-1">
                   {STEP_DEFINITIONS.map(s => (
                     <div 
                       key={s.step} 
-                      className={`h-1.5 w-6 rounded-full transition-colors ${s.step < step ? 'bg-strategic-teal dark:bg-[#8ab4f8]' : s.step === step ? 'bg-strategic-teal/50 dark:bg-[#8ab4f8]/50 animate-pulse' : 'bg-slate-200 dark:bg-[#3c4043]'}`}
+                      className={`h-1.5 w-8 rounded-full transition-colors ${s.step < step ? 'bg-strategic-teal dark:bg-[#8ab4f8]' : s.step === step ? 'bg-strategic-teal/50 dark:bg-[#8ab4f8]/50 animate-pulse' : 'bg-slate-200 dark:bg-[#3c4043]'}`}
                     />
                   ))}
                 </div>
                 <span className="text-[12px] text-slate-500 dark:text-[#9aa0a6] font-medium ml-2">
-                  Step {step}/7: {STEP_DEFINITIONS.find(s => s.step === step)?.name}
+                  Step {step}/3: {STEP_DEFINITIONS.find(s => s.step === step)?.name}
                 </span>
               </div>
             </div>
@@ -151,7 +145,6 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
                 </div>
               </div>
               
-              {/* Suggestion Chips */}
               {msg.suggestions && msg.suggestions.length > 0 && !isTyping && (
                 <div className="flex flex-wrap gap-2 ml-12 animate-in fade-in slide-in-from-bottom-2 delay-150">
                   {msg.suggestions.map((sug, sIdx) => (
@@ -189,13 +182,13 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={isTyping || step > 7}
+              disabled={isTyping || step > 3}
               placeholder="自分の言葉で回答する場合はここに入力..."
               className="w-full pl-4 pr-14 py-4 bg-slate-50 dark:bg-[#202124] border border-slate-300 dark:border-[#5f6368] text-slate-900 dark:text-[#f1f3f4] rounded-full focus:outline-none focus:border-strategic-teal dark:focus:border-[#8ab4f8] focus:ring-1 focus:ring-strategic-teal dark:focus:ring-[#8ab4f8] transition-all disabled:opacity-50"
             />
             <button
               type="submit"
-              disabled={!input.trim() || isTyping || step > 7}
+              disabled={!input.trim() || isTyping || step > 3}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center bg-strategic-teal text-white hover:bg-strategic-teal/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <Send size={18} className="ml-1" />
@@ -203,11 +196,8 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
           </form>
           <div className="mt-3 flex flex-wrap gap-2 justify-center">
             {collectedData.vision && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> VISION</div>}
-            {collectedData.mission && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> MISSION</div>}
-            {collectedData.manifesto && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> MANIFESTO</div>}
             {collectedData.goal && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> GOAL</div>}
             {collectedData.kgi && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> KGI</div>}
-            {collectedData.ksf && <div className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-[#3c4043] text-slate-600 dark:text-[#9aa0a6] rounded-full flex items-center gap-1"><CheckCircle2 size={12} className="text-emerald-500"/> KSF</div>}
           </div>
         </div>
 

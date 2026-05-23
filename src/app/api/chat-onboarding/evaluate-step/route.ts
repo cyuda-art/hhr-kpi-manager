@@ -7,12 +7,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy_key');
 
 const STEP_INSTRUCTIONS: Record<number, { name: string, desc: string, target: string }> = {
   1: { name: 'VISION', desc: 'ユーザーが最終的に成し遂げたい究極の目的・夢・ビジョン。', target: 'VISIONの言語化' },
-  2: { name: 'MISSION', desc: 'VISIONを達成するために大切にしたい価値観や果たすべき使命。', target: 'MISSIONの言語化' },
-  3: { name: 'MANIFESTO', desc: '現状を打破するための具体的な作戦・方針。', target: 'MANIFESTOの言語化' },
-  4: { name: 'GOAL', desc: '作戦が成功した状態を示す定性的なゴール。', target: '定性的なGOALの決定' },
-  5: { name: 'KGI', desc: 'ゴールを客観的に測る最終数値目標（売上◯◯円、体重◯◯kgなど）。', target: '定量的なKGIの決定' },
-  6: { name: 'KSF', desc: 'KGIを達成するために絶対に外せない重要成功要因（キーファクター）。', target: 'KSFの洗い出し' },
-  7: { name: 'KPI', desc: 'KSFに紐づく具体的な行動指標（KPI）。', target: 'KPIの決定' }
+  2: { name: 'GOAL', desc: 'VISIONに向けて、直近で目指す定性的なゴールや状態。', target: '定性的なGOALの決定' },
+  3: { name: 'KGI', desc: 'ゴールを客観的に測る具体的な数値目標（売上◯◯円、体重◯◯kgなど）と期限。', target: '定量的なKGIの決定' }
 };
 
 export async function POST(req: Request) {

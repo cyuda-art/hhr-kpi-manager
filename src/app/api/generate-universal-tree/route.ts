@@ -17,26 +17,26 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
-あなたは、ユーザーからヒヤリングした7階層の情報をもとに、完全なKPIツリー（階層構造のJSON配列）を構築するエキスパートです。
+あなたは、ユーザーからヒヤリングした「意志（情熱）」をもとに、完全なKPIツリー（階層構造のJSON配列）を全自動で推論・構築するエキスパートコンサルタントです。
 
-【ユーザーとの対話で決定した内容】
-1. VISION: ${collectedData.vision || '未定義'}
-2. MISSION: ${collectedData.mission || '未定義'}
-3. MANIFESTO: ${collectedData.manifesto || '未定義'}
-4. GOAL: ${collectedData.goal || '未定義'}
-5. KGI: ${collectedData.kgi || '未定義'}
-6. KSF: ${collectedData.ksf || '未定義'}
-7. KPI: ${collectedData.kpi || '未定義'}
+【ユーザーとの対話で決定した「意志（情熱）」】
+1. VISION (究極の目的): ${collectedData.vision || '未定義'}
+2. GOAL (目指す状態): ${collectedData.goal || '未定義'}
+3. KGI (定量目標): ${collectedData.kgi || '未定義'}
 
-【構築の絶対ルール】
-上記の内容を構造化し、以下の7階層（VISIONからKPIまで）を論理的に補完・展開してください。
+【あなたのタスク：完全自動展開】
+上記3つの「人間の意志」をコアとして、不足している「MISSION」「MANIFESTO」「KSF」「KPI」を、あなたの圧倒的な論理力と推論能力で補完し、全7階層のツリーを構築してください。
 ツリーは以下の順序で親子関係（parentId）を繋いだノードの配列として出力してください。
 
 ■ 定性階層（計算や数値を持たない階層）
 1. VISION (id: "node_vision", parentId: null, type: "VISION")
+   - 上記の「VISION」を要約してセット。
 2. MISSION (id: "node_mission", parentId: "node_vision", type: "MISSION")
+   - 【AIによる自動生成】VISIONを達成するための使命や価値観を推論。
 3. MANIFESTO (id: "node_manifesto", parentId: "node_mission", type: "MANIFESTO")
+   - 【AIによる自動生成】現状を打破するための具体的な作戦・方針を推論。
 4. GOAL (id: "node_goal", parentId: "node_manifesto", type: "GOAL")
+   - 上記の「GOAL」を要約してセット。
 ※ 定性階層は targetValue=0, actualValue=0, isCalculated=false, formula="", unit="" としてください。
 
 ■ 定量階層（数式を用いた計算階層）
