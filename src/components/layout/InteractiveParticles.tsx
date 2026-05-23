@@ -101,8 +101,7 @@ export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) =
     };
 
     const draw = () => {
-      ctx.fillStyle = isDark ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       time += 0.005;
 
