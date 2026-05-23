@@ -61,6 +61,8 @@ export const ActionPanel = () => {
     return getLevel(selectedKpi.id) === 1 ? 'KSF' : 'Process';
   };
 
+  const isQualitative = selectedKpi ? ['VISION', 'MISSION', 'MANIFESTO', 'GOAL'].includes(selectedKpi.type) : false;
+
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
@@ -417,12 +419,14 @@ export const ActionPanel = () => {
                 </button>
               </div>
               <div className="flex gap-2 mt-2">
-                <span className={`text-[13px] font-bold px-2 py-0.5 rounded-full bg-slate-50 dark:bg-slate-800 ${
-                  selectedKpi.status === 'danger' ? 'text-rose-500 border border-rose-200' : 
-                  selectedKpi.status === 'warning' ? 'text-amber-500 border border-amber-200' : 'text-emerald-500 border border-emerald-200'
-                }`}>
-                  達成率: {selectedKpi.achievementRate.toFixed(1)}%
-                </span>
+                {!isQualitative && (
+                  <span className={`text-[13px] font-bold px-2 py-0.5 rounded-full bg-slate-50 dark:bg-slate-800 ${
+                    selectedKpi.status === 'danger' ? 'text-rose-500 border border-rose-200' : 
+                    selectedKpi.status === 'warning' ? 'text-amber-500 border border-amber-200' : 'text-emerald-500 border border-emerald-200'
+                  }`}>
+                    達成率: {selectedKpi.achievementRate.toFixed(1)}%
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -431,108 +435,110 @@ export const ActionPanel = () => {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
 
             {/* --- 0. Record (実績クイック入力) --- */}
-            <section className="bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-              <button 
-                onClick={() => setIsDailyOpen(!isDailyOpen)}
-                className="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-              >
-                <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                  <Edit2 size={14} className="text-primary-500"/> 実績クイック入力 (Daily)
-                </h3>
-                {isDailyOpen ? <ChevronDown size={14} className="text-slate-400"/> : <ChevronRight size={14} className="text-slate-400"/>}
-              </button>
-              
-              {isDailyOpen && (
-                <div className="p-4 space-y-4">
-                  {selectedKpi.isCalculated || !!selectedKpi.linkedSource ? (
-                    <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded text-center text-xs text-slate-500">
-                      {selectedKpi.isCalculated 
-                        ? 'この指標は子KPIから自動計算されるため、直接入力できません。' 
-                        : 'この指標は外部システムから自動同期されています。'}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex gap-2 items-end">
-                        <div className="space-y-1 w-1/3">
-                          <label className="text-[10px] font-bold text-slate-500">日付</label>
-                          <input 
-                            type="date" 
-                            value={quickDate}
-                            onChange={(e) => setQuickDate(e.target.value)}
-                            className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
-                          />
-                        </div>
-                        <div className="space-y-1 flex-1">
-                          <label className="text-[10px] font-bold text-slate-500">実績値 ({selectedKpi.unit})</label>
-                          <input 
-                            type="number" 
-                            value={quickActual}
-                            onChange={(e) => setQuickActual(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleQuickSave()}
-                            placeholder="例: 1500"
-                            className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
-                          />
-                        </div>
+            {!isQualitative && (
+              <section className="bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                <button 
+                  onClick={() => setIsDailyOpen(!isDailyOpen)}
+                  className="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                >
+                  <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <Edit2 size={14} className="text-primary-500"/> 実績クイック入力 (Daily)
+                  </h3>
+                  {isDailyOpen ? <ChevronDown size={14} className="text-slate-400"/> : <ChevronRight size={14} className="text-slate-400"/>}
+                </button>
+                
+                {isDailyOpen && (
+                  <div className="p-4 space-y-4">
+                    {selectedKpi.isCalculated || !!selectedKpi.linkedSource ? (
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded text-center text-xs text-slate-500">
+                        {selectedKpi.isCalculated 
+                          ? 'この指標は子KPIから自動計算されるため、直接入力できません。' 
+                          : 'この指標は外部システムから自動同期されています。'}
                       </div>
-                      <div className="flex gap-2 items-end">
-                        <div className="space-y-1 flex-1">
-                          <label className="text-[10px] font-bold text-slate-500">要因・メモ (任意)</label>
-                          <input 
-                            type="text" 
-                            value={quickComment}
-                            onChange={(e) => setQuickComment(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleQuickSave()}
-                            placeholder="キャンペーンが好調など"
-                            className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
-                          />
+                    ) : (
+                      <>
+                        <div className="flex gap-2 items-end">
+                          <div className="space-y-1 w-1/3">
+                            <label className="text-[10px] font-bold text-slate-500">日付</label>
+                            <input 
+                              type="date" 
+                              value={quickDate}
+                              onChange={(e) => setQuickDate(e.target.value)}
+                              className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1 flex-1">
+                            <label className="text-[10px] font-bold text-slate-500">実績値 ({selectedKpi.unit})</label>
+                            <input 
+                              type="number" 
+                              value={quickActual}
+                              onChange={(e) => setQuickActual(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleQuickSave()}
+                              placeholder="例: 1500"
+                              className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
+                            />
+                          </div>
                         </div>
+                        <div className="flex gap-2 items-end">
+                          <div className="space-y-1 flex-1">
+                            <label className="text-[10px] font-bold text-slate-500">要因・メモ (任意)</label>
+                            <input 
+                              type="text" 
+                              value={quickComment}
+                              onChange={(e) => setQuickComment(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleQuickSave()}
+                              placeholder="キャンペーンが好調など"
+                              className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-primary-500 outline-none"
+                            />
+                          </div>
+                          <button 
+                            onClick={handleQuickSave}
+                            disabled={!quickActual || isSavingDaily}
+                            className="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white text-xs font-bold px-4 py-1.5 rounded h-[28px] shrink-0 transition-colors"
+                          >
+                            {isSavingDaily ? <Loader2 size={14} className="animate-spin" /> : '保存'}
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-[10px] font-bold text-slate-400">直近の入力履歴</h4>
                         <button 
-                          onClick={handleQuickSave}
-                          disabled={!quickActual || isSavingDaily}
-                          className="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white text-xs font-bold px-4 py-1.5 rounded h-[28px] shrink-0 transition-colors"
+                          onClick={handleExportCSV}
+                          className="text-[10px] text-primary-500 hover:text-primary-600 flex items-center gap-1"
                         >
-                          {isSavingDaily ? <Loader2 size={14} className="animate-spin" /> : '保存'}
+                          CSV出力
                         </button>
                       </div>
-                    </>
-                  )}
-
-                  <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-[10px] font-bold text-slate-400">直近の入力履歴</h4>
-                      <button 
-                        onClick={handleExportCSV}
-                        className="text-[10px] text-primary-500 hover:text-primary-600 flex items-center gap-1"
-                      >
-                        CSV出力
-                      </button>
-                    </div>
-                    {dailyRecords.length === 0 ? (
-                      <p className="text-[10px] text-slate-400">履歴はありません</p>
-                    ) : (
-                      <div className="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
-                        {dailyRecords.map((r, i) => (
-                          <div 
-                            key={i} 
-                            onClick={() => handleEditHistory(r)}
-                            className="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded px-2 py-1.5 cursor-pointer hover:border-primary-300 transition-colors"
-                            title="クリックして編集"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-mono text-slate-500">{new Date(r.date).toISOString().split('T')[0]}</span>
-                              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{r.actualValue.toLocaleString()}</span>
+                      {dailyRecords.length === 0 ? (
+                        <p className="text-[10px] text-slate-400">履歴はありません</p>
+                      ) : (
+                        <div className="space-y-1.5 max-h-[150px] overflow-y-auto custom-scrollbar pr-1">
+                          {dailyRecords.map((r, i) => (
+                            <div 
+                              key={i} 
+                              onClick={() => handleEditHistory(r)}
+                              className="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded px-2 py-1.5 cursor-pointer hover:border-primary-300 transition-colors"
+                              title="クリックして編集"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-mono text-slate-500">{new Date(r.date).toISOString().split('T')[0]}</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{r.actualValue.toLocaleString()}</span>
+                              </div>
+                              {r.comment && (
+                                <span className="text-[10px] text-slate-400 truncate max-w-[100px] ml-2" title={r.comment}>{r.comment}</span>
+                              )}
                             </div>
-                            {r.comment && (
-                              <span className="text-[10px] text-slate-400 truncate max-w-[100px] ml-2" title={r.comment}>{r.comment}</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </section>
+                )}
+              </section>
+            )}
             
             {/* --- 1. Plan (計画) --- */}
             <section className="bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
@@ -581,17 +587,19 @@ export const ActionPanel = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500">目標値 ({selectedKpi.unit})</label>
-                      <input 
-                        type="number" 
-                        value={editTargetValue} 
-                        onChange={(e) => setEditTargetValue(e.target.value)}
-                        onBlur={handleSaveValues}
-                        disabled={editIsCalculated || !!selectedKpi.linkedSource}
-                        className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-strategic-teal outline-none transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-800"
-                      />
-                    </div>
+                    {!isQualitative && (
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-500">目標値 ({selectedKpi.unit})</label>
+                        <input 
+                          type="number" 
+                          value={editTargetValue} 
+                          onChange={(e) => setEditTargetValue(e.target.value)}
+                          onBlur={handleSaveValues}
+                          disabled={editIsCalculated || !!selectedKpi.linkedSource}
+                          className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-strategic-teal outline-none transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-800"
+                        />
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-500">更新頻度</label>
                       <select
@@ -606,38 +614,40 @@ export const ActionPanel = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-1 border-t border-slate-200 dark:border-slate-700 pt-3 mt-3">
-                    <label className="text-[10px] font-bold text-slate-500">ツリー計算構造</label>
-                    <input 
-                      type="text" 
-                      value={editCalculationFormula} 
-                      onChange={(e) => setEditCalculationFormula(e.target.value)}
-                      onBlur={handleSaveValues}
-                      placeholder="例: 客数 × 客単価 (メモ)"
-                      className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 mb-2 focus:border-strategic-teal outline-none"
-                    />
-                    <label className="flex items-center gap-2 cursor-pointer mt-2">
+                  {!isQualitative && (
+                    <div className="space-y-1 border-t border-slate-200 dark:border-slate-700 pt-3 mt-3">
+                      <label className="text-[10px] font-bold text-slate-500">ツリー計算構造</label>
                       <input 
-                        type="checkbox" 
-                        checked={editIsCalculated} 
-                        onChange={(e) => setEditIsCalculated(e.target.checked)} 
-                        disabled={!!selectedKpi.linkedSource}
-                        className="rounded border-slate-300 text-primary-500"
+                        type="text" 
+                        value={editCalculationFormula} 
+                        onChange={(e) => setEditCalculationFormula(e.target.value)}
+                        onBlur={handleSaveValues}
+                        placeholder="例: 客数 × 客単価 (メモ)"
+                        className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 mb-2 focus:border-strategic-teal outline-none"
                       />
-                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">子KPIから自動計算する</span>
-                    </label>
-                    {editIsCalculated && (
-                      <div className="mt-2 pl-6">
-                        <textarea 
-                          value={editFormula} 
-                          onChange={(e) => setEditFormula(e.target.value)}
-                          onBlur={handleSaveValues}
-                          placeholder="例: #{kpi_123} * #{kpi_456}"
-                          className="w-full text-[11px] px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 font-mono focus:border-strategic-teal outline-none min-h-[40px]"
+                      <label className="flex items-center gap-2 cursor-pointer mt-2">
+                        <input 
+                          type="checkbox" 
+                          checked={editIsCalculated} 
+                          onChange={(e) => setEditIsCalculated(e.target.checked)} 
+                          disabled={!!selectedKpi.linkedSource}
+                          className="rounded border-slate-300 text-primary-500"
                         />
-                      </div>
-                    )}
-                  </div>
+                        <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">子KPIから自動計算する</span>
+                      </label>
+                      {editIsCalculated && (
+                        <div className="mt-2 pl-6">
+                          <textarea 
+                            value={editFormula} 
+                            onChange={(e) => setEditFormula(e.target.value)}
+                            onBlur={handleSaveValues}
+                            placeholder="例: #{kpi_123} * #{kpi_456}"
+                            className="w-full text-[11px] px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 font-mono focus:border-strategic-teal outline-none min-h-[40px]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </section>

@@ -10,6 +10,7 @@ import { Plus, ArrowRight, FolderKanban, Copy, Trash2, LogOut, MoreVertical, Spa
 import { AiLoadingOverlay } from '@/components/ui/AiLoadingOverlay';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ChatOnboarding } from '@/components/dashboard/ChatOnboarding';
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function WorkspacePage() {
   const isFreePlan = currentOrg?.subscriptionPlan === 'FREE' || !currentOrg?.subscriptionPlan;
   const hasReachedProjectLimit = isFreePlan && projects.length >= 1;
   
-  type WizardStep = 'none' | 'input' | 'generating_manifestos' | 'select_manifesto' | 'generating_tree';
+  type WizardStep = 'none' | 'input' | 'generating_manifestos' | 'select_manifesto' | 'generating_tree' | 'chat_onboarding';
   const [wizardStep, setWizardStep] = useState<WizardStep>('none');
   const [manifestos, setManifestos] = useState<any[]>([]);
   const [selectedManifestoIndex, setSelectedManifestoIndex] = useState<number>(0);
@@ -591,7 +592,7 @@ export default function WorkspacePage() {
                   router.push('/pricing');
                   return;
                 }
-                setWizardStep('input');
+                setWizardStep('chat_onboarding');
               }}
               className="bg-transparent hover:bg-white dark:bg-[#282a2d] border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-strategic-teal dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group relative"
             >
@@ -977,6 +978,72 @@ export default function WorkspacePage() {
         </div>
       </div>
       )}
+      
+      {wizardStep === 'chat_onboarding' && (
+        <ChatOnboarding 
+          onComplete={async (collectedData) => {
+            if (!user || !currentOrgId) return;
+            setWizardStep('generating_tree');
+            setUploadStatus('AIが回答をもとにKPIツリーを構築中...');
+            
+            try {
+              const projectName = `${collectedData.kgi || '目標'}達成プロジェクト`;
+              
+              const res = await fetch('/api/generate-universal-tree', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ collectedData })
+              });
+              
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error);
+              
+              let nodes = data.nodes;
+              
+              // Ensure unique IDs
+              const idMap: Record<string, string> = {};
+              nodes.forEach((n: any) => {
+                if (n.id) idMap[n.id] = `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+              });
+              nodes = nodes.map((n: any) => {
+                let newFormula = n.formula;
+                if (newFormula && typeof newFormula === 'string') {
+                  Object.keys(idMap).forEach(oldId => {
+                    newFormula = newFormula.replace(new RegExp(`\\#\\{${oldId}\\}`, 'g'), `#{${idMap[oldId]}}`);
+                  });
+                }
+                return {
+                  ...n,
+                  id: idMap[n.id] || n.id,
+                  parentId: n.parentId && idMap[n.parentId] ? idMap[n.parentId] : n.parentId,
+                  formula: newFormula
+                };
+              });
+
+              const newId = await createProject(projectName, '対話型オンボーディングから生成', user.uid, currentOrgId, {
+                description: collectedData.goal || '',
+                manifesto: collectedData.manifesto || '',
+                kgiType: 'カスタム',
+                kgiPeriod: 'カスタム',
+                kgiTargetValue: 0,
+                businessModelType: 'カスタム'
+              });
+              
+              setCurrentProjectId(newId);
+              sessionStorage.setItem(`kpi_init_${newId}`, JSON.stringify(nodes));
+              
+              router.push(`/${currentOrgId}/p/${newId}/kpi-tree`);
+              setWizardStep('none');
+            } catch (error: any) {
+              console.error(error);
+              alert(`エラーが発生しました: ${error?.message || String(error)}`);
+              setWizardStep('chat_onboarding');
+            }
+          }}
+          onCancel={() => setWizardStep('none')}
+        />
+      )}
+      
       </div>
       </OrgLayout>
     </>

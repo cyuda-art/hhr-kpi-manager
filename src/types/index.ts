@@ -1,4 +1,4 @@
-export type KpiType = 'KGI' | 'KPI';
+export type KpiType = 'VISION' | 'MISSION' | 'MANIFESTO' | 'GOAL' | 'KGI' | 'KSF' | 'KPI';
 export type BusinessUnit = 'company' | 'hotel' | 'spa' | 'restaurant' | 'shop' | 'kitchen' | 'cross';
 export type Status = 'good' | 'warning' | 'danger';
 

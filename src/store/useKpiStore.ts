@@ -114,14 +114,22 @@ const syncToDB = async (
 };
 
 const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>, customThresholds?: { good: number, warning: number }): KpiNodeWithComputedAndInit => {
-  const actualValue = node.actualValue !== undefined && node.actualValue !== null ? node.actualValue : 0;
-  const targetValue = node.targetValue !== undefined && node.targetValue !== null ? node.targetValue : 1;
+  const isQualitative = node.type ? ['VISION', 'MISSION', 'MANIFESTO', 'GOAL'].includes(node.type) : false;
+
+  let actualValue = node.actualValue !== undefined && node.actualValue !== null ? node.actualValue : 0;
+  let targetValue = node.targetValue !== undefined && node.targetValue !== null ? node.targetValue : 1;
+  
+  if (isQualitative) {
+    actualValue = 0;
+    targetValue = 0;
+  }
+
   const initialActualValue = node.initialActualValue !== undefined && node.initialActualValue !== null ? node.initialActualValue : actualValue;
   const previousValue = node.previousValue !== undefined && node.previousValue !== null ? node.previousValue : actualValue;
   
   let achievementRate = targetValue === 0 ? 0 : (actualValue / targetValue) * 100;
   
-  if (node.name?.includes('原価率') || node.name?.includes('キャンセル率') || node.name?.includes('コスト')) {
+  if (!isQualitative && (node.name?.includes('原価率') || node.name?.includes('キャンセル率') || node.name?.includes('コスト'))) {
     achievementRate = actualValue === 0 ? 0 : (targetValue / actualValue) * 100;
   }
 
@@ -170,6 +178,15 @@ const sanitizeKpiData = (draft: Record<string, KpiNodeWithComputedAndInit>) => {
   });
 
   Object.values(draft).forEach(node => {
+    // 強制的に定性ノードの数式をクリア
+    const isQualitative = node.type ? ['VISION', 'MISSION', 'MANIFESTO', 'GOAL'].includes(node.type) : false;
+    if (isQualitative) {
+      node.isCalculated = false;
+      node.formula = '';
+      node.targetValue = 0;
+      node.actualValue = 0;
+    }
+
     if (node.isCalculated && node.formula) {
       let newFormula = node.formula;
       

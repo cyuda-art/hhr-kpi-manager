@@ -56,6 +56,8 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
   const currentPeriod = useKpiStore((state) => state.currentPeriod);
   const isSelected = selectedNodeId === data.id;
 
+  const isQualitative = ['VISION', 'MISSION', 'MANIFESTO', 'GOAL'].includes(data.type);
+
   const kpiData = useKpiStore((state) => state.kpiData);
   
   const [isNew, setIsNew] = useState(false);
@@ -278,44 +280,50 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <div className={cn("px-2.5 py-1 rounded-[6px] text-[13px] font-black tracking-wide text-[#202124] shadow-sm", getStatusBg(displayStatus))}>
-            {displayAchievementRate.toFixed(1)}%
-          </div>
-          {displayTarget > 0 && (displayActual - displayTarget) < 0 && (
-            <div className="text-[10px] font-bold text-[#f43f5e] bg-[#f43f5e]/10 px-1.5 py-0.5 rounded">
-              不足: {formatDisplayValue(displayActual - displayTarget, data.unit)}
-            </div>
+          {!isQualitative && (
+            <>
+              <div className={cn("px-2.5 py-1 rounded-[6px] text-[13px] font-black tracking-wide text-[#202124] shadow-sm", getStatusBg(displayStatus))}>
+                {displayAchievementRate.toFixed(1)}%
+              </div>
+              {displayTarget > 0 && (displayActual - displayTarget) < 0 && (
+                <div className="text-[10px] font-bold text-[#f43f5e] bg-[#f43f5e]/10 px-1.5 py-0.5 rounded">
+                  不足: {formatDisplayValue(displayActual - displayTarget, data.unit)}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
       {/* MICRO VIEW のみ: 詳細な数値と計算式 */}
-      <div 
-        className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-700 ease-out"
-        style={{ transform: getZDepth(30) }}
-      >
-          <div className="flex justify-between text-[12px] items-center font-lato">
-            <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
-              {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}
-              {displayLabel}
-            </span>
-            <span className="font-black text-oxford-navy dark:text-slate-100 text-[13px]">
-              {formatDisplayValue(displayActual, data.unit)} <span className="text-[10px] font-bold text-logic-slate dark:text-slate-400">{data.unit}</span>
-            </span>
-          </div>
-          <div className="flex justify-between text-[12px] font-lato">
-            <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
-            <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} <span className="text-[10px]">{data.unit}</span></span>
-          </div>
-
-          {readableFormula && (
-            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-              <div className="text-[10px] bg-clean-canvas dark:bg-slate-900 p-1.5 rounded-md border border-slate-100 dark:border-slate-700 break-words font-formula italic text-logic-slate dark:text-slate-300">
-                {readableFormula}
-              </div>
+      {!isQualitative && (
+        <div 
+          className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-700 ease-out"
+          style={{ transform: getZDepth(30) }}
+        >
+            <div className="flex justify-between text-[12px] items-center font-lato">
+              <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
+                {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}
+                {displayLabel}
+              </span>
+              <span className="font-black text-oxford-navy dark:text-slate-100 text-[13px]">
+                {formatDisplayValue(displayActual, data.unit)} <span className="text-[10px] font-bold text-logic-slate dark:text-slate-400">{data.unit}</span>
+              </span>
             </div>
-          )}
-        </div>
+            <div className="flex justify-between text-[12px] font-lato">
+              <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
+              <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} <span className="text-[10px]">{data.unit}</span></span>
+            </div>
+
+            {readableFormula && (
+              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <div className="text-[10px] bg-clean-canvas dark:bg-slate-900 p-1.5 rounded-md border border-slate-100 dark:border-slate-700 break-words font-formula italic text-logic-slate dark:text-slate-300">
+                  {readableFormula}
+                </div>
+              </div>
+            )}
+          </div>
+      )}
       
       {data.hasChildren ? (
         <button
