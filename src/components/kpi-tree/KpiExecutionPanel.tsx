@@ -43,11 +43,9 @@ export const KpiExecutionPanel = () => {
   const [executingActionId, setExecutingActionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 追加: WHWのための状態
   const [isChartOpen, setIsChartOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // 設定用ステート
   const [editTargetValue, setEditTargetValue] = useState('');
   const [editName, setEditName] = useState('');
   const [editQualitativeName, setEditQualitativeName] = useState('');
@@ -96,13 +94,20 @@ export const KpiExecutionPanel = () => {
 
   if (!selectedKpi) {
     return (
-      <div className="flex flex-col h-full bg-slate-50 dark:bg-[#202124] items-center justify-center p-6 text-center">
-        <div className="w-16 h-16 bg-white dark:bg-[#2d2f31] rounded-full flex items-center justify-center shadow-sm mb-4 border border-slate-200 dark:border-slate-800">
-          <Sparkles className="text-strategic-teal dark:text-primary-400" size={24} />
+      <div className="flex flex-col h-full bg-gradient-to-b from-white to-blue-50/50 dark:from-[#121212] dark:to-blue-950/20 items-center justify-center p-6 text-center relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
+          <div className="w-64 h-64 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+          <div className="absolute w-48 h-48 bg-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', transform: 'translate(40px, -40px)' }} />
         </div>
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2">Action-Oriented Cockpit</h3>
-        <p className="text-xs text-logic-slate dark:text-slate-400">
-          ツリーからKPIを選択すると、目標とタスクを一元管理できます。
+        <div className="w-16 h-16 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/10 mb-6 border border-white/50 dark:border-slate-700/50 z-10 relative group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <Zap className="text-blue-500 dark:text-blue-400 relative z-10" size={28} />
+        </div>
+        <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-slate-100 dark:to-slate-400 mb-2 z-10 font-poppins">
+          Action-Oriented Cockpit
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 z-10">
+          ツリーからKPIを選択して、目標達成に向けたサイクルを回しましょう。
         </p>
       </div>
     );
@@ -122,23 +127,11 @@ export const KpiExecutionPanel = () => {
         body: JSON.stringify({
           message: userMessage,
           kpiContext: {
-            id: selectedKpi.id,
-            name: selectedKpi.name,
-            targetValue: selectedKpi.targetValue,
-            actualValue: selectedKpi.actualValue,
-            unit: selectedKpi.unit,
-            description: selectedKpi.description,
-            isCalculated: selectedKpi.isCalculated,
-            formula: selectedKpi.formula
+            id: selectedKpi.id, name: selectedKpi.name, targetValue: selectedKpi.targetValue, actualValue: selectedKpi.actualValue,
+            unit: selectedKpi.unit, description: selectedKpi.description, isCalculated: selectedKpi.isCalculated, formula: selectedKpi.formula
           },
           childKpis: childKpis.map(child => ({
-            id: child.id,
-            name: child.name,
-            targetValue: child.targetValue,
-            actualValue: child.actualValue,
-            unit: child.unit,
-            achievementRate: child.achievementRate,
-            status: child.status
+            id: child.id, name: child.name, targetValue: child.targetValue, actualValue: child.actualValue, unit: child.unit, achievementRate: child.achievementRate, status: child.status
           })),
           actions: useKpiStore.getState().actions.filter(a => a.kpiId === selectedKpi.id),
           history: selectedKpi.chatMessages || [],
@@ -149,7 +142,6 @@ export const KpiExecutionPanel = () => {
       if (!response.ok) throw new Error('Network response was not ok');
 
       const data = await response.json();
-      
       addChatMessage(selectedKpi.id, { role: 'model', content: data.text });
 
       if (data.systemActions && data.systemActions.length > 0) {
@@ -159,12 +151,9 @@ export const KpiExecutionPanel = () => {
           } else if (action.type === 'ADD_TODO') {
             const targetKpiId = action.targetKpiId || selectedKpi.id;
             const existingTasks = useKpiStore.getState().actions;
-            const isDuplicate = existingTasks.some(a => a.kpiId === targetKpiId && a.title === action.title && a.status === 'todo');
-            
-            if (!isDuplicate) {
+            if (!existingTasks.some(a => a.kpiId === targetKpiId && a.title === action.title && a.status === 'todo')) {
               useKpiStore.getState().addAction({
-                kpiId: targetKpiId, title: action.title, status: 'todo',
-                dueDate: new Date().toISOString().split('T')[0], priority: action.priority || 'not_urgent_important', owner: user?.displayName || 'Guest'
+                kpiId: targetKpiId, title: action.title, status: 'todo', dueDate: new Date().toISOString().split('T')[0], priority: action.priority || 'not_urgent_important', owner: user?.displayName || 'Guest'
               });
             }
           } else if (action.type === 'DELETE_TODO') {
@@ -175,22 +164,16 @@ export const KpiExecutionPanel = () => {
           }
         });
       }
-
-      setIsProcessing(false);
-      setIsAiGenerating(false);
-      
+      setIsProcessing(false); setIsAiGenerating(false);
     } catch (error) {
-      console.error(error);
       addChatMessage(selectedKpi.id, { role: 'model', content: 'エラーが発生しました。' });
-      setIsProcessing(false);
-      setIsAiGenerating(false);
+      setIsProcessing(false); setIsAiGenerating(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isProcessing) return;
-
     const userMessage = input.trim();
     setInput('');
     await executeChatCommand(userMessage);
@@ -199,9 +182,7 @@ export const KpiExecutionPanel = () => {
   const triggerCelebration = () => {
     const id = Date.now();
     setCelebrations(prev => [...prev, { id }]);
-    setTimeout(() => {
-      setCelebrations(prev => prev.filter(c => c.id !== id));
-    }, 3000);
+    setTimeout(() => setCelebrations(prev => prev.filter(c => c.id !== id)), 3000);
   };
 
   const actualVal = getDisplayValue(selectedKpi.actualValue, selectedKpi, currentPeriod, 'actualValue');
@@ -214,138 +195,144 @@ export const KpiExecutionPanel = () => {
         {celebrations.map(c => (
           <div key={c.id} className="absolute inset-0">
             {Array.from({ length: 60 }).map((_, i) => {
-              const colors = ['bg-emerald-400', 'bg-blue-400', 'bg-amber-400', 'bg-rose-400', 'bg-purple-400', 'bg-strategic-teal'];
+              const colors = ['bg-emerald-400', 'bg-blue-400', 'bg-amber-400', 'bg-rose-400', 'bg-purple-400'];
               const color = colors[i % colors.length];
-              const isCircle = i % 2 === 0;
               const destX = (Math.random() - 0.5) * 120;
               const destY = -(Math.random() * 80 + 20);
               const scaleMax = Math.random() * 1.5 + 0.5;
               return (
-                <motion.div
-                  key={i}
-                  initial={{ x: '50vw', y: '100vh', scale: 0, opacity: 1 }}
-                  animate={{ x: `calc(50vw + ${destX}vw)`, y: ['100vh', `calc(100vh + ${destY}vh)`, `calc(100vh + ${destY + 20}vh)`], scale: [0, scaleMax, 0], rotate: Math.random() * 720 - 360 }}
-                  transition={{ duration: Math.random() * 1 + 1.5, ease: [0.23, 1, 0.32, 1] }}
-                  className={`absolute w-3 h-3 ${color} ${isCircle ? 'rounded-full' : 'rounded-sm'} shadow-sm`}
-                />
+                <motion.div key={i} initial={{ x: '50vw', y: '100vh', scale: 0, opacity: 1 }} animate={{ x: `calc(50vw + ${destX}vw)`, y: ['100vh', `calc(100vh + ${destY}vh)`, `calc(100vh + ${destY + 20}vh)`], scale: [0, scaleMax, 0], rotate: Math.random() * 720 - 360 }} transition={{ duration: Math.random() * 1 + 1.5, ease: [0.23, 1, 0.32, 1] }} className={`absolute w-3 h-3 ${color} ${i % 2 === 0 ? 'rounded-full' : 'rounded-sm'} shadow-sm`} />
               );
             })}
           </div>
         ))}
-      </div>,
-      document.body
+      </div>, document.body
     );
   };
 
+  // 1. コンテキストに連動したグラデーション背景の設定
+  const getPanelBackground = () => {
+    if (selectedKpi.status === 'good') {
+      return "bg-gradient-to-b from-emerald-50/40 via-white to-white dark:from-[#0d1f1c] dark:via-[#121212] dark:to-[#121212]";
+    } else if (selectedKpi.status === 'warning') {
+      return "bg-gradient-to-b from-amber-50/40 via-white to-white dark:from-[#241a0e] dark:via-[#121212] dark:to-[#121212]";
+    } else {
+      return "bg-gradient-to-b from-rose-50/40 via-white to-white dark:from-[#261014] dark:via-[#121212] dark:to-[#121212]";
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#202124] relative">
+    <div className={`flex flex-col h-full relative ${getPanelBackground()} transition-colors duration-1000`}>
       {renderConfetti()}
 
       {/* 設定モーダル（Plan） */}
       <AnimatePresence>
         {isSettingsOpen && (
-          <div className="absolute inset-0 z-50 bg-white dark:bg-[#202124] flex flex-col h-full">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-[#2d2f31]">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                <Settings size={16} className="text-slate-500" /> KPI設定 (Plan)
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+            className="absolute inset-0 z-50 bg-white/95 dark:bg-[#121212]/95 backdrop-blur-xl flex flex-col h-full"
+          >
+            <div className="p-4 flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800/50">
+              <h3 className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-slate-200 dark:to-slate-400 flex items-center gap-2">
+                <Settings size={16} className="text-slate-600 dark:text-slate-400" /> KPI Configuration
               </h3>
-              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <X size={16} />
+              <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                <X size={18} />
               </button>
             </div>
-            <div className="p-5 overflow-y-auto space-y-4 flex-1">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500">定性名</label>
-                <input type="text" value={editQualitativeName} onChange={e => setEditQualitativeName(e.target.value)} className="w-full text-xs px-2 py-2 border rounded dark:bg-slate-900 dark:border-slate-700 outline-none focus:border-strategic-teal" />
+            <div className="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">定性名</label>
+                <input type="text" value={editQualitativeName} onChange={e => setEditQualitativeName(e.target.value)} className="w-full text-sm px-3 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500">定量名 (KPI名)</label>
-                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full text-xs px-2 py-2 border rounded dark:bg-slate-900 dark:border-slate-700 outline-none focus:border-strategic-teal" />
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">定量名 (KPI名)</label>
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full text-sm px-3 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500">目標値 ({selectedKpi.unit})</label>
-                  <input type="number" value={editTargetValue} onChange={e => setEditTargetValue(e.target.value)} disabled={editIsCalculated} className="w-full text-xs px-2 py-2 border rounded dark:bg-slate-900 dark:border-slate-700 outline-none focus:border-strategic-teal disabled:bg-slate-100" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">目標値 ({selectedKpi.unit})</label>
+                  <input type="number" value={editTargetValue} onChange={e => setEditTargetValue(e.target.value)} disabled={editIsCalculated} className="w-full text-sm px-3 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50" />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500">更新頻度</label>
-                  <select value={editUpdateFrequency} onChange={e => setEditUpdateFrequency(e.target.value as any)} className="w-full text-xs px-2 py-2 border rounded dark:bg-slate-900 dark:border-slate-700 outline-none focus:border-strategic-teal">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">更新頻度</label>
+                  <select value={editUpdateFrequency} onChange={e => setEditUpdateFrequency(e.target.value as any)} className="w-full text-sm px-3 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                     <option value="daily">日次 (Daily)</option>
                     <option value="weekly">週次 (Weekly)</option>
                     <option value="monthly">月次 (Monthly)</option>
                   </select>
                 </div>
               </div>
-              <div className="space-y-1 border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={editIsCalculated} onChange={e => setEditIsCalculated(e.target.checked)} className="rounded border-slate-300 text-strategic-teal" />
-                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">子KPIから自動計算する</span>
+              <div className="space-y-1.5 pt-4">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" checked={editIsCalculated} onChange={e => setEditIsCalculated(e.target.checked)} className="rounded border-slate-300 text-blue-500 focus:ring-blue-500" />
+                  <span className="text-[12px] font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-500 transition-colors">子KPIから自動計算する</span>
                 </label>
                 {editIsCalculated && (
-                  <textarea value={editFormula} onChange={e => setEditFormula(e.target.value)} placeholder="例: #{kpi_123} * #{kpi_456}" className="w-full mt-2 text-[11px] px-2 py-2 border rounded dark:bg-slate-900 dark:border-slate-700 font-mono outline-none focus:border-strategic-teal h-20" />
+                  <textarea value={editFormula} onChange={e => setEditFormula(e.target.value)} placeholder="例: #{kpi_123} * #{kpi_456}" className="w-full mt-2 text-xs px-3 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all h-24" />
                 )}
               </div>
             </div>
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#202124] flex justify-between">
-              <button onClick={() => { removeKpiNode(selectedKpi.id); setIsSettingsOpen(false); toggleActionPanel(); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1">
-                <Trash2 size={14} /> 削除
+            <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50 flex justify-between">
+              <button onClick={() => { removeKpiNode(selectedKpi.id); setIsSettingsOpen(false); toggleActionPanel(); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1 transition-colors px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20">
+                <Trash2 size={14} /> Delete KPI
               </button>
-              <button onClick={handleSaveSettings} className="bg-strategic-teal text-white text-xs font-bold px-4 py-2 rounded shadow-sm hover:bg-teal-600">
-                保存して閉じる
+              <button onClick={handleSaveSettings} className="bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-bold px-6 py-2.5 rounded-full shadow-lg transition-all transform hover:scale-105">
+                Save Changes
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ヘッダー部分（進捗サマリー） */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3 shrink-0">
+      {/* ヘッダー部分 */}
+      <div className="p-5 border-b border-slate-200/50 dark:border-slate-800/50 flex flex-col gap-4 shrink-0 bg-white/40 dark:bg-[#121212]/40 backdrop-blur-md relative z-20">
         <div className="flex justify-between items-start">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-poppins">
                 {selectedKpi.type}
               </div>
               {isComputed ? (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                  🟣 Computed
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  Computed
                 </span>
               ) : (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  🔵 Actionable
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                  Actionable
                 </span>
               )}
             </div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">
               {selectedKpi.name}
             </h2>
           </div>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setIsSettingsOpen(true)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="設定 (Plan)">
+          <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-800/50 rounded-full p-1 border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm">
+            <button onClick={() => setIsSettingsOpen(true)} className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-all">
               <Settings size={14} />
             </button>
-            <button onClick={toggleActionPanel} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-              <X size={16} />
+            <button onClick={toggleActionPanel} className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-all">
+              <X size={14} />
             </button>
           </div>
         </div>
 
-        <div className="flex items-end justify-between mt-2">
+        <div className="flex items-end justify-between">
           <div className="flex flex-col">
-            <span className="text-[10px] text-slate-500 dark:text-slate-400">実績 / 目標</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-oxford-navy dark:text-slate-200 tracking-tight font-poppins">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Actual / Target</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight font-poppins drop-shadow-sm">
                 {formatDisplayValue(actualVal, selectedKpi.unit)}
               </span>
-              <span className="text-sm text-slate-500 dark:text-slate-400 font-poppins">
+              <span className="text-xs font-medium text-slate-400 font-poppins">
                 / {formatDisplayValue(targetVal, selectedKpi.unit)} {selectedKpi.unit}
               </span>
             </div>
           </div>
           <div className="text-right flex flex-col items-end">
-            <span className="text-[10px] text-slate-500 dark:text-slate-400">達成率</span>
-            <span className={`text-lg font-black font-poppins ${
-              selectedKpi.status === 'good' ? 'text-emerald-600 dark:text-emerald-400' :
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Achievement</span>
+            <span className={`text-xl font-black font-poppins drop-shadow-sm ${
+              selectedKpi.status === 'good' ? 'text-emerald-500 dark:text-emerald-400' :
               selectedKpi.status === 'warning' ? 'text-amber-500 dark:text-amber-400' :
               'text-rose-500 dark:text-rose-400'
             }`}>
@@ -356,32 +343,21 @@ export const KpiExecutionPanel = () => {
       </div>
 
       {/* トレンドチャート (Why/Check) */}
-      <div className="bg-white dark:bg-[#252628] border-b border-slate-200 dark:border-slate-800 shrink-0">
+      <div className="bg-white/40 dark:bg-[#121212]/40 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shrink-0 relative z-20">
         <button 
           onClick={() => setIsChartOpen(!isChartOpen)}
-          className="w-full flex items-center justify-between px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+          className="w-full flex items-center justify-between px-5 py-3 hover:bg-white/60 dark:hover:bg-slate-900/40 transition-colors"
         >
-          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-            <BarChart3 size={13} className="text-amber-500" /> パフォーマンス推移 (Why)
+          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <BarChart3 size={14} className="text-slate-400" /> Performance History
           </span>
           {isChartOpen ? <ChevronDown size={14} className="text-slate-400"/> : <ChevronRight size={14} className="text-slate-400"/>}
         </button>
         <AnimatePresence>
           {isChartOpen && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-3 h-36">
-                <TrendChart 
-                  actualValue={selectedKpi.actualValue} 
-                  targetValue={selectedKpi.targetValue} 
-                  unit={selectedKpi.unit} 
-                  history={selectedKpi.history}
-                  monthlyData={selectedKpi.monthlyData}
-                />
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <div className="px-5 pb-4 h-40">
+                <TrendChart actualValue={selectedKpi.actualValue} targetValue={selectedKpi.targetValue} unit={selectedKpi.unit} history={selectedKpi.history} monthlyData={selectedKpi.monthlyData} />
               </div>
             </motion.div>
           )}
@@ -389,59 +365,42 @@ export const KpiExecutionPanel = () => {
       </div>
 
       {/* ToDoリストエリア (How/Do) */}
-      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 dark:bg-[#252628] dark:border-slate-800 shrink-0 max-h-48 overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-            <CheckSquare size={13} className="text-strategic-teal" /> 進行中のアクション (How)
+      <div className="px-5 py-4 bg-white/20 dark:bg-[#121212]/20 backdrop-blur-sm border-b border-slate-200/30 dark:border-slate-800/30 shrink-0 max-h-48 overflow-y-auto custom-scrollbar relative z-20">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <CheckSquare size={14} className="text-slate-400" /> Active Tasks
           </span>
-          {isComputed && (
-            <span className="text-[9px] text-slate-500">※子要素のタスク含む</span>
-          )}
         </div>
         
-        {useKpiStore.getState().actions.filter(a => 
-          (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId)))
-        ).length === 0 ? (
-          <div className="text-[10px] text-slate-400 text-center py-2 bg-white dark:bg-[#2d2f31] rounded border border-slate-100 dark:border-slate-800">
-            未完了のタスクはありません
+        {useKpiStore.getState().actions.filter(a => (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId)))).length === 0 ? (
+          <div className="text-[11px] text-slate-400 text-center py-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm rounded-lg border border-slate-200/50 dark:border-slate-800/50 border-dashed">
+            No active tasks found.
           </div>
         ) : (
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <AnimatePresence initial={false}>
               {useKpiStore.getState().actions
                 .filter(a => (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId))))
                 .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
                 .map(action => (
-                  <motion.div 
-                    key={action.id} 
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1, x: (action.createdAt && (Date.now() - action.createdAt) < 1000) ? [0, -4, 4, -4, 4, 0] : 0 }}
-                    transition={{ duration: 0.3, x: { duration: 0.4, ease: "easeInOut" } }}
-                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                    className={`group flex items-start gap-2 p-2 rounded border ${action.status === 'done' ? 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 opacity-60' : 'bg-white border-slate-200 dark:bg-[#2d2f31] dark:border-slate-700'} transition-colors`}
+                  <motion.div key={action.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+                    className={`group flex items-start gap-3 p-2.5 rounded-lg border backdrop-blur-sm transition-all ${action.status === 'done' ? 'bg-white/30 border-slate-200/30 dark:bg-slate-900/30 dark:border-slate-800/30 opacity-50' : 'bg-white/70 border-slate-200/70 dark:bg-slate-800/70 dark:border-slate-700/70 shadow-sm hover:shadow-md'}`}
                   >
-                    <button 
-                      onClick={() => {
-                        const isCompleting = action.status !== 'done';
-                        useKpiStore.getState().toggleActionStatus(action.id);
-                        if (isCompleting) triggerCelebration();
-                      }}
-                      className={`mt-0.5 shrink-0 ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600 hover:text-emerald-400'}`}
-                    >
-                      {action.status === 'done' ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                    <button onClick={() => { const isCompleting = action.status !== 'done'; useKpiStore.getState().toggleActionStatus(action.id); if (isCompleting) triggerCelebration(); }} className={`mt-0.5 shrink-0 transition-colors ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>
+                      {action.status === 'done' ? <CheckCircle2 size={16} /> : <Circle size={16} />}
                     </button>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className={`text-[11px] font-bold ${action.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                    <div className="flex flex-col min-w-0 flex-1 mt-0.5">
+                      <span className={`text-xs font-medium leading-tight ${action.status === 'done' ? 'line-through text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>
                         {action.title}
                       </span>
                     </div>
                     {action.status !== 'done' && (
-                      <button onClick={(e) => { e.stopPropagation(); setExecutingActionId(action.id); }} className="opacity-0 group-hover:opacity-100 p-1 text-purple-500 hover:text-purple-400 hover:bg-purple-500/10 rounded transition-all ml-auto shrink-0" title="AIで自律実行">
-                        <Zap size={13} className="animate-pulse" />
+                      <button onClick={(e) => { e.stopPropagation(); setExecutingActionId(action.id); }} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-all ml-auto shrink-0">
+                        <Zap size={14} />
                       </button>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); useKpiStore.getState().deleteAction(action.id); }} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 transition-opacity shrink-0">
-                      <Trash2 size={13} />
+                    <button onClick={(e) => { e.stopPropagation(); useKpiStore.getState().deleteAction(action.id); }} className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-md transition-all shrink-0">
+                      <Trash2 size={14} />
                     </button>
                   </motion.div>
               ))}
@@ -450,101 +409,120 @@ export const KpiExecutionPanel = () => {
         )}
       </div>
 
-      {/* チャットエリア (Execution Engine) */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar bg-white dark:bg-transparent">
-        {(!selectedKpi.chatMessages || selectedKpi.chatMessages.length === 0) && (
-          <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <Zap size={24} className="text-slate-700 dark:text-slate-300 mb-3" />
-            <h4 className="text-[12px] font-bold text-slate-800 dark:text-slate-200 mb-2 tracking-wide uppercase">AI Execution Engine</h4>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
-              目標「{formatDisplayValue(targetVal, selectedKpi.unit)}」を達成するための実務オペレーターが待機しています。<br/>
-              自然言語で指示を出すことで、実績の更新やタスクの生成・整理を自律的に実行します。
-            </p>
-          </div>
-        )}
+      {/* チャットエリア (Execution Engine) - 背景で呼吸するメッシュグラデーション */}
+      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5 custom-scrollbar relative pb-40">
+        {/* 2. 呼吸するメッシュグラデーション */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-40 mix-blend-multiply dark:mix-blend-screen">
+          <div className="absolute top-10 -left-10 w-48 h-48 bg-blue-300 dark:bg-blue-600 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '7s' }} />
+          <div className="absolute top-1/3 -right-10 w-64 h-64 bg-purple-300 dark:bg-purple-600 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '5s' }} />
+          <div className="absolute bottom-10 left-1/4 w-56 h-56 bg-emerald-200 dark:bg-teal-700 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '9s' }} />
+        </div>
 
-        {selectedKpi.chatMessages?.map((msg) => (
-          <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {msg.role === 'model' && (
-              <div className="w-6 h-6 rounded-sm bg-slate-800 flex items-center justify-center shrink-0 mt-1">
-                <Zap size={12} className="text-white" />
-              </div>
-            )}
-            <div className={`max-w-[85%] px-3 py-2 text-[12px] ${
-              msg.role === 'user' 
-                ? 'bg-slate-800 text-white rounded-l-md rounded-br-md' 
-                : 'bg-white dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-r-md rounded-bl-md shadow-sm'
-            } whitespace-pre-wrap leading-relaxed`}>
-              {msg.role === 'model' ? (
-                <TypewriterText text={msg.content} animate={msg.id === selectedKpi.chatMessages?.[selectedKpi.chatMessages.length - 1]?.id} />
-              ) : (
-                msg.content
+        <div className="relative z-10 flex flex-col gap-5 h-full">
+          {(!selectedKpi.chatMessages || selectedKpi.chatMessages.length === 0) && (
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+              <h4 className="text-[13px] font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-400 dark:from-slate-100 dark:to-slate-500 mb-2 tracking-widest uppercase font-poppins">
+                AI Execution Engine
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400/80 leading-relaxed max-w-[240px]">
+                System is ready. Request actions or report progress to automate management.
+              </p>
+            </div>
+          )}
+
+          {selectedKpi.chatMessages?.map((msg) => (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {msg.role === 'model' && (
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+                  <Zap size={14} className="text-white dark:text-slate-900" />
+                </div>
               )}
-            </div>
-            {msg.role === 'user' && (
-              <div className="w-6 h-6 rounded-sm bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0 mt-1">
-                <User size={12} className="text-slate-600 dark:text-slate-300" />
+              {/* 4. ソリッドグラデーションの境界線（AIのみ） */}
+              <div className={`max-w-[85%] relative ${msg.role === 'user' ? '' : 'p-[1px] bg-gradient-to-br from-slate-200 to-white/0 dark:from-slate-700 dark:to-slate-800/0 rounded-r-2xl rounded-bl-2xl shadow-sm'}`}>
+                <div className={`px-4 py-3 text-[13px] ${
+                  msg.role === 'user' 
+                    ? 'bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-l-2xl rounded-br-2xl shadow-sm' 
+                    : 'bg-white/90 dark:bg-[#1a1c2e]/90 backdrop-blur-md text-slate-800 dark:text-slate-200 rounded-r-2xl rounded-bl-2xl'
+                } whitespace-pre-wrap leading-relaxed`}>
+                  {msg.role === 'model' ? (
+                    <TypewriterText text={msg.content} animate={msg.id === selectedKpi.chatMessages?.[selectedKpi.chatMessages.length - 1]?.id} />
+                  ) : (
+                    msg.content
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
-        {isProcessing && (
-          <div className="flex justify-start gap-2">
-            <div className="w-6 h-6 rounded-sm bg-slate-800 flex items-center justify-center shrink-0 mt-1">
-              <Zap size={12} className="text-white" />
-            </div>
-            <div className="bg-white dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 rounded-r-md rounded-bl-md px-4 py-2 flex items-center gap-2">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              {msg.role === 'user' && (
+                <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                  <User size={14} className="text-slate-500 dark:text-slate-400" />
+                </div>
+              )}
+            </motion.div>
+          ))}
+          
+          {isProcessing && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+                <Zap size={14} className="text-white dark:text-slate-900" />
               </div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+              <div className="p-[1px] bg-gradient-to-br from-slate-200 to-white/0 dark:from-slate-700 dark:to-slate-800/0 rounded-r-2xl rounded-bl-2xl shadow-sm">
+                <div className="bg-white/90 dark:bg-[#1a1c2e]/90 backdrop-blur-md px-5 py-4 rounded-r-2xl rounded-bl-2xl flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </motion.div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* 入力フォームとサジェストチップ */}
-      <div className="p-3 bg-white dark:bg-[#202124] border-t border-slate-200 dark:border-slate-800 shrink-0 flex flex-col gap-2">
-        <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-          <button onClick={() => executeChatCommand('現状の数値を分析し、不足分を補うための次のアクションを3つ提案・追加してください。')} disabled={isProcessing} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
-            アクションの自動生成
+      {/* 5. フローティング・ピル型 入力フォームとサジェストチップ */}
+      <div className="absolute bottom-0 left-0 w-full px-5 pb-6 pt-10 bg-gradient-to-t from-white/90 via-white/70 to-transparent dark:from-[#121212]/90 dark:via-[#121212]/70 dark:to-transparent flex flex-col gap-3 z-30 pointer-events-none">
+        
+        {/* 3. グラスモーフィズムのサジェストチップ */}
+        <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1 pointer-events-auto">
+          <button onClick={() => executeChatCommand('現状の数値を分析し、不足分を補うための次のアクションを3つ提案・追加してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
+            Generate Actions
           </button>
           {!isComputed && (
-            <button onClick={() => executeChatCommand('今日の実績として、〇〇件完了しました。数値を更新してください。')} disabled={isProcessing} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
-              実績の更新報告
+            <button onClick={() => executeChatCommand('今日の実績として、〇〇件完了しました。数値を更新してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
+              Report Value
             </button>
           )}
-          <button onClick={() => executeChatCommand('重複しているタスクや、不要になった古いタスクを整理・削除してください。')} disabled={isProcessing} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
-            タスクの整理
+          <button onClick={() => executeChatCommand('重複しているタスクや、不要になった古いタスクを整理・削除してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
+            Organize Tasks
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="relative flex items-center">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="指示を入力 (例: タスクを追加して, 〇件完了した)"
-            disabled={isProcessing}
-            className="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 rounded-md text-[12px] text-slate-800 dark:text-slate-200 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all disabled:opacity-50"
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || isProcessing}
-            className="absolute right-1.5 w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-md transition-colors"
-          >
-            <Send size={12} className={input.trim() && !isProcessing ? "translate-x-[1px]" : ""} />
-          </button>
-        </form>
+
+        {/* フローティング・カプセル */}
+        <div className="relative pointer-events-auto w-full group mt-1">
+          {/* グロー効果（後光） */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-emerald-500/20 rounded-full blur-md opacity-70 group-hover:opacity-100 transition duration-1000 group-hover:duration-300" />
+          
+          <form onSubmit={handleSubmit} className="relative flex items-center bg-white/80 dark:bg-[#1a1c2e]/80 backdrop-blur-xl border border-white/80 dark:border-slate-700/80 rounded-full shadow-lg">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask the engine to act..."
+              disabled={isProcessing}
+              className="w-full pl-6 pr-12 py-3.5 bg-transparent text-[13px] text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 font-medium"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isProcessing}
+              className="absolute right-2 w-9 h-9 flex items-center justify-center bg-slate-800 dark:bg-slate-200 hover:bg-slate-900 dark:hover:bg-white disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white dark:text-slate-900 disabled:text-white rounded-full transition-all transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
+            >
+              <Send size={14} className={input.trim() && !isProcessing ? "translate-x-[1px]" : ""} />
+            </button>
+          </form>
+        </div>
       </div>
 
       <AnimatePresence>
         {executingActionId && (
-          <AgentExecutionModal
-            actionId={executingActionId}
-            onClose={() => setExecutingActionId(null)}
-          />
+          <AgentExecutionModal actionId={executingActionId} onClose={() => setExecutingActionId(null)} />
         )}
       </AnimatePresence>
     </div>
