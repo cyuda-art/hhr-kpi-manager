@@ -483,6 +483,9 @@ export const KpiExecutionPanel = () => {
               </div>
             </motion.div>
           )}
+          
+          {/* 下部の入力フォーム（absolute）と重ならないようにするためのスペーサー */}
+          <div className="h-48 shrink-0 w-full" />
           <div ref={messagesEndRef} />
         </div>
       </div>
