@@ -745,7 +745,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           fitView
           minZoom={0.05}
           maxZoom={2}
-          className="bg-clean-canvas dark:bg-slate-900 transition-colors"
+          className="bg-transparent transition-colors"
         >
           
           <svg style={{ position: 'absolute', width: 0, height: 0 }}>

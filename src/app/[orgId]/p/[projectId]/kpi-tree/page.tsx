@@ -73,19 +73,18 @@ export default function KpiTreePage() {
 
   if (!isMounted) return null;
 
-  // 1. 全体背景の動的グラデーション
   const getGlobalBackground = () => {
     const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;
     if (!selectedKpi) {
-      return "bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-[#121212] dark:to-slate-900/50";
+      return "bg-gradient-to-br from-slate-200/80 via-blue-100/60 to-purple-100/50 dark:from-[#121212] dark:to-slate-900/80";
     }
     
     if (selectedKpi.status === 'good') {
-      return "bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-blue-50/20 dark:from-[#081a17] dark:via-[#0c1a24] dark:to-[#121212]";
+      return "bg-gradient-to-br from-emerald-200/80 via-teal-100/70 to-cyan-200/60 dark:from-[#0a241f] dark:via-[#0c1a24] dark:to-[#121212]";
     } else if (selectedKpi.status === 'warning') {
-      return "bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/20 dark:from-[#241a0e] dark:via-[#1f1416] dark:to-[#121212]";
+      return "bg-gradient-to-br from-amber-200/80 via-orange-100/70 to-rose-200/60 dark:from-[#2e1f0f] dark:via-[#1f1416] dark:to-[#121212]";
     } else {
-      return "bg-gradient-to-br from-rose-50/50 via-red-50/30 to-purple-50/20 dark:from-[#261014] dark:via-[#1e1026] dark:to-[#121212]";
+      return "bg-gradient-to-br from-rose-200/80 via-red-100/70 to-purple-200/60 dark:from-[#2a1116] dark:via-[#1e1026] dark:to-[#121212]";
     }
   };
 
@@ -93,24 +92,24 @@ export default function KpiTreePage() {
     <div ref={containerRef} className={`h-[calc(100vh-4rem)] flex overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
       
       {/* 背景の呼吸するメッシュグラデーション（全画面） */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-30 mix-blend-multiply dark:mix-blend-screen">
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-300 dark:bg-blue-600/40 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-1/4 -right-20 w-[30rem] h-[30rem] bg-purple-300 dark:bg-purple-600/40 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-60 dark:opacity-40 mix-blend-multiply dark:mix-blend-screen">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-400 dark:bg-blue-600/60 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-1/4 -right-20 w-[30rem] h-[30rem] bg-purple-400 dark:bg-purple-600/60 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s' }} />
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'good' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-emerald-200 dark:bg-emerald-700/30 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-emerald-400/80 dark:bg-emerald-600/50 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
         )}
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'warning' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-amber-200 dark:bg-amber-700/30 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-amber-400/80 dark:bg-amber-600/50 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
         )}
         {selectedNodeId && kpiData[selectedNodeId]?.status === 'danger' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-rose-200 dark:bg-rose-700/30 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-rose-400/80 dark:bg-rose-600/50 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
         )}
       </div>
 
       {/* 左サイドバー：KPIエクスプローラー (グラスモーフィズム) */}
       <div 
         style={{ width: `${leftSidebarWidth}px` }} 
-        className="shrink-0 bg-white/40 dark:bg-black/20 backdrop-blur-2xl flex flex-col h-full overflow-hidden border-r border-white/40 dark:border-white/5 relative z-10 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]"
+        className="shrink-0 bg-white/40 dark:bg-black/40 backdrop-blur-2xl flex flex-col h-full overflow-hidden border-r border-white/50 dark:border-white/10 relative z-10 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]"
       >
         <KpiTreeExplorer />
       </div>
@@ -144,7 +143,7 @@ export default function KpiTreePage() {
           width: (isActionPanelCollapsed || !selectedNodeId) ? '0px' : `${sidebarWidth}px`,
           display: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'flex'
         }} 
-        className="shrink-0 bg-white/40 dark:bg-black/20 backdrop-blur-2xl flex-col h-full overflow-hidden border-l border-white/40 dark:border-white/5 relative z-10 shadow-[-4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300"
+        className="shrink-0 bg-white/40 dark:bg-black/40 backdrop-blur-2xl flex-col h-full overflow-hidden border-l border-white/50 dark:border-white/10 relative z-10 shadow-[-4px_0_24px_-12px_rgba(0,0,0,0.1)] transition-all duration-300"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full overflow-hidden custom-scrollbar">
