@@ -44,17 +44,12 @@ export interface KpiNodeData {
   addedAt?: number; // UI演出用の追加時刻タイムスタンプ
   monthlyData?: Record<string, MonthlyData>; // 月次データ（YYYY-MM形式をキーとする）
   chatMessages?: KpiChatMessage[]; // 対話型PDCA用のチャット履歴
-  simulatedValue?: number; // シミュレーションモード中の仮想実績値
-  simulatedTargetValue?: number; // シミュレーションモード中の仮想目標値
-  isSimulated?: boolean;
 }
 
 // 達成率やステータスは計算で導出する拡張インタフェース
 export interface KpiNodeWithComputed extends KpiNodeData {
   achievementRate: number;
   status: Status;
-  simulatedAchievementRate?: number; // シミュレーションモード中の仮想達成率
-  simulatedStatus?: Status; // シミュレーションモード中の仮想ステータス
 }
 
 export type TaskPriority = 'urgent_important' | 'not_urgent_important' | 'urgent_not_important' | 'not_urgent_not_important' | 'unassigned';

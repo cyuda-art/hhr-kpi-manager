@@ -29,8 +29,7 @@ export const TrendChart = ({ targetValue, unit, history, monthlyData }: Props) =
       return sortedMonths.map(m => ({
         name: m.substring(5).replace('-', '/'), // YYYY-MM -> MM/DD or MM
         実績: monthlyData[m].actualValue,
-        目標: monthlyData[m].targetValue,
-        シミュレーション: monthlyData[m].simulatedValue
+        目標: monthlyData[m].targetValue
       }));
     }
 

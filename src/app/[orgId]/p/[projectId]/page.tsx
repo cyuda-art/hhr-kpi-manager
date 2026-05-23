@@ -7,7 +7,7 @@ import { TrendingUp, Target, BarChart3, AlertCircle, AlertTriangle, Bot, CheckCi
 import { shouldScaleWithPeriod } from '@/lib/kpi-utils';
 
 export default function DashboardPage() {
-  const { kpiData, currentPeriod, applyRollingForecast } = useKpiStore();
+  const { kpiData, currentPeriod } = useKpiStore();
   const [selectedKpiId, setSelectedKpiId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'rate'>('actual');
 
@@ -129,32 +129,15 @@ export default function DashboardPage() {
 
       let t = mData.targetValue || 0;
       let a = mData.actualValue || 0;
-      let st = mData.simulatedTargetValue !== undefined ? mData.simulatedTargetValue : t;
-      let sa = mData.simulatedValue !== undefined ? mData.simulatedValue : a;
-
       return {
         month,
         originalTarget: t,
         actualValue: isPast || isCurrent ? a : undefined,
-        simulatedTargetValue: isFuture || isCurrent ? st : undefined,
-        simulatedValue: isFuture ? sa : undefined,
       };
     });
   }, [selectedNode, cp]);
 
-  const handleAiRecoveryAll = () => {
-    const allMonths = [
-      "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
-      "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
-    ];
-    const remainingMonths = allMonths.filter(m => m >= cp);
-    if (remainingMonths.length === 0) return;
 
-    shortfallLeaderboard.forEach(({ node, shortfall }) => {
-      const additionalTargetPerMonth = Math.ceil(Math.abs(shortfall) / remainingMonths.length);
-      applyRollingForecast(node.id, additionalTargetPerMonth, remainingMonths);
-    });
-  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
@@ -329,12 +312,7 @@ export default function DashboardPage() {
                   </button>
                 ))}
               </div>
-              <button 
-                onClick={handleAiRecoveryAll}
-                className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white transition-colors py-2 rounded-lg text-[13px] font-bold shadow-sm"
-              >
-                <Bot size={16} /> 全社AIリカバリーを実行
-              </button>
+
             </div>
           )}
 
@@ -407,8 +385,6 @@ export default function DashboardPage() {
                         let label = name;
                         if (name === 'originalTarget') label = '当初目標';
                         if (name === 'actualValue') label = '実績';
-                        if (name === 'simulatedTargetValue') label = 'AI修正目標';
-                        if (name === 'simulatedValue') label = 'AI予測実績';
                         return [`${value.toLocaleString()} ${selectedNode.unit}`, label];
                       }}
                       labelStyle={{ color: '#425563', marginBottom: '8px', fontWeight: 'bold' }}
@@ -438,27 +414,6 @@ export default function DashboardPage() {
                       activeDot={{ r: 6 }}
                     />
                     
-                    {/* AI修正目標 (未来) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="simulatedTargetValue" 
-                      name="simulatedTargetValue" 
-                      stroke="#f59e0b" 
-                      strokeWidth={2}
-                      strokeDasharray="3 3"
-                      dot={false}
-                    />
-
-                    {/* AI予測実績 (未来) */}
-                    <Line 
-                      type="monotone" 
-                      dataKey="simulatedValue" 
-                      name="simulatedValue" 
-                      stroke="#f43f5e" 
-                      strokeWidth={3}
-                      strokeDasharray="3 3"
-                      dot={{ r: 4, fill: '#f43f5e' }}
-                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -471,7 +426,6 @@ export default function DashboardPage() {
                       <th className="px-4 py-3 font-medium">月次</th>
                       <th className="px-4 py-3 font-medium">当初目標</th>
                       <th className="px-4 py-3 font-medium">実績</th>
-                      <th className="px-4 py-3 font-medium text-amber-600 dark:text-amber-400">AI修正目標</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -486,9 +440,6 @@ export default function DashboardPage() {
                         </td>
                         <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
                           {row.actualValue !== undefined ? row.actualValue.toLocaleString() : '-'}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-900/10">
-                          {row.simulatedTargetValue !== undefined ? row.simulatedTargetValue.toLocaleString() : '-'}
                         </td>
                       </tr>
                     ))}

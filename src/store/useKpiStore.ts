@@ -19,16 +19,12 @@ interface KpiStore {
   currentOrgId: string | null;
   currentProjectInfo: import('@/types').ProjectInfo | null;
   currentPeriod: string;
-  isPredictionMode: boolean;
   isCopilotSidebarOpen: boolean;
   setIsCopilotSidebarOpen: (isOpen: boolean) => void;
   isAiGenerating: boolean;
   setIsAiGenerating: (isGenerating: boolean) => void;
   setPeriod: (period: string) => void;
-  togglePredictionMode: () => void;
   initializeDB: (projectId: string, orgId: string, projectName?: string, projectDesc?: string) => Promise<void>;
-  updateSimulatedValue: (id: string, newValue: number) => void;
-  updateSimulatedTarget: (id: string, newValue: number) => void;
   setSelectedNodeId: (id: string | null) => void;
   addAction: (action: Omit<Action, 'id'>) => void;
   updateAction: (id: string, updates: Partial<Action>) => void;
@@ -60,12 +56,7 @@ interface KpiStore {
   redo: () => void;
   reviveKpiNode: (id: string, newParentId: string | null) => void;
   expandKpiNode: (kpiId: string) => Promise<void>;
-  smartAddKpi: (query: string) => Promise<void>;
-  applySmartAddPatch: (patchData: { updatedParent?: any, updatedNodes?: any[], newNodes?: any[] }) => Promise<void>;
-  applyRollingForecast: (kpiId: string, additionalTargetPerMonth: number, targetMonths: string[]) => void;
   recalculateAllMonthsAction: () => void;
-  smartAddMessages: { role: string; content: string }[];
-  setSmartAddMessages: (messages: { role: string; content: string }[] | ((prev: { role: string; content: string }[]) => { role: string; content: string }[])) => void;
   recentlyUpdatedNodes: string[];
   setRecentlyUpdatedNodes: (nodes: string[]) => void;
   addAuditLog: (log: Omit<import('@/types').AuditLog, 'id' | 'projectId' | 'timestamp'>) => Promise<void>;
@@ -82,7 +73,6 @@ const syncToDB = async (
     actions?: Action[];
     workflows?: Record<string, AiWorkflow>;
     collapsedNodes?: string[];
-    isPredictionMode?: boolean;
     projectInfo?: any;
   }
 ) => {
@@ -144,26 +134,10 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>, customThre
     status = 'warning';
   }
 
-  // シミュレーション用の計算
-  let simulatedAchievementRate = undefined;
-  let simulatedStatus = undefined;
-  if (node.simulatedValue !== undefined) {
-    simulatedAchievementRate = targetValue === 0 ? 0 : (node.simulatedValue / targetValue) * 100;
-    if (node.name?.includes('原価率') || node.name?.includes('キャンセル率') || node.name?.includes('コスト')) {
-      simulatedAchievementRate = node.simulatedValue === 0 ? 0 : (targetValue / node.simulatedValue) * 100;
-    }
-    simulatedStatus = 'good' as Status;
-    if (simulatedAchievementRate < thresholds.warning) {
-      simulatedStatus = 'danger';
-    } else if (simulatedAchievementRate < thresholds.good) {
-      simulatedStatus = 'warning';
-    }
-  }
-
   let newHistory = node.history ? [...node.history] : [];
   
   // 履歴データが空の場合（プロジェクト作成時など）、初期値として今日の履歴を1行追加する
-  if (newHistory.length === 0 && !node.isSimulated && node.simulatedValue === undefined) {
+  if (newHistory.length === 0) {
     newHistory.push({
       id: `hist_init_${Math.random().toString(36).substr(2, 9)}`,
       date: new Date().toISOString().split('T')[0],
@@ -181,8 +155,7 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>, customThre
     previousValue,
     achievementRate,
     status,
-    history: newHistory,
-    ...(simulatedAchievementRate !== undefined ? { simulatedAchievementRate, simulatedStatus } : {})
+    history: newHistory
   } as KpiNodeWithComputedAndInit;
 };
 
@@ -219,7 +192,7 @@ const sanitizeKpiData = (draft: Record<string, KpiNodeWithComputedAndInit>) => {
   });
 };
 
-const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue', currentPeriod: string): number | null => {
+const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue', currentPeriod: string): number | null => {
   if (!formulaStr) return null;
   let parsedFormula = formulaStr;
   
@@ -231,26 +204,14 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
       let val: number;
       const isMonth = currentPeriod.match(/^\d{4}-\d{2}$/);
       
-      const getVal = (field: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue') => {
+      const getVal = (field: 'actualValue' | 'targetValue') => {
         if (isMonth && node.monthlyData && node.monthlyData[currentPeriod] && node.monthlyData[currentPeriod][field] !== undefined) {
           return node.monthlyData[currentPeriod][field]!;
         }
         return node[field] || 0;
       };
 
-      if (valueType === 'simulatedValue') {
-        val = getVal('simulatedValue');
-        if (val === 0 && (!isMonth || !node.monthlyData || !node.monthlyData[currentPeriod] || node.monthlyData[currentPeriod].simulatedValue === undefined)) {
-          val = getVal('actualValue');
-        }
-      } else if (valueType === 'simulatedTargetValue') {
-        val = getVal('simulatedTargetValue');
-        if (val === 0 && (!isMonth || !node.monthlyData || !node.monthlyData[currentPeriod] || node.monthlyData[currentPeriod].simulatedTargetValue === undefined)) {
-          val = getVal('targetValue');
-        }
-      } else {
-        val = getVal(valueType);
-      }
+      val = getVal(valueType);
       return val.toString();
     }
     return '0';
@@ -273,7 +234,7 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
 };
 
 // トポロジカルソートを用いた計算ツリーの再計算
-const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue' | 'simulatedValue' | 'simulatedTargetValue', currentPeriod: string) => {
+const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valueType: 'actualValue' | 'targetValue', currentPeriod: string) => {
   const inDegree: Record<string, number> = {};
   const graph: Record<string, string[]> = {};
   const nodesWithFormula: string[] = [];
@@ -328,21 +289,7 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
           }
         }
 
-        if (valueType === 'simulatedValue') {
-          if (isMonth && targetObj) {
-            targetObj[currentPeriod].simulatedValue = newValue;
-            draft[node.id] = calculateComputed({ ...draft[node.id], monthlyData: targetObj, isSimulated: true });
-          } else {
-            draft[node.id] = calculateComputed({ ...draft[node.id], simulatedValue: newValue, isSimulated: true });
-          }
-        } else if (valueType === 'simulatedTargetValue') {
-          if (isMonth && targetObj) {
-            targetObj[currentPeriod].simulatedTargetValue = newValue;
-            draft[node.id] = calculateComputed({ ...draft[node.id], monthlyData: targetObj, isSimulated: true });
-          } else {
-            draft[node.id] = calculateComputed({ ...draft[node.id], simulatedTargetValue: newValue, isSimulated: true });
-          }
-        } else if (valueType === 'targetValue') {
+        if (valueType === 'targetValue') {
           if (isMonth && targetObj) {
             targetObj[currentPeriod].targetValue = newValue;
             draft[node.id] = calculateComputed({ ...draft[node.id], monthlyData: targetObj });
@@ -418,13 +365,8 @@ export const useKpiStore = create<KpiStore>()(
       currentOrgId: null,
       currentProjectInfo: null,
       currentPeriod: '2026-05',
-      isPredictionMode: false,
       isCopilotSidebarOpen: false,
       isAiGenerating: false,
-      smartAddMessages: [],
-      setSmartAddMessages: (messages) => set((state) => ({ 
-        smartAddMessages: typeof messages === 'function' ? messages(state.smartAddMessages) : messages 
-      })),
       recentlyUpdatedNodes: [],
       setRecentlyUpdatedNodes: (nodes) => set({ recentlyUpdatedNodes: nodes }),
       reviveKpiNode: (id, newParentId) => {},
@@ -463,28 +405,6 @@ export const useKpiStore = create<KpiStore>()(
       }),
 
       setPeriod: (period) => set({ currentPeriod: period }),
-      togglePredictionMode: () => set((state) => {
-        const isNowPrediction = !state.isPredictionMode;
-        const draft = { ...state.kpiData };
-        Object.keys(draft).forEach(key => {
-          if (isNowPrediction) {
-            draft[key] = calculateComputed({ 
-              ...draft[key], 
-              simulatedValue: draft[key].actualValue,
-              simulatedTargetValue: draft[key].targetValue
-            });
-          } else {
-            draft[key] = calculateComputed({ 
-              ...draft[key], 
-              simulatedValue: undefined, 
-              simulatedTargetValue: undefined,
-              isSimulated: false 
-            });
-          }
-        });
-        syncToDB(state.currentProjectId, state.currentOrgId, { isPredictionMode: isNowPrediction });
-        return { isPredictionMode: isNowPrediction, kpiData: draft };
-      }),
       setIsCopilotSidebarOpen: (isOpen: boolean) => set({ isCopilotSidebarOpen: isOpen }),
       setIsAiGenerating: (isGenerating: boolean) => set({ isAiGenerating: isGenerating }),
 
@@ -629,7 +549,6 @@ export const useKpiStore = create<KpiStore>()(
           actions: actions,
           workflows: workflows,
           collapsedNodes: (pData as any)._tempCollapsedNodes !== undefined ? (pData as any)._tempCollapsedNodes : get().collapsedNodes,
-          isPredictionMode: (pData as any)._tempPredictionMode !== undefined ? (pData as any)._tempPredictionMode : get().isPredictionMode,
           isDbInitialized: true 
         });
 
@@ -716,52 +635,7 @@ export const useKpiStore = create<KpiStore>()(
     });
   },
 
-  updateSimulatedValue: (id: string, newValue: number) => {
-    set((state) => {
-      const draft = { ...state.kpiData };
-      if (!draft[id] || draft[id].simulatedValue === undefined) return state;
-
-      const oldSimulated = draft[id].simulatedValue!;
-      draft[id] = calculateComputed({ ...draft[id], simulatedValue: newValue, isSimulated: true });
-
-      if (newValue !== oldSimulated) {
-        // 動的計算エンジンによる再計算（シミュレーション値）
-        recalculateTree(draft, 'simulatedValue', state.currentPeriod);
-      }
-      return { kpiData: draft }; // シミュレーションはDBやプロジェクトデータには即時保存しない
-    });
-  },
-
-  updateSimulatedTarget: (id: string, newValue: number) => {
-    set((state) => {
-      const draft = { ...state.kpiData };
-      if (!draft[id] || draft[id].simulatedTargetValue === undefined) return state;
-
-      const oldTarget = draft[id].simulatedTargetValue!;
-      if (oldTarget === newValue) return state;
-
-      // トップダウンの配分ロジック（比率で下位に波及させる）
-      const ratio = oldTarget !== 0 ? newValue / oldTarget : 1;
-      
-      const updateDescendants = (parentId: string, mult: number) => {
-        Object.values(draft).forEach(node => {
-          if (node.parentId === parentId) {
-            const currentSimTarget = node.simulatedTargetValue !== undefined ? node.simulatedTargetValue : node.targetValue;
-            draft[node.id] = calculateComputed({ ...draft[node.id], simulatedTargetValue: currentSimTarget * mult, isSimulated: true });
-            updateDescendants(node.id, mult);
-          }
-        });
-      };
-
-      draft[id] = calculateComputed({ ...draft[id], simulatedTargetValue: newValue, isSimulated: true });
-      updateDescendants(id, ratio);
-
-      // ボトムアップの再計算（上位のターゲットも念のため計算式で再評価する）
-      recalculateTree(draft, 'simulatedTargetValue', state.currentPeriod);
-
-      return { kpiData: draft };
-    });
-  },
+  // simulated updating functions removed
 
   commitBulkUpdate: (updates) => {
     set((state) => {
@@ -770,16 +644,15 @@ export const useKpiStore = create<KpiStore>()(
       // 値の更新
       updates.forEach(({ id, value }) => {
         if (draft[id]) {
-          draft[id] = calculateComputed({ ...draft[id], actualValue: value, initialActualValue: value, isSimulated: false });
+          draft[id] = calculateComputed({ ...draft[id], actualValue: value, initialActualValue: value });
         }
       });
 
       // 動的計算エンジンによる再計算（実績値）
       recalculateTree(draft, 'actualValue', state.currentPeriod);
 
-      // 一旦、全データを isSimulated = false にする
       Object.keys(draft).forEach(key => {
-        draft[key] = { ...draft[key], isSimulated: false, initialActualValue: draft[key].actualValue };
+        draft[key] = { ...draft[key], initialActualValue: draft[key].actualValue };
       });
 
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
@@ -795,32 +668,7 @@ export const useKpiStore = create<KpiStore>()(
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
   },
-  applyRollingForecast: (kpiId, additionalTargetPerMonth, targetMonths) => {
-    set((state) => {
-      const draft = { ...state.kpiData };
-      const node = draft[kpiId];
-      if (!node) return state;
-
-      const updatedMonthlyData = { ...node.monthlyData };
-      
-      targetMonths.forEach(m => {
-        if (!updatedMonthlyData[m]) {
-          updatedMonthlyData[m] = { month: m, targetValue: node.targetValue, actualValue: 0 };
-        }
-        updatedMonthlyData[m] = {
-          ...updatedMonthlyData[m],
-          simulatedTargetValue: (updatedMonthlyData[m].targetValue || 0) + additionalTargetPerMonth
-        };
-      });
-
-      draft[kpiId] = calculateComputed({ ...node, monthlyData: updatedMonthlyData, isSimulated: true });
-      
-      // We set isPredictionMode to true so the UI reflects the simulated targets
-      const updates = { kpiData: draft, isPredictionMode: true };
-      syncToDB(state.currentProjectId, state.currentOrgId, { ...updates, actions: state.actions, projectInfo: state.currentProjectInfo });
-      return { kpiData: draft, isPredictionMode: true, projectData: saveToProjectData({ ...state, ...updates }) };
-    });
-  },
+  // applyRollingForecast removed
   updateKpiNode: (id, data) => {
       set((state) => {
         const draft = { ...state.kpiData };
@@ -916,8 +764,7 @@ export const useKpiStore = create<KpiStore>()(
           ...node,
           initialActualValue: node.actualValue,
           achievementRate: (node.actualValue / node.targetValue) * 100,
-          status: ((node.actualValue / node.targetValue) * 100) >= 100 ? 'good' : ((node.actualValue / node.targetValue) * 100) >= 80 ? 'warning' : 'danger',
-          isSimulated: false
+          status: ((node.actualValue / node.targetValue) * 100) >= 100 ? 'good' : ((node.actualValue / node.targetValue) * 100) >= 80 ? 'warning' : 'danger'
         };
       });
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: newData, actions: state.actions, projectInfo: state.currentProjectInfo });
@@ -1184,177 +1031,7 @@ export const useKpiStore = create<KpiStore>()(
     }
   },
 
-  applySmartAddPatch: async (patchData: { updatedParent?: any, updatedNodes?: any[], newNodes?: any[] }) => {
-    try {
-      const { updatedParent, updatedNodes = [], newNodes = [] } = patchData;
-
-      if (!updatedParent && (!updatedNodes || updatedNodes.length === 0) && (!newNodes || newNodes.length === 0)) {
-        throw new Error('Invalid patch format received from AI');
-      }
-
-      set((currentState: KpiStore) => {
-        currentState.saveHistory();
-        const draft = { ...currentState.kpiData };
-        const newActions = [...currentState.actions];
-
-        // 0. ID衝突の事前チェックとマップ作成
-        const idMap: Record<string, string> = {};
-        newNodes.forEach((node: any) => {
-          let safeId = node.id;
-          if (draft[safeId]) {
-            safeId = `kpi_smart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            idMap[node.id] = safeId;
-            node.id = safeId; // IDを更新
-          }
-        });
-
-        // 1. 既存ノードのアップデート (updatedNodes)
-        updatedNodes.forEach((uNode: any) => {
-          if (draft[uNode.id]) {
-            const originalNode = draft[uNode.id];
-            
-            // updateKpiNodeのように処理
-            const updatedData = { ...originalNode };
-            if (uNode.targetValue !== undefined) updatedData.targetValue = uNode.targetValue;
-            if (uNode.actualValue !== undefined) updatedData.actualValue = uNode.actualValue;
-            if (uNode.name !== undefined) updatedData.name = uNode.name;
-            if (uNode.formula !== undefined) updatedData.formula = uNode.formula;
-            
-            draft[uNode.id] = calculateComputed(updatedData);
-
-            // 月次データが選択されている場合、monthlyDataも更新する
-            if (currentState.currentPeriod.match(/^\d{4}-\d{2}$/)) {
-              const month = currentState.currentPeriod;
-              const monthlyData = { ...(draft[uNode.id].monthlyData || {}) };
-              
-              if (!monthlyData[month]) {
-                monthlyData[month] = { month, targetValue: draft[uNode.id].targetValue, actualValue: draft[uNode.id].actualValue };
-              }
-              if (uNode.targetValue !== undefined) monthlyData[month].targetValue = uNode.targetValue;
-              if (uNode.actualValue !== undefined) monthlyData[month].actualValue = uNode.actualValue;
-              
-              draft[uNode.id] = calculateComputed({ ...draft[uNode.id], monthlyData });
-            }
-          }
-        });
-
-        // 親ノードの数式（newFormula）のID置換
-        let finalNewFormula = updatedParent?.newFormula;
-        if (finalNewFormula) {
-          Object.keys(idMap).forEach(oldId => {
-            finalNewFormula = finalNewFormula.replace(new RegExp(`#{${oldId}}`, 'g'), `#{${idMap[oldId]}}`);
-          });
-        }
-
-        // 1.5. 新しいノードのフォーマットと追加
-        newNodes.forEach((node: any) => {
-          const safeId = node.id;
-
-          // 親IDの置換
-          if (node.parentId && idMap[node.parentId]) {
-            node.parentId = idMap[node.parentId];
-          }
-
-          // 数式内のID置換
-          if (node.formula) {
-            Object.keys(idMap).forEach(oldId => {
-              node.formula = node.formula.replace(new RegExp(`#{${oldId}}`, 'g'), `#{${idMap[oldId]}}`);
-            });
-          }
-
-          // フォールバック: AIが数式を忘れたが、子ノードが存在する場合の自動補完
-          const childrenOfThisNode = newNodes.filter((n: any) => n.parentId === safeId);
-          if (childrenOfThisNode.length > 0 && (!node.isCalculated || !node.formula)) {
-            node.isCalculated = true;
-            node.formula = childrenOfThisNode.map((c: any) => `#{${c.id}}`).join(' + ');
-          }
-
-          if (node.tasks && Array.isArray(node.tasks)) {
-            node.tasks.forEach((task: any) => {
-              const isString = typeof task === 'string';
-              newActions.push({
-                id: `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                kpiId: safeId,
-                title: isString ? task : (task.task_name || '新規タスク'),
-                description: isString ? '' : (task.description || ''),
-                status: 'todo',
-                owner: '未定',
-                dueDate: isString ? new Date().toISOString().split('T')[0] : (task.due_date || new Date().toISOString().split('T')[0])
-              });
-            });
-            delete node.tasks;
-          }
-
-          // isKsf の自動判定 (親がKGIならtrue、それ以外はfalse)
-          let isKsf = false;
-          if (draft[node.parentId] && draft[node.parentId].type === 'KGI') {
-            isKsf = true;
-          }
-
-          const newNode: KpiNodeWithComputedAndInit = {
-            ...node,
-            isKsf, // AIの出力を上書き
-            history: [],
-            initialActualValue: node.actualValue || 0,
-            addedAt: Date.now()
-          };
-          draft[safeId] = calculateComputed(newNode);
-        });
-
-        // 2. 親ノードの数式更新
-        if (updatedParent && draft[updatedParent.id] && finalNewFormula) {
-          const updatedParentNode = {
-            ...draft[updatedParent.id],
-            isCalculated: true,
-            formula: finalNewFormula
-          };
-          draft[updatedParent.id] = calculateComputed(updatedParentNode);
-        }
-
-        // 3. ツリー全体の再計算
-        sanitizeKpiData(draft);
-        recalculateTree(draft, 'targetValue', currentState.currentPeriod);
-        recalculateTree(draft, 'actualValue', currentState.currentPeriod);
-
-        // 4. DBへ同期
-        syncToDB(currentState.currentProjectId, currentState.currentOrgId, { kpiData: draft, actions: newActions });
-
-        return { kpiData: draft, actions: newActions, projectData: saveToProjectData({ ...currentState, kpiData: draft, actions: newActions }) };
-      });
-
-    } catch (e) {
-      console.error("Smart Add KPI Patch error:", e);
-      alert("KPIの追加に失敗しました。");
-      throw e;
-    }
-  },
-
-  smartAddKpi: async (query: string) => {
-    try {
-      const state = get();
-      const nodesArray = Object.values(state.kpiData);
-      
-      const response = await fetch('/api/smart-add-kpi', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentTree: nodesArray,
-          query: query,
-          businessUnit: state.currentProjectInfo?.name || 'company'
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to smart add KPI');
-
-      const data = await response.json();
-      await state.applySmartAddPatch(data);
-
-    } catch (e) {
-      console.error("Smart Add KPI error:", e);
-      alert("KPIの追加に失敗しました。詳細なプロンプトを試してください。");
-      throw e;
-    }
-  },
+  // smart add methods removed
   
   addAuditLog: async (log) => {
     const state = get();
@@ -1446,8 +1123,7 @@ export const useKpiStore = create<KpiStore>()(
       name: 'kpi-storage',
       partialize: (state) => ({ 
         collapsedNodes: state.collapsedNodes,
-        currentPeriod: state.currentPeriod,
-        smartAddMessages: state.smartAddMessages
+        currentPeriod: state.currentPeriod
       }),
     }
   )

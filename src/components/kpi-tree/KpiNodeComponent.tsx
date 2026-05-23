@@ -37,19 +37,27 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
     }
   };
 
-  const getHighlightGlow = (status: string) => {
-    switch (status) {
-      case 'good': return "ring-2 ring-strategic-teal/50 shadow-[0_0_15px_rgba(0,163,161,0.35)] border-strategic-teal/50 z-20";
-      case 'warning': return "ring-2 ring-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.35)] border-amber-500/50 z-20";
-      case 'danger': return "ring-2 ring-red-600/50 shadow-[0_0_15px_rgba(220,38,38,0.35)] border-red-600/50 z-20";
-      default: return "";
+  const getHighlightGlow = (status: string, isSelectedNode: boolean = false) => {
+    if (isSelectedNode) {
+      switch (status) {
+        case 'good': return "ring-4 ring-strategic-teal border-strategic-teal shadow-[0_0_20px_rgba(0,163,161,0.6)] z-30 scale-105";
+        case 'warning': return "ring-4 ring-amber-500 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.6)] z-30 scale-105";
+        case 'danger': return "ring-4 ring-red-600 border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.6)] z-30 scale-105";
+        default: return "ring-4 ring-slate-400 border-slate-400 shadow-md z-30 scale-105";
+      }
+    } else {
+      switch (status) {
+        case 'good': return "ring-2 ring-strategic-teal/50 shadow-[0_0_15px_rgba(0,163,161,0.35)] border-strategic-teal/50 z-20";
+        case 'warning': return "ring-2 ring-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.35)] border-amber-500/50 z-20";
+        case 'danger': return "ring-2 ring-red-600/50 shadow-[0_0_15px_rgba(220,38,38,0.35)] border-red-600/50 z-20";
+        default: return "";
+      }
     }
   };
 
   const selectedNodeId = useKpiStore((state) => state.selectedNodeId);
   const toggleNodeCollapse = useKpiStore((state) => state.toggleNodeCollapse);
   const currentPeriod = useKpiStore((state) => state.currentPeriod);
-  const isPredictionMode = useKpiStore((state) => state.isPredictionMode);
   const isSelected = selectedNodeId === data.id;
 
   const kpiData = useKpiStore((state) => state.kpiData);
@@ -88,23 +96,15 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
 
   // モック用の時系列・予測ロジック
   let isPast = false;
-  let displayLabel = isPast ? "過去実績" : "実績";
+  let displayLabel = "実績";
   
   // 期間換算（year基準をベースとする）
   let displayActualRaw = data.actualValue;
   let displayTargetRaw = data.targetValue;
-  
-  if (isPredictionMode) {
-    displayLabel = "AI予測";
-    displayActualRaw = data.simulatedValue !== undefined ? data.simulatedValue : data.actualValue;
-  }
 
   // kpi-utilsを用いてUI表示用に換算する
-  let displayActual = getDisplayValue(displayActualRaw, data, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
-  let displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod, isPredictionMode ? 'simulatedTargetValue' : 'targetValue');
-
-  // 過去データの判定（ここでは一旦シンプルにfalseとする。必要に応じて実際の日付比較を追加）
-  isPast = false;
+  let displayActual = getDisplayValue(displayActualRaw, data, currentPeriod, 'actualValue');
+  let displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod, 'targetValue');
 
   let displayAchievementRate = 0;
   if (displayTarget > 0) {
@@ -174,10 +174,9 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       isDimmed ? "opacity-30" : "opacity-100", // Dim nodes outside the highlighted path
       getStatusBorder(displayStatus),
       isAlert ? "bg-red-50/50 border-red-600" : "",
-      isSelected && "ring-2 ring-oxford-navy border-oxford-navy dark:ring-blue-400 dark:border-blue-400 shadow-md",
-      !isSelected && isHighlighted && getHighlightGlow(displayStatus),
+      isSelected && getHighlightGlow(displayStatus, true),
+      !isSelected && isHighlighted && getHighlightGlow(displayStatus, false),
       data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20",
-      data.isSimulated && !isNew && "ring-4 ring-[#8ab4f8]/50 shadow-[0_0_20px_rgba(138,180,248,0.5)] z-40",
       isNew && "ring-4 ring-strategic-teal/50 shadow-[0_0_20px_rgba(0,163,161,0.6)] z-50 animate-pulse",
       isRecentlyUpdated && "ring-4 ring-amber-400 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.8)] z-[60] animate-pulse transition-all duration-1000 scale-105 bg-gradient-to-br from-white to-amber-50"
     )}>

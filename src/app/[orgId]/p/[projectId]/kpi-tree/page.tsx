@@ -3,15 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
-import { SimulationPanel } from '@/components/kpi-tree/SimulationPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
-import { CopilotSidebar } from '@/components/kpi-tree/CopilotSidebar';
-import { useKpiStore } from '@/store/useKpiStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 
 export default function KpiTreePage() {
-  const isPredictionMode = useKpiStore(state => state.isPredictionMode);
-  const isCopilotSidebarOpen = useKpiStore(state => state.isCopilotSidebarOpen);
   const isActionPanelCollapsed = useLayoutStore(state => state.isActionPanelCollapsed);
   const [isMounted, setIsMounted] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(400); // 右サイドバー初期幅
@@ -24,11 +19,7 @@ export default function KpiTreePage() {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    if ((isCopilotSidebarOpen || isPredictionMode) && sidebarWidth < 350) {
-      setSidebarWidth(450);
-    }
-  }, [isCopilotSidebarOpen, isPredictionMode]);
+
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -106,7 +97,7 @@ export default function KpiTreePage() {
       </div>
 
       {/* リサイズ用境界線（Resizer） - パネルが閉じている場合は非表示 */}
-      {!isActionPanelCollapsed || isCopilotSidebarOpen || isPredictionMode ? (
+      {!isActionPanelCollapsed ? (
         <div 
           onMouseDown={handleMouseDown}
           className={`w-1 cursor-col-resize shrink-0 z-10 hover:bg-primary-500/50 transition-colors border-l border-slate-200 dark:border-[#3c4043] ${
@@ -115,24 +106,18 @@ export default function KpiTreePage() {
         />
       ) : null}
 
-      {/* 右サイドバー：アクションパネル or Copilot */}
+      {/* 右サイドバー：アクションパネル */}
       <div 
         style={{ 
-          width: isActionPanelCollapsed && !isCopilotSidebarOpen && !isPredictionMode ? '0px' : `${sidebarWidth}px`,
-          display: (!isCopilotSidebarOpen && !isPredictionMode && isActionPanelCollapsed) ? 'none' : 'flex'
+          width: isActionPanelCollapsed ? '0px' : `${sidebarWidth}px`,
+          display: isActionPanelCollapsed ? 'none' : 'flex'
         }} 
         className="shrink-0 bg-white dark:bg-[#2d2f31] flex-col h-full overflow-hidden"
       >
         <div className="flex-1 min-h-0 overflow-hidden">
-          {isCopilotSidebarOpen ? (
-            <CopilotSidebar />
-          ) : isPredictionMode ? (
-            <SimulationPanel />
-          ) : (
-            <div className="h-full overflow-hidden custom-scrollbar">
-              <KpiExecutionPanel />
-            </div>
-          )}
+          <div className="h-full overflow-hidden custom-scrollbar">
+            <KpiExecutionPanel />
+          </div>
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@ import { getDisplayValue, getStorageValue } from '@/lib/kpi-utils';
 type TableMode = 'master' | 'ksf' | 'history' | 'database';
 
 export const DataEditor = () => {
-  const { kpiData, actions, currentProjectInfo, addHistoryRecord, updateHistoryRecord, deleteHistoryRecord, updateKpiNode, updateAction, currentPeriod, isPredictionMode } = useKpiStore();
+  const { kpiData, actions, currentProjectInfo, addHistoryRecord, updateHistoryRecord, deleteHistoryRecord, updateKpiNode, updateAction, currentPeriod } = useKpiStore();
   
   // 表示中のテーブルモード
   const [activeMode, setActiveMode] = useState<TableMode>('master');
@@ -374,7 +374,7 @@ export const DataEditor = () => {
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0 bg-slate-50 dark:bg-[#2d2f31] font-medium text-right">
                     <div className="w-full h-full p-2 flex items-center justify-end gap-1" title={node.isCalculated ? `自動計算: ${node.formula}` : ''}>
                       {node.isCalculated && <Calculator size={12} className="text-primary-500 opacity-70" />}
-                      {isPredictionMode && node.simulatedValue !== undefined ? getDisplayValue(node.simulatedValue, node, currentPeriod, 'simulatedValue') : getDisplayValue(node.actualValue, node, currentPeriod, 'actualValue')}
+                      {getDisplayValue(node.actualValue, node, currentPeriod, 'actualValue')}
                     </div>
                   </td>
                   <td className="border-r border-slate-200 dark:border-[#3c4043] p-0">

@@ -14,7 +14,7 @@ import { ReviveKpiModal } from './ReviveKpiModal';
 import { AILoadingIndicator } from '@/components/ui/AILoadingIndicator';
 
 export const ActionPanel = () => {
-  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, isPredictionMode, updateSimulatedValue, addAction, currentPeriod, saveHistory } = useKpiStore();
+  const { kpiData, selectedNodeId, actions, toggleActionStatus, addKpiNode, removeKpiNode, updateKpiNode, addAction, currentPeriod, saveHistory } = useKpiStore();
   const { currentProjectId, projects } = useProjectStore();
   const { user } = useAuthStore();
   const { currentOrgId, organizations, updateOrganizationFrameworks } = useOrgStore();
@@ -228,7 +228,7 @@ export const ActionPanel = () => {
     setIsEditingValue(false);
     if (selectedKpi) {
       const displayTarget = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue');
-      const displayActual = getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
+      const displayActual = getDisplayValue(selectedKpi.actualValue, selectedKpi, currentPeriod, 'actualValue');
       
       setEditTargetValue(displayTarget.toString());
       setEditActualValue(displayActual.toString());
@@ -240,9 +240,7 @@ export const ActionPanel = () => {
       setEditIsCalculated(selectedKpi.isCalculated || false);
       setEditFormula(selectedKpi.formula || '');
     }
-  }, [selectedNodeId, kpiData, isPredictionMode, hasChildren, currentPeriod]);
-
-  const { applyRollingForecast } = useKpiStore();
+  }, [selectedNodeId, kpiData, hasChildren, currentPeriod]);
   
   // 💰 AIクレジット確認・消費のラッパー関数
   const consumeAiCredits = (featureName: string, requiredCredits: number): boolean => {
@@ -259,25 +257,7 @@ export const ActionPanel = () => {
     return true;
   };
 
-  const handleAiRecovery = () => {
-    if (!selectedKpi) return;
-    
-    // 💡 Paywallチェック: AIリカバリーは 50 クレジット消費
-    if (!consumeAiCredits('AIリカバリー・シミュレーション', 50)) return;
-    
-    const allMonths = [
-      "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09",
-      "2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"
-    ];
-    // Exclude past months and current month (recovery starts NEXT month?)
-    // Let's start recovery from current month if possible, but actually we usually recover from the REMAINING months.
-    // If we are viewing 2026-05, we distribute the debt of (April) into May~March. So we use currentPeriod and onwards.
-    const remainingMonths = allMonths.filter(m => m >= currentPeriod);
-    if (remainingMonths.length === 0) return;
-    
-    const additionalTargetPerMonth = Math.ceil(shortfall / remainingMonths.length);
-    applyRollingForecast(selectedKpi.id, additionalTargetPerMonth, remainingMonths);
-  };
+  // handleAiRecovery removed
 
   const handleSaveValues = () => {
     if (!selectedNodeId || !selectedKpi) return;
@@ -286,11 +266,7 @@ export const ActionPanel = () => {
     const storedTarget = getStorageValue(Number(editTargetValue) || 0, selectedKpi, currentPeriod, 'targetValue');
     const storedActual = getStorageValue(Number(editActualValue) || 0, selectedKpi, currentPeriod, 'actualValue');
 
-    if (isPredictionMode) {
-      updateSimulatedValue(selectedNodeId, storedActual);
-      // 目標値のシミュレーション編集は一旦省略（実績のシミュレーションのみ）
-    } else {
-      saveHistory(); // 値や数式の変更を履歴に積む
+    saveHistory(); // 値や数式の変更を履歴に積む
       
       const isMonth = currentPeriod.match(/^\d{4}-\d{2}$/);
       
@@ -314,7 +290,6 @@ export const ActionPanel = () => {
           actualValue: storedActual
         }]);
       }
-    }
     setIsEditingValue(false);
   };
 
@@ -355,7 +330,6 @@ export const ActionPanel = () => {
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <h4 className="font-bold text-oxford-navy dark:text-slate-200 break-words flex-1">
                 <span className="text-[10px] text-emerald-500 mr-1">{selectedKpi.type === 'KGI' ? 'KGI:' : 'KPI:'}</span>
-                {isPredictionMode && <span className="text-primary-500 mr-1 text-xs">[予測]</span>}
                 {selectedKpi.name}
               </h4>
               <button 
@@ -368,10 +342,10 @@ export const ActionPanel = () => {
             </div>
             <div className="flex gap-2 mt-2">
               <span className={`text-xs font-bold ${
-                (isPredictionMode ? selectedKpi.simulatedStatus : selectedKpi.status) === 'danger' ? 'text-rose-500 dark:text-rose-400' : 
-                (isPredictionMode ? selectedKpi.simulatedStatus : selectedKpi.status) === 'warning' ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'
+                selectedKpi.status === 'danger' ? 'text-rose-500 dark:text-rose-400' : 
+                selectedKpi.status === 'warning' ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'
               }`}>
-                達成率: {isPredictionMode && selectedKpi.simulatedAchievementRate !== undefined ? selectedKpi.simulatedAchievementRate.toFixed(1) : selectedKpi.achievementRate.toFixed(1)}%
+                達成率: {selectedKpi.achievementRate.toFixed(1)}%
               </span>
             </div>
           </div>
@@ -451,7 +425,7 @@ export const ActionPanel = () => {
                             type="text" 
                             value={editQualitativeName} 
                             onChange={(e) => setEditQualitativeName(e.target.value)}
-                            disabled={isPredictionMode}
+                            disabled={false}
                             className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           />
                         </div>
@@ -461,7 +435,7 @@ export const ActionPanel = () => {
                             type="text" 
                             value={editName} 
                             onChange={(e) => setEditName(e.target.value)}
-                            disabled={isPredictionMode}
+                            disabled={false}
                             className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           />
                         </div>
@@ -470,7 +444,7 @@ export const ActionPanel = () => {
                           <select
                             value={editUpdateFrequency}
                             onChange={(e) => setEditUpdateFrequency(e.target.value as any)}
-                            disabled={isPredictionMode}
+                            disabled={false}
                             className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           >
                             <option value="daily">日次 (Daily)</option>
@@ -484,7 +458,7 @@ export const ActionPanel = () => {
                             type="text" 
                             value={editCalculationFormula} 
                             onChange={(e) => setEditCalculationFormula(e.target.value)}
-                            disabled={isPredictionMode}
+                            disabled={false}
                             placeholder="例: 客数 × 客単価"
                             className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50"
                           />
@@ -495,7 +469,7 @@ export const ActionPanel = () => {
                               type="checkbox" 
                               checked={editIsCalculated} 
                               onChange={(e) => setEditIsCalculated(e.target.checked)} 
-                              disabled={isPredictionMode || !!selectedKpi.linkedSource}
+                              disabled={!!selectedKpi.linkedSource}
                               className="rounded border-slate-300 text-primary-500 focus:ring-strategic-teal disabled:opacity-50"
                             />
                             <span className="text-xs text-logic-slate dark:text-slate-400 font-bold flex items-center gap-1">
@@ -511,7 +485,7 @@ export const ActionPanel = () => {
                             <textarea 
                               value={editFormula} 
                               onChange={(e) => setEditFormula(e.target.value)}
-                              disabled={isPredictionMode}
+                              disabled={false}
                               placeholder="例: #{kpi_123} * #{kpi_456}"
                               className="w-full text-xs px-2 py-1.5 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50 min-h-[40px] font-mono"
                             />
@@ -525,13 +499,13 @@ export const ActionPanel = () => {
                           type="number" 
                           value={editTargetValue} 
                           onChange={(e) => setEditTargetValue(e.target.value)}
-                          disabled={isPredictionMode || editIsCalculated || !!selectedKpi.linkedSource}
+                          disabled={editIsCalculated || !!selectedKpi.linkedSource}
                           className="flex-1 text-xs px-2 py-1 border rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-strategic-teal disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                         />
                         <span className="text-xs text-logic-slate dark:text-slate-400 w-4">{selectedKpi.unit}</span>
                       </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-logic-slate dark:text-slate-400 w-12">{isPredictionMode ? '予測値' : '実績値'}</span>
+                    <span className="text-xs text-logic-slate dark:text-slate-400 w-12">実績値</span>
                     <input 
                       type="number" 
                       value={editActualValue} 
@@ -541,7 +515,7 @@ export const ActionPanel = () => {
                     />
                     <span className="text-xs text-logic-slate dark:text-slate-400 w-4">{selectedKpi.unit}</span>
                   </div>
-                  {editIsCalculated && !isPredictionMode && (
+                  {editIsCalculated && (
                     <div className="text-[10px] text-slate-400 text-right mt-1">※ 自動計算ノードの実績は手動入力できません。</div>
                   )}
                   <div className="flex justify-end gap-2 mt-2">
@@ -557,7 +531,7 @@ export const ActionPanel = () => {
                         目標: <span className="font-bold text-slate-700 dark:text-slate-300">{formatDisplayValue(getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue'), selectedKpi.unit)}</span> {selectedKpi.unit}
                       </div>
                       <div className="text-xs text-logic-slate dark:text-slate-400">
-                        {isPredictionMode ? '予測' : '実績'}: <span className="font-bold text-oxford-navy dark:text-slate-200">{formatDisplayValue(getDisplayValue(isPredictionMode && selectedKpi.simulatedValue !== undefined ? selectedKpi.simulatedValue : selectedKpi.actualValue, selectedKpi, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue'), selectedKpi.unit)}</span> {selectedKpi.unit}
+                        実績: <span className="font-bold text-oxford-navy dark:text-slate-200">{formatDisplayValue(getDisplayValue(selectedKpi.actualValue, selectedKpi, currentPeriod, 'actualValue'), selectedKpi.unit)}</span> {selectedKpi.unit}
                       </div>
                     </div>
                     <div className="text-primary-500 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded">
@@ -605,31 +579,7 @@ export const ActionPanel = () => {
               )}
             </div>
 
-            {/* AIリカバリープラン提案 (未達時のみ表示) */}
-            {hasShortfall && !isPredictionMode && (
-              <div className="mt-4 bg-gradient-to-br from-red-50 to-amber-50 dark:from-red-900/20 dark:to-amber-900/20 border border-red-200 dark:border-red-800/50 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <div className="bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 p-1.5 rounded flex-shrink-0">
-                    <AlertTriangle size={16} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h5 className="text-[12px] font-bold text-red-800 dark:text-red-300 flex items-center gap-1.5">
-                      未達残債アラート
-                    </h5>
-                    <p className="text-[11px] text-red-700/80 dark:text-red-400/80 mt-1 mb-2 leading-relaxed">
-                      前月までの累計で <span className="font-bold text-red-600 dark:text-red-400">{formatDisplayValue(shortfall, selectedKpi.unit)} {selectedKpi.unit}</span> のショートフォールが発生しています。残りの期間でリカバリーするための目標再設定をAIにシミュレーションさせますか？
-                    </p>
-                    <button 
-                      onClick={handleAiRecovery}
-                      className="w-full flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-slate-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 transition-colors py-1.5 rounded-[4px] text-[11px] font-bold shadow-sm"
-                    >
-                      <Bot size={14} />
-                      AIリカバリープランを作成 (シミュレーション)
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+
 
             {/* トレンドチャート */}
             <div className="mt-4">

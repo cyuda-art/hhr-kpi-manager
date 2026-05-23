@@ -87,8 +87,8 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
         id: `e-${data.parentId}-${id}`,
         source: data.parentId,
         target: id,
-        animated: data.isSimulated,
-        style: { stroke: data.isSimulated ? '#6366f1' : '#cbd5e1', strokeWidth: 2 },
+        animated: false,
+        style: { stroke: '#cbd5e1', strokeWidth: 2 },
       });
     }
   });
@@ -97,7 +97,7 @@ const generateNodesAndEdges = (kpiData: Record<string, any>, direction: 'TB' | '
 };
 
 export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashboard?: boolean, previewMode?: boolean }) => {
-  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, isPredictionMode, togglePredictionMode, undo, redo, pastStates, futureStates, currentPeriod, isAiGenerating } = useKpiStore();
+  const { kpiData, selectedNodeId, setSelectedNodeId, collapsedNodes, undo, redo, pastStates, futureStates, currentPeriod, isAiGenerating } = useKpiStore();
   const { actionPanelWidth, isActionPanelCollapsed, setActionPanelWidth, toggleActionPanel, showMiniMap, toggleMiniMap, autoCenter, toggleAutoCenter, layoutDirection, setLayoutDirection, showStatusLegend, toggleStatusLegend } = useLayoutStore();
   const currentProjectInfo = useKpiStore((state) => state.currentProjectInfo);
   const thresholds = currentProjectInfo?.statusThresholds || { good: 100, warning: 80 };
@@ -389,38 +389,11 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
     const getEdgeStyle = (sourceId: string, targetId: string) => {
       const targetData = kpiData[targetId];
-      const isSimulated = targetData?.isSimulated || false;
-      let targetStatus = 'danger';
-      
-      if (targetData) {
-        let displayTarget = targetData.targetValue || 0;
-        let displayActual = targetData.actualValue || 0;
-        
-        if (isPredictionMode) {
-          displayActual = targetData.simulatedValue !== undefined ? targetData.simulatedValue : displayActual;
-          displayTarget = targetData.simulatedTargetValue !== undefined ? targetData.simulatedTargetValue : displayTarget;
-        }
-
-        displayActual = getDisplayValue(displayActual, targetData, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
-        displayTarget = getDisplayValue(displayTarget, targetData, currentPeriod, isPredictionMode ? 'simulatedTargetValue' : 'targetValue');
-
-        let achievementRate = 0;
-        if (displayTarget > 0) {
-          if (targetData.name?.includes('原価率') || targetData.name?.includes('キャンセル率') || targetData.name?.includes('コスト')) {
-            achievementRate = displayActual === 0 ? 0 : (displayTarget / displayActual) * 100;
-          } else {
-            achievementRate = (displayActual / displayTarget) * 100;
-          }
-        }
-        
-        targetStatus = isPredictionMode && targetData.simulatedStatus ? targetData.simulatedStatus : (achievementRate >= 100 ? 'good' : achievementRate >= 80 ? 'warning' : 'danger');
-      }
-
-
+      let targetStatus = targetData?.status || 'danger';
       let strokeColor = '#cbd5e1'; // default slate-300
       let strokeWidth = 2;
       let strokeDasharray = undefined as string | undefined;
-      let animated = isSimulated;
+      let animated = false;
       let filter = undefined as string | undefined;
 
       const isNew = targetData?.addedAt && Date.now() - targetData.addedAt < 5000;
@@ -439,12 +412,6 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       } else if (targetStatus === 'good') {
         strokeColor = `url(#edge-progress-${targetId})`;
         strokeWidth = 3;
-      }
-
-      if (isSimulated && !isNew) {
-        strokeColor = '#8ab4f8';
-        animated = true;
-        filter = 'drop-shadow(0 0 6px rgba(138, 180, 248, 0.6))';
       }
 
       // 選択中ノードとその影響範囲（上位・下位すべて）を点線にして発光させる
@@ -512,7 +479,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       });
       return newEdges;
     });
-  }, [kpiData, setNodes, setEdges, collapsedNodes, selectedNodeId, isPredictionMode]);
+  }, [kpiData, setNodes, setEdges, collapsedNodes, selectedNodeId]);
 
   // 選択されたノードが変更されたらセンタリングするアニメーション
   useEffect(() => {
@@ -576,28 +543,12 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               自動フォーカス
             </button>
             <button
-              onClick={togglePredictionMode}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg shadow-sm border transition-all text-xs font-bold ${isPredictionMode ? 'bg-[#8ab4f8]/10 border-[#8ab4f8] text-[#8ab4f8] shadow-[0_0_10px_rgba(138,180,248,0.3)] ring-1 ring-[#8ab4f8]' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
-              title="AI予測（シミュレーション）モードのON/OFF"
-            >
-              <Bot size={14} />
-              AI予測モード {isPredictionMode ? 'ON' : 'OFF'}
-            </button>
-            <button
               onClick={toggleDirection}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-logic-slate dark:text-slate-400 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-strategic-teal dark:hover:text-primary-400 transition-colors text-xs font-bold"
               title="レイアウトの方向（縦・横）を切り替え"
             >
               {layoutDirection === 'TB' ? <MoveDown size={14} /> : <MoveRight size={14} />}
               方向: {layoutDirection === 'TB' ? '縦 (Top to Bottom)' : '横 (Left to Right)'}
-            </button>
-            <button
-              onClick={() => setIsCopilotSidebarOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-strategic-teal text-white border border-transparent rounded-lg shadow-sm hover:bg-strategic-teal/90 transition-colors text-xs font-bold"
-              title="AIに最適な場所を判定させてKPIを追加"
-            >
-              <Sparkles size={14} />
-              AIスマート追加
             </button>
             <button
               onClick={toggleMiniMap}
@@ -707,10 +658,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                   <div className="w-6 h-0 border-t-[2px] border-dashed border-slate-400"></div>
                   <span className="text-logic-slate dark:text-slate-400 text-[10px]">選択中のKPIの依存経路（ハイライト）</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-[2px] bg-[#8ab4f8] rounded-full"></div>
-                  <span className="text-logic-slate dark:text-slate-400 text-[10px]">AI予測モードON時のみ青く発光</span>
-                </div>
+
               </div>
             </div>
           </div>
@@ -748,13 +696,8 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 let displayTarget = data.targetValue || 0;
                 let displayActual = data.actualValue || 0;
                 
-                if (isPredictionMode) {
-                  displayActual = data.simulatedValue !== undefined ? data.simulatedValue : displayActual;
-                  displayTarget = data.simulatedTargetValue !== undefined ? data.simulatedTargetValue : displayTarget;
-                }
-
-                displayActual = getDisplayValue(displayActual, data as any, currentPeriod, isPredictionMode ? 'simulatedValue' : 'actualValue');
-                displayTarget = getDisplayValue(displayTarget, data as any, currentPeriod, isPredictionMode ? 'simulatedTargetValue' : 'targetValue');
+                displayActual = getDisplayValue(displayActual, data as any, currentPeriod, 'actualValue');
+                displayTarget = getDisplayValue(displayTarget, data as any, currentPeriod, 'targetValue');
 
                 let achievementRate = 0;
                 if (displayTarget > 0) {
@@ -766,7 +709,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                 }
                 
                 achievementRate = Math.min(100, Math.max(0, achievementRate));
-                const status = isPredictionMode && data.simulatedStatus ? data.simulatedStatus : (achievementRate >= 100 ? 'good' : achievementRate >= 80 ? 'warning' : 'danger');
+                const status = achievementRate >= 100 ? 'good' : achievementRate >= 80 ? 'warning' : 'danger';
                 const color = status === 'good' ? '#10b981' : status === 'warning' ? '#fbbf24' : '#f43f5e';
 
                 return (
