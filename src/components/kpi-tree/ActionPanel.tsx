@@ -701,7 +701,7 @@ export const ActionPanel = () => {
                 <div className="p-4 space-y-5">
                   
                   {/* AI Copilot */}
-                  <div className="bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-slate-900 border border-purple-100 dark:border-purple-800/50 rounded-xl p-3 shadow-sm">
+                  <div className="bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-800/50 rounded-xl p-3 shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles size={14} className="text-purple-500" />
                       <h4 className="text-[11px] font-bold text-purple-700 dark:text-purple-400">AI Strategy Copilot</h4>

@@ -181,9 +181,9 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
           className={cn(
             "absolute transition-all duration-700 ease-in-out",
             "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:inset-0 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:blur-md [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-90 -inset-4 blur-2xl opacity-40 group-hover:opacity-60",
-            displayStatus === 'good' ? "bg-gradient-to-br from-emerald-400/60 via-teal-400/40 to-transparent" :
-            displayStatus === 'warning' ? "bg-gradient-to-br from-amber-400/60 via-orange-400/40 to-transparent" :
-            "bg-gradient-to-br from-rose-500/60 via-red-500/40 to-transparent"
+            displayStatus === 'good' ? "bg-emerald-400/20" :
+            displayStatus === 'warning' ? "bg-amber-400/20" :
+            "bg-rose-500/20"
           )}
         />
         {/* プログレスバーの代わりの極細の光るライン */}

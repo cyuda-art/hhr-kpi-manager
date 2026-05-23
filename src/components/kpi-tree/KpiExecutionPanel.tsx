@@ -94,7 +94,7 @@ export const KpiExecutionPanel = () => {
 
   if (!selectedKpi) {
     return (
-      <div className="flex flex-col h-full bg-gradient-to-b from-white/30 to-white/10 dark:from-black/30 dark:to-black/10 items-center justify-center p-6 text-center relative overflow-hidden backdrop-blur-md">
+      <div className="flex flex-col h-full bg-white/5 dark:bg-black/10 items-center justify-center p-6 text-center relative overflow-hidden backdrop-blur-md">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
           <div className="w-64 h-64 bg-blue-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
           <div className="absolute w-48 h-48 bg-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', transform: 'translate(40px, -40px)' }} />
@@ -103,7 +103,7 @@ export const KpiExecutionPanel = () => {
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <Zap className="text-blue-500 dark:text-blue-400 relative z-10" size={28} />
         </div>
-        <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-slate-100 dark:to-slate-400 mb-2 z-10 font-poppins">
+        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 z-10 font-poppins">
           Action-Oriented Cockpit
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 z-10">
@@ -225,7 +225,7 @@ export const KpiExecutionPanel = () => {
             className="absolute inset-0 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-2xl flex flex-col h-full"
           >
             <div className="p-4 flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800/50">
-              <h3 className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-slate-200 dark:to-slate-400 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <Settings size={16} className="text-slate-600 dark:text-slate-400" /> KPI設定
               </h3>
               <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
@@ -313,7 +313,7 @@ export const KpiExecutionPanel = () => {
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">実績 / 目標</span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight font-poppins drop-shadow-sm">
+              <span className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight font-poppins drop-shadow-sm">
                 {formatDisplayValue(actualVal, selectedKpi.unit)}
               </span>
               <span className="text-xs font-medium text-slate-400 font-poppins">
@@ -413,7 +413,7 @@ export const KpiExecutionPanel = () => {
         <div className="relative z-10 flex flex-col gap-5 h-full">
           {(!selectedKpi.chatMessages || selectedKpi.chatMessages.length === 0) && (
             <div className="flex flex-col items-center justify-center h-full text-center p-4">
-              <h4 className="text-[13px] font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-400 dark:from-slate-100 dark:to-slate-500 mb-2 tracking-widest uppercase font-poppins">
+              <h4 className="text-[13px] font-black text-slate-800 dark:text-slate-200 mb-2 tracking-widest uppercase font-poppins">
                 AI 実行エンジン
               </h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400/80 leading-relaxed max-w-[240px]">
@@ -425,12 +425,12 @@ export const KpiExecutionPanel = () => {
           {selectedKpi.chatMessages?.map((msg) => (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'model' && (
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+                <div className="w-7 h-7 rounded-lg bg-slate-800 dark:bg-slate-200 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
                   <Zap size={14} className="text-white dark:text-slate-900" />
                 </div>
               )}
               {/* 4. ソリッドグラデーションの境界線（AIのみ） */}
-              <div className={`max-w-[85%] relative ${msg.role === 'user' ? '' : 'p-[1px] bg-gradient-to-br from-white/40 to-white/0 dark:from-white/10 dark:to-white/0 rounded-r-2xl rounded-bl-2xl shadow-sm'}`}>
+              <div className={`max-w-[85%] relative ${msg.role === 'user' ? '' : 'p-px bg-white/20 dark:bg-white/10 rounded-r-2xl rounded-bl-2xl shadow-sm'}`}>
                 <div className={`px-4 py-3 text-[13px] ${
                   msg.role === 'user' 
                     ? 'bg-slate-800/80 dark:bg-slate-200/80 text-white dark:text-slate-900 rounded-l-2xl rounded-br-2xl shadow-sm' 
@@ -453,10 +453,10 @@ export const KpiExecutionPanel = () => {
           
           {isProcessing && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start gap-3">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+              <div className="w-7 h-7 rounded-lg bg-slate-800 dark:bg-slate-200 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
                 <Zap size={14} className="text-white dark:text-slate-900" />
               </div>
-              <div className="p-[1px] bg-gradient-to-br from-white/40 to-white/0 dark:from-white/10 dark:to-white/0 rounded-r-2xl rounded-bl-2xl shadow-sm">
+              <div className="p-px bg-white/20 dark:bg-white/10 rounded-r-2xl rounded-bl-2xl shadow-sm">
                 <div className="bg-white/60 dark:bg-black/40 px-5 py-4 rounded-r-2xl rounded-bl-2xl flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -470,7 +470,7 @@ export const KpiExecutionPanel = () => {
       </div>
 
       {/* 5. フローティング・ピル型 入力フォームとサジェストチップ */}
-      <div className="absolute bottom-0 left-0 w-full px-5 pb-6 pt-10 bg-gradient-to-t from-white/60 via-white/40 to-transparent dark:from-black/60 dark:via-black/40 dark:to-transparent flex flex-col gap-3 z-30 pointer-events-none">
+      <div className="absolute bottom-0 left-0 w-full px-5 pb-6 pt-6 bg-white/20 dark:bg-black/30 backdrop-blur-xl border-t border-white/20 dark:border-white/5 flex flex-col gap-3 z-30 pointer-events-none">
         
         {/* 3. グラスモーフィズムのサジェストチップ */}
         <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1 pointer-events-auto">
