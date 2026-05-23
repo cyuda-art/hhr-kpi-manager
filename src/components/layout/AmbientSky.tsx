@@ -85,7 +85,7 @@ export const AmbientSky = () => {
   const currentTheme = themes[timeOfDay];
 
   return (
-    <div className={`absolute inset-0 transition-colors duration-[3000ms] ease-in-out ${currentTheme.bg} overflow-hidden pointer-events-none -z-10`}>
+    <div className={`absolute inset-0 transition-colors duration-[3000ms] ease-in-out ${currentTheme.bg} overflow-hidden pointer-events-none z-0`}>
       
       {/* 太陽 / 月 のオーブ */}
       <div

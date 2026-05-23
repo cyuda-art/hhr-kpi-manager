@@ -25,7 +25,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
       <PaywallModal />
       <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out min-w-0 h-full">
         {!isKpiTreePage && <Header />}
-        <main className={`flex-1 bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] transition-colors relative ${isKpiTreePage ? 'p-0 overflow-hidden' : 'p-4 md:p-8 overflow-y-auto custom-scrollbar'}`}>
+        <main className={`flex-1 text-slate-800 dark:text-[#e8eaed] transition-colors relative ${isKpiTreePage ? 'h-screen bg-transparent' : 'h-[calc(100vh-64px)] overflow-auto bg-slate-50 dark:bg-[#202124]'} w-full`}>
           {children}
         </main>
       </div>
