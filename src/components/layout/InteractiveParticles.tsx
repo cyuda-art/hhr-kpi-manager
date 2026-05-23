@@ -81,7 +81,8 @@ export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) =
 
     const initParticles = () => {
       particles = [];
-      const numberOfParticles = Math.floor((canvas.width * canvas.height) / 8000); 
+      // パフォーマンス最適化: 最大でも400個に制限し、高解像度での発熱を防ぐ
+      const numberOfParticles = Math.min(300, Math.floor((canvas.width * canvas.height) / 10000)); 
       
       for (let i = 0; i < numberOfParticles; i++) {
         const x = Math.random() * canvas.width;
@@ -168,9 +169,13 @@ export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) =
 
         const dx = mouse.x - p.x;
         const dy = mouse.y - p.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distSq = dx * dx + dy * dy;
+        const mouseRadiusSq = mouse.radius * mouse.radius;
+        
+        let distance = 9999;
 
-        if (distance < mouse.radius) {
+        if (distSq < mouseRadiusSq) {
+          distance = Math.sqrt(distSq);
           const force = (mouse.radius - distance) / mouse.radius;
           const angleToMouse = Math.atan2(dy, dx);
           
@@ -210,25 +215,26 @@ export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) =
         warpStrengthRef.current *= 0.9;
 
         // 描画（個々の粒子の発光を表現）
-        ctx.beginPath();
         // ワープ中は粒子が手前に引き伸ばされる表現
         const stretch = 1 + warpStrengthRef.current * 2;
-        ctx.arc(p.x, p.y, p.size * (warpDirectionRef.current > 0 ? stretch : 1), 0, Math.PI * 2);
+        const finalSize = p.size * (warpDirectionRef.current > 0 ? stretch : 1);
         
         // Glowエフェクト（KPI選択中やマウス周辺で強く発光）
         const glowStrength = distance < mouse.radius ? (1 - distance/mouse.radius) : (kpiStatus ? 0.5 : 0.1);
         
-        // パフォーマンスを考慮し、手前の粒子のみ強くBlurをかける
-        if (p.size > 1.5) {
-          ctx.shadowBlur = p.size * 5 * (1 + glowStrength);
-          ctx.shadowColor = `rgba(${colorRgb}, 1)`;
-        } else {
-          ctx.shadowBlur = 0;
-        }
-        
+        // メインの粒子
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, finalSize, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${colorRgb}, ${Math.min(1, p.alpha + glowStrength * 0.5)})`;
         ctx.fill();
-        ctx.shadowBlur = 0; // 他の描画に影響しないようにリセット
+        
+        // パフォーマンス最適化: 重い shadowBlur を廃止し、半透明の円を描画してGlowを疑似的に表現
+        if (finalSize > 1.2 || glowStrength > 0.2) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, finalSize * (2.5 + glowStrength * 3), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${colorRgb}, ${0.08 + glowStrength * 0.15})`;
+          ctx.fill();
+        }
       });
 
       animationFrameId = requestAnimationFrame(draw);

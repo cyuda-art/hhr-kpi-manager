@@ -57,25 +57,25 @@ export const AmbientSky = () => {
   // 時間帯ごとのテーマ定義
   const themes = {
     dawn: {
-      bg: "bg-gradient-to-br from-indigo-200 via-rose-100 to-amber-50 dark:from-indigo-950 dark:via-rose-950/40 dark:to-slate-900",
+      bg: "bg-gradient-to-br from-indigo-100 via-rose-50 to-amber-50 dark:from-indigo-950 dark:via-rose-950/40 dark:to-slate-900",
       orbColor: "bg-gradient-to-tr from-rose-400 to-amber-300",
       orbSize: "w-[400px] h-[400px]",
       orbBlur: "blur-[120px]",
     },
     day: {
-      bg: "bg-gradient-to-b from-sky-300 via-blue-100 to-slate-50 dark:from-sky-900 dark:via-slate-900 dark:to-slate-950",
+      bg: "bg-gradient-to-b from-sky-200 via-blue-50 to-slate-50 dark:from-sky-900 dark:via-slate-900 dark:to-slate-950",
       orbColor: "bg-amber-100 dark:bg-amber-200",
       orbSize: "w-[300px] h-[300px]",
       orbBlur: "blur-[100px]",
     },
     sunset: {
-      bg: "bg-gradient-to-b from-purple-400 via-rose-400 to-amber-200 dark:from-purple-950 dark:via-rose-900 dark:to-amber-950/40",
+      bg: "bg-gradient-to-b from-purple-200 via-rose-100 to-amber-100 dark:from-purple-950 dark:via-rose-900 dark:to-amber-950/40",
       orbColor: "bg-gradient-to-b from-orange-400 to-rose-500",
       orbSize: "w-[500px] h-[500px]",
       orbBlur: "blur-[100px]",
     },
     night: {
-      bg: "bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950",
+      bg: "bg-gradient-to-b from-indigo-100 via-slate-100 to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950",
       orbColor: "bg-blue-200 dark:bg-indigo-300",
       orbSize: "w-[250px] h-[250px]",
       orbBlur: "blur-[80px]",
