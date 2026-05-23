@@ -164,8 +164,8 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
   const recentlyUpdatedNodes = useKpiStore((state) => state.recentlyUpdatedNodes);
   const isRecentlyUpdated = recentlyUpdatedNodes.includes(data.id);
 
-  // Macro時はコンテナサイズを縮小せず（ReactFlowの再計算・カクツキを防止）、透明にして内部要素だけを中央に配置する
-  const containerStyle = "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:bg-transparent [.kpi-tree-wrapper[data-zoom-view='macro']_&]:border-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:shadow-none [.kpi-tree-wrapper[data-zoom-view='macro']_&]:!ring-0 w-[280px] bg-white/95 dark:bg-slate-900/90 backdrop-blur-3xl rounded-2xl border border-white/80 dark:border-slate-700/80 shadow-[0_16px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.5)] p-5 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_24px_60px_rgba(0,0,0,0.6)] hover:bg-white dark:hover:bg-slate-800/95";
+  // コンテナスタイル
+  const containerStyle = "w-[280px] bg-white/95 dark:bg-slate-900/90 backdrop-blur-3xl rounded-2xl border border-white/80 dark:border-slate-700/80 shadow-[0_16px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.5)] p-5 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_24px_60px_rgba(0,0,0,0.6)] hover:bg-white dark:hover:bg-slate-800/95";
 
   // Z軸の奥行き計算（期間によって深度を変える）
   const getZDepth = (depth: number) => {
@@ -189,11 +189,11 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
       style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
     >
       {/* 2. 内側から溢れるステータス・オーラ（Glowing Aura） */}
-      <div className={cn("absolute pointer-events-none z-0 overflow-hidden", "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:rounded-full [.kpi-tree-wrapper[data-zoom-view='macro']_&]:left-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:top-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:-translate-x-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:-translate-y-1/2 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:w-14 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:h-14 inset-0 rounded-2xl")}>
+      <div className={cn("absolute pointer-events-none z-0 overflow-hidden", "inset-0 rounded-2xl")}>
         <div 
           className={cn(
             "absolute transition-all duration-700 ease-in-out",
-            "[.kpi-tree-wrapper[data-zoom-view='macro']_&]:inset-0 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:blur-md [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-90 -inset-4 blur-2xl opacity-40 group-hover:opacity-60",
+            "-inset-4 blur-2xl opacity-40 group-hover:opacity-60",
             displayStatus === 'good' ? "bg-emerald-400/20" :
             displayStatus === 'warning' ? "bg-amber-400/20" :
             "bg-rose-500/20"
@@ -202,7 +202,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         {/* プログレスバーの代わりの極細の光るライン */}
         <div 
           className={cn(
-            "absolute bottom-0 left-0 h-[2px] transition-all duration-1000 ease-out opacity-80 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden",
+            "absolute bottom-0 left-0 h-[2px] transition-all duration-1000 ease-out opacity-80",
             displayStatus === 'good' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" :
             displayStatus === 'warning' ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]" :
             "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
@@ -222,16 +222,9 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         )} 
       />
       
-      {/* MACRO VIEW: 名前だけのミニマル表示 */}
-      <div className="hidden [.kpi-tree-wrapper[data-zoom-view='macro']_&]:flex absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-8 whitespace-nowrap z-20 pointer-events-none">
-        <span className="text-[14px] sm:text-[18px] font-black text-slate-800 dark:text-slate-100 bg-white/70 dark:bg-black/50 px-3 py-1 rounded-full backdrop-blur-md shadow-lg font-sans">
-          {data.name}
-        </span>
-      </div>
-
       {/* MID & MICRO VIEW: メインコンテンツ */}
       <div 
-        className="relative z-10 flex justify-between items-start mb-2 transition-all duration-700 ease-out [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden"
+        className="relative z-10 flex justify-between items-start mb-2 transition-all duration-700 ease-out"
         style={{ transform: getZDepth(15) }}
       >
         <div className="flex flex-col flex-1 min-w-0 pr-2">
@@ -298,7 +291,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
 
       {/* MICRO VIEW のみ: 詳細な数値と計算式 */}
       <div 
-        className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-700 ease-out [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden [.kpi-tree-wrapper[data-zoom-view='mid']_&]:hidden"
+        className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-700 ease-out"
         style={{ transform: getZDepth(30) }}
       >
           <div className="flex justify-between text-[12px] items-center font-lato">
@@ -331,7 +324,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
             toggleNodeCollapse(data.id);
           }}
           className={cn(
-            "absolute w-5 h-5 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all z-20 shadow-sm [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden",
+            "absolute w-5 h-5 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500 transition-all z-20 shadow-sm",
             targetPosition === Position.Right ? "-right-2.5 top-1/2 -translate-y-1/2" : "-bottom-2.5 left-1/2 -translate-x-1/2"
           )}
         >
@@ -353,7 +346,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
           }}
           title="AIでさらに要素分解する"
           className={cn(
-            "absolute w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-strategic-teal hover:bg-strategic-teal hover:text-white hover:border-strategic-teal transition-all z-20 shadow-sm group [.kpi-tree-wrapper[data-zoom-view='macro']_&]:hidden",
+            "absolute w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-strategic-teal hover:bg-strategic-teal hover:text-white hover:border-strategic-teal transition-all z-20 shadow-sm group",
             targetPosition === Position.Right ? "-right-3 top-1/2 -translate-y-1/2" : "-bottom-3 left-1/2 -translate-x-1/2"
           )}
         >

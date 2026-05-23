@@ -531,7 +531,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   }, [selectedNodeId, rfInstance, nodes, autoCenter]);
 
   return (
-    <div className={`w-full h-full min-w-0 flex flex-col min-h-0 kpi-tree-wrapper ${previewMode ? "fixed inset-0 z-50 m-0 p-0" : ""}`} ref={reactFlowWrapper} data-zoom-view="micro">
+    <div className={`w-full h-full min-w-0 flex flex-col min-h-0 kpi-tree-wrapper ${previewMode ? "fixed inset-0 z-50 m-0 p-0" : ""}`} ref={reactFlowWrapper}>
       <div className={`w-full h-full flex-1 min-w-0 min-h-0 bg-transparent overflow-hidden transition-colors relative ${isDashboard ? 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm' : ''} ${isAiGenerating ? 'ai-global-processing-border' : ''}`}>
         
         {/* AI生成中キャンバス内のオーロラエフェクト */}
@@ -780,14 +780,6 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           }}
           onPaneClick={() => setSelectedNodeId(null)}
           onInit={setRfInstance}
-          onMove={(event, viewport) => {
-            if (!reactFlowWrapper.current) return;
-            const viewMode = viewport.zoom < 0.35 ? 'macro' : viewport.zoom < 0.75 ? 'mid' : 'micro';
-            const currentMode = reactFlowWrapper.current.getAttribute('data-zoom-view');
-            if (currentMode !== viewMode) {
-              reactFlowWrapper.current.setAttribute('data-zoom-view', viewMode);
-            }
-          }}
           nodeTypes={nodeTypes}
           fitView
           minZoom={0.05}
