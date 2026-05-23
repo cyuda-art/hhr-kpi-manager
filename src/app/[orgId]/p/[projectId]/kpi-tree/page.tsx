@@ -5,9 +5,11 @@ import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
 import { useLayoutStore } from '@/store/useLayoutStore';
+import { useKpiStore } from '@/store/useKpiStore';
 
 export default function KpiTreePage() {
   const isActionPanelCollapsed = useLayoutStore(state => state.isActionPanelCollapsed);
+  const selectedNodeId = useKpiStore(state => state.selectedNodeId);
   const [isMounted, setIsMounted] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(400); // 右サイドバー初期幅
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(250); // 左サイドバー初期幅
@@ -96,8 +98,8 @@ export default function KpiTreePage() {
         <KpiTree />
       </div>
 
-      {/* リサイズ用境界線（Resizer） - パネルが閉じている場合は非表示 */}
-      {!isActionPanelCollapsed ? (
+      {/* リサイズ用境界線（Resizer） - パネルが閉じている場合または未選択時は非表示 */}
+      {!isActionPanelCollapsed && selectedNodeId ? (
         <div 
           onMouseDown={handleMouseDown}
           className={`w-1 cursor-col-resize shrink-0 z-10 hover:bg-primary-500/50 transition-colors border-l border-slate-200 dark:border-[#3c4043] ${
@@ -109,8 +111,8 @@ export default function KpiTreePage() {
       {/* 右サイドバー：アクションパネル */}
       <div 
         style={{ 
-          width: isActionPanelCollapsed ? '0px' : `${sidebarWidth}px`,
-          display: isActionPanelCollapsed ? 'none' : 'flex'
+          width: (isActionPanelCollapsed || !selectedNodeId) ? '0px' : `${sidebarWidth}px`,
+          display: (isActionPanelCollapsed || !selectedNodeId) ? 'none' : 'flex'
         }} 
         className="shrink-0 bg-white dark:bg-[#2d2f31] flex-col h-full overflow-hidden"
       >
