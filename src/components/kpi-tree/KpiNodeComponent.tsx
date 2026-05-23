@@ -37,6 +37,15 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
     }
   };
 
+  const getHighlightGlow = (status: string) => {
+    switch (status) {
+      case 'good': return "ring-2 ring-strategic-teal/50 shadow-[0_0_15px_rgba(0,163,161,0.35)] border-strategic-teal/50 z-20";
+      case 'warning': return "ring-2 ring-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.35)] border-amber-500/50 z-20";
+      case 'danger': return "ring-2 ring-red-600/50 shadow-[0_0_15px_rgba(220,38,38,0.35)] border-red-600/50 z-20";
+      default: return "";
+    }
+  };
+
   const selectedNodeId = useKpiStore((state) => state.selectedNodeId);
   const toggleNodeCollapse = useKpiStore((state) => state.toggleNodeCollapse);
   const currentPeriod = useKpiStore((state) => state.currentPeriod);
@@ -166,7 +175,7 @@ export const KpiNodeComponent = ({ data, targetPosition = Position.Top, sourcePo
       getStatusBorder(displayStatus),
       isAlert ? "bg-red-50/50 border-red-600" : "",
       isSelected && "ring-2 ring-oxford-navy border-oxford-navy dark:ring-blue-400 dark:border-blue-400 shadow-md",
-      !isSelected && isHighlighted && "ring-2 ring-strategic-teal/50 shadow-[0_0_15px_rgba(0,163,161,0.25)] border-strategic-teal/50 z-20", // Glow effect for highlighted path
+      !isSelected && isHighlighted && getHighlightGlow(displayStatus),
       data.isKsf && "border-2 border-strategic-teal shadow-[0_0_12px_rgba(0,163,161,0.15)] ring-1 ring-strategic-teal/20",
       data.isSimulated && !isNew && "ring-4 ring-[#8ab4f8]/50 shadow-[0_0_20px_rgba(138,180,248,0.5)] z-40",
       isNew && "ring-4 ring-strategic-teal/50 shadow-[0_0_20px_rgba(0,163,161,0.6)] z-50 animate-pulse",

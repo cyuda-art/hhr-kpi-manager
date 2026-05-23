@@ -451,9 +451,17 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
       if (selectedNodeId && highlightedNodeIds.has(sourceId) && highlightedNodeIds.has(targetId)) {
         strokeDasharray = '6, 6';
         strokeWidth = 3.5; 
-        strokeColor = '#00A3A1'; // Strategic Teal
         animated = true;
-        filter = 'drop-shadow(0 0 6px rgba(0, 163, 161, 0.7))';
+        if (targetStatus === 'good') {
+          strokeColor = '#00A3A1'; // Strategic Teal
+          filter = 'drop-shadow(0 0 6px rgba(0, 163, 161, 0.7))';
+        } else if (targetStatus === 'warning') {
+          strokeColor = '#f59e0b'; // amber-500
+          filter = 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.7))';
+        } else {
+          strokeColor = '#f43f5e'; // rose-500
+          filter = 'drop-shadow(0 0 6px rgba(244, 63, 94, 0.7))';
+        }
       } else if (selectedNodeId) {
         // 選択外の線は薄くする
         strokeColor = '#e2e8f0'; // slate-200
