@@ -211,7 +211,14 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         />
       </div>
 
-      <Handle type="target" position={targetPosition} className="w-3 h-3 !bg-[#5f6368] border-none z-10 [.kpi-tree-wrapper[data-zoom-view='macro']_&]:opacity-0 opacity-100" />
+      <Handle 
+        type="target" 
+        position={targetPosition} 
+        className={cn(
+          "w-3 h-3 border-none z-10 opacity-0",
+          targetPosition === Position.Right ? "!-right-2.5" : "!-bottom-2.5"
+        )} 
+      />
       
       {/* MACRO VIEW: 名前だけのミニマル表示 */}
       <div className="hidden [.kpi-tree-wrapper[data-zoom-view='macro']_&]:flex absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-8 whitespace-nowrap z-20 pointer-events-none">
@@ -362,7 +369,14 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         </div>
       )}
 
-      <Handle type="source" position={sourcePosition} className="w-3 h-3 !bg-transparent border-none opacity-0" />
+      <Handle 
+        type="source" 
+        position={sourcePosition} 
+        className={cn(
+          "w-3 h-3 border-none z-10 opacity-0",
+          sourcePosition === Position.Left ? "!-left-0" : "!-top-0"
+        )} 
+      />
 
     </div>
   );
