@@ -445,16 +445,15 @@ export const KpiExecutionPanel = () => {
         )}
       </div>
 
-      {/* チャットエリア (What Next/Act) */}
+      {/* チャットエリア (Execution Engine) */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar bg-white dark:bg-transparent">
         {(!selectedKpi.chatMessages || selectedKpi.chatMessages.length === 0) && (
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
-            <Bot size={28} className="text-purple-400 dark:text-purple-600 mb-2" />
-            <h4 className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">AI Copilot (What Next)</h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              目標「{formatDisplayValue(targetVal, selectedKpi.unit)}」を達成するための<br/>コンサルタントがスタンバイしています。<br/>
-              <br/>
-              「何から始めればいい？」「今日3件達成しました」など話しかけてください。
+            <Zap size={24} className="text-slate-700 dark:text-slate-300 mb-3" />
+            <h4 className="text-[12px] font-bold text-slate-800 dark:text-slate-200 mb-2 tracking-wide uppercase">AI Execution Engine</h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
+              目標「{formatDisplayValue(targetVal, selectedKpi.unit)}」を達成するための実務オペレーターが待機しています。<br/>
+              自然言語で指示を出すことで、実績の更新やタスクの生成・整理を自律的に実行します。
             </p>
           </div>
         )}
@@ -462,14 +461,14 @@ export const KpiExecutionPanel = () => {
         {selectedKpi.chatMessages?.map((msg) => (
           <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'model' && (
-              <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0 mt-1 border border-purple-200 dark:border-purple-800">
-                <Bot size={12} className="text-purple-600 dark:text-purple-400" />
+              <div className="w-6 h-6 rounded-sm bg-slate-800 flex items-center justify-center shrink-0 mt-1">
+                <Zap size={12} className="text-white" />
               </div>
             )}
-            <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-[12px] ${
+            <div className={`max-w-[85%] px-3 py-2 text-[12px] ${
               msg.role === 'user' 
-                ? 'bg-purple-600 text-white rounded-tr-sm' 
-                : 'bg-white dark:bg-[#3c4043] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-tl-sm shadow-sm'
+                ? 'bg-slate-800 text-white rounded-l-md rounded-br-md' 
+                : 'bg-white dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-r-md rounded-bl-md shadow-sm'
             } whitespace-pre-wrap leading-relaxed`}>
               {msg.role === 'model' ? (
                 <TypewriterText text={msg.content} animate={msg.id === selectedKpi.chatMessages?.[selectedKpi.chatMessages.length - 1]?.id} />
@@ -478,22 +477,22 @@ export const KpiExecutionPanel = () => {
               )}
             </div>
             {msg.role === 'user' && (
-              <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0 mt-1">
-                <User size={12} className="text-slate-500 dark:text-slate-300" />
+              <div className="w-6 h-6 rounded-sm bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0 mt-1">
+                <User size={12} className="text-slate-600 dark:text-slate-300" />
               </div>
             )}
           </div>
         ))}
         {isProcessing && (
           <div className="flex justify-start gap-2">
-            <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-1">
-              <Bot size={12} className="text-purple-600" />
+            <div className="w-6 h-6 rounded-sm bg-slate-800 flex items-center justify-center shrink-0 mt-1">
+              <Zap size={12} className="text-white" />
             </div>
-            <div className="bg-white dark:bg-[#3c4043] border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-4 py-2 flex items-center gap-2">
+            <div className="bg-white dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 rounded-r-md rounded-bl-md px-4 py-2 flex items-center gap-2">
               <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -501,23 +500,36 @@ export const KpiExecutionPanel = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 入力フォーム */}
-      <div className="p-3 bg-white dark:bg-[#202124] border-t border-slate-200 dark:border-slate-800 shrink-0">
+      {/* 入力フォームとサジェストチップ */}
+      <div className="p-3 bg-white dark:bg-[#202124] border-t border-slate-200 dark:border-slate-800 shrink-0 flex flex-col gap-2">
+        <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
+          <button onClick={() => setInput('現状の数値を分析し、不足分を補うための次のアクションを3つ提案・追加してください。')} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
+            アクションの自動生成
+          </button>
+          {!isComputed && (
+            <button onClick={() => setInput('今日の実績として、〇〇件完了しました。数値を更新してください。')} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
+              実績の更新報告
+            </button>
+          )}
+          <button onClick={() => setInput('重複しているタスクや、不要になった古いタスクを整理・削除してください。')} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
+            タスクの整理
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="relative flex items-center">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="「タスクを完了しました」「どうすればいい？」"
+            placeholder="指示を入力 (例: タスクを追加して, 〇件完了した)"
             disabled={isProcessing}
-            className="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 rounded-full text-[12px] text-slate-800 dark:text-slate-200 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all disabled:opacity-50"
+            className="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-[#2d2f31] border border-slate-200 dark:border-slate-700 rounded-md text-[12px] text-slate-800 dark:text-slate-200 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!input.trim() || isProcessing}
-            className="absolute right-1.5 w-8 h-8 flex items-center justify-center bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-full transition-colors"
+            className="absolute right-1.5 w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-md transition-colors"
           >
-            <Send size={12} className={input.trim() && !isProcessing ? "translate-x-[-1px] translate-y-[1px]" : ""} />
+            <Send size={12} className={input.trim() && !isProcessing ? "translate-x-[1px]" : ""} />
           </button>
         </form>
       </div>
