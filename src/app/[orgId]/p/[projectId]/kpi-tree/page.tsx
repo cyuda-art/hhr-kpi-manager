@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
+import { FloatingUserControls } from '@/components/layout/FloatingUserControls';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { useKpiStore } from '@/store/useKpiStore';
 
@@ -119,11 +120,16 @@ export default function KpiTreePage() {
       {/* 戻るボタン（フローティング） */}
       <button 
         onClick={() => router.push(`/${orgId}/dashboard`)}
-        className="absolute top-6 left-6 z-50 flex items-center justify-center w-10 h-10 bg-white/40 dark:bg-black/40 backdrop-blur-3xl rounded-full border border-white/50 dark:border-white/10 shadow-lg text-slate-700 dark:text-slate-200 hover:bg-white/60 dark:hover:bg-black/60 transition-all group pointer-events-auto"
+        className="absolute top-6 left-6 z-50 flex items-center justify-center w-10 h-10 bg-white/20 dark:bg-black/30 backdrop-blur-xl rounded-full border border-white/40 dark:border-white/10 shadow-2xl text-slate-700 dark:text-slate-200 hover:bg-white/40 dark:hover:bg-black/50 transition-all group pointer-events-auto"
         title="ダッシュボードへ戻る"
       >
         <ChevronLeft className="group-hover:-translate-x-0.5 transition-transform" size={20} />
       </button>
+
+      {/* 右上コントロール（フローティング） */}
+      <div className="absolute top-6 right-6 z-50 pointer-events-auto">
+        <FloatingUserControls />
+      </div>
 
       {/* メインエリア：KPIツリー (全画面キャンバス) */}
       <div className="absolute inset-0 z-10 flex flex-col">
