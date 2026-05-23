@@ -217,8 +217,8 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         className={cn(
           "absolute w-5 h-5 border-none z-10 opacity-0",
           targetPosition === Position.Right 
-            ? "!-right-2.5 !top-1/2 !-translate-y-1/2" 
-            : "!-bottom-2.5 !left-1/2 !-translate-x-1/2"
+            ? "!right-0 !top-1/2 !-translate-y-1/2" 
+            : "!bottom-0 !left-1/2 !-translate-x-1/2"
         )} 
       />
       
@@ -368,10 +368,10 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
         type="source" 
         position={sourcePosition} 
         className={cn(
-          "absolute w-3 h-3 border-none z-10 opacity-0",
+          "absolute w-5 h-5 border-none z-10 opacity-0",
           sourcePosition === Position.Left 
-            ? "!-left-1.5 !top-1/2 !-translate-y-1/2" 
-            : "!-top-1.5 !left-1/2 !-translate-x-1/2"
+            ? "!left-0 !top-1/2 !-translate-y-1/2" 
+            : "!top-0 !left-1/2 !-translate-x-1/2"
         )} 
       />
 
