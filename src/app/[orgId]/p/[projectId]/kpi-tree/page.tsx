@@ -10,6 +10,7 @@ import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
 import { FloatingUserControls } from '@/components/layout/FloatingUserControls';
 import { AmbientSky } from '@/components/layout/AmbientSky';
+import { InteractiveParticles } from '@/components/layout/InteractiveParticles';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { useKpiStore } from '@/store/useKpiStore';
 
@@ -96,6 +97,9 @@ export default function KpiTreePage() {
       <div className="absolute inset-0 z-0">
         <AmbientSky />
       </div>
+
+      {/* 1.5. アンチグラビティ・パーティクル（マウスに反応する粒子） */}
+      <InteractiveParticles />
 
       {/* 2. アクセント環境：KPIステータス連動型のオーラ（選択したKPIの状態を空間に反映） */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-100 transition-opacity duration-1000">
