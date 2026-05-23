@@ -90,10 +90,25 @@ export default function KpiTreePage() {
   };
 
   return (
-    <div ref={containerRef} className={`h-screen overflow-hidden relative transition-colors duration-1000 ${getGlobalBackground()}`}>
+    <div ref={containerRef} className="h-screen overflow-hidden relative bg-black">
       
-      {/* 空間の環境（時間連動型の空と太陽・月） */}
-      <AmbientSky />
+      {/* 1. ベース環境：空間の環境（時間連動型の空と太陽・月） */}
+      <div className="absolute inset-0 z-0">
+        <AmbientSky />
+      </div>
+
+      {/* 2. アクセント環境：KPIステータス連動型のオーラ（選択したKPIの状態を空間に反映） */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen dark:mix-blend-color-dodge opacity-80 transition-opacity duration-1000">
+        {selectedNodeId && kpiData[selectedNodeId]?.status === 'good' && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] min-w-[600px] min-h-[600px] bg-emerald-500/60 dark:bg-emerald-400/40 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
+        )}
+        {selectedNodeId && kpiData[selectedNodeId]?.status === 'warning' && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] min-w-[600px] min-h-[600px] bg-amber-500/60 dark:bg-amber-400/40 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
+        )}
+        {selectedNodeId && kpiData[selectedNodeId]?.status === 'danger' && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] min-w-[600px] min-h-[600px] bg-rose-600/60 dark:bg-rose-500/40 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
+        )}
+      </div>
 
       {/* 戻るボタン（フローティング） */}
       <button 
