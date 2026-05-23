@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import { useParams, useRouter, usePathname } from 'next/navigation';
+import { ChevronLeft, LayoutDashboard, Activity, Sparkles, Printer, Database, CheckSquare } from 'lucide-react';
+import Link from 'next/link';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
@@ -13,7 +14,9 @@ import { useKpiStore } from '@/store/useKpiStore';
 export default function KpiTreePage() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const orgId = params?.orgId as string;
+  const projectId = params?.projectId as string;
   const isActionPanelCollapsed = useLayoutStore(state => state.isActionPanelCollapsed);
   const { selectedNodeId, kpiData } = useKpiStore();
   const [isMounted, setIsMounted] = useState(false);
@@ -159,6 +162,30 @@ export default function KpiTreePage() {
           <div className="h-full overflow-hidden custom-scrollbar">
             <KpiExecutionPanel />
           </div>
+        </div>
+      </div>
+
+      {/* ボトムドック（ナビゲーション） */}
+      <div className="hidden lg:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        <div className="flex items-center bg-white/60 dark:bg-black/60 backdrop-blur-3xl p-1.5 rounded-full border border-white/50 dark:border-white/10 shadow-2xl">
+          <Link href={`/${orgId}/p/${projectId}`} title="ダッシュボード" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
+            <LayoutDashboard size={16} /> <span className="hidden xl:inline">ダッシュボード</span>
+          </Link>
+          <Link href={`/${orgId}/p/${projectId}/kpi-tree`} title="KPIツリー" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm transition-all">
+            <Activity size={16} /> <span className="hidden xl:inline">KPIツリー</span>
+          </Link>
+          <Link href={`/${orgId}/p/${projectId}/manifesto`} title="マニフェスト" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
+            <Sparkles size={16} /> <span className="hidden xl:inline">マニフェスト</span>
+          </Link>
+          <Link href={`/${orgId}/p/${projectId}/report`} title="戦略レポート" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
+            <Printer size={16} /> <span className="hidden xl:inline">レポート</span>
+          </Link>
+          <Link href={`/${orgId}/p/${projectId}/data-entry`} title="シートエディタ" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
+            <Database size={16} /> <span className="hidden xl:inline">エディタ</span>
+          </Link>
+          <Link href={`/${orgId}/p/${projectId}/my-tasks`} title="マイタスク" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
+            <CheckSquare size={16} /> <span className="hidden xl:inline">タスク</span>
+          </Link>
         </div>
       </div>
 
