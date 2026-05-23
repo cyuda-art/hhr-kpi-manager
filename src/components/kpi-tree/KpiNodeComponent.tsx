@@ -214,12 +214,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
       <Handle 
         type="target" 
         position={targetPosition} 
-        className={cn(
-          "w-3 h-3 border-none z-10 opacity-0",
-          targetPosition === Position.Right 
-            ? "!-right-2.5 !top-1/2 !-translate-y-1/2" 
-            : "!-bottom-2.5 !left-1/2 !-translate-x-1/2"
-        )} 
+        className="w-3 h-3 border-none z-10 opacity-0"
       />
       
       {/* MACRO VIEW: 名前だけのミニマル表示 */}
@@ -374,12 +369,7 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
       <Handle 
         type="source" 
         position={sourcePosition} 
-        className={cn(
-          "w-3 h-3 border-none z-10 opacity-0",
-          sourcePosition === Position.Left 
-            ? "!-left-0 !top-1/2 !-translate-y-1/2" 
-            : "!-top-0 !left-1/2 !-translate-x-1/2"
-        )} 
+        className="w-3 h-3 border-none z-10 opacity-0"
       />
 
     </div>
