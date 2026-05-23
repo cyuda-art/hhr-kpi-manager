@@ -234,7 +234,7 @@ export const KpiExecutionPanel = () => {
           >
             <div className="p-4 flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800/50">
               <h3 className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 dark:from-slate-200 dark:to-slate-400 flex items-center gap-2">
-                <Settings size={16} className="text-slate-600 dark:text-slate-400" /> KPI Configuration
+                <Settings size={16} className="text-slate-600 dark:text-slate-400" /> KPI設定
               </h3>
               <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                 <X size={18} />
@@ -275,10 +275,10 @@ export const KpiExecutionPanel = () => {
             </div>
             <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50 flex justify-between">
               <button onClick={() => { removeKpiNode(selectedKpi.id); setIsSettingsOpen(false); toggleActionPanel(); }} className="text-xs text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1 transition-colors px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20">
-                <Trash2 size={14} /> Delete KPI
+                <Trash2 size={14} /> KPIを削除
               </button>
               <button onClick={handleSaveSettings} className="bg-slate-800 hover:bg-slate-900 dark:bg-slate-200 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-bold px-6 py-2.5 rounded-full shadow-lg transition-all transform hover:scale-105">
-                Save Changes
+                変更を保存
               </button>
             </div>
           </motion.div>
@@ -295,11 +295,11 @@ export const KpiExecutionPanel = () => {
               </div>
               {isComputed ? (
                 <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                  Computed
+                  自動計算
                 </span>
               ) : (
                 <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
-                  Actionable
+                  実行可能
                 </span>
               )}
             </div>
@@ -319,7 +319,7 @@ export const KpiExecutionPanel = () => {
 
         <div className="flex items-end justify-between">
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Actual / Target</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">実績 / 目標</span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight font-poppins drop-shadow-sm">
                 {formatDisplayValue(actualVal, selectedKpi.unit)}
@@ -330,7 +330,7 @@ export const KpiExecutionPanel = () => {
             </div>
           </div>
           <div className="text-right flex flex-col items-end">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Achievement</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">達成率</span>
             <span className={`text-xl font-black font-poppins drop-shadow-sm ${
               selectedKpi.status === 'good' ? 'text-emerald-500 dark:text-emerald-400' :
               selectedKpi.status === 'warning' ? 'text-amber-500 dark:text-amber-400' :
@@ -349,7 +349,7 @@ export const KpiExecutionPanel = () => {
           className="w-full flex items-center justify-between px-5 py-3 hover:bg-white/60 dark:hover:bg-slate-900/40 transition-colors"
         >
           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <BarChart3 size={14} className="text-slate-400" /> Performance History
+            <BarChart3 size={14} className="text-slate-400" /> パフォーマンス推移
           </span>
           {isChartOpen ? <ChevronDown size={14} className="text-slate-400"/> : <ChevronRight size={14} className="text-slate-400"/>}
         </button>
@@ -368,13 +368,13 @@ export const KpiExecutionPanel = () => {
       <div className="px-5 py-4 bg-white/20 dark:bg-[#121212]/20 backdrop-blur-sm border-b border-slate-200/30 dark:border-slate-800/30 shrink-0 max-h-48 overflow-y-auto custom-scrollbar relative z-20">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <CheckSquare size={14} className="text-slate-400" /> Active Tasks
+            <CheckSquare size={14} className="text-slate-400" /> 進行中のタスク
           </span>
         </div>
         
         {useKpiStore.getState().actions.filter(a => (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId)))).length === 0 ? (
           <div className="text-[11px] text-slate-400 text-center py-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm rounded-lg border border-slate-200/50 dark:border-slate-800/50 border-dashed">
-            No active tasks found.
+            進行中のタスクはありません。
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -422,10 +422,10 @@ export const KpiExecutionPanel = () => {
           {(!selectedKpi.chatMessages || selectedKpi.chatMessages.length === 0) && (
             <div className="flex flex-col items-center justify-center h-full text-center p-4">
               <h4 className="text-[13px] font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-400 dark:from-slate-100 dark:to-slate-500 mb-2 tracking-widest uppercase font-poppins">
-                AI Execution Engine
+                AI 実行エンジン
               </h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400/80 leading-relaxed max-w-[240px]">
-                System is ready. Request actions or report progress to automate management.
+                システムは待機中です。<br/>実績の更新やタスクの生成を指示してください。
               </p>
             </div>
           )}
@@ -483,15 +483,15 @@ export const KpiExecutionPanel = () => {
         {/* 3. グラスモーフィズムのサジェストチップ */}
         <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1 pointer-events-auto">
           <button onClick={() => executeChatCommand('現状の数値を分析し、不足分を補うための次のアクションを3つ提案・追加してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
-            Generate Actions
+            アクション生成
           </button>
           {!isComputed && (
             <button onClick={() => executeChatCommand('今日の実績として、〇〇件完了しました。数値を更新してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
-              Report Value
+              実績の更新
             </button>
           )}
           <button onClick={() => executeChatCommand('重複しているタスクや、不要になった古いタスクを整理・削除してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
-            Organize Tasks
+            タスク整理
           </button>
         </div>
 
@@ -505,7 +505,7 @@ export const KpiExecutionPanel = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask the engine to act..."
+              placeholder="指示を入力 (例: タスクを追加して)"
               disabled={isProcessing}
               className="w-full pl-6 pr-12 py-3.5 bg-transparent text-[13px] text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 font-medium"
             />
