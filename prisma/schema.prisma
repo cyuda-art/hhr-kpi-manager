@@ -110,6 +110,7 @@ model KpiNode {
   type             String       // KGI, KPI, KSF
   unit             String       @default("円")
   businessUnit     String?      // e.g., "sales", "marketing", "hr"
+  aggregationType  String       @default("sum") // sum, average, latest
 
   // リアルタイム集計値（Current State）
   actualValue      Float        @default(0)
@@ -134,6 +135,7 @@ model KpiNode {
   updatedAt        DateTime     @updatedAt
 
   monthlyData      MonthlyData[]
+  dailyRecords     DailyRecord[]
   tasks            Task[]
 }
 
@@ -148,6 +150,24 @@ model MonthlyData {
   targetValue Float
   
   @@unique([nodeId, period]) // 同一ノード・同一期間の重複を防ぐ複合ユニークキー
+}
+
+// 日次データ（ファクトテーブル）
+model DailyRecord {
+  id          String   @id @default(cuid())
+  nodeId      String
+  node        KpiNode  @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  
+  date        DateTime @db.Date // 1日1行のコアとなる日付
+  actualValue Float    @default(0) // 実績値
+  targetValue Float    @default(0) // 目標値
+  
+  comment     String?  // 要因メモ
+  isApiSourced Boolean @default(false) // 自動取得フラグ
+
+  @@unique([nodeId, date]) // 同一ノード・同一日付の重複を防ぐ複合ユニークキー
+  @@index([nodeId])
+  @@index([date])
 }
 
 // ==========================================
