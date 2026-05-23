@@ -108,12 +108,8 @@ export const KpiExecutionPanel = () => {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isProcessing) return;
-
-    const userMessage = input.trim();
-    setInput('');
+  const executeChatCommand = async (userMessage: string) => {
+    if (isProcessing) return;
     setIsProcessing(true);
     setIsAiGenerating(true);
 
@@ -189,6 +185,15 @@ export const KpiExecutionPanel = () => {
       setIsProcessing(false);
       setIsAiGenerating(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isProcessing) return;
+
+    const userMessage = input.trim();
+    setInput('');
+    await executeChatCommand(userMessage);
   };
 
   const triggerCelebration = () => {
@@ -503,15 +508,15 @@ export const KpiExecutionPanel = () => {
       {/* 入力フォームとサジェストチップ */}
       <div className="p-3 bg-white dark:bg-[#202124] border-t border-slate-200 dark:border-slate-800 shrink-0 flex flex-col gap-2">
         <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-          <button onClick={() => setInput('現状の数値を分析し、不足分を補うための次のアクションを3つ提案・追加してください。')} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
+          <button onClick={() => executeChatCommand('現状の数値を分析し、不足分を補うための次のアクションを3つ提案・追加してください。')} disabled={isProcessing} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
             アクションの自動生成
           </button>
           {!isComputed && (
-            <button onClick={() => setInput('今日の実績として、〇〇件完了しました。数値を更新してください。')} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
+            <button onClick={() => executeChatCommand('今日の実績として、〇〇件完了しました。数値を更新してください。')} disabled={isProcessing} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
               実績の更新報告
             </button>
           )}
-          <button onClick={() => setInput('重複しているタスクや、不要になった古いタスクを整理・削除してください。')} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
+          <button onClick={() => executeChatCommand('重複しているタスクや、不要になった古いタスクを整理・削除してください。')} disabled={isProcessing} className="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-[11px] font-medium text-slate-700 dark:text-slate-300 rounded-full transition-colors border border-slate-200 dark:border-slate-700">
             タスクの整理
           </button>
         </div>
