@@ -7,6 +7,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { Lock, Mail, ArrowRight, Network } from 'lucide-react';
+import { AmbientSky } from '@/components/layout/AmbientSky';
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -80,23 +81,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-clean-canvas dark:bg-[#000a1f] flex flex-col font-sans selection:bg-strategic-teal/30">
+    <div className="min-h-screen relative flex flex-col font-sans selection:bg-strategic-teal/30 overflow-x-hidden text-oxford-navy dark:text-slate-200">
+      {/* 空間背景を常に敷き詰める */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <AmbientSky />
+      </div>
+
       <div className="absolute top-6 left-6 z-10">
         <button onClick={() => router.push('/')} className="flex items-center gap-2 text-logic-slate dark:text-slate-400 hover:text-oxford-navy dark:hover:text-white text-sm font-bold transition-colors font-poppins tracking-widest">
           <ArrowRight className="w-4 h-4 rotate-180" />
           BACK TO TOP
         </button>
       </div>
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-[#001133] rounded-sm shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
+        <div className="max-w-md w-full bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-sm shadow-2xl overflow-hidden border border-white/50 dark:border-white/10">
         
         {/* ヘッダー部分 */}
-        <div className="bg-oxford-navy dark:bg-[#000a1f] p-8 text-center border-b border-strategic-teal/30 relative overflow-hidden">
+        <div className="bg-white/20 dark:bg-black/20 p-8 text-center border-b border-white/50 dark:border-white/10 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-strategic-teal/10 blur-2xl rounded-full"></div>
           <div className="w-14 h-14 border border-strategic-teal/50 rounded-sm flex items-center justify-center mx-auto mb-4 backdrop-blur-sm relative z-10 bg-white/5">
             <Network className="w-6 h-6 text-strategic-teal" />
           </div>
-          <h1 className="text-2xl font-black text-white mb-2 font-poppins tracking-wider relative z-10">Gnu.Done</h1>
+          <h1 className="text-2xl font-black text-oxford-navy dark:text-white mb-2 font-poppins tracking-wider relative z-10">Gnu.Done</h1>
           <p className="text-strategic-teal text-xs font-bold tracking-widest font-poppins relative z-10">NEXT-GEN STRATEGY PLATFORM</p>
         </div>
 
@@ -122,7 +128,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-clean-canvas dark:bg-[#000a1f] border border-slate-200 dark:border-slate-700 rounded-sm focus:outline-none focus:border-strategic-teal transition-colors text-sm text-oxford-navy dark:text-white"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 rounded-sm focus:outline-none focus:border-strategic-teal transition-colors text-sm text-oxford-navy dark:text-white"
                   placeholder="name@company.com"
                 />
               </div>
@@ -137,7 +143,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-clean-canvas dark:bg-[#000a1f] border border-slate-200 dark:border-slate-700 rounded-sm focus:outline-none focus:border-strategic-teal transition-colors text-sm text-oxford-navy dark:text-white"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 rounded-sm focus:outline-none focus:border-strategic-teal transition-colors text-sm text-oxford-navy dark:text-white"
                   placeholder="••••••••"
                 />
               </div>
@@ -154,15 +160,15 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 flex items-center justify-between">
-            <hr className="w-full border-slate-200 dark:border-slate-700" />
-            <span className="px-4 text-[10px] text-slate-400 dark:text-slate-500 bg-white dark:bg-[#001133] font-poppins tracking-widest uppercase">or</span>
-            <hr className="w-full border-slate-200 dark:border-slate-700" />
+            <hr className="w-full border-white/50 dark:border-white/10" />
+            <span className="px-4 text-[10px] text-slate-500 dark:text-slate-400 font-poppins tracking-widest uppercase">or</span>
+            <hr className="w-full border-white/50 dark:border-white/10" />
           </div>
 
           <button 
             type="button"
             onClick={handleGoogleLogin}
-            className="mt-6 w-full flex items-center justify-center gap-2 bg-white dark:bg-[#000a1f] hover:bg-slate-50 dark:hover:bg-[#001a4d] text-oxford-navy dark:text-slate-300 py-3 border border-slate-200 dark:border-slate-700 rounded-sm font-bold text-xs tracking-widest font-poppins transition-colors shadow-sm"
+            className="mt-6 w-full flex items-center justify-center gap-2 bg-white/50 dark:bg-black/50 hover:bg-white/60 dark:hover:bg-black/60 backdrop-blur-sm text-oxford-navy dark:text-slate-300 py-3 border border-white/50 dark:border-white/20 rounded-sm font-bold text-xs tracking-widest font-poppins transition-colors shadow-sm"
           >
             CONTINUE WITH GOOGLE
           </button>

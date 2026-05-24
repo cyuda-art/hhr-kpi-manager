@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { Users, LogIn, ArrowRight } from 'lucide-react';
+import { AmbientSky } from '@/components/layout/AmbientSky';
 
 export default function InviteOrgPage() {
   const router = useRouter();
@@ -57,18 +58,19 @@ export default function InviteOrgPage() {
   };
 
   return (
-    <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden transition-colors">
-      {/* Background Orbs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary-500/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden transition-colors text-oxford-navy dark:text-slate-200">
+      {/* 空間背景を常に敷き詰める */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <AmbientSky />
+      </div>
 
-      <div className="max-w-md w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/50 dark:border-slate-800/50 relative z-10">
-        <div className="p-8 text-center border-b border-slate-100 dark:border-slate-800/50">
-          <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/50 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+      <div className="max-w-md w-full bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/50 dark:border-white/10 relative z-10">
+        <div className="p-8 text-center border-b border-white/50 dark:border-white/10">
+          <div className="w-16 h-16 bg-white/50 dark:bg-black/50 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-white/50 dark:border-white/20">
             <Users className="w-8 h-8 text-strategic-teal dark:text-primary-400" />
           </div>
-          <h1 className="text-2xl font-black text-oxford-navy dark:text-slate-200 mb-2">組織への招待</h1>
-          <p className="text-logic-slate dark:text-slate-400 text-sm">
+          <h1 className="text-2xl font-black text-oxford-navy dark:text-white mb-2">組織への招待</h1>
+          <p className="text-logic-slate dark:text-slate-300 text-sm">
             以下のビジネス組織に招待されています
           </p>
         </div>
@@ -79,7 +81,7 @@ export default function InviteOrgPage() {
           ) : (
             <>
               <div className="mb-8">
-                <div className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-50 dark:bg-primary-900/30 rounded-xl text-xl font-black text-strategic-teal dark:text-primary-300 border border-primary-100 dark:border-primary-800/50">
+                <div className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/50 dark:bg-black/50 backdrop-blur-sm rounded-xl text-xl font-black text-strategic-teal dark:text-white border border-white/50 dark:border-white/20 shadow-sm">
                   {orgName || '読み込み中...'}
                 </div>
               </div>
