@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Sparkles, ArrowRight, User } from 'lucide-react';
 
 interface MarketingRightPanelProps {
   isVisible: boolean;
+  customGoalEvent?: string | null;
 }
 
 type Message = {
@@ -13,7 +14,7 @@ type Message = {
   content: string | React.ReactNode;
 };
 
-export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => {
+export const MarketingRightPanel = ({ isVisible, customGoalEvent }: MarketingRightPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -39,10 +40,21 @@ export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => 
       label: '利用料金は？',
       response: (
         <div className="space-y-3">
-          <p>初期費用ゼロで、まずは無料トライアルから始められます。エンタープライズ向けのGoogle Vertex AI基盤を、月額の定額制でご利用いただけます。</p>
-          <a href="/pricing" className="inline-flex items-center gap-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 px-4 py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-slate-700 dark:hover:bg-white transition-colors mt-2">
-            料金プランを見る <ArrowRight size={14} />
-          </a>
+          <p>エンタープライズ向けのGoogle Vertex AI基盤を定額でご利用いただけます。</p>
+          <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm mt-2">
+            <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
+              <span className="font-bold text-slate-800 dark:text-slate-200">Pro Plan</span>
+              <span className="font-black text-xl text-strategic-teal">¥50,000<span className="text-xs font-normal text-slate-500">/mo</span></span>
+            </div>
+            <ul className="text-[10px] space-y-1 mb-3 text-slate-600 dark:text-slate-400">
+              <li className="flex items-center gap-1">✓ Unlimited KPI Trees</li>
+              <li className="flex items-center gap-1">✓ Gemini 1.5 Pro Access</li>
+              <li className="flex items-center gap-1">✓ Agentic Workspace Auto-execution</li>
+            </ul>
+            <a href="/pricing" className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-slate-700 dark:hover:bg-white transition-colors">
+              料金詳細を見る <ArrowRight size={14} />
+            </a>
+          </div>
         </div>
       )
     },
@@ -50,9 +62,23 @@ export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => 
       label: '活用シーンは？',
       response: (
         <div className="space-y-3">
-          <p>マーケティング戦略の立案から、ブログ記事の自動生成、SNSへの投稿スケジュール管理など、これまで人が手を動かしていた実行フェーズをAIが代行します。</p>
-          <a href="/use-cases" className="inline-flex items-center gap-2 bg-purple-500 text-white px-4 py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-purple-600 transition-colors mt-2">
-            活用シーンを見る <ArrowRight size={14} />
+          <p>様々な実務をAIが代行します。例えば：</p>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-slate-800 p-2 rounded-lg flex flex-col items-center justify-center text-center aspect-square shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
+                <span className="text-blue-500 font-bold text-[10px]">Doc</span>
+              </div>
+              <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">記事の自動生成</span>
+            </div>
+            <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-slate-800 p-2 rounded-lg flex flex-col items-center justify-center text-center aspect-square shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-2">
+                <span className="text-purple-500 font-bold text-[10px]">SNS</span>
+              </div>
+              <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">SNS投稿自動化</span>
+            </div>
+          </div>
+          <a href="/use-cases" className="inline-flex items-center gap-2 text-purple-500 dark:text-purple-400 text-[10px] font-bold tracking-widest hover:underline mt-1">
+            すべての事例を見る <ArrowRight size={12} />
           </a>
         </div>
       )
@@ -68,6 +94,27 @@ export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => 
       setMessages(prev => [...prev, { role: 'assistant', content: prompt.response }]);
     }, 1000);
   };
+
+  useEffect(() => {
+    if (customGoalEvent) {
+      setMessages(prev => [...prev, { role: 'user', content: `「${customGoalEvent}」という目標を追加したいです` }]);
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: (
+            <div className="space-y-3">
+              <p>素晴らしい目標ですね！そのKGIを達成するために必要なKPIツリーを、私（AI）が自動で展開し、実務まで代行します。</p>
+              <a href="/login" className="w-full inline-flex items-center justify-center gap-2 bg-strategic-teal text-white py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-strategic-teal/90 transition-colors">
+                無料でアカウントを作成して実行する <ArrowRight size={14} />
+              </a>
+            </div>
+          ) 
+        }]);
+      }, 1500);
+    }
+  }, [customGoalEvent]);
 
   return (
     <motion.div

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export const AmbientSky = () => {
+export const AmbientSky = ({ focusedNodeId }: { focusedNodeId?: string | null }) => {
   const [timeOfDay, setTimeOfDay] = useState<'dawn' | 'day' | 'sunset' | 'night'>('day');
   const [orbPosition, setOrbPosition] = useState({ x: '50%', y: '10%' });
   const [mounted, setMounted] = useState(false);
@@ -108,6 +108,19 @@ export const AmbientSky = () => {
 
       {/* 薄いオーバーレイ（全体のトーンを落ち着かせる） */}
       <div className="absolute inset-0 bg-white/10 dark:bg-black/30" />
+
+      {/* ノードフォーカス時の動的オーバーレイ */}
+      <div 
+        className={`absolute inset-0 transition-opacity duration-1000 mix-blend-overlay ${
+          focusedNodeId === 'kpi1' ? 'bg-blue-500/20 opacity-100' :
+          focusedNodeId === 'kpi2' ? 'bg-indigo-500/20 opacity-100' :
+          focusedNodeId === 'kpi3' ? 'bg-purple-500/20 opacity-100' :
+          focusedNodeId === 'sub1' ? 'bg-yellow-500/20 opacity-100' :
+          focusedNodeId === 'sub2' ? 'bg-rose-500/20 opacity-100' :
+          focusedNodeId === 'sub3' ? 'bg-slate-500/20 opacity-100' :
+          'opacity-0'
+        }`}
+      />
     </div>
   );
 };

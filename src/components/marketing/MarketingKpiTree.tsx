@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from 'react';
-import { ReactFlow, Background, Controls, Node, Edge, Position, ReactFlowProvider, useReactFlow } from '@xyflow/react';
+import { ReactFlow, Background, Controls, Node, Edge, Position, ReactFlowProvider, useReactFlow, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { MarketingKpiNode } from './MarketingKpiNode';
 import dagre from 'dagre';
@@ -145,15 +145,63 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   return { nodes: newNodes, edges };
 };
 
-const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(initialNodes, initialEdges);
+const { nodes: defaultLayoutedNodes, edges: defaultLayoutedEdges } = getLayoutedElements(initialNodes, initialEdges);
 
 // 内部でuseReactFlowを使うためのコンポーネント
-const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd }: { activeNodeId: string | null; onTourEnd: () => void }) => {
+const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd, customGoal }: { activeNodeId: string | null; onTourEnd: () => void; customGoal: string | null }) => {
   const { setCenter, fitView } = useReactFlow();
+  const [nodes, setNodes, onNodesChange] = useNodesState(defaultLayoutedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(defaultLayoutedEdges);
   const isInitialMount = useRef(true);
+  const currentNodesRef = useRef(initialNodes);
+  const currentEdgesRef = useRef(initialEdges);
 
+  // カスタムノードの追加処理
   useEffect(() => {
-    if (!activeNodeId) return;
+    if (customGoal) {
+      const newNodeId = `custom_${Date.now()}`;
+      const newNode: Node = {
+        id: newNodeId,
+        type: 'marketingNode',
+        position: { x: 0, y: 0 },
+        data: {
+          type: 'kpi',
+          title: customGoal,
+          subtitle: 'User Custom Goal',
+          description: 'この目標を達成するためのツリーを展開しますか？',
+          icon: Target,
+          color: 'bg-emerald-500'
+        }
+      };
+      const newEdge: Edge = {
+        id: `e-kgi-${newNodeId}`,
+        source: 'kgi',
+        target: newNodeId,
+        animated: true,
+        style: { stroke: '#94a3b8', strokeWidth: 2 }
+      };
+
+      currentNodesRef.current = [...currentNodesRef.current, newNode];
+      currentEdgesRef.current = [...currentEdgesRef.current, newEdge];
+
+      const { nodes: newLayoutedNodes, edges: newLayoutedEdges } = getLayoutedElements(currentNodesRef.current, currentEdgesRef.current);
+      
+      setNodes(newLayoutedNodes);
+      setEdges(newLayoutedEdges);
+
+      // 追加したノードにフォーカス
+      setTimeout(() => {
+        const addedNode = newLayoutedNodes.find(n => n.id === newNodeId);
+        if (addedNode) {
+          setCenter(addedNode.position.x + 340 / 2, addedNode.position.y + 160 / 2, { zoom: 1.2, duration: 1200 });
+        }
+      }, 500);
+    }
+  }, [customGoal, setCenter, setNodes, setEdges]);
+
+  // ツアーによるフォーカス処理
+  useEffect(() => {
+    if (!activeNodeId || activeNodeId === 'custom_goal') return;
 
     if (activeNodeId === 'all') {
       fitView({ padding: 0.3, duration: isInitialMount.current ? 0 : 1500 });
@@ -161,20 +209,21 @@ const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd }: { activeNodeId: st
       return;
     }
 
-    const node = layoutedNodes.find(n => n.id === activeNodeId);
+    const node = nodes.find(n => n.id === activeNodeId);
     if (node) {
-      // ノードの中心にフォーカス
       const x = node.position.x + 340 / 2;
       const y = node.position.y + 160 / 2;
       setCenter(x, y, { zoom: 1.2, duration: isInitialMount.current ? 0 : 1200 });
       if (isInitialMount.current) isInitialMount.current = false;
     }
-  }, [activeNodeId, setCenter, fitView]);
+  }, [activeNodeId, setCenter, fitView, nodes]);
 
   return (
     <ReactFlow
-      nodes={layoutedNodes}
-      edges={layoutedEdges}
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       proOptions={{ hideAttribution: true }}
       nodesDraggable={true}
@@ -189,11 +238,11 @@ const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd }: { activeNodeId: st
   );
 };
 
-export const MarketingKpiTree = ({ activeNodeId, onTourEnd }: { activeNodeId: string | null; onTourEnd: () => void }) => {
+export const MarketingKpiTree = ({ activeNodeId, onTourEnd, customGoal }: { activeNodeId: string | null; onTourEnd: () => void; customGoal: string | null }) => {
   return (
     <div className="w-full h-full">
       <ReactFlowProvider>
-        <MarketingKpiTreeContent activeNodeId={activeNodeId} onTourEnd={onTourEnd} />
+        <MarketingKpiTreeContent activeNodeId={activeNodeId} onTourEnd={onTourEnd} customGoal={customGoal} />
       </ReactFlowProvider>
     </div>
   );

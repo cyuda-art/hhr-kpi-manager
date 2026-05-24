@@ -12,6 +12,7 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [isTouring, setIsTouring] = useState(true);
+  const [customGoal, setCustomGoal] = useState<string | null>(null);
   const tourTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -64,6 +65,11 @@ export default function LandingPage() {
     setActiveNodeId(id);
   };
 
+  const handleAddCustomGoal = (goal: string) => {
+    setCustomGoal(goal);
+    handleSelectNode('custom_goal');
+  };
+
   const handleTourEnd = () => {
     setIsTouring(false);
   };
@@ -72,14 +78,14 @@ export default function LandingPage() {
     <div className="min-h-screen relative font-sans selection:bg-strategic-teal/30 overflow-hidden text-slate-800 dark:text-slate-200">
       {/* 空間背景 */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <AmbientSky />
+        <AmbientSky focusedNodeId={activeNodeId} />
       </div>
       
       <MarketingHeader />
 
       {/* キャンバス */}
       <div className="absolute inset-0 z-10 pt-16">
-        <MarketingKpiTree activeNodeId={activeNodeId} onTourEnd={handleTourEnd} />
+        <MarketingKpiTree activeNodeId={activeNodeId} onTourEnd={handleTourEnd} customGoal={customGoal} />
       </div>
 
       {/* オーバーレイ (Tour中のシネマティック帯) */}
@@ -117,10 +123,12 @@ export default function LandingPage() {
       <MarketingLeftPanel 
         activeNodeId={activeNodeId} 
         onSelectNode={handleSelectNode} 
+        onAddCustomGoal={handleAddCustomGoal}
         isVisible={!isTouring && mounted} 
       />
       
       <MarketingRightPanel 
+        customGoalEvent={customGoal}
         isVisible={!isTouring && mounted} 
       />
 

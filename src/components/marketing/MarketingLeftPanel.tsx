@@ -1,15 +1,19 @@
 "use client";
 
+import { useState } from 'react';
+
 import { motion } from 'framer-motion';
-import { Target, Network, Compass, Lightbulb } from 'lucide-react';
+import { Target, Network, Compass, Lightbulb, Plus } from 'lucide-react';
 
 interface MarketingLeftPanelProps {
   activeNodeId: string | null;
   onSelectNode: (id: string | 'all') => void;
+  onAddCustomGoal: (goal: string) => void;
   isVisible: boolean;
 }
 
-export const MarketingLeftPanel = ({ activeNodeId, onSelectNode, isVisible }: MarketingLeftPanelProps) => {
+export const MarketingLeftPanel = ({ activeNodeId, onSelectNode, onAddCustomGoal, isVisible }: MarketingLeftPanelProps) => {
+  const [customGoal, setCustomGoal] = useState('');
   const menuItems = [
     { id: 'kgi', label: 'Gnu. Core Concept', icon: Target },
     { id: 'kpi1', label: 'Goal Node Unfolder', icon: Network },
@@ -31,7 +35,7 @@ export const MarketingLeftPanel = ({ activeNodeId, onSelectNode, isVisible }: Ma
           <p className="text-xs text-slate-500 mt-1">Select a node to explore</p>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 mb-6">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeNodeId === item.id;
@@ -50,6 +54,36 @@ export const MarketingLeftPanel = ({ activeNodeId, onSelectNode, isVisible }: Ma
               </button>
             );
           })}
+        </div>
+
+        {/* Custom Goal Input */}
+        <div className="mt-auto border-t border-white/40 dark:border-white/10 pt-4">
+          <p className="text-[10px] font-bold text-slate-500 mb-2 tracking-widest">TRY IT YOURSELF</p>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (customGoal.trim()) {
+                onAddCustomGoal(customGoal);
+                setCustomGoal('');
+              }
+            }}
+            className="flex items-center gap-2"
+          >
+            <input 
+              type="text" 
+              placeholder="自分の目標を追加..." 
+              value={customGoal}
+              onChange={(e) => setCustomGoal(e.target.value)}
+              className="w-full bg-white/50 dark:bg-[#111]/50 border border-white/60 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-strategic-teal"
+            />
+            <button 
+              type="submit"
+              disabled={!customGoal.trim()}
+              className="p-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-lg disabled:opacity-50 transition-opacity"
+            >
+              <Plus size={14} />
+            </button>
+          </form>
         </div>
       </div>
     </motion.div>
