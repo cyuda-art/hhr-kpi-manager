@@ -22,11 +22,17 @@ export const MarketingKpiNode = memo(({ data, targetPosition = Position.Left, so
   const [isExecuting, setIsExecuting] = useState(false);
   const Icon = data.icon;
   const isKgi = data.type === 'kgi';
-  const isAgentic = data.title === 'Agentic Execution';
+  const isCtaNode = data.title === 'Join Gnu.';
 
   const handleZap = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsExecuting(true);
+    if (isCtaNode) {
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 500);
+      return;
+    }
     setTimeout(() => setIsExecuting(false), 5000);
   };
   
@@ -58,7 +64,7 @@ export const MarketingKpiNode = memo(({ data, targetPosition = Position.Left, so
             <div className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-500 dark:text-slate-400">
               {data.type}
             </div>
-        {data.title === 'Agentic Execution' ? (
+        {isCtaNode ? (
           <div className="flex items-center justify-between">
             <h3 className="font-black tracking-tight text-xl text-slate-800 dark:text-slate-100">
               {data.title}
@@ -97,7 +103,7 @@ export const MarketingKpiNode = memo(({ data, targetPosition = Position.Left, so
       </div>
 
       <AnimatePresence>
-        {isExecuting && (
+        {isExecuting && !isCtaNode && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -118,8 +124,8 @@ export const MarketingKpiNode = memo(({ data, targetPosition = Position.Left, so
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2 }} className="text-slate-400 flex items-center gap-2">
                 <ChevronRight size={10} /> Inserting KPI charts...
               </motion.div>
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.5 }} className="text-blue-400 font-bold flex items-center gap-2">
-                <CheckCircle2 size={10} /> Task Completed. Output delivered.
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3.2 }} className="text-slate-400 flex items-center gap-2">
+                <ChevronRight size={10} /> Task completed successfully.
               </motion.div>
             </div>
           </motion.div>
