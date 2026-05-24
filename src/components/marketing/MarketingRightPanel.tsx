@@ -6,7 +6,6 @@ import { Bot, Sparkles, ArrowRight, User, Send } from 'lucide-react';
 
 interface MarketingRightPanelProps {
   isVisible: boolean;
-  onUserChatSubmit: (goal: string) => void;
 }
 
 type Message = {
@@ -14,7 +13,7 @@ type Message = {
   content: string | React.ReactNode;
 };
 
-export const MarketingRightPanel = ({ isVisible, onUserChatSubmit }: MarketingRightPanelProps) => {
+export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => {
   const [chatInput, setChatInput] = useState('');
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -106,9 +105,6 @@ export const MarketingRightPanel = ({ isVisible, onUserChatSubmit }: MarketingRi
     setChatInput('');
     setIsTyping(true);
     
-    // Call parent to update the tree
-    onUserChatSubmit(goal);
-
     setTimeout(() => {
       setIsTyping(false);
       setMessages(prev => [...prev, { 

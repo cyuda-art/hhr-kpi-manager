@@ -19,9 +19,9 @@ const baseInitialNodes: Node[] = [
     position: { x: 0, y: 0 },
     data: {
       type: 'kgi',
-      title: 'The End of Management.',
-      subtitle: '管理の終焉と、本質的な目標達成の始まり',
-      description: '日々のタスク管理や数値追跡に追われるのはもう終わりにしましょう。ここから真の実行が始まります。',
+      title: 'Gnu.',
+      subtitle: 'The End of Management.',
+      description: '目標に対するモヤモヤに終止符を打つ。ここから本質的な実行が始まります。',
       icon: Target,
       color: 'bg-emerald-500',
     },
@@ -32,10 +32,10 @@ const baseInitialNodes: Node[] = [
     position: { x: 0, y: 0 },
     data: {
       type: 'ksf',
-      title: 'Goal Narrative Universe',
-      subtitle: 'ユーザーの想いを汲み取る世界線',
-      description: '単なる数値目標ではなく、あなたの「想い」や「文脈」を理解し、定性的なストーリーとして世界観を構築します。',
-      icon: Lightbulb,
+      title: 'Gathering Needs & Understanding',
+      subtitle: '対話から真のニーズを汲み取る',
+      description: 'AIがあなたと対話し、漠然とした想いや文脈を正確に理解して言語化します。',
+      icon: BrainCircuit,
       color: 'bg-purple-500',
     },
   },
@@ -46,8 +46,8 @@ const baseInitialNodes: Node[] = [
     data: {
       type: 'kpi',
       title: 'Goal Node Unfolder',
-      subtitle: '抽象から具体への展開',
-      description: '構築されたストーリーラインから、現実世界で実行可能な「具体的なアクションの枝葉」へとAIが自動展開します。',
+      subtitle: '目標を無数の行動ノードへ展開',
+      description: '言語化されたストーリーを、現実世界で実行可能な「具体的なアクションの枝葉」へとAIが自動展開します。',
       icon: Network,
       color: 'bg-blue-500',
     },
@@ -58,10 +58,10 @@ const baseInitialNodes: Node[] = [
     position: { x: 0, y: 0 },
     data: {
       type: 'process',
-      title: 'Soulful AI Coach',
-      subtitle: '魂を持った戦略パートナー',
-      description: '企業の「経営理念（MVV）」を理解したAIが、「御社の理念に沿うなら」と熱意を持って具体的なプロセスへの壁打ちに伴走します。',
-      icon: BrainCircuit,
+      title: 'Grand Nodes United',
+      subtitle: '全てのノードが一つの頂点へ収束',
+      description: '展開された全ての行動が数学的（四則演算）に連動し、最終的にたった一つのKGIへとカチッと収束します。',
+      icon: Lightbulb,
       color: 'bg-rose-500',
     },
   },
@@ -231,7 +231,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 const { nodes: defaultLayoutedNodes, edges: defaultLayoutedEdges } = getLayoutedElements(initialNodes, initialEdges);
 
 // 内部でuseReactFlowを使うためのコンポーネント
-const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd, customGoal }: { activeNodeId: string | null; onTourEnd: () => void; customGoal: string | null }) => {
+const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd }: { activeNodeId: string | null; onTourEnd: () => void }) => {
   const { setCenter, fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(defaultLayoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(defaultLayoutedEdges);
@@ -239,48 +239,23 @@ const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd, customGoal }: { acti
   const currentNodesRef = useRef(initialNodes);
   const currentEdgesRef = useRef(initialEdges);
 
-  // カスタムノードの追加処理
+  // 初回マウント時またはツリー初期化時のレイアウト計算
   useEffect(() => {
-    if (customGoal) {
-      const newNodeId = `custom_${Date.now()}`;
-      const newNode: Node = {
-        id: newNodeId,
-        type: 'marketingNode',
-        position: { x: 0, y: 0 },
-        data: {
-          type: 'kpi',
-          title: customGoal,
-          subtitle: 'User Custom Goal',
-          description: 'この目標を達成するためのツリーを展開しますか？',
-          icon: Target,
-          color: 'bg-emerald-500'
-        }
-      };
-      const newEdge: Edge = {
-        id: `e-kgi-${newNodeId}`,
-        source: 'kgi',
-        target: newNodeId,
-        animated: true,
-        style: { stroke: '#94a3b8', strokeWidth: 2 }
-      };
+    if (!isInitialMount.current) return;
+    isInitialMount.current = false;
 
-      currentNodesRef.current = [...currentNodesRef.current, newNode];
-      currentEdgesRef.current = [...currentEdgesRef.current, newEdge];
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      currentNodesRef.current,
+      currentEdgesRef.current
+    );
+    
+    setNodes([...layoutedNodes]);
+    setEdges([...layoutedEdges]);
 
-      const { nodes: newLayoutedNodes, edges: newLayoutedEdges } = getLayoutedElements(currentNodesRef.current, currentEdgesRef.current);
-      
-      setNodes(newLayoutedNodes);
-      setEdges(newLayoutedEdges);
-
-      // 追加したノードにフォーカス
-      setTimeout(() => {
-        const addedNode = newLayoutedNodes.find(n => n.id === newNodeId);
-        if (addedNode) {
-          setCenter(addedNode.position.x + 340 / 2, addedNode.position.y + 160 / 2, { zoom: 1.2, duration: 1200 });
-        }
-      }, 500);
-    }
-  }, [customGoal, setCenter, setNodes, setEdges]);
+    setTimeout(() => {
+      fitView({ padding: 0.2, duration: 1000 });
+    }, 100);
+  }, [fitView, setNodes, setEdges]);
 
   // ツアーによるフォーカス処理
   useEffect(() => {
@@ -321,11 +296,11 @@ const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd, customGoal }: { acti
   );
 };
 
-export const MarketingKpiTree = ({ activeNodeId, onTourEnd, customGoal }: { activeNodeId: string | null; onTourEnd: () => void; customGoal: string | null }) => {
+export const MarketingKpiTree = ({ activeNodeId, onTourEnd }: { activeNodeId: string | null; onTourEnd: () => void }) => {
   return (
     <div className="w-full h-full">
       <ReactFlowProvider>
-        <MarketingKpiTreeContent activeNodeId={activeNodeId} onTourEnd={onTourEnd} customGoal={customGoal} />
+        <MarketingKpiTreeContent activeNodeId={activeNodeId} onTourEnd={onTourEnd} />
       </ReactFlowProvider>
     </div>
   );

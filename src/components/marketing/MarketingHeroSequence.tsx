@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Network, BrainCircuit, Zap, Lightbulb } from 'lucide-react';
 
 interface MarketingHeroSequenceProps {
-  onComplete: (goal: string) => void;
+  onComplete: () => void;
 }
 
 type Phase = 'gnu' | 'gnuuu' | 'gnuuuuu' | 'chaos';
@@ -32,7 +32,7 @@ export const MarketingHeroSequence = ({ onComplete }: MarketingHeroSequenceProps
         }));
         setParticles(newParticles);
       }, 5500),
-      setTimeout(() => onComplete("自動生成マニフェスト"), 8000)
+      setTimeout(() => onComplete(), 8000)
     ];
 
     return () => timers.forEach(clearTimeout);

@@ -14,7 +14,6 @@ export default function LandingPage() {
   const [phase, setPhase] = useState<'intro' | 'tour'>('intro');
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [isTouring, setIsTouring] = useState(false);
-  const [customGoal, setCustomGoal] = useState<string | null>(null);
   const tourTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -74,17 +73,11 @@ export default function LandingPage() {
     setActiveNodeId(id);
   };
 
-  const handleAddCustomGoal = (goal: string) => {
-    setCustomGoal(goal);
-    handleSelectNode('custom_goal');
-  };
-
   const handleTourEnd = () => {
     setIsTouring(false);
   };
 
-  const handleIntroComplete = (goal: string) => {
-    setCustomGoal(goal);
+  const handleIntroComplete = () => {
     setPhase('tour');
   };
 
@@ -147,7 +140,7 @@ export default function LandingPage() {
 
             {/* キャンバス */}
             <div className="absolute inset-0 z-10">
-              <MarketingKpiTree activeNodeId={activeNodeId} onTourEnd={handleTourEnd} customGoal={customGoal} />
+              <MarketingKpiTree activeNodeId={activeNodeId} onTourEnd={handleTourEnd} />
             </div>
 
             {/* パネル */}
@@ -160,7 +153,6 @@ export default function LandingPage() {
                 />
                 
                 <MarketingRightPanel 
-                  onUserChatSubmit={handleAddCustomGoal}
                   isVisible={!isTouring || activeNodeId === 'all'} 
                 />
               </div>
@@ -200,17 +192,7 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      {/* 左右のパネル (Tour終了後に表示) */}
-      <MarketingLeftPanel 
-        activeNodeId={activeNodeId} 
-        onSelectNode={handleSelectNode} 
-        isVisible={!isTouring && mounted} 
-      />
-      
-      <MarketingRightPanel 
-        onUserChatSubmit={handleAddCustomGoal}
-        isVisible={!isTouring && mounted} 
-      />
+      {/* 左右のパネル (Tour終了後に表示) は上部の条件付きレンダリング内に移動済み */}
 
     </div>
   );
