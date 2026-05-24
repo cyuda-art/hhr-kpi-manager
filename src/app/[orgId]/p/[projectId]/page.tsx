@@ -182,7 +182,7 @@ export default function DashboardPage() {
         {/* 2. Health Check Widget - spans 4 cols */}
         <div className="md:col-span-4 lg:col-span-4 grid grid-cols-2 gap-4 md:gap-5">
           {/* Good */}
-          <div className="bg-white dark:bg-[#2d2f31] rounded-[24px] p-5 border border-slate-200 dark:border-[#3c4043] flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-[24px] p-5 border border-white/50 dark:border-white/10 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
             <div className="text-[#81c995] bg-[#81c995]/10 w-10 h-10 rounded-full flex items-center justify-center mb-4">
               <CheckCircle2 size={20} />
             </div>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Warning */}
-          <div className="bg-white dark:bg-[#2d2f31] rounded-[24px] p-5 border border-slate-200 dark:border-[#3c4043] flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-[24px] p-5 border border-white/50 dark:border-white/10 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
             <div className="text-[#fbbc04] bg-[#fbbc04]/10 w-10 h-10 rounded-full flex items-center justify-center mb-4">
               <AlertCircle size={20} />
             </div>
@@ -225,7 +225,7 @@ export default function DashboardPage() {
             {heatmapData.map((row, i) => (
               <div key={i} 
                    onClick={() => setSelectedKpiId(row.id)}
-                   className={`group cursor-pointer rounded-[20px] p-5 border transition-all duration-200 ${selectedKpiId === row.id ? 'bg-primary-50 dark:bg-[#8ab4f8]/10 border-primary-300 dark:border-[#8ab4f8]/50 ring-4 ring-primary-500/10' : 'bg-white dark:bg-[#2d2f31] border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md'}`}>
+                   className={`group cursor-pointer rounded-[20px] p-5 border transition-all duration-200 ${selectedKpiId === row.id ? 'bg-primary-50 dark:bg-[#8ab4f8]/10 border-primary-300 dark:border-[#8ab4f8]/50 ring-4 ring-primary-500/10' : 'bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/50 dark:border-white/10 border-white/50 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-md'}`}>
                  <div className="flex justify-between items-start mb-6">
                    <div className="flex flex-col min-w-0 pr-4">
                      <span className={`text-[10px] px-2 py-0.5 rounded-[4px] font-bold w-fit mb-2 ${row.type === 'KGI' ? 'bg-[#fbbc04]/20 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>{row.type}</span>
@@ -262,7 +262,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 4. Action Center (Shortfall Leaderboard) - spans 4 cols */}
-        <div className="md:col-span-4 lg:col-span-4 bg-white dark:bg-[#2d2f31] rounded-[24px] border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm flex flex-col h-[500px]">
+        <div className="md:col-span-4 lg:col-span-4 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-[24px] border border-white/50 dark:border-white/10 p-6 shadow-sm flex flex-col h-[500px]">
            <div className="flex items-center justify-between mb-6">
              <h3 className="font-bold text-[15px] text-slate-800 dark:text-slate-200 flex items-center gap-2">
                <Bot size={18} className="text-strategic-teal" /> アクションセンター
@@ -304,7 +304,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 5. Detail Chart - spans 8 cols */}
-        <div className="md:col-span-4 lg:col-span-8 bg-white dark:bg-[#2d2f31] rounded-[24px] border border-slate-200 dark:border-[#3c4043] p-6 shadow-sm flex flex-col h-[500px]">
+        <div className="md:col-span-4 lg:col-span-8 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-[24px] border border-white/50 dark:border-white/10 p-6 shadow-sm flex flex-col h-[500px]">
            {selectedNode ? (
               <>
                 <div className="flex items-start justify-between mb-8">

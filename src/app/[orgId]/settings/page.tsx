@@ -118,7 +118,7 @@ export default function SettingsPage() {
         statusText="経営環境をAIで推論・分析中..." 
         subText="指定された企業のWebサイト情報を読み込み、PEST分析、5Forces分析、VRIO分析を実行しています。"
       />
-      <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 text-oxford-navy dark:text-slate-200 font-sans p-6 md:p-12">
+      <div className="min-h-screen text-oxford-navy dark:text-slate-200 font-sans p-6 md:p-12 relative z-10">
         <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header */}
@@ -133,8 +133,8 @@ export default function SettingsPage() {
         </div>
 
         {/* 1. General Settings */}
-        <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+        <section className="bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-xl shadow-sm border border-white/50 dark:border-white/10 overflow-hidden">
+          <div className="p-6 border-b border-white/50 dark:border-white/10">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Building2 size={20} className="text-primary-500" />
               基本情報
@@ -150,7 +150,7 @@ export default function SettingsPage() {
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  className="w-full max-w-md px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
+                  className="w-full max-w-md px-4 py-2 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
                   required
                 />
               </div>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
                   value={companyUrl}
                   onChange={(e) => setCompanyUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className="w-full max-w-md px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
+                  className="w-full max-w-md px-4 py-2 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all"
                 />
               </div>
 
@@ -184,7 +184,7 @@ export default function SettingsPage() {
                       onChange={(e) => setManagementPhilosophy(e.target.value)}
                       rows={2}
                       placeholder="例: 全従業員の物心両面の幸福を追求すると同時に、人類、社会の進歩発展に貢献すること。"
-                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                      className="w-full px-4 py-3 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
                     />
                   </div>
 
@@ -197,7 +197,7 @@ export default function SettingsPage() {
                       onChange={(e) => setMasterMvv(e.target.value)}
                       rows={4}
                       placeholder="例:&#13;&#10;【Mission】世界中の人々を笑顔にする&#13;&#10;【Vision】業界No.1の顧客満足度&#13;&#10;【Values】挑戦を恐れない"
-                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                      className="w-full px-4 py-3 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
                     />
                   </div>
                   
@@ -211,7 +211,7 @@ export default function SettingsPage() {
                         onChange={(e) => setBusinessDescription(e.target.value)}
                         rows={3}
                         placeholder="例: B2B向けSaaSの提供。独自のAIアルゴリズムによる高精度なデータ分析が強み。"
-                        className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                        className="w-full px-4 py-3 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
                       />
                     </div>
                     <div>
@@ -223,7 +223,7 @@ export default function SettingsPage() {
                         onChange={(e) => setTargetMarket(e.target.value)}
                         rows={3}
                         placeholder="例: 従業員100〜1000名規模の国内製造業。主にDX推進部門や経営企画室。"
-                        className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
+                        className="w-full px-4 py-3 bg-white/50 dark:bg-black/50 backdrop-blur-sm border border-white/50 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-strategic-teal transition-all resize-y"
                       />
                     </div>
                   </div>
@@ -251,8 +251,8 @@ export default function SettingsPage() {
         </section>
 
         {/* マクロ環境分析（羅針盤層） */}
-        <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+        <section className="bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-xl shadow-sm border border-white/50 dark:border-white/10 overflow-hidden">
+          <div className="p-6 border-b border-white/50 dark:border-white/10">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Globe size={20} className="text-blue-500" />
               マクロ環境分析 (AI推論)
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                           { title: 'Society', subtitle: '社会的要因', icon: <Users2 size={20}/>, content: pest?.society, color: 'text-oxford-navy' },
                           { title: 'Technology', subtitle: '技術的要因', icon: <Cpu size={20}/>, content: pest?.technology, color: 'text-strategic-teal' }
                         ].map((item, i) => (
-                          <div key={i} className="bg-white dark:bg-[#001133] p-6 rounded-sm border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-6 hover:border-strategic-teal/50 transition-colors">
+                          <div key={i} className="bg-white/40 dark:bg-black/40 backdrop-blur-xl p-6 rounded-sm border border-white/50 dark:border-white/10 shadow-sm flex flex-col md:flex-row gap-6 hover:border-strategic-teal/50 transition-colors">
                             <div className={`md:w-48 flex-shrink-0 ${item.color} dark:text-white`}>
                               <div className="flex items-center gap-2 font-black font-poppins tracking-wider mb-1">
                                 {item.icon} {item.title}
@@ -378,7 +378,7 @@ export default function SettingsPage() {
                           { title: 'Imitability', subtitle: '模倣困難性', icon: <Lock size={20}/>, content: vrio?.imitability },
                           { title: 'Organization', subtitle: '組織', icon: <LayoutTemplate size={20}/>, content: vrio?.organization }
                         ].map((item, i) => (
-                          <div key={i} className="bg-white dark:bg-[#001133] p-6 rounded-sm border-l-4 border-l-strategic-teal border-y border-r border-y-slate-200 border-r-slate-200 dark:border-y-slate-800 dark:border-r-slate-800 shadow-sm">
+                          <div key={i} className="bg-white/40 dark:bg-black/40 backdrop-blur-xl p-6 rounded-sm border-l-4 border-l-strategic-teal border-y border-r border-y-white/50 border-r-white/50 dark:border-y-white/10 dark:border-r-white/10 shadow-sm">
                             <div className="flex items-center gap-2 font-black font-poppins tracking-wider mb-1 text-oxford-navy dark:text-white">
                               {item.icon} {item.title}
                             </div>
@@ -398,8 +398,8 @@ export default function SettingsPage() {
         </section>
 
         {/* 2. Members & Invites */}
-        <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+        <section className="bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-xl shadow-sm border border-white/50 dark:border-white/10 overflow-hidden">
+          <div className="p-6 border-b border-white/50 dark:border-white/10 flex items-center justify-between">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Users size={20} className="text-emerald-500" />
               メンバー管理
@@ -441,7 +441,7 @@ export default function SettingsPage() {
               <h3 className="text-sm font-bold mb-3">現在のメンバー</h3>
               <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
                 {currentOrg.members?.map((member, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 last:border-0">
+                  <div key={idx} className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-white/50 dark:border-white/10 last:border-0">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-strategic-teal rounded-full flex items-center justify-center text-white font-bold text-xs">
                         {member.userId.substring(0, 2).toUpperCase()}

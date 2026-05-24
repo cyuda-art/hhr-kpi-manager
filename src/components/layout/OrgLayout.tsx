@@ -6,6 +6,7 @@ import { User, LogOut, Hexagon, Settings } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOrgStore } from '@/store/useOrgStore';
 import { ThemeToggle } from './ThemeToggle';
+import { AmbientSky } from './AmbientSky';
 
 export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuthStore();
@@ -16,9 +17,14 @@ export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
   const isKpiTreePage = pathname?.includes('/kpi-tree');
 
   return (
-    <div className="min-h-screen bg-clean-canvas dark:bg-slate-900 flex flex-col font-sans transition-colors">
+    <div className="min-h-screen relative flex flex-col font-sans transition-colors overflow-x-hidden text-slate-800 dark:text-slate-200">
+      {/* 空間背景を常に敷き詰める */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <AmbientSky />
+      </div>
+
       {!isKpiTreePage && (
-        <header className="h-16 bg-white dark:bg-[#202124] border-b border-slate-200 dark:border-[#3c4043] flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-colors">
+        <header className="h-16 bg-white/40 dark:bg-[#1a1b1e]/40 backdrop-blur-xl border-b border-white/50 dark:border-white/10 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-colors shadow-sm">
         <div className="flex items-center gap-3">
           <Link href={currentOrgId ? `/${currentOrgId}/dashboard` : '/'} className="flex items-center gap-2">
             <div className="w-8 h-8 bg-strategic-teal rounded flex items-center justify-center">
@@ -44,7 +50,7 @@ export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
           )}
           
           {user && (
-            <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-slate-200 dark:border-[#3c4043]">
+            <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-slate-400/30 dark:border-white/10">
               <div className="w-8 h-8 rounded-full bg-primary-50 dark:bg-[#8ab4f8]/20 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
@@ -75,7 +81,7 @@ export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
       )}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 relative z-10 overflow-auto">
         {children}
       </main>
     </div>

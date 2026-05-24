@@ -578,7 +578,7 @@ export default function WorkspacePage() {
 
         {/* Projects Section */}
         <div>
-          <h2 className="text-[14px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-6 pb-2 border-b border-slate-200 dark:border-[#3c4043]">
+          <h2 className="text-[14px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-6 pb-2 border-b border-white/50 dark:border-white/10">
             最近のプロジェクト
           </h2>
 
@@ -594,7 +594,7 @@ export default function WorkspacePage() {
                 }
                 setWizardStep('chat_onboarding');
               }}
-              className="bg-transparent hover:bg-white dark:bg-[#282a2d] border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-strategic-teal dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group relative"
+              className="bg-transparent hover:bg-white/40 dark:bg-black/40 backdrop-blur-xl border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-strategic-teal dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group relative"
             >
               <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 text-strategic-teal dark:text-[#8ab4f8] bg-strategic-teal dark:bg-[#8ab4f8]/10 group-hover:bg-strategic-teal dark:bg-[#8ab4f8]/20 transition-colors">
                 <Plus size={24} />
@@ -614,7 +614,7 @@ export default function WorkspacePage() {
               <div 
                 key={project.id} 
                 onClick={() => handleSelectProject(project.id)}
-                className="bg-white dark:bg-[#2d2f31] hover:bg-slate-100 dark:bg-[#323639] border border-slate-200 dark:border-[#3c4043] hover:border-slate-300 dark:border-[#5f6368] rounded-[8px] h-[190px] flex flex-col p-5 cursor-pointer transition-all relative group shadow-sm hover:shadow-md"
+                className="bg-white/40 dark:bg-black/40 backdrop-blur-xl hover:bg-slate-100 dark:bg-[#323639] border border-white/50 dark:border-white/10 hover:border-slate-300 dark:border-[#5f6368] rounded-[8px] h-[190px] flex flex-col p-5 cursor-pointer transition-all relative group shadow-sm hover:shadow-md"
               >
                 {/* 処理中のオーバーレイ */}
                 {isProcessing === project.id && (
@@ -645,7 +645,7 @@ export default function WorkspacePage() {
                   {/* Context Menu Dropdown */}
                   {menuOpenId === project.id && (
                     <div 
-                      className="absolute top-10 right-4 w-40 bg-white dark:bg-[#282a2d] border border-slate-200 dark:border-[#3c4043] rounded-[4px] shadow-lg overflow-hidden z-20 py-1 animate-in fade-in zoom-in-95 duration-100"
+                      className="absolute top-10 right-4 w-40 bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-[4px] shadow-lg overflow-hidden z-20 py-1 animate-in fade-in zoom-in-95 duration-100"
                       onClick={(e) => e.stopPropagation()} // ドロップダウン内クリックでカード遷移を防ぐ
                     >
                       <button 
@@ -680,7 +680,7 @@ export default function WorkspacePage() {
                 </div>
 
                 {/* Card Footer */}
-                <div className="mt-auto pt-3 border-t border-slate-200 dark:border-[#3c4043]/50 flex items-center justify-between text-slate-500 dark:text-[#9aa0a6] group-hover:text-strategic-teal dark:text-[#8ab4f8] transition-colors">
+                <div className="mt-auto pt-3 border-t border-white/50 dark:border-white/10/50 flex items-center justify-between text-slate-500 dark:text-[#9aa0a6] group-hover:text-strategic-teal dark:text-[#8ab4f8] transition-colors">
                   <span className="text-[12px] font-medium">ツリーを開く</span>
                   <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                 </div>
@@ -694,7 +694,7 @@ export default function WorkspacePage() {
       {/* 新規作成AIウィザード (STEP 1: 入力) */}
       {wizardStep === 'input' && (
         <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#282a2d] rounded-[8px] p-6 w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-[#3c4043] relative overflow-hidden max-h-[90vh] overflow-y-auto">
+          <div className="bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-[8px] p-6 w-full max-w-2xl shadow-2xl border border-white/50 dark:border-white/10 relative overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-[20px] font-bold text-slate-900 dark:text-[#f1f3f4]">部門のKPIツリー作成（STEP 1）</h2>
             </div>
@@ -840,7 +840,7 @@ export default function WorkspacePage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-[#3c4043]">
+              <div className="flex justify-end gap-3 pt-6 border-t border-white/50 dark:border-white/10">
                 <button
                   type="button"
                   onClick={() => setWizardStep('none')}
@@ -864,9 +864,9 @@ export default function WorkspacePage() {
       {/* 新規作成AIウィザード (STEP 2: マニフェスト選択) */}
       {wizardStep === 'select_manifesto' && (
         <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex justify-end z-50">
-          <div className="w-full max-w-[500px] bg-white dark:bg-[#282a2d] h-full shadow-2xl border-l border-slate-200 dark:border-[#3c4043] flex flex-col animate-in slide-in-from-right duration-300 relative">
+          <div className="w-full max-w-[500px] bg-white/40 dark:bg-black/40 backdrop-blur-xl h-full shadow-2xl border-l border-white/50 dark:border-white/10 flex flex-col animate-in slide-in-from-right duration-300 relative">
             
-            <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#282a2d] sticky top-0 z-10">
+            <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-white/40 dark:bg-black/40 backdrop-blur-xl sticky top-0 z-10">
               <h2 className="text-[18px] font-bold text-slate-900 dark:text-[#f1f3f4] mb-1">AIが考案した3つの作戦（Manifesto）</h2>
               <p className="text-[12px] text-logic-slate dark:text-slate-400">組織のMaster MVVを遵守し、KGIを達成するための作戦です。方向性に最も近いものを1つ選び、必要に応じて修正してください。</p>
             </div>
@@ -901,17 +901,17 @@ export default function WorkspacePage() {
                   type="text" 
                   value={editableManifesto?.title || ''} 
                   onChange={e => setEditableManifesto({...editableManifesto, title: e.target.value})}
-                  className="w-full font-bold text-[14px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal"
+                  className="w-full font-bold text-[14px] px-3 py-2 bg-white/40 dark:bg-black/40 backdrop-blur-xl text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal"
                 />
                 <textarea 
                   value={editableManifesto?.description || ''} 
                   onChange={e => setEditableManifesto({...editableManifesto, description: e.target.value})}
                   rows={4}
-                  className="w-full text-[13px] px-3 py-2 bg-white dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal resize-none"
+                  className="w-full text-[13px] px-3 py-2 bg-white/40 dark:bg-black/40 backdrop-blur-xl text-slate-800 dark:text-[#e8eaed] border border-slate-300 dark:border-[#5f6368] rounded-[4px] focus:outline-none focus:border-strategic-teal resize-none"
                 />
               </div>
             {/* AI壁打ちチャットUI (Copilot) */}
-            <div className="flex flex-col border border-strategic-teal/30 dark:border-strategic-teal/30 rounded-lg bg-white dark:bg-[#202124] overflow-hidden flex-shrink-0">
+            <div className="flex flex-col border border-strategic-teal/30 dark:border-strategic-teal/30 rounded-lg bg-white/40 dark:bg-black/40 backdrop-blur-xl overflow-hidden flex-shrink-0">
               <div className="bg-strategic-teal/10 dark:bg-strategic-teal/10 px-4 py-2 flex items-center gap-2 border-b border-strategic-teal/20">
                 <Sparkles size={16} className="text-strategic-teal" />
                 <span className="text-[13px] font-bold text-strategic-teal">AI戦略コンサルタントと壁打ち（Copilot）</span>
@@ -925,21 +925,21 @@ export default function WorkspacePage() {
                 )}
                 {copilotMessages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${msg.role === 'user' ? 'bg-strategic-teal text-white' : 'bg-white dark:bg-[#3c4043] border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 whitespace-pre-wrap'}`}>
+                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] ${msg.role === 'user' ? 'bg-strategic-teal text-white' : 'bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 whitespace-pre-wrap'}`}>
                       {msg.content}
                     </div>
                   </div>
                 ))}
                 {isCopilotThinking && (
                   <div className="flex justify-start">
-                    <div className="bg-white dark:bg-[#3c4043] border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                    <div className="bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] flex items-center gap-2 text-slate-700 dark:text-slate-300">
                       <Loader2 size={14} className="animate-spin text-strategic-teal" /> コンサルタントが思考中...
                     </div>
                   </div>
                 )}
               </div>
               
-              <form onSubmit={handleCopilotSubmit} className="p-3 bg-white dark:bg-[#282a2d] border-t border-slate-200 dark:border-slate-700 flex gap-2">
+              <form onSubmit={handleCopilotSubmit} className="p-3 bg-white/40 dark:bg-black/40 backdrop-blur-xl border-t border-slate-200 dark:border-slate-700 flex gap-2">
                 <input
                   type="text"
                   value={copilotInput}
@@ -959,7 +959,7 @@ export default function WorkspacePage() {
             </div>
           </div>
           
-          <div className="p-5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#282a2d] sticky bottom-0 z-10 flex justify-end gap-3">
+          <div className="p-5 border-t border-slate-200 dark:border-slate-700 bg-white/40 dark:bg-black/40 backdrop-blur-xl sticky bottom-0 z-10 flex justify-end gap-3">
             <button
               type="button"
               onClick={() => setWizardStep('input')}
