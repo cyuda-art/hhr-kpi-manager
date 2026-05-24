@@ -27,7 +27,7 @@ export const MarketingLeftPanel = ({ activeNodeId, onSelectNode, isVisible }: Ma
       transition={{ duration: 0.5 }}
       className={`absolute left-6 top-24 bottom-24 w-64 z-50 pointer-events-auto flex flex-col ${!isVisible && 'pointer-events-none'}`}
     >
-      <div className="bg-white/40 dark:bg-black/40 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl shadow-2xl p-4 flex-1 flex flex-col">
+      <div className="bg-white/10 dark:bg-black/20 backdrop-blur-lg border border-white/40 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-4 flex-1 flex flex-col">
         <div className="mb-6 px-2 pt-2">
           <h3 className="font-black text-slate-900 dark:text-white tracking-widest text-sm uppercase">Navigation</h3>
           <p className="text-xs text-slate-500 mt-1">Select a node to explore</p>

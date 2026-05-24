@@ -138,9 +138,9 @@ export const MarketingRightPanel = ({ isVisible, onUserChatSubmit }: MarketingRi
       transition={{ duration: 0.5 }}
       className={`absolute right-6 top-24 bottom-24 w-80 z-50 pointer-events-auto flex flex-col ${!isVisible && 'pointer-events-none'}`}
     >
-      <div className="bg-white/40 dark:bg-black/40 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl shadow-2xl flex-1 flex flex-col overflow-hidden">
+      <div className="bg-white/10 dark:bg-black/20 backdrop-blur-lg border border-white/40 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="h-14 border-b border-white/40 dark:border-white/10 flex items-center px-4 bg-white/30 dark:bg-black/30">
+        <div className="h-14 border-b border-white/40 dark:border-white/10 flex items-center px-4 bg-white/20 dark:bg-black/30">
           <Bot size={18} className="text-strategic-teal mr-2" />
           <h3 className="font-bold text-slate-800 dark:text-white text-xs tracking-widest uppercase">Soulful AI Coach</h3>
         </div>
