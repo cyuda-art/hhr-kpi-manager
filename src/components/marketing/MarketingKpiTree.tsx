@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from 'react';
-import { ReactFlow, Background, Controls, Node, Edge, Position } from '@xyflow/react';
+import { useEffect, useRef } from 'react';
+import { ReactFlow, Background, Controls, Node, Edge, Position, ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { MarketingKpiNode } from './MarketingKpiNode';
 import dagre from 'dagre';
@@ -145,27 +145,56 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   return { nodes: newNodes, edges };
 };
 
-export const MarketingKpiTree = () => {
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => getLayoutedElements(initialNodes, initialEdges), []);
+const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(initialNodes, initialEdges);
+
+// 内部でuseReactFlowを使うためのコンポーネント
+const MarketingKpiTreeContent = ({ activeNodeId, onTourEnd }: { activeNodeId: string | null; onTourEnd: () => void }) => {
+  const { setCenter, fitView } = useReactFlow();
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    if (!activeNodeId) return;
+
+    if (activeNodeId === 'all') {
+      fitView({ padding: 0.3, duration: isInitialMount.current ? 0 : 1500 });
+      if (isInitialMount.current) isInitialMount.current = false;
+      return;
+    }
+
+    const node = layoutedNodes.find(n => n.id === activeNodeId);
+    if (node) {
+      // ノードの中心にフォーカス
+      const x = node.position.x + 340 / 2;
+      const y = node.position.y + 160 / 2;
+      setCenter(x, y, { zoom: 1.2, duration: isInitialMount.current ? 0 : 1200 });
+      if (isInitialMount.current) isInitialMount.current = false;
+    }
+  }, [activeNodeId, setCenter, fitView]);
 
   return (
+    <ReactFlow
+      nodes={layoutedNodes}
+      edges={layoutedEdges}
+      nodeTypes={nodeTypes}
+      proOptions={{ hideAttribution: true }}
+      nodesDraggable={true}
+      nodesConnectable={false}
+      elementsSelectable={false}
+      zoomOnScroll={true}
+      panOnDrag={true}
+    >
+      <Background color="#94a3b8" gap={24} size={1} />
+      <Controls showInteractive={false} className="bg-white/20 dark:bg-black/40 backdrop-blur-md border-white/20 fill-slate-800 dark:fill-white" />
+    </ReactFlow>
+  );
+};
+
+export const MarketingKpiTree = ({ activeNodeId, onTourEnd }: { activeNodeId: string | null; onTourEnd: () => void }) => {
+  return (
     <div className="w-full h-full">
-      <ReactFlow
-        nodes={layoutedNodes}
-        edges={layoutedEdges}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.5 }}
-        minZoom={0.2}
-        maxZoom={1.5}
-        proOptions={{ hideAttribution: true }}
-        nodesDraggable={true}
-        nodesConnectable={false}
-        elementsSelectable={false}
-      >
-        <Background color="#94a3b8" gap={24} size={1} />
-        <Controls showInteractive={false} className="bg-white/20 dark:bg-black/40 backdrop-blur-md border-white/20 fill-slate-800 dark:fill-white" />
-      </ReactFlow>
+      <ReactFlowProvider>
+        <MarketingKpiTreeContent activeNodeId={activeNodeId} onTourEnd={onTourEnd} />
+      </ReactFlowProvider>
     </div>
   );
 };

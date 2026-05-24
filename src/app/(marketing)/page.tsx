@@ -1,70 +1,128 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
 import { AmbientSky } from '@/components/layout/AmbientSky';
 import { MarketingKpiTree } from '@/components/marketing/MarketingKpiTree';
+import { MarketingLeftPanel } from '@/components/marketing/MarketingLeftPanel';
+import { MarketingRightPanel } from '@/components/marketing/MarketingRightPanel';
 
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [isTouring, setIsTouring] = useState(true);
+  const tourTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // シネマティックツアーのシーケンス
+    const startTour = async () => {
+      // 初期状態：KGIにフォーカス
+      setActiveNodeId('kgi');
+      
+      const wait = (ms: number) => new Promise(resolve => {
+        const timeout = setTimeout(resolve, ms);
+        tourTimeoutRef.current = timeout;
+      });
+
+      try {
+        await wait(3500);
+        if (!isTouring) return;
+        setActiveNodeId('kpi1');
+
+        await wait(3500);
+        if (!isTouring) return;
+        setActiveNodeId('kpi2');
+
+        await wait(3500);
+        if (!isTouring) return;
+        setActiveNodeId('kpi3');
+
+        await wait(3500);
+        if (!isTouring) return;
+        setActiveNodeId('all');
+        setIsTouring(false);
+      } catch (e) {
+        // Tour interrupted
+      }
+    };
+
+    if (isTouring) {
+      startTour();
+    }
+
+    return () => {
+      if (tourTimeoutRef.current) clearTimeout(tourTimeoutRef.current);
+    };
+  }, []); // Run once on mount
+
+  const handleSelectNode = (id: string | 'all') => {
+    setIsTouring(false); // ツアー中断
+    if (tourTimeoutRef.current) clearTimeout(tourTimeoutRef.current);
+    setActiveNodeId(id);
+  };
+
+  const handleTourEnd = () => {
+    setIsTouring(false);
+  };
 
   return (
     <div className="min-h-screen relative font-sans selection:bg-strategic-teal/30 overflow-hidden text-slate-800 dark:text-slate-200">
-      {/* 空間背景を常に敷き詰める */}
+      {/* 空間背景 */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <AmbientSky />
       </div>
       
-      {/* フローティングヘッダー */}
       <MarketingHeader />
 
-      {/* インフィニティキャンバス (KPIツリー) */}
+      {/* キャンバス */}
       <div className="absolute inset-0 z-10 pt-16">
-        <MarketingKpiTree />
+        <MarketingKpiTree activeNodeId={activeNodeId} onTourEnd={handleTourEnd} />
       </div>
 
-      {/* 右下フローティング・オーバーレイ（全体ガイドやデモ案内） */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.8 }}
-        className="absolute bottom-6 right-6 z-50 pointer-events-auto"
-      >
-        <div className="bg-white/40 dark:bg-black/40 backdrop-blur-2xl border border-white/50 dark:border-white/10 p-5 rounded-2xl shadow-2xl max-w-sm">
-          <p className="text-xs font-bold tracking-[0.2em] text-strategic-teal uppercase mb-2">Interactive Canvas</p>
-          <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 leading-tight">
-            ドラッグして全体像を<br />探索してください
-          </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 mb-4 font-medium">
-            Gnu. は目標をツリー状に展開し、AIが自律的に実行までサポートする新しい「部下」です。
-          </p>
-          <a 
-            href="/login"
-            className="w-full px-5 py-3 bg-strategic-teal hover:bg-strategic-teal/90 text-white shadow-lg rounded-xl font-bold text-xs tracking-wider transition-all flex items-center justify-center gap-2"
+      {/* オーバーレイ (Tour中のシネマティック帯) */}
+      <AnimatePresence>
+        {isTouring && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/50 to-transparent z-40 pointer-events-none flex items-end justify-center pb-8"
           >
-            無料で体験する <ArrowRight size={16} />
-          </a>
-        </div>
-      </motion.div>
+            <p className="text-white font-mono text-xs tracking-[0.3em] uppercase animate-pulse">
+              System Booting... Loading Project Directives
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* 左下フローティング：フッター的要素 */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-6 left-6 z-50 pointer-events-auto"
-      >
-        <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-[0.2em] uppercase">
-          © 2026 Gnu. Platform<br/>
-          Built for the era of execution.
-        </div>
-      </motion.div>
+      {/* スキップボタン */}
+      <AnimatePresence>
+        {isTouring && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => handleSelectNode('all')}
+            className="absolute bottom-6 right-6 z-50 bg-white/20 dark:bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 text-[10px] font-bold tracking-widest text-slate-800 dark:text-white hover:bg-white/40 transition-colors"
+          >
+            SKIP TOUR 
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* 左右のパネル (Tour終了後に表示) */}
+      <MarketingLeftPanel 
+        activeNodeId={activeNodeId} 
+        onSelectNode={handleSelectNode} 
+        isVisible={!isTouring && mounted} 
+      />
+      
+      <MarketingRightPanel 
+        isVisible={!isTouring && mounted} 
+      />
 
     </div>
   );
