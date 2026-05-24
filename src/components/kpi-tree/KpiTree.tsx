@@ -210,7 +210,14 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const handleAutoLayout = (direction: 'TB' | 'LR' = layoutDirection) => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, direction);
+    // 常に最新のノードとエッジを取得して古いクロージャによる重複を回避
+    const currentNodes = rfInstance ? rfInstance.getNodes() : nodes;
+    const currentEdges = rfInstance ? rfInstance.getEdges() : edges;
+    
+    if (currentNodes.length === 0) return;
+
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(currentNodes, currentEdges, direction);
+    
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
     
