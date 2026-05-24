@@ -123,12 +123,11 @@ export default function LandingPage() {
       <MarketingLeftPanel 
         activeNodeId={activeNodeId} 
         onSelectNode={handleSelectNode} 
-        onAddCustomGoal={handleAddCustomGoal}
         isVisible={!isTouring && mounted} 
       />
       
       <MarketingRightPanel 
-        customGoalEvent={customGoal}
+        onUserChatSubmit={handleAddCustomGoal}
         isVisible={!isTouring && mounted} 
       />
 

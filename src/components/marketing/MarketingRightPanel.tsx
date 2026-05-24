@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Sparkles, ArrowRight, User } from 'lucide-react';
+import { Bot, Sparkles, ArrowRight, User, Send } from 'lucide-react';
 
 interface MarketingRightPanelProps {
   isVisible: boolean;
-  customGoalEvent?: string | null;
+  onUserChatSubmit: (goal: string) => void;
 }
 
 type Message = {
@@ -14,7 +14,9 @@ type Message = {
   content: string | React.ReactNode;
 };
 
-export const MarketingRightPanel = ({ isVisible, customGoalEvent }: MarketingRightPanelProps) => {
+export const MarketingRightPanel = ({ isVisible, onUserChatSubmit }: MarketingRightPanelProps) => {
+  const [chatInput, setChatInput] = useState('');
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -95,26 +97,39 @@ export const MarketingRightPanel = ({ isVisible, customGoalEvent }: MarketingRig
     }, 1000);
   };
 
+  const handleCustomSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim() || isTyping) return;
+    
+    const goal = chatInput.trim();
+    setMessages(prev => [...prev, { role: 'user', content: goal }]);
+    setChatInput('');
+    setIsTyping(true);
+    
+    // Call parent to update the tree
+    onUserChatSubmit(goal);
+
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: (
+          <div className="space-y-3">
+            <p>素晴らしい目標ですね！そのKGIを達成するために必要なKPIツリーを、私（AI）が自動で展開し、実務まで代行します。</p>
+            <a href="/login" className="w-full inline-flex items-center justify-center gap-2 bg-strategic-teal text-white py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-strategic-teal/90 transition-colors">
+              無料でアカウントを作成して実行する <ArrowRight size={14} />
+            </a>
+          </div>
+        ) 
+      }]);
+    }, 1500);
+  };
+
   useEffect(() => {
-    if (customGoalEvent) {
-      setMessages(prev => [...prev, { role: 'user', content: `「${customGoalEvent}」という目標を追加したいです` }]);
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: (
-            <div className="space-y-3">
-              <p>素晴らしい目標ですね！そのKGIを達成するために必要なKPIツリーを、私（AI）が自動で展開し、実務まで代行します。</p>
-              <a href="/login" className="w-full inline-flex items-center justify-center gap-2 bg-strategic-teal text-white py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-strategic-teal/90 transition-colors">
-                無料でアカウントを作成して実行する <ArrowRight size={14} />
-              </a>
-            </div>
-          ) 
-        }]);
-      }, 1500);
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [customGoalEvent]);
+  }, [messages, isTyping]);
 
   return (
     <motion.div
@@ -131,7 +146,7 @@ export const MarketingRightPanel = ({ isVisible, customGoalEvent }: MarketingRig
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           <AnimatePresence initial={false}>
             {messages.map((msg, idx) => (
               <motion.div
@@ -167,20 +182,39 @@ export const MarketingRightPanel = ({ isVisible, customGoalEvent }: MarketingRig
           </AnimatePresence>
         </div>
 
-        {/* Prompts Area */}
-        <div className="p-4 bg-white/20 dark:bg-black/20 border-t border-white/40 dark:border-white/10">
-          <div className="flex flex-wrap gap-2">
+        {/* Input Area */}
+        <div className="bg-white/20 dark:bg-black/20 border-t border-white/40 dark:border-white/10 p-3 flex flex-col gap-2">
+          {/* Prompts Area (Chips) */}
+          <div className="flex flex-wrap gap-1.5 pb-2 border-b border-white/20 dark:border-white/5">
             {predefinedPrompts.map((prompt, idx) => (
               <button
                 key={idx}
                 onClick={() => handlePromptClick(prompt)}
                 disabled={isTyping}
-                className="text-[10px] font-bold tracking-widest bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-full border border-white/60 dark:border-slate-700 transition-colors"
+                className="text-[9px] font-bold tracking-widest bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1.5 rounded border border-white/60 dark:border-slate-700 transition-colors"
               >
                 {prompt.label}
               </button>
             ))}
           </div>
+
+          <form onSubmit={handleCustomSubmit} className="flex items-center gap-2 pt-1">
+            <input 
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="自分の目標を投げてみる..."
+              disabled={isTyping}
+              className="w-full bg-white/50 dark:bg-[#111]/50 border border-white/60 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-strategic-teal placeholder:text-slate-400 disabled:opacity-50"
+            />
+            <button 
+              type="submit"
+              disabled={!chatInput.trim() || isTyping}
+              className="p-2 bg-strategic-teal text-white rounded-lg disabled:opacity-50 disabled:bg-slate-400 transition-all hover:bg-strategic-teal/90"
+            >
+              <Send size={14} />
+            </button>
+          </form>
         </div>
       </div>
     </motion.div>
