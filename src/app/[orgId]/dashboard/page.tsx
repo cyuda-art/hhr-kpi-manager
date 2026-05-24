@@ -550,7 +550,7 @@ export default function WorkspacePage() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen bg-slate-50 dark:bg-[#202124] flex items-center justify-center text-slate-900 dark:text-[#f1f3f4]">読み込み中...</div>;
+    return <div className="min-h-screen relative z-10 flex items-center justify-center text-oxford-navy dark:text-[#f1f3f4]">読み込み中...</div>;
   }
 
   return (
@@ -561,7 +561,7 @@ export default function WorkspacePage() {
         subText="ヒアリング内容に基づき、事業特性に合わせたKGIとKPIの分解ツリー、および目標数値を自動生成しています。（最大10〜15秒かかります）" 
       />
       <OrgLayout>
-        <div className="min-h-screen bg-slate-50 dark:bg-[#202124] text-slate-800 dark:text-[#e8eaed] p-6 md:p-12 font-sans selection:bg-[#8ab4f8]/30">
+      <div className="min-h-screen relative z-10 text-oxford-navy dark:text-slate-200 p-6 md:p-12 font-sans selection:bg-[#8ab4f8]/30">
         <div className="max-w-7xl mx-auto">
         
         {/* Header Section */}
