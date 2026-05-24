@@ -12,6 +12,7 @@ const nodeTypes = {
 };
 
 const initialNodes: Node[] = [
+  // --- Main Narrative Branch ---
   {
     id: 'kgi',
     type: 'marketingNode',
@@ -26,7 +27,7 @@ const initialNodes: Node[] = [
     },
   },
   {
-    id: 'ksf',
+    id: 'ksf_main',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
@@ -39,7 +40,7 @@ const initialNodes: Node[] = [
     },
   },
   {
-    id: 'kpi',
+    id: 'kpi_main',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
@@ -52,7 +53,7 @@ const initialNodes: Node[] = [
     },
   },
   {
-    id: 'process1',
+    id: 'process_main',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
@@ -65,7 +66,7 @@ const initialNodes: Node[] = [
     },
   },
   {
-    id: 'process2',
+    id: 'process_zap',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
@@ -77,13 +78,60 @@ const initialNodes: Node[] = [
       color: 'bg-yellow-500',
     },
   },
+
+  // --- Secondary Branches (For Realism) ---
+  {
+    id: 'ksf_sub',
+    type: 'marketingNode',
+    position: { x: 0, y: 0 },
+    data: {
+      type: 'ksf',
+      title: 'Guide to Next Upgrade',
+      subtitle: '伴走型ナビゲーション',
+      description: 'AIが現状を把握し、次のレベルや目標達成へとナビゲートします。',
+      icon: Lightbulb,
+      color: 'bg-indigo-500',
+    },
+  },
+  {
+    id: 'kpi_sub',
+    type: 'marketingNode',
+    position: { x: 0, y: 0 },
+    data: {
+      type: 'kpi',
+      title: 'Context Integration',
+      subtitle: 'コンテキストの統合',
+      description: '過去の実行データから独自の知見を抽出し、次に活かします。',
+      icon: Network,
+      color: 'bg-teal-500',
+    },
+  },
+  {
+    id: 'process_sub',
+    type: 'marketingNode',
+    position: { x: 0, y: 0 },
+    data: {
+      type: 'process',
+      title: 'All-Google Ecosystem',
+      subtitle: '鉄壁のセキュリティ環境',
+      description: '情報漏洩リスクを排除したセキュアな基盤を提供します。',
+      icon: Target,
+      color: 'bg-slate-500',
+    },
+  },
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e-kgi-ksf', source: 'kgi', target: 'ksf', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
-  { id: 'e-ksf-kpi', source: 'ksf', target: 'kpi', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
-  { id: 'e-kpi-process1', source: 'kpi', target: 'process1', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
-  { id: 'e-process1-process2', source: 'process1', target: 'process2', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
+  // Main Narrative Flow
+  { id: 'e-kgi-ksf_main', source: 'kgi', target: 'ksf_main', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
+  { id: 'e-ksf_main-kpi_main', source: 'ksf_main', target: 'kpi_main', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
+  { id: 'e-kpi_main-process_main', source: 'kpi_main', target: 'process_main', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
+  { id: 'e-kpi_main-process_zap', source: 'kpi_main', target: 'process_zap', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
+  
+  // Branching Edges
+  { id: 'e-kgi-ksf_sub', source: 'kgi', target: 'ksf_sub', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
+  { id: 'e-ksf_main-kpi_sub', source: 'ksf_main', target: 'kpi_sub', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
+  { id: 'e-kpi_main-process_sub', source: 'kpi_main', target: 'process_sub', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
 ];
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {

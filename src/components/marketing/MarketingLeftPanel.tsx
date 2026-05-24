@@ -14,10 +14,10 @@ interface MarketingLeftPanelProps {
 export const MarketingLeftPanel = ({ activeNodeId, onSelectNode, isVisible }: MarketingLeftPanelProps) => {
   const menuItems = [
     { id: 'kgi', label: 'The End of Management.', icon: Target },
-    { id: 'ksf', label: 'Goal Narrative Universe', icon: Lightbulb },
-    { id: 'kpi', label: 'Goal Node Unfolder', icon: Network },
-    { id: 'process1', label: 'Soulful AI Coach', icon: BrainCircuit },
-    { id: 'process2', label: 'Agentic Execution', icon: Zap },
+    { id: 'ksf_main', label: 'Goal Narrative Universe', icon: Lightbulb },
+    { id: 'kpi_main', label: 'Goal Node Unfolder', icon: Network },
+    { id: 'process_main', label: 'Soulful AI Coach', icon: BrainCircuit },
+    { id: 'process_zap', label: 'Agentic Execution', icon: Zap },
     { id: 'all', label: 'View Full Architecture', icon: Network },
   ];
 
