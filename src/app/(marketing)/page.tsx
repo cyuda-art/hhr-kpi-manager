@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MarketingHeader } from '@/components/layout/MarketingHeader';
+import { Network, LogIn } from 'lucide-react';
 import { AmbientSky } from '@/components/layout/AmbientSky';
 import { MarketingKpiTree } from '@/components/marketing/MarketingKpiTree';
 import { MarketingLeftPanel } from '@/components/marketing/MarketingLeftPanel';
@@ -81,10 +81,34 @@ export default function LandingPage() {
         <AmbientSky focusedNodeId={activeNodeId} />
       </div>
       
-      <MarketingHeader />
+      {/* フローティングロゴ (左上) */}
+      <motion.button
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => handleSelectNode('all')}
+        className="absolute top-6 left-6 z-50 flex items-center gap-2 bg-white/10 dark:bg-black/20 backdrop-blur-lg px-4 py-2 rounded-full border border-white/40 dark:border-white/10 shadow-lg hover:bg-white/20 dark:hover:bg-black/30 transition-all group pointer-events-auto"
+      >
+        <Network className="w-4 h-4 text-strategic-teal group-hover:scale-110 transition-transform" />
+        <span className="font-black text-sm tracking-widest font-poppins text-slate-900 dark:text-white uppercase">
+          Gnu.
+        </span>
+      </motion.button>
+
+      {/* フローティングログイン (右上) */}
+      <motion.a
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        href="/login"
+        className="absolute top-6 right-6 z-50 flex items-center gap-2 bg-white/10 dark:bg-black/20 backdrop-blur-lg px-4 py-2 rounded-full border border-white/40 dark:border-white/10 shadow-lg hover:bg-white/20 dark:hover:bg-black/30 transition-all pointer-events-auto text-slate-800 dark:text-slate-200"
+      >
+        <LogIn className="w-4 h-4" />
+        <span className="font-bold text-xs tracking-widest">LOGIN</span>
+      </motion.a>
 
       {/* キャンバス */}
-      <div className="absolute inset-0 z-10 pt-16">
+      <div className="absolute inset-0 z-10">
         <MarketingKpiTree activeNodeId={activeNodeId} onTourEnd={handleTourEnd} customGoal={customGoal} />
       </div>
 
