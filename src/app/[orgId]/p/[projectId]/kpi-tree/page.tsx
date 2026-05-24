@@ -8,7 +8,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { KpiTree } from '@/components/kpi-tree/KpiTree';
 import { KpiExecutionPanel } from '@/components/kpi-tree/KpiExecutionPanel';
 import { KpiTreeExplorer } from '@/components/kpi-tree/KpiTreeExplorer';
-import { FloatingUserControls } from '@/components/layout/FloatingUserControls';
+
 import { AmbientSky } from '@/components/layout/AmbientSky';
 import { InteractiveParticles } from '@/components/layout/InteractiveParticles';
 import { useLayoutStore } from '@/store/useLayoutStore';
@@ -110,10 +110,7 @@ export default function KpiTreePage() {
         <ChevronLeft className="group-hover:-translate-x-0.5 transition-transform" size={20} />
       </button>
 
-      {/* 右上コントロール（フローティング） */}
-      <div className="absolute top-6 right-6 z-50 pointer-events-auto">
-        <FloatingUserControls />
-      </div>
+
 
       {/* メインエリア：KPIツリー (全画面キャンバス) */}
       <div className="absolute inset-0 z-10 flex flex-col">

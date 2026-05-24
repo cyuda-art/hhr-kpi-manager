@@ -11,6 +11,8 @@ import { AiLoadingOverlay } from '@/components/ui/AiLoadingOverlay';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ChatOnboarding } from '@/components/dashboard/ChatOnboarding';
+import { OrgHealthSummary } from '@/components/dashboard/OrgHealthSummary';
+import { AICopilotFeed } from '@/components/dashboard/AICopilotFeed';
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -561,28 +563,31 @@ export default function WorkspacePage() {
         subText="ヒアリング内容に基づき、事業特性に合わせたKGIとKPIの分解ツリー、および目標数値を自動生成しています。（最大10〜15秒かかります）" 
       />
       <OrgLayout>
-      <div className="min-h-screen relative z-10 text-oxford-navy dark:text-slate-200 p-6 md:p-12 font-sans selection:bg-[#8ab4f8]/30">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen relative z-10 text-oxford-navy dark:text-slate-200 pt-20 px-6 pb-12 md:pt-24 md:px-12 font-sans selection:bg-[#8ab4f8]/30">
+        <div className="max-w-7xl mx-auto flex flex-col min-h-[calc(100vh-120px)]">
         
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
-          <div>
-            <p className="text-[20px] md:text-[24px] font-normal text-slate-500 dark:text-[#9aa0a6] mb-1">
-              こんにちは、{user?.displayName || 'ゲスト'}さん
-            </p>
-            <h1 className="text-[32px] md:text-[36px] font-normal text-slate-900 dark:text-[#f1f3f4] tracking-tight">
-              Gnu.Done へようこそ
-            </h1>
-          </div>
+        <div className="mb-8">
+          <p className="text-[20px] md:text-[24px] font-normal text-slate-500 dark:text-[#9aa0a6] mb-1">
+            こんにちは、{user?.displayName || 'ゲスト'}さん
+          </p>
+          <h1 className="text-[32px] md:text-[36px] font-normal text-slate-900 dark:text-[#f1f3f4] tracking-tight">
+            Strategy Command Center
+          </h1>
         </div>
 
-        {/* Projects Section */}
-        <div>
-          <h2 className="text-[14px] font-medium text-slate-500 dark:text-[#9aa0a6] mb-6 pb-2 border-b border-white/50 dark:border-white/10">
-            最近のプロジェクト
-          </h2>
+        {/* Org Health Summary */}
+        <OrgHealthSummary projects={projects} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {/* Main Grid: Projects Portfolio & AI Copilot */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+          {/* Left Column: Projects */}
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            <h2 className="text-[14px] font-medium text-slate-500 dark:text-[#9aa0a6] pb-2 border-b border-white/50 dark:border-white/10">
+              プロジェクト・ポートフォリオ
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             
             {/* Create New Project Card (Dashed) */}
             <button 
@@ -686,8 +691,15 @@ export default function WorkspacePage() {
                 </div>
               </div>
             ))}
-            
+            </div>
           </div>
+          
+          {/* Right Column: AI Copilot Feed */}
+          <div className="lg:col-span-1">
+            <AICopilotFeed projects={projects} />
+          </div>
+        </div>
+        
         </div>
       </div>
 
@@ -958,6 +970,7 @@ export default function WorkspacePage() {
               </form>
             </div>
           </div>
+
           
           <div className="p-5 border-t border-slate-200 dark:border-slate-700 bg-white/40 dark:bg-black/40 backdrop-blur-xl sticky bottom-0 z-10 flex justify-end gap-3">
             <button
@@ -1044,7 +1057,6 @@ export default function WorkspacePage() {
         />
       )}
       
-      </div>
       </OrgLayout>
     </>
   );
