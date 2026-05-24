@@ -224,6 +224,9 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Failed to save KPI data:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to save data',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }

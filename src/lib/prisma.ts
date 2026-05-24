@@ -9,12 +9,19 @@ const globalForPrisma = globalThis as unknown as {
 const getPrismaClient = () => {
   const connectionString = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
   if (!connectionString) {
-    // Vercelのビルド時（接続文字列がない環境）でインポートエラーになるのを防ぐためのダミーフォールバック
     const dummyPool = new Pool({ connectionString: "postgresql://postgres:dummy@localhost:5432/dummy" });
     const dummyAdapter = new PrismaPg(dummyPool);
     return new PrismaClient({ adapter: dummyAdapter });
   }
-  const pool = new Pool({ connectionString });
+
+  // Vercel Postgresなどの外部DBへ接続する際、pgモジュールはデフォルトでSSLを要求しない場合があるため、
+  // 本番環境（または localhost 以外の接続）では SSL: true を明示的に指定します。
+  const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+  const pool = new Pool({ 
+    connectionString,
+    ssl: !isLocal ? { rejectUnauthorized: false } : undefined
+  });
+  
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 };
