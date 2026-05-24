@@ -31,15 +31,19 @@ export default function LandingPage() {
       try {
         await wait(3500);
         if (!isTouring) return;
-        setActiveNodeId('kpi1');
+        setActiveNodeId('ksf');
 
         await wait(3500);
         if (!isTouring) return;
-        setActiveNodeId('kpi2');
+        setActiveNodeId('kpi');
 
         await wait(3500);
         if (!isTouring) return;
-        setActiveNodeId('kpi3');
+        setActiveNodeId('process1');
+
+        await wait(3500);
+        if (!isTouring) return;
+        setActiveNodeId('process2');
 
         await wait(3500);
         if (!isTouring) return;

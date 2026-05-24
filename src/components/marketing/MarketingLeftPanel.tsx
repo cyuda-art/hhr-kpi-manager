@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { motion } from 'framer-motion';
-import { Target, Network, Compass, Lightbulb } from 'lucide-react';
+import { Target, Network, Lightbulb, BrainCircuit, Zap } from 'lucide-react';
 
 interface MarketingLeftPanelProps {
   activeNodeId: string | null;
@@ -13,10 +13,11 @@ interface MarketingLeftPanelProps {
 
 export const MarketingLeftPanel = ({ activeNodeId, onSelectNode, isVisible }: MarketingLeftPanelProps) => {
   const menuItems = [
-    { id: 'kgi', label: 'Gnu. Core Concept', icon: Target },
-    { id: 'kpi1', label: 'Goal Node Unfolder', icon: Network },
-    { id: 'kpi2', label: 'Guide to Next Upgrade', icon: Compass },
-    { id: 'kpi3', label: 'Goal Narrative Universe', icon: Lightbulb },
+    { id: 'kgi', label: 'The End of Management.', icon: Target },
+    { id: 'ksf', label: 'Goal Narrative Universe', icon: Lightbulb },
+    { id: 'kpi', label: 'Goal Node Unfolder', icon: Network },
+    { id: 'process1', label: 'Soulful AI Coach', icon: BrainCircuit },
+    { id: 'process2', label: 'Agentic Execution', icon: Zap },
     { id: 'all', label: 'View Full Architecture', icon: Network },
   ];
 

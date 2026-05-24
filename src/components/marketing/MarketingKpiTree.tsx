@@ -5,7 +5,7 @@ import { ReactFlow, Background, Controls, Node, Edge, Position, ReactFlowProvide
 import '@xyflow/react/dist/style.css';
 import { MarketingKpiNode } from './MarketingKpiNode';
 import dagre from 'dagre';
-import { Target, Lightbulb, Zap, Compass, Network, BrainCircuit, ShieldCheck } from 'lucide-react';
+import { Target, Lightbulb, Network, BrainCircuit, Zap } from 'lucide-react';
 
 const nodeTypes = {
   marketingNode: MarketingKpiNode,
@@ -18,100 +18,72 @@ const initialNodes: Node[] = [
     position: { x: 0, y: 0 },
     data: {
       type: 'kgi',
-      title: 'Gnu.',
-      subtitle: 'The End of Management.',
-      description: '目標に対するモヤモヤに終止符を打つ。ここから実行が始まります。',
+      title: 'The End of Management.',
+      subtitle: '管理の終焉と、本質的な目標達成の始まり',
+      description: '日々のタスク管理や数値追跡に追われるのはもう終わりにしましょう。ここから真の実行が始まります。',
       icon: Target,
       color: 'bg-emerald-500',
     },
   },
   {
-    id: 'kpi1',
+    id: 'ksf',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
-      type: 'kpi',
-      title: 'Goal Node Unfolder',
-      subtitle: '目標を具体的なノードに展開',
-      description: '抽象的な目標を具体的なKPIツリーの枝葉へと自動展開します。',
-      icon: Network,
-      color: 'bg-blue-500',
-    },
-  },
-  {
-    id: 'kpi2',
-    type: 'marketingNode',
-    position: { x: 0, y: 0 },
-    data: {
-      type: 'kpi',
-      title: 'Guide to Next Upgrade',
-      subtitle: '伴走型ナビゲーション',
-      description: 'AIが現状を把握し、次のレベルや目標達成へとナビゲートします。',
-      icon: Compass,
-      color: 'bg-indigo-500',
-    },
-  },
-  {
-    id: 'kpi3',
-    type: 'marketingNode',
-    position: { x: 0, y: 0 },
-    data: {
-      type: 'kpi',
+      type: 'ksf',
       title: 'Goal Narrative Universe',
-      subtitle: 'ユーザーの文脈を拡張',
-      description: '単なる数値目標ではなく、ユーザーの思い（文脈）を汲み取って広がるKPIの世界。',
+      subtitle: 'ユーザーの想いを汲み取る世界線',
+      description: '単なる数値目標ではなく、あなたの「想い」や「文脈」を理解し、定性的なストーリーとして世界観を構築します。',
       icon: Lightbulb,
       color: 'bg-purple-500',
     },
   },
   {
-    id: 'sub1',
+    id: 'kpi',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
-      type: 'measure',
-      title: 'Agentic Execution',
-      subtitle: '自律実行モード',
-      description: 'タスク横の⚡️ボタンを押すだけで、AIエージェントが自律的にGoogle Workspaceを操作し、実務を完遂させます。',
-      icon: Zap,
-      color: 'bg-yellow-500',
+      type: 'kpi',
+      title: 'Goal Node Unfolder',
+      subtitle: '抽象から具体への展開',
+      description: '構築されたストーリーラインから、現実世界で実行可能な「具体的なアクションの枝葉」へとAIが自動展開します。',
+      icon: Network,
+      color: 'bg-blue-500',
     },
   },
   {
-    id: 'sub2',
+    id: 'process1',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
-      type: 'measure',
+      type: 'process',
       title: 'Soulful AI Coach',
       subtitle: '魂を持った戦略パートナー',
-      description: '会社の「経営理念（MVV）」を事前にインストール。「御社の理念に沿うなら」と熱意を持って壁打ちに付き合います。',
+      description: '企業の「経営理念（MVV）」を理解したAIが、「御社の理念に沿うなら」と熱意を持って具体的なプロセスへの壁打ちに伴走します。',
       icon: BrainCircuit,
       color: 'bg-rose-500',
     },
   },
   {
-    id: 'sub3',
+    id: 'process2',
     type: 'marketingNode',
     position: { x: 0, y: 0 },
     data: {
-      type: 'measure',
-      title: 'All-Google Ecosystem',
-      subtitle: '鉄壁のセキュリティ',
-      description: '情報漏洩リスクを排除。エンタープライズ向けのGoogle Vertex AIに一本化されたセキュアな環境。',
-      icon: ShieldCheck,
-      color: 'bg-slate-500',
+      type: 'process',
+      title: 'Agentic Execution',
+      subtitle: '自律実行モード',
+      description: '決定したプロセス横の⚡️ボタンを押すだけで、AIエージェントが自律的にGoogle Workspaceを操作し、実務を完遂させます。',
+      icon: Zap,
+      color: 'bg-yellow-500',
     },
   },
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e-kgi-kpi1', source: 'kgi', target: 'kpi1', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
-  { id: 'e-kgi-kpi2', source: 'kgi', target: 'kpi2', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
-  { id: 'e-kgi-kpi3', source: 'kgi', target: 'kpi3', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
-  { id: 'e-kpi1-sub1', source: 'kpi1', target: 'sub1', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
-  { id: 'e-kpi2-sub2', source: 'kpi2', target: 'sub2', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
-  { id: 'e-kpi3-sub3', source: 'kpi3', target: 'sub3', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
+  { id: 'e-kgi-ksf', source: 'kgi', target: 'ksf', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
+  { id: 'e-ksf-kpi', source: 'ksf', target: 'kpi', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
+  { id: 'e-kpi-process1', source: 'kpi', target: 'process1', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
+  { id: 'e-process1-process2', source: 'process1', target: 'process2', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
 ];
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
