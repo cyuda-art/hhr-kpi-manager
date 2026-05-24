@@ -105,20 +105,11 @@ const syncToDB = async (
     if (!res.ok) {
       const errData = await res.json();
       console.error("❌ [syncToDB] API Error:", errData.error);
-      throw new Error(errData.error || 'API Error');
     } else {
       console.log("✅ [syncToDB] Successfully synced to PostgreSQL.");
     }
   } catch (error) {
     console.error("❌ [syncToDB] PostgreSQL Sync Error:", error);
-    // モックプロジェクトの場合やAPIが失敗した場合はLocalStorageにフォールバック
-    if (projectId.startsWith('mock-proj-')) {
-      const storeState = useKpiStore.getState();
-      const kpiDataToSend = updates.kpiData || storeState.kpiData;
-      const actionsToSend = updates.actions || storeState.actions;
-      localStorage.setItem(`hhr_mock_kpiData_${projectId}`, JSON.stringify({ kpiData: kpiDataToSend, actions: actionsToSend }));
-      console.log("✅ [syncToDB] Synced to LocalStorage fallback.");
-    }
   }
 };
 
@@ -470,33 +461,9 @@ export const useKpiStore = create<KpiStore>()(
             recalculateAllMonths(kpiData as any);
           } else {
             console.log("⚠️ [initializeDB] API returned non-ok status.");
-            throw new Error("API returned non-ok status");
           }
         } catch (error) {
           console.error("❌ [initializeDB] Failed to load KPI Data from API", error);
-          // APIからの取得に失敗した、またはモックプロジェクトの場合はLocalStorageからフォールバック
-          if (projectId.startsWith('mock-proj-')) {
-            const localDataStr = localStorage.getItem(`hhr_mock_kpiData_${projectId}`);
-            if (localDataStr) {
-              try {
-                const localData = JSON.parse(localDataStr);
-                if (localData.kpiData && Object.keys(localData.kpiData).length > 0) {
-                  kpiData = localData.kpiData;
-                  Object.keys(kpiData).forEach(id => {
-                    kpiData[id] = calculateComputed(kpiData[id]);
-                  });
-                  sanitizeKpiData(kpiData as Record<string, KpiNodeWithComputedAndInit>);
-                  recalculateAllMonths(kpiData as any);
-                  console.log("✅ [initializeDB] Loaded from LocalStorage fallback.");
-                }
-                if (localData.actions) {
-                  actions = localData.actions;
-                }
-              } catch(e) {
-                console.error("❌ [initializeDB] Failed to parse LocalStorage fallback", e);
-              }
-            }
-          }
         }
 
         // SessionStorageにAI生成された初期データがあるかチェック
