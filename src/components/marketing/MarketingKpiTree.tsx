@@ -11,7 +11,7 @@ const nodeTypes = {
   marketingNode: MarketingKpiNode,
 };
 
-const initialNodes: Node[] = [
+const baseInitialNodes: Node[] = [
   // --- Main Narrative Branch ---
   {
     id: 'kgi',
@@ -121,7 +121,7 @@ const initialNodes: Node[] = [
   },
 ];
 
-const initialEdges: Edge[] = [
+const baseInitialEdges: Edge[] = [
   // Main Narrative Flow
   { id: 'e-kgi-ksf_main', source: 'kgi', target: 'ksf_main', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
   { id: 'e-ksf_main-kpi_main', source: 'ksf_main', target: 'kpi_main', animated: true, style: { stroke: '#94a3b8', strokeWidth: 2 } },
@@ -133,6 +133,69 @@ const initialEdges: Edge[] = [
   { id: 'e-ksf_main-kpi_sub', source: 'ksf_main', target: 'kpi_sub', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
   { id: 'e-kpi_main-process_sub', source: 'kpi_main', target: 'process_sub', style: { stroke: '#cbd5e1', strokeWidth: 1.5 } },
 ];
+
+// 「ヌーの大群」を彷彿とさせる大量の枝葉を自動生成
+const generateHerdOfGnus = () => {
+  const herdNodes: Node[] = [];
+  const herdEdges: Edge[] = [];
+  
+  const parentSources = ['ksf_main', 'ksf_sub', 'kpi_main', 'kpi_sub', 'process_main', 'process_sub'];
+  let nodeIdCounter = 0;
+
+  parentSources.forEach(source => {
+    // 各親から3〜6個の細かいノードを分岐させる
+    const numChildren = Math.floor(Math.random() * 4) + 3;
+    for (let i = 0; i < numChildren; i++) {
+      const childId = `herd_${nodeIdCounter++}`;
+      herdNodes.push({
+        id: childId,
+        type: 'marketingNode',
+        position: { x: 0, y: 0 }, // dagre will handle layout
+        data: {
+          type: 'process',
+          title: `Action Node ${nodeIdCounter}`,
+          subtitle: 'Automated Process',
+          icon: Network,
+          color: 'bg-slate-700 dark:bg-slate-800',
+        }
+      });
+      herdEdges.push({
+        id: `e-${source}-${childId}`,
+        source: source,
+        target: childId,
+        style: { stroke: '#e2e8f0', strokeWidth: 1, opacity: 0.5 }
+      });
+
+      // さらにその子供（孫）も少し生やす
+      if (Math.random() > 0.5) {
+        const grandChildId = `herd_${nodeIdCounter++}`;
+        herdNodes.push({
+          id: grandChildId,
+          type: 'marketingNode',
+          position: { x: 0, y: 0 },
+          data: {
+            type: 'process',
+            title: `Micro Task ${nodeIdCounter}`,
+            icon: Zap,
+            color: 'bg-slate-700 dark:bg-slate-800',
+          }
+        });
+        herdEdges.push({
+          id: `e-${childId}-${grandChildId}`,
+          source: childId,
+          target: grandChildId,
+          style: { stroke: '#f1f5f9', strokeWidth: 0.5, opacity: 0.3 }
+        });
+      }
+    }
+  });
+
+  return { herdNodes, herdEdges };
+};
+
+const { herdNodes, herdEdges } = generateHerdOfGnus();
+const initialNodes = [...baseInitialNodes, ...herdNodes];
+const initialEdges = [...baseInitialEdges, ...herdEdges];
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const dagreGraph = new dagre.graphlib.Graph();
