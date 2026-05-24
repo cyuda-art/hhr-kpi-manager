@@ -101,8 +101,8 @@ export function ChatOnboarding({ onComplete, onCancel }: ChatOnboardingProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#202124] rounded-[16px] w-full max-w-4xl h-[90vh] sm:h-[85vh] shadow-2xl border border-slate-200 dark:border-[#3c4043] flex flex-col overflow-hidden relative">
+    <div className="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm flex justify-end z-50 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#202124] w-full max-w-lg sm:w-[500px] h-full shadow-2xl border-l border-slate-200 dark:border-[#3c4043] flex flex-col overflow-hidden relative animate-in slide-in-from-right duration-300">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#3c4043] bg-white dark:bg-[#202124] z-10 shrink-0">
