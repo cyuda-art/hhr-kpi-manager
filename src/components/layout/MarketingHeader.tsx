@@ -23,7 +23,7 @@ export const MarketingHeader = () => {
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-black text-xl tracking-widest font-poppins text-slate-900 dark:text-white uppercase group">
           <Network className="w-5 h-5 text-strategic-teal group-hover:scale-110 transition-transform" />
-          Gnu.Done
+          Gnu.
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-800 dark:text-slate-200">
           {navLinks.map((link) => (

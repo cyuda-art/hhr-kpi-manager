@@ -37,7 +37,7 @@ export const OrgLayout = ({ children }: { children: React.ReactNode }) => {
             <Hexagon className="text-white" size={14} />
           </div>
           <span className="font-bold text-oxford-navy dark:text-slate-200 tracking-tight text-[14px]">
-            {currentOrg ? currentOrg.name : 'Gnu.Done'}
+            {currentOrg ? currentOrg.name : 'Gnu.'}
           </span>
         </Link>
       </div>
