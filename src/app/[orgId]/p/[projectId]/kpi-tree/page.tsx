@@ -155,8 +155,8 @@ export default function KpiTreePage() {
         </div>
       </div>
 
-      {/* トップドック（ナビゲーション） */}
-      <div className="hidden lg:flex absolute top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+      {/* ボトムドック（ナビゲーション） */}
+      <div className="hidden lg:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
         <div className="flex items-center bg-white/20 dark:bg-black/30 backdrop-blur-xl p-1.5 rounded-full border border-white/40 dark:border-white/10 shadow-2xl">
           <Link href={`/${orgId}/p/${projectId}`} title="ダッシュボード" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
             <LayoutDashboard size={16} /> <span className="hidden xl:inline">ダッシュボード</span>

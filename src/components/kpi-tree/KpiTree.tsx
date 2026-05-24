@@ -549,7 +549,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         )}
 
         {!previewMode && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 p-1.5 bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 p-1.5 bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
             {/* Toolbar Toggle */}
             <div className="relative group flex items-center justify-center">
               <button
@@ -558,7 +558,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
               >
                 {isToolbarOpen ? <ChevronLeft size={16} /> : <Menu size={16} />}
               </button>
-              <div className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+              <div className="absolute top-full mt-2 left-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                 {isToolbarOpen ? 'ツールバーを閉じる' : 'ツールバーを開く'}
               </div>
             </div>
@@ -577,7 +577,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                     >
                       <Undo2 size={14} />
                     </button>
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                       元に戻す (Cmd+Z)
                     </div>
                   </div>
@@ -589,7 +589,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                     >
                       <Redo2 size={14} />
                     </button>
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                       やり直す (Cmd+Shift+Z)
                     </div>
                   </div>
@@ -605,7 +605,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                   >
                     <Wand2 size={16} className="group-hover:scale-110 transition-transform" />
                   </button>
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                     ツリーを自動整列
                   </div>
                 </div>
@@ -616,7 +616,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                   >
                     <Focus size={16} />
                   </button>
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                     選択時の自動フォーカス
                   </div>
                 </div>
@@ -630,7 +630,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                     >
                       <MoveRight size={14} />
                     </button>
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                       横方向レイアウト
                     </div>
                   </div>
@@ -641,7 +641,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                     >
                       <MoveDown size={14} />
                     </button>
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                       縦方向レイアウト
                     </div>
                   </div>
@@ -657,7 +657,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                   >
                     <Map size={16} />
                   </button>
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                     ミニマップ
                   </div>
                 </div>
@@ -668,7 +668,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                   >
                     <Info size={16} />
                   </button>
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                     ステータス凡例
                   </div>
                 </div>
@@ -711,7 +711,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
                       <option value="today">今日 (Today)</option>
                     </optgroup>
                   </select>
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-800 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50 shadow-xl">
                     表示期間の切り替え
                   </div>
                 </div>
