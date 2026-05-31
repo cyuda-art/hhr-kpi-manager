@@ -37,14 +37,8 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       
       set({ organizations: orgs, isLoading: false });
     } catch (error) {
-      console.warn('Backend DB failed, falling back to LocalStorage', error);
-      // Fallback to LocalStorage
-      const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
-      const currentOrgId = get().currentOrgId;
-      if (!currentOrgId && localOrgs.length > 0) {
-        set({ currentOrgId: localOrgs[0].id });
-      }
-      set({ organizations: localOrgs, isLoading: false });
+      console.error('Failed to fetch organizations', error);
+      set({ organizations: [], isLoading: false });
     }
   },
 
@@ -64,13 +58,8 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       set((state) => ({ organizations: [...state.organizations, newOrg], currentOrgId: newOrg.id }));
       return newOrg.id;
     } catch (error) {
-      console.warn('Backend DB failed, saving to LocalStorage', error);
-      const newOrg = { id: `mock-org-${Date.now()}`, name, createdAt: new Date().toISOString() } as unknown as Organization;
-      const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
-      localOrgs.push(newOrg);
-      localStorage.setItem('hhr_mock_orgs', JSON.stringify(localOrgs));
-      set(() => ({ organizations: localOrgs, currentOrgId: newOrg.id }));
-      return newOrg.id;
+      console.error('Failed to create organization', error);
+      throw error;
     }
   },
 
@@ -103,21 +92,7 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
 
   updateOrganizationSettings: async (orgId: string, data: Partial<Organization>) => {
     try {
-      // 🚨 LocalStorage fallback for mock orgs
-      if (orgId.startsWith('mock-org-')) {
-        const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
-        const updatedLocalOrgs = localOrgs.map((org: Organization) => 
-          org.id === orgId ? { ...org, ...data } : org
-        );
-        localStorage.setItem('hhr_mock_orgs', JSON.stringify(updatedLocalOrgs));
-        
-        set((state) => ({
-          organizations: state.organizations.map(org => 
-            org.id === orgId ? { ...org, ...data } : org
-          )
-        }));
-        return;
-      }
+
 
       const res = await fetch(`/api/organizations/${orgId}`, {
         method: 'PUT',

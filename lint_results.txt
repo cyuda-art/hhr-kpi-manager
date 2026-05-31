@@ -1,0 +1,659 @@
+
+> kpi-tree-app@0.1.0 lint
+> eslint
+
+
+/Users/yudachikara/kpimanager/kpi-tree-app/query_db.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/yudachikara/kpimanager/kpi-tree-app/query_db2.js
+  1:9   warning  'PrismaClient' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  1:26  error    A `require()` style import is forbidden            @typescript-eslint/no-require-imports
+  2:9   warning  'Pool' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  2:18  error    A `require()` style import is forbidden            @typescript-eslint/no-require-imports
+  3:1   error    A `require()` style import is forbidden            @typescript-eslint/no-require-imports
+
+/Users/yudachikara/kpimanager/kpi-tree-app/query_db3.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/yudachikara/kpimanager/kpi-tree-app/query_db4.js
+  1:18  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(auth)/invite-org/[id]/page.tsx
+  16:29  warning  'setCurrentOrgId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(auth)/login/page.tsx
+   3:20  warning  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  49:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(marketing)/page.tsx
+  20:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(marketing)/page.tsx:20:5
+  18 |
+  19 |   useEffect(() => {
+> 20 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |   }, []);
+  22 |
+  23 |   useEffect(() => {                                                                          react-hooks/set-state-in-effect
+  26:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(marketing)/page.tsx:26:5
+  24 |     if (phase !== 'tour') return;
+  25 |
+> 26 |     setIsTouring(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |     // シネマティックツアーのシーケンス
+  28 |     const startTour = async () => {
+  29 |       // 初期状態：KGIにフォーカス  react-hooks/set-state-in-effect
+  58:16  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  68:6   warning  React Hook useEffect has a missing dependency: 'isTouring'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(marketing)/product/page.tsx
+  3:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(marketing)/tutorial/page.tsx
+  3:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/(setup)/org-setup/page.tsx
+  35:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/dashboard/page.tsx
+     9:28  warning  'FolderKanban' is defined but never used           @typescript-eslint/no-unused-vars
+     9:56  warning  'LogOut' is defined but never used                 @typescript-eslint/no-unused-vars
+    29:48  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+    31:62  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+    97:37  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   103:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+   139:20  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   192:16  warning  'e' is defined but never used                      @typescript-eslint/no-unused-vars
+   208:21  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   262:17  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   265:16  warning  'e' is defined but never used                      @typescript-eslint/no-unused-vars
+   285:25  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   291:29  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   309:45  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   310:29  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   322:42  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   329:70  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   330:70  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   331:68  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   346:40  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   350:31  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   360:31  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   371:27  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   373:44  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   391:44  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   440:45  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   476:44  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   508:21  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   522:13  warning  'newId' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   549:9   warning  'handleLogout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  1018:33  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1021:37  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  1050:29  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/layout.tsx
+  12:42  warning  'organizations' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  13:9   warning  'router' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/kpi-tree/page.tsx
+  13:10  warning  'InteractiveParticles' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  20:9   warning  'pathname' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  24:27  warning  'kpiData' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  33:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/kpi-tree/page.tsx:33:5
+  31 |
+  32 |   useEffect(() => {
+> 33 |     setIsMounted(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  34 |   }, []);
+  35 |
+  36 |   const handleMouseDown = (e: React.MouseEvent) => {  react-hooks/set-state-in-effect
+  88:9   warning  'getGlobalBackground' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/layout.tsx
+  49:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/layout.tsx:49:7
+  47 |       });
+  48 |     } else {
+> 49 |       setIsInitializing(false);
+     |       ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  50 |     }
+  51 |   }, [projectId, orgId, currentProjectId, projects, isLoading, router, setCurrentProjectId, setSelectedNodeId, initializeDB, isDbInitialized, kpiProjectId]);
+  52 |  react-hooks/set-state-in-effect
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/manifesto/page.tsx
+  14:11  warning  'currentOrgId' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  18:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/manifesto/page.tsx:18:5
+  16 |   
+  17 |   useEffect(() => {
+> 18 |     setIsMounted(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |   }, []);
+  20 |
+  21 |   if (!isMounted) return null;  react-hooks/set-state-in-effect
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/my-tasks/page.tsx
+   92:23   warning  'setCurrentDate' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   95:5    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/my-tasks/page.tsx:95:5
+  93 |
+  94 |   useEffect(() => {
+> 95 |     setIsMounted(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  96 |     // 初期状態でKGIはすべて開く
+  97 |     const kgiIds = Object.values(kpiData).filter(n => n.type === 'KGI').map(n => n.id);
+  98 |     setExpandedNodes(new Set(kgiIds));  react-hooks/set-state-in-effect
+  232:18   warning  'b' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  281:85   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  724:136  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/page.tsx
+   15:18  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   35:42  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   80:44  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  107:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/page.tsx:107:7
+  105 |     if (!selectedKpiId && kpiList.length > 0) {
+  106 |       const kgi = kpiList.find(k => k.type === 'KGI');
+> 107 |       setSelectedKpiId(kgi ? kgi.id : kpiList[0].id);
+      |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  108 |     }
+  109 |   }, [kpiList, selectedKpiId]);
+  110 |  react-hooks/set-state-in-effect
+  339:46  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  339:57  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/report/page.tsx
+  23:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/report/page.tsx:23:5
+  21 |
+  22 |   useEffect(() => {
+> 23 |     setIsMounted(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |     if (projectId && orgId) {
+  25 |       initializeDB(projectId, orgId);
+  26 |     }  react-hooks/set-state-in-effect
+  48:14  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/settings/page.tsx
+   9:25  warning  'Link2' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  32:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/p/[projectId]/settings/page.tsx:32:7
+  30 |   useEffect(() => {
+  31 |     if (currentProject) {
+> 32 |       setProjectName(currentProject.name || '');
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  33 |       setProjectDesc(currentProject.description || '');
+  34 |       setProjectMvv(currentProject.mvv || '');
+  35 |       if (currentProject.statusThresholds) {  react-hooks/set-state-in-effect
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/settings/page.tsx
+   12:9   warning  'router' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   30:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/[orgId]/settings/page.tsx:30:7
+  28 |   useEffect(() => {
+  29 |     if (currentOrg) {
+> 30 |       setOrgName(currentOrg.name);
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  31 |       setManagementPhilosophy(currentOrg.managementPhilosophy || '');
+  32 |       setMasterMvv(currentOrg.masterMvv || '');
+  33 |       setCompanyUrl(currentOrg.companyUrl || '');  react-hooks/set-state-in-effect
+   50:44  error    React Hook "useOrgStore" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/rules-of-hooks
+   75:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  288:26  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/agent-execute/route.ts
+  59:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/chat-onboarding/evaluate-step/route.ts
+  26:45  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  84:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/copilot-chat/route.ts
+  50:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/expand-kpi-node/route.ts
+  95:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/generate-kpi-tree/route.ts
+  158:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/generate-manifesto/route.ts
+   85:24  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/generate-org-frameworks/route.ts
+  120:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/generate-universal-tree/route.ts
+  90:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  96:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/kpi-execution-chat/route.ts
+  19:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/migrate/route.ts
+  78:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  83:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/nodes/[nodeId]/daily/route.ts
+   17:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  169:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/organizations/[orgId]/join/route.ts
+  41:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/organizations/[orgId]/route.ts
+  21:19  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  33:13  warning  'id' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  33:17  warning  'createdAt' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  33:28  warning  'updatedAt' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  33:39  warning  'users' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  33:46  warning  'projects' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  33:56  warning  'creditLogs' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  41:19  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/organizations/route.ts
+  29:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/projects/[projectId]/audit-logs/route.ts
+  14:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/projects/[projectId]/kpi-data/route.ts
+    3:46  warning  'ClientMonthlyData' is defined but never used  @typescript-eslint/no-unused-vars
+  225:19  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/projects/[projectId]/nodes/route.ts
+    3:10  warning  'KpiNodeData' is defined but never used   @typescript-eslint/no-unused-vars
+   34:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/projects/[projectId]/route.ts
+  16:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/reconstruct-tree/route.ts
+  61:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/smart-add-chat/route.ts
+   19:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/smart-add-kpi/route.ts
+   19:51  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  100:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/stripe/checkout/route.ts
+  89:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/stripe/portal/route.ts
+  34:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/app/api/stripe/webhook/route.ts
+  23:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:99  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:99  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/dashboard/AICopilotFeed.tsx
+  3:34  warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/dashboard/TrendChart.tsx
+  81:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/data-entry/DataEditor.tsx
+    5:67  warning  'Hash' is defined but never used                                        @typescript-eslint/no-unused-vars
+    5:73  warning  'Target' is defined but never used                                      @typescript-eslint/no-unused-vars
+   36:10  warning  'editState' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+   36:21  warning  'setEditState' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+   36:82  error    Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+   41:59  error    Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  112:40  error    Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  300:64  error    Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/guards/GuestGuard.tsx
+  16:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/guards/GuestGuard.tsx:16:7
+  14 |   useEffect(() => {
+  15 |     if (!isAuthLoading && user) {
+> 16 |       setIsRedirecting(true);
+     |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  17 |       // Wait for org to be loaded if not already
+  18 |       if (!isOrgLoading) {
+  19 |         if (currentOrgId) {  react-hooks/set-state-in-effect
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/ActionPanel.tsx
+    8:72   warning  'Lightbulb' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+    8:118  warning  'MessageSquare' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   10:10   warning  'WorkflowTask' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   11:67   warning  'formatDisplayValue' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   55:7    warning  'hasShortfall' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   70:52   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+   90:5    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/ActionPanel.tsx:90:5
+  88 |
+  89 |   useEffect(() => {
+> 90 |     fetchDailyRecords();
+     |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  91 |   // eslint-disable-next-line react-hooks/exhaustive-deps
+  92 |   }, [selectedNodeId]);
+  93 |                                                                                                                                                                                                                    react-hooks/set-state-in-effect
+  122:33   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  174:7    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/ActionPanel.tsx:174:7
+  172 |       const displayActual = getDisplayValue(selectedKpi.actualValue, selectedKpi, currentPeriod, 'actualValue');
+  173 |       
+> 174 |       setEditTargetValue(displayTarget.toString());
+      |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  175 |       setEditActualValue(displayActual.toString());
+  176 |       setEditName(selectedKpi.name);
+  177 |       setEditQualitativeName(selectedKpi.qualitativeName || '');  react-hooks/set-state-in-effect
+  183:6    warning  React Hook useEffect has a missing dependency: 'selectedKpi'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+  257:44   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  354:21   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  607:83   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  784:97   error    Comments inside children section of tag should be placed inside braces                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react/jsx-no-comment-textnodes
+  799:59   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/AgentExecutionModal.tsx
+  61:21  error    Unexpected any. Specify a different type                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  70:6   warning  React Hook useEffect has missing dependencies: 'action', 'currentProjectInfo?.manifesto', 'currentProjectInfo?.mvv', 'targetKpi', and 'updateAction'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  89:6   warning  React Hook useEffect has a missing dependency: 'updateAction'. Either include it or remove the dependency array                                                                                           react-hooks/exhaustive-deps
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiExecutionPanel.tsx
+    5:10   warning  'Sparkles' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    5:26   warning  'Bot' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+    5:136  warning  'Calculator' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   17:7    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiExecutionPanel.tsx:17:7
+  15 |   useEffect(() => {
+  16 |     if (!animate) {
+> 17 |       setDisplayedText(text);
+     |       ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  18 |       return;
+  19 |     }
+  20 |     setDisplayedText('');                                                                                                                                                                                                                                                          react-hooks/set-state-in-effect
+   24:25   warning  'prev' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   34:67   warning  'addAction' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   36:11   warning  'isActionPanelCollapsed' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   58:5    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiExecutionPanel.tsx:58:5
+  56 |
+  57 |   useEffect(() => {
+> 58 |     setIsMounted(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  59 |   }, []);
+  60 |
+  61 |   const selectedKpi = selectedNodeId ? kpiData[selectedNodeId] : null;                                                                                                                                                                                                                                                       react-hooks/set-state-in-effect
+   73:7    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiExecutionPanel.tsx:73:7
+  71 |     if (selectedKpi) {
+  72 |       const displayTarget = getDisplayValue(selectedKpi.targetValue, selectedKpi, currentPeriod, 'targetValue');
+> 73 |       setEditTargetValue(displayTarget.toString());
+     |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  74 |       setEditName(selectedKpi.name);
+  75 |       setEditQualitativeName(selectedKpi.qualitativeName || '');
+  76 |       setEditUpdateFrequency(selectedKpi.updateFrequency || 'monthly');  react-hooks/set-state-in-effect
+   80:6    warning  React Hook useEffect has a missing dependency: 'selectedKpi'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+  149:45   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  169:14   warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  184:16   error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiExecutionPanel.tsx:184:16
+  182 |
+  183 |   const triggerCelebration = () => {
+> 184 |     const id = Date.now();
+      |                ^^^^^^^^^^ Cannot call impure function
+  185 |     setCelebrations(prev => [...prev, { id }]);
+  186 |     setTimeout(() => setCelebrations(prev => prev.filter(c => c.id !== id)), 3000);
+  187 |   };                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/purity
+  252:111  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiNodeComponent.tsx
+    9:47  warning  'History' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   68:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiNodeComponent.tsx:68:7
+  66 |   useEffect(() => {
+  67 |     if (data.addedAt && Date.now() - data.addedAt < 5000) {
+> 68 |       setIsNew(true);
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |       const timer = setTimeout(() => setIsNew(false), 5000 - (Date.now() - data.addedAt));
+  70 |       return () => clearTimeout(timer);
+  71 |     }  react-hooks/set-state-in-effect
+   96:9   warning  'isPast' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  120:9   warning  'isAlert' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  163:34  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  164:29  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/KpiTree.tsx
+   10:17   warning  'PanelRightClose' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+   10:34   warning  'PanelRightOpen' is defined but never used                                                                                               @typescript-eslint/no-unused-vars
+   10:62   warning  'X' is defined but never used                                                                                                            @typescript-eslint/no-unused-vars
+   10:100  warning  'Sparkles' is defined but never used                                                                                                     @typescript-eslint/no-unused-vars
+   10:110  warning  'Loader2' is defined but never used                                                                                                      @typescript-eslint/no-unused-vars
+   10:119  warning  'Bot' is defined but never used                                                                                                          @typescript-eslint/no-unused-vars
+   12:10   warning  'AILoadingIndicator' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+   53:62   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+   54:58   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+   66:56   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+   79:62   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+   80:58   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  122:11   warning  'actionPanelWidth' is assigned a value but never used                                                                                    @typescript-eslint/no-unused-vars
+  127:9    warning  'panelRef' is assigned a value but never used                                                                                            @typescript-eslint/no-unused-vars
+  129:48   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  131:9    warning  'setIsCopilotSidebarOpen' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+  133:10   warning  'isMobile' is assigned a value but never used                                                                                            @typescript-eslint/no-unused-vars
+  278:6    warning  React Hook useEffect has a missing dependency: 'handleAutoLayout'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  359:68   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  360:64   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  367:18   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  404:68   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  405:64   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  413:18   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  422:11   error    'targetStatus' is never reassigned. Use 'const' instead                                                                                  prefer-const
+  471:20   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  515:6    warning  React Hook useEffect has missing dependencies: 'initialNodes' and 'layoutDirection'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  805:72   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+  806:72   error    Unexpected any. Specify a different type                                                                                                 @typescript-eslint/no-explicit-any
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/LinkKpiModal.tsx
+  17:11  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/kpi-tree/ReviveKpiModal.tsx
+  9:51  warning  'targetParentId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/layout/DashboardLayout.tsx
+  10:11  warning  'sidebarWidth' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  10:25  warning  'isSidebarCollapsed' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  10:45  warning  'themeColor' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  11:10  warning  'isMobile' is assigned a value but never used            @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/layout/FloatingUserControls.tsx
+  48:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  61:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/layout/Header.tsx
+  153:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  167:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/layout/InteractiveParticles.tsx
+  3:29  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/layout/MarketingHeader.tsx
+   5:19  warning  'LayoutDashboard' is defined but never used        @typescript-eslint/no-unused-vars
+  11:11  warning  'user' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  11:17  warning  'isLoading' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:11  warning  'currentOrgId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/layout/OrgLayout.tsx
+   5:10  warning  'User' is defined but never used                    @typescript-eslint/no-unused-vars
+   5:16  warning  'LogOut' is defined but never used                  @typescript-eslint/no-unused-vars
+   5:33  warning  'Settings' is defined but never used                @typescript-eslint/no-unused-vars
+   8:10  warning  'ThemeToggle' is defined but never used             @typescript-eslint/no-unused-vars
+  14:11  warning  'user' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  14:17  warning  'logout' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  19:9   warning  'isKpiTreePage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/marketing/MarketingKpiNode.tsx
+  5:27  warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/marketing/MarketingKpiTree.tsx
+  211:50  warning  'onTourEnd' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/components/marketing/MarketingLeftPanel.tsx
+  3:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/lib/kpi-utils.ts
+  123:3  warning  '_fieldKey' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/store/useKpiStore.ts
+   247:12   warning  '_e' is defined but never used            @typescript-eslint/no-unused-vars
+   388:23   warning  '_id' is defined but never used           @typescript-eslint/no-unused-vars
+   388:28   warning  '_newParentId' is defined but never used  @typescript-eslint/no-unused-vars
+   474:87   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   510:169  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   988:54   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1081:69   warning  '_e' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/yudachikara/kpimanager/kpi-tree-app/src/store/useProjectStore.ts
+  214:23  warning  '_projectId' is defined but never used  @typescript-eslint/no-unused-vars
+  214:43  warning  '_userId' is defined but never used     @typescript-eslint/no-unused-vars
+  214:60  warning  '_orgId' is defined but never used      @typescript-eslint/no-unused-vars
+
+✖ 251 problems (139 errors, 112 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

@@ -419,7 +419,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
 
     const getEdgeStyle = (sourceId: string, targetId: string) => {
       const targetData = kpiData[targetId];
-      let targetStatus = targetData?.status || 'danger';
+      const targetStatus = targetData?.status || 'danger';
       let strokeColor = '#94a3b8'; // darker default
       let strokeWidth = 3; // increased for better visibility
       let strokeDasharray = undefined as string | undefined;

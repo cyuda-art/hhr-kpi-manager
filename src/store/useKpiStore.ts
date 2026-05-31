@@ -80,11 +80,10 @@ const syncToDB = async (
   
   const isForce = (updates as { _forceSync?: boolean })._forceSync === true;
   if (!isForce && !useKpiStore.getState().isDbInitialized) {
-    console.log("syncToDB aborted: DB is not initialized yet.");
     return;
   }
 
-  console.log("🚀 [syncToDB] Start syncing to PostgreSQL. updates keys:", Object.keys(updates));
+
 
   try {
     const storeState = useKpiStore.getState();
@@ -106,7 +105,7 @@ const syncToDB = async (
       const errData = await res.json();
       console.error("❌ [syncToDB] API Error:", errData.error);
     } else {
-      console.log("✅ [syncToDB] Successfully synced to PostgreSQL.");
+
     }
   } catch (error) {
     console.error("❌ [syncToDB] PostgreSQL Sync Error:", error);
@@ -429,7 +428,7 @@ export const useKpiStore = create<KpiStore>()(
         if (isInitializingDB) return;
         isInitializingDB = true;
         
-        console.log(`🔄 [initializeDB] Starting load for project: ${projectId}`);
+
         const state = get();
         const pData = state.projectData[projectId] || { kpiData: {}, actions: [], workflows: {}, projectInfo: undefined };
         
@@ -439,11 +438,11 @@ export const useKpiStore = create<KpiStore>()(
         
         // --- PostgreSQL (API) から最新データを取得 (Read) ---
         try {
-          console.log("🌐 [initializeDB] Fetching nodes and actions from PostgreSQL...");
+
           const res = await fetch(`/api/projects/${projectId}/nodes`);
           if (res.ok) {
             const data = await res.json();
-            console.log("✅ [initializeDB] Nodes received. Parsing data...");
+
             if (data.kpiData && Object.keys(data.kpiData).length > 0) {
               kpiData = data.kpiData;
             }
@@ -459,7 +458,7 @@ export const useKpiStore = create<KpiStore>()(
             sanitizeKpiData(kpiData as Record<string, KpiNodeWithComputedAndInit>);
             recalculateAllMonths(kpiData as Record<string, KpiNodeWithComputedAndInit>);
           } else {
-            console.log("⚠️ [initializeDB] API returned non-ok status.");
+            console.warn("⚠️ [initializeDB] API returned non-ok status.");
           }
         } catch (error) {
           console.error("❌ [initializeDB] Failed to load KPI Data from API", error);
@@ -528,10 +527,8 @@ export const useKpiStore = create<KpiStore>()(
               // ロード完了したらストレージから削除
               sessionStorage.removeItem(`kpi_init_${projectId}`);
               
-              console.log("🚀 [initializeDB] Calling syncToDB to save AI generated data...");
-              // この段階でFirestoreへ保存する
+              // この段階でDBへ保存する
               syncToDB(projectId, orgId, { kpiData: kpiData, actions: pData.actions, projectInfo: pData.projectInfo as import('@/types').ProjectInfo | null, _forceSync: true } as { kpiData: Record<string, KpiNodeWithComputedAndInit>; actions: import('@/types').Action[]; projectInfo: import('@/types').ProjectInfo | null; _forceSync: boolean });
-              console.log("✅ [initializeDB] syncToDB called.");
             } catch (e) {
               console.error("❌ [initializeDB] Failed to parse init KPI data", e);
             }
