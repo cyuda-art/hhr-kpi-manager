@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { ReactFlow, Background, Controls, MiniMap, Node, Edge, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useKpiStore } from '@/store/useKpiStore';
@@ -209,7 +209,7 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  const handleAutoLayout = (direction: 'TB' | 'LR' = layoutDirection) => {
+  const handleAutoLayout = useCallback((direction: 'TB' | 'LR' = layoutDirection) => {
     // 常に最新のノードとエッジを取得して古いクロージャによる重複を回避
     const currentNodes = rfInstance ? rfInstance.getNodes() : nodes;
     const currentEdges = rfInstance ? rfInstance.getEdges() : edges;
@@ -258,13 +258,13 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
         rfInstance.fitView({ padding: 0.2, duration: 800 });
       }, 50);
     }
-  };
+  }, [layoutDirection, nodes, edges, rfInstance, setNodes, setEdges]);
 
-  const toggleDirection = () => {
+  const toggleDirection = useCallback(() => {
     const newDir = layoutDirection === 'TB' ? 'LR' : 'TB';
     setLayoutDirection(newDir);
     handleAutoLayout(newDir);
-  };
+  }, [layoutDirection, setLayoutDirection, handleAutoLayout]);
 
   const nodeCount = Object.keys(kpiData).length;
   const previousNodeCountRef = useRef(0); // 初期値を0にして、初回マウント時に自動レイアウト＆フォーカスが発火するようにする
@@ -776,16 +776,16 @@ export const KpiTree = ({ isDashboard = false, previewMode = false }: { isDashbo
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onNodeDragStop={(_, node) => {
+          onNodeDragStop={useCallback((_: React.MouseEvent, node: Node) => {
             useKpiStore.getState().updateKpiNodePosition(node.id, node.position);
-          }}
-          onNodeClick={(_, node) => {
+          }, [])}
+          onNodeClick={useCallback((_: React.MouseEvent, node: Node) => {
             setSelectedNodeId(node.id);
             if (isActionPanelCollapsed) {
               toggleActionPanel();
             }
-          }}
-          onPaneClick={() => setSelectedNodeId(null)}
+          }, [setSelectedNodeId, isActionPanelCollapsed, toggleActionPanel])}
+          onPaneClick={useCallback(() => setSelectedNodeId(null), [setSelectedNodeId])}
           onInit={setRfInstance}
           nodeTypes={nodeTypes}
           fitView

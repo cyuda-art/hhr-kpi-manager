@@ -41,9 +41,9 @@ export async function POST(
       });
 
       // 2. 1-pass目: parentIdを一旦nullにしてノード枠をupsert（親子参照FKエラーの回避）
-      for (const nodeId of incomingNodeIds) {
+      await Promise.all(incomingNodeIds.map(nodeId => {
         const node = kpiData[nodeId];
-        await tx.kpiNode.upsert({
+        return tx.kpiNode.upsert({
           where: { id: nodeId },
           create: {
             id: nodeId,
@@ -83,29 +83,29 @@ export async function POST(
             aggregationType: node.aggregationType || 'sum',
           },
         });
-      }
+      }));
 
       // 3. 2-pass目: parentIdを設定して親子リレーションを結合
-      for (const nodeId of incomingNodeIds) {
+      await Promise.all(incomingNodeIds.map(nodeId => {
         const node = kpiData[nodeId];
         if (node.parentId) {
           // 親が存在することを確認
           const parentExists = incomingNodeIds.includes(node.parentId);
-          await tx.kpiNode.update({
+          return tx.kpiNode.update({
             where: { id: nodeId },
             data: {
               parentId: parentExists ? node.parentId : null,
             },
           });
         } else {
-          await tx.kpiNode.update({
+          return tx.kpiNode.update({
             where: { id: nodeId },
             data: {
               parentId: null,
             },
           });
         }
-      }
+      }));
 
       // 4. 各ノードの時系列月次データの更新
       for (const nodeId of incomingNodeIds) {
@@ -182,14 +182,14 @@ export async function POST(
 
       // 6. タスク（actions）のupsert
       if (actions && actions.length > 0) {
-        for (const action of actions) {
+        await Promise.all(actions.map(action => {
           // タスクに紐づくノードが存在するか確認
           const nodeExists = incomingNodeIds.includes(action.kpiId);
-          if (!nodeExists) continue; // ノードがなければスキップ
+          if (!nodeExists) return Promise.resolve(); // ノードがなければスキップ
 
           const statusUpper = (action.status || 'todo').toUpperCase(); // todo -> TODO
           
-          await tx.task.upsert({
+          return tx.task.upsert({
             where: { id: action.id },
             create: {
               id: action.id,
@@ -217,7 +217,7 @@ export async function POST(
               dueDate: action.dueDate ? new Date(action.dueDate) : null,
             },
           });
-        }
+        }));
       }
     });
 
