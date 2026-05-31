@@ -105,18 +105,6 @@ export const Header = () => {
           <Link href={`/${currentOrgId}/p/${currentProjectId}/kpi-tree`} title="KPIツリー" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all ${pathname.includes('/kpi-tree') ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'}`}>
             <Activity size={14} /> <span>KPIツリー</span>
           </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/manifesto`} title="マニフェスト" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all ${pathname.includes('/manifesto') ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'}`}>
-            <Sparkles size={14} className={pathname.includes('/manifesto') ? 'text-amber-500' : ''} /> <span>マニフェスト</span>
-          </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/report`} title="戦略レポート" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all ${pathname.includes('/report') ? 'bg-white dark:bg-slate-700 text-[#00205B] dark:text-[#8ab4f8] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'}`}>
-            <Printer size={14} /> <span>レポート</span>
-          </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/data-entry`} title="シートエディタ" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all ${pathname.includes('/data-entry') ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'}`}>
-            <Database size={14} /> <span>エディタ</span>
-          </Link>
-          <Link href={`/${currentOrgId}/p/${currentProjectId}/my-tasks`} title="マイタスク" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all ${pathname.includes('/my-tasks') ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 dark:hover:text-slate-200'}`}>
-            <CheckSquare size={14} /> <span>タスク</span>
-          </Link>
         </div>
       </div>
 
