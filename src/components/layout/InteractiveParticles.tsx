@@ -56,7 +56,7 @@ export const InteractiveParticles = ({ kpiStatus }: InteractiveParticlesProps) =
 
     let particles: Particle[] = [];
     let animationFrameId: number;
-    let mouse = { x: -1000, y: -1000, radius: 300, isMoving: false };
+    const mouse = { x: -1000, y: -1000, radius: 300, isMoving: false };
     let time = 0;
 
     const resize = () => {

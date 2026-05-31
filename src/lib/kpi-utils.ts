@@ -120,7 +120,7 @@ export const getStorageValue = (
   displayValue: number, 
   node: Partial<KpiNodeData & { monthlyData?: Record<string, MonthlyData> }>, 
   currentPeriod: string,
-  fieldKey?: keyof MonthlyData
+  _fieldKey?: keyof MonthlyData
 ): number => {
   if (currentPeriod.match(/^\d{4}-\d{2}$/)) {
     return displayValue;

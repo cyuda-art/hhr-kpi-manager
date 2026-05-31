@@ -73,12 +73,12 @@ const syncToDB = async (
     actions?: Action[];
     workflows?: Record<string, AiWorkflow>;
     collapsedNodes?: string[];
-    projectInfo?: any;
+    projectInfo?: import('@/types').ProjectInfo | null;
   }
 ) => {
   if (!projectId || !orgId) return;
   
-  const isForce = (updates as any)._forceSync === true;
+  const isForce = (updates as { _forceSync?: boolean })._forceSync === true;
   if (!isForce && !useKpiStore.getState().isDbInitialized) {
     console.log("syncToDB aborted: DB is not initialized yet.");
     return;
@@ -142,7 +142,7 @@ const calculateComputed = (node: Partial<KpiNodeWithComputedAndInit>, customThre
     status = 'warning';
   }
 
-  let newHistory = node.history ? [...node.history] : [];
+  const newHistory = node.history ? [...node.history] : [];
   
   // 履歴データが空の場合（プロジェクト作成時など）、初期値として今日の履歴を1行追加する
   if (newHistory.length === 0) {
@@ -218,7 +218,6 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
   parsedFormula = parsedFormula.replace(regex, (match, id) => {
     const node = kpiData[id];
     if (node) {
-      let val: number;
       const isMonth = currentPeriod.match(/^\d{4}-\d{2}$/);
       
       const getVal = (field: 'actualValue' | 'targetValue') => {
@@ -228,7 +227,7 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
         return node[field] || 0;
       };
 
-      val = getVal(valueType);
+      const val = getVal(valueType);
       return val.toString();
     }
     return '0';
@@ -240,12 +239,12 @@ const evaluateFormula = (formulaStr: string, kpiData: Record<string, KpiNodeWith
   try {
     // 許可する文字：数字、小数点、四則演算記号、括弧、スペースのみ
     if (/^[0-9\.\+\-\*\/\(\)\s]+$/.test(parsedFormula)) {
-      // eslint-disable-next-line no-new-func
+       
       const result = new Function(`return ${parsedFormula}`)();
       return isNaN(result) ? null : result;
     }
     return null;
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 };
@@ -298,7 +297,7 @@ const recalculateTree = (draft: Record<string, KpiNodeWithComputedAndInit>, valu
       const newValue = evaluateFormula(node.formula, draft, valueType, currentPeriod);
       if (newValue !== null && !isNaN(newValue) && isFinite(newValue)) {
         const isMonth = currentPeriod.match(/^\d{4}-\d{2}$/);
-        let targetObj: Record<string, any> | undefined = undefined;
+        let targetObj: Record<string, import('@/types').MonthlyData> | undefined = undefined;
         if (isMonth) {
           targetObj = draft[node.id].monthlyData || {};
           if (!targetObj[currentPeriod]) {
@@ -354,7 +353,7 @@ const recalculateAllMonths = (draft: Record<string, KpiNodeWithComputedAndInit>)
   });
 };
 
-const saveToProjectData = (state: any) => {
+const saveToProjectData = (state: KpiStore) => {
   if (!state.currentProjectId) return state.projectData;
   return {
     ...state.projectData,
@@ -386,7 +385,7 @@ export const useKpiStore = create<KpiStore>()(
       isAiGenerating: false,
       recentlyUpdatedNodes: [],
       setRecentlyUpdatedNodes: (nodes) => set({ recentlyUpdatedNodes: nodes }),
-      reviveKpiNode: (id, newParentId) => {},
+      reviveKpiNode: (_id, _newParentId) => {},
       pastStates: [],
       futureStates: [],
 
@@ -436,7 +435,7 @@ export const useKpiStore = create<KpiStore>()(
         
         let kpiData = { ...pData.kpiData };
         let actions = [...pData.actions];
-        let workflows = { ...(pData.workflows || {}) };
+        const workflows = { ...(pData.workflows || {}) };
         
         // --- PostgreSQL (API) から最新データを取得 (Read) ---
         try {
@@ -458,7 +457,7 @@ export const useKpiStore = create<KpiStore>()(
             });
 
             sanitizeKpiData(kpiData as Record<string, KpiNodeWithComputedAndInit>);
-            recalculateAllMonths(kpiData as any);
+            recalculateAllMonths(kpiData as Record<string, KpiNodeWithComputedAndInit>);
           } else {
             console.log("⚠️ [initializeDB] API returned non-ok status.");
           }
@@ -472,7 +471,7 @@ export const useKpiStore = create<KpiStore>()(
         if (Object.keys(kpiData).length === 0) {
           if (initDataStr) {
             try {
-              const parsedNodes = JSON.parse(initDataStr) as any[];
+              const parsedNodes = JSON.parse(initDataStr) as (KpiNodeData & { tasks?: any })[];
               const initialActions: Action[] = [];
               
               parsedNodes.forEach(node => {
@@ -501,14 +500,14 @@ export const useKpiStore = create<KpiStore>()(
                 
                 // AIが生成したタスクがあれば抽出
                 if (node.tasks && Array.isArray(node.tasks)) {
-                  node.tasks.forEach((task: any) => {
+                  node.tasks.forEach((task: import('@/types').WorkflowTask & { start_date?: string; due_date?: string; priority?: string }) => {
                     initialActions.push({
                       id: Math.random().toString(36).substr(2, 9),
                       kpiId: node.id,
-                      title: task.task_name,
+                      title: task.task_name || '名称未設定',
                       description: `【期待インパクト】${task.expected_impact || '不明'} 【工数感】${task.effort_level || '不明'}\n${task.description || ''}\n留意点: ${task.focus_point || ''}`.trim(),
                       owner: '未定',
-                      priority: task.expected_impact === 'High' && task.effort_level === 'Low' ? 'urgent_important' : 'unassigned',
+                      priority: (task.priority && typeof task.priority === 'string') ? (task.priority.charAt(0).toUpperCase() + task.priority.slice(1).toLowerCase() as any) : 'Medium',
                       startDate: task.start_date && task.start_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.start_date : new Date().toISOString().split('T')[0],
                       dueDate: task.due_date && task.due_date.match(/^\d{4}-\d{2}-\d{2}$/) ? task.due_date : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                       status: 'todo'
@@ -524,14 +523,14 @@ export const useKpiStore = create<KpiStore>()(
 
               // --- 初期計算 ---
               // 数式セット後、ツリー全体の数値を再計算して整合性を取る
-              recalculateAllMonths(kpiData as any);
+              recalculateAllMonths(kpiData as Record<string, KpiNodeWithComputedAndInit>);
 
               // ロード完了したらストレージから削除
               sessionStorage.removeItem(`kpi_init_${projectId}`);
               
               console.log("🚀 [initializeDB] Calling syncToDB to save AI generated data...");
               // この段階でFirestoreへ保存する
-              syncToDB(projectId, orgId, { kpiData: kpiData, actions: pData.actions, projectInfo: pData.projectInfo, _forceSync: true } as any);
+              syncToDB(projectId, orgId, { kpiData: kpiData, actions: pData.actions, projectInfo: pData.projectInfo as import('@/types').ProjectInfo | null, _forceSync: true } as { kpiData: Record<string, KpiNodeWithComputedAndInit>; actions: import('@/types').Action[]; projectInfo: import('@/types').ProjectInfo | null; _forceSync: boolean });
               console.log("✅ [initializeDB] syncToDB called.");
             } catch (e) {
               console.error("❌ [initializeDB] Failed to parse init KPI data", e);
@@ -565,7 +564,7 @@ export const useKpiStore = create<KpiStore>()(
           kpiData: kpiData,
           actions: actions,
           workflows: workflows,
-          collapsedNodes: (pData as any)._tempCollapsedNodes !== undefined ? (pData as any)._tempCollapsedNodes : get().collapsedNodes,
+          collapsedNodes: (pData as { _tempCollapsedNodes?: string[] })._tempCollapsedNodes !== undefined ? (pData as { _tempCollapsedNodes?: string[] })._tempCollapsedNodes : get().collapsedNodes,
           isDbInitialized: true 
         });
 
@@ -851,7 +850,7 @@ export const useKpiStore = create<KpiStore>()(
       }
 
       // 再帰的な子ノードの削除処理
-      let deletedNodeIds = new Set<string>();
+      const deletedNodeIds = new Set<string>();
       
       const deleteRecursive = (nodeId: string) => {
         deletedNodeIds.add(nodeId);
@@ -983,10 +982,10 @@ export const useKpiStore = create<KpiStore>()(
       set((currentState: KpiStore) => {
         currentState.saveHistory();
         const draft = { ...currentState.kpiData };
-        let newActions = [...currentState.actions];
+        const newActions = [...currentState.actions];
 
         // 1. 新しいノードをdraftに追加
-        nodes.forEach((node: any) => {
+        nodes.forEach((node: KpiNodeData & { tasks?: any }) => {
           // 重複を避けるためIDを上書き（万が一のため）
           let safeId = node.id;
           if (draft[safeId]) {
@@ -998,7 +997,7 @@ export const useKpiStore = create<KpiStore>()(
 
           // タスクがあればActionsに退避
           if (node.tasks && Array.isArray(node.tasks)) {
-            node.tasks.forEach((task: any) => {
+            node.tasks.forEach((task: import('@/types').WorkflowTask & { start_date?: string; due_date?: string } | string) => {
               const isString = typeof task === 'string';
               newActions.push({
                 id: `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1017,13 +1016,13 @@ export const useKpiStore = create<KpiStore>()(
             ...node,
             history: [],
             initialActualValue: node.actualValue || 0,
-            addedAt: Date.now()
+            status: 'danger', achievementRate: 0
           };
           draft[safeId] = calculateComputed(newNode);
         });
 
         // 2. 親ノードの更新（計算式の設定など）
-        const newParentFormula = parentFormula || nodes.map((n:any) => `#{${n.id}}`).join(" + ");
+        const newParentFormula = parentFormula || nodes.map((n: KpiNodeData) => `#{${n.id}}`).join(" + ");
         const updatedParent = {
           ...draft[kpiId],
           isCalculated: true,
@@ -1077,21 +1076,21 @@ export const useKpiStore = create<KpiStore>()(
       if (!res.ok) return [];
       const data = await res.json();
       
-      const logs = data.logs.map((log: any) => {
+      const logs = data.logs.map((log: import('@/types').AuditLog & { createdAt: string }) => {
         let detailsObj = {};
-        try { detailsObj = JSON.parse(log.details || '{}'); } catch(e){}
+        try { detailsObj = JSON.parse(log.details || '{}'); } catch(_e){}
         return {
           id: log.id,
-          kpiId: (detailsObj as any).kpiId || '',
+          kpiId: (detailsObj as Record<string, string>).kpiId || '',
           action: log.action,
           userId: log.userId,
-          details: (detailsObj as any).details || '',
+          details: (detailsObj as Record<string, string>).details || '',
           timestamp: new Date(log.createdAt).getTime()
         };
       });
       
       // kpiId でフィルタリング
-      return logs.filter((log: any) => log.kpiId === kpiId);
+      return logs.filter((log: import('@/types').AuditLog) => log.kpiId === kpiId);
     } catch (e) {
       console.error("Failed to fetch audit logs", e);
       return [];

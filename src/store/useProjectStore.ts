@@ -33,7 +33,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         });
         const data = await res.json();
         if (res.ok && data.projects) {
-          const mappedProjects: Project[] = data.projects.map((p: any) => ({
+          const mappedProjects: Project[] = data.projects.map((p: Project & { ownerId?: string }) => ({
             id: p.id,
             name: p.name,
             description: p.description || '',
@@ -108,7 +108,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     try {
       if (projectId.startsWith('mock-proj-')) {
         const localProjects = JSON.parse(localStorage.getItem(`hhr_mock_projects_${orgId}`) || '[]');
-        const updatedLocalProjects = localProjects.filter((p: any) => p.id !== projectId);
+        const updatedLocalProjects = localProjects.filter((p: Project) => p.id !== projectId);
         localStorage.setItem(`hhr_mock_projects_${orgId}`, JSON.stringify(updatedLocalProjects));
         
         set(state => ({
@@ -167,7 +167,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         if (data.kpiData) {
           // ノードのIDをすべて新規のIDにマッピングし直す（主キー重複回避）
           const oldToNewIdMap: Record<string, string> = {};
-          const newKpiData: Record<string, any> = {};
+          const newKpiData: Record<string, import('@/types').KpiNodeData> = {};
 
           Object.keys(data.kpiData).forEach(oldId => {
             const newId = Math.random().toString(36).substr(2, 9);
@@ -184,7 +184,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
             };
           });
 
-          const newActions = (data.actions || []).map((act: any) => ({
+          const newActions = (data.actions || []).map((act: import('@/types').Action) => ({
             ...act,
             id: Math.random().toString(36).substr(2, 9),
             kpiId: oldToNewIdMap[act.kpiId] || act.kpiId
@@ -211,7 +211,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     }
   },
 
-  joinProject: async (projectId: string, userId: string, orgId: string) => {
+  joinProject: async (_projectId: string, _userId: string, _orgId: string) => {
     // PostgreSQL / Prismaモデルでは組織内の全プロジェクトが全ユーザーに紐付くため、joinはダミー処理とする
     return Promise.resolve();
   },
@@ -220,7 +220,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     try {
       if (projectId.startsWith('mock-proj-')) {
         const localProjects = JSON.parse(localStorage.getItem(`hhr_mock_projects_${orgId}`) || '[]');
-        const updatedLocalProjects = localProjects.map((p: any) => 
+        const updatedLocalProjects = localProjects.map((p: Project) => 
           p.id === projectId ? { ...p, ...data } : p
         );
         localStorage.setItem(`hhr_mock_projects_${orgId}`, JSON.stringify(updatedLocalProjects));

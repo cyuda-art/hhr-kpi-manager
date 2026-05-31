@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-vars */
 const fs = require('fs');
 
 // Firebase is not available, we need to find another way.

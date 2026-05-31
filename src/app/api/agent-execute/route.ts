@@ -52,7 +52,7 @@ ${manifesto || '未設定'}
     const responseText = response.text;
     if (!responseText) throw new Error("Empty response from Vertex AI");
     
-    let resultData = JSON.parse(responseText);
+    const resultData = JSON.parse(responseText);
 
     return NextResponse.json(resultData);
 

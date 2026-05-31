@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Sparkles, ArrowRight, User, Send } from 'lucide-react';
+import Link from 'next/link';
 
 interface MarketingRightPanelProps {
   isVisible: boolean;
@@ -31,9 +32,9 @@ export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => 
       response: (
         <div className="space-y-3">
           <p>Gnu.は、抽象的な目標を具体的な「KPIツリー」に分解し、それを達成するための実務までAIが自律的に実行する次世代プラットフォームです。</p>
-          <a href="/login" className="inline-flex items-center gap-2 bg-strategic-teal text-white px-4 py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-strategic-teal/90 transition-colors mt-2">
+          <Link href="/login" className="inline-flex items-center gap-2 bg-strategic-teal text-white px-4 py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-strategic-teal/90 transition-colors mt-2">
             ワークスペースを作る <ArrowRight size={14} />
-          </a>
+          </Link>
         </div>
       )
     },
@@ -52,9 +53,9 @@ export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => 
               <li className="flex items-center gap-1">✓ Gemini 1.5 Pro Access</li>
               <li className="flex items-center gap-1">✓ Agentic Workspace Auto-execution</li>
             </ul>
-            <a href="/pricing" className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-slate-700 dark:hover:bg-white transition-colors">
+            <Link href="/pricing" className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-slate-700 dark:hover:bg-white transition-colors">
               料金詳細を見る <ArrowRight size={14} />
-            </a>
+            </Link>
           </div>
         </div>
       )
@@ -78,9 +79,9 @@ export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => 
               <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">SNS投稿自動化</span>
             </div>
           </div>
-          <a href="/use-cases" className="inline-flex items-center gap-2 text-purple-500 dark:text-purple-400 text-[10px] font-bold tracking-widest hover:underline mt-1">
+          <Link href="/use-cases" className="inline-flex items-center gap-2 text-purple-500 dark:text-purple-400 text-[10px] font-bold tracking-widest hover:underline mt-1">
             すべての事例を見る <ArrowRight size={12} />
-          </a>
+          </Link>
         </div>
       )
     }
@@ -112,9 +113,9 @@ export const MarketingRightPanel = ({ isVisible }: MarketingRightPanelProps) => 
         content: (
           <div className="space-y-3">
             <p>素晴らしい目標ですね！そのKGIを達成するために必要なKPIツリーを、私（AI）が自動で展開し、実務まで代行します。</p>
-            <a href="/login" className="w-full inline-flex items-center justify-center gap-2 bg-strategic-teal text-white py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-strategic-teal/90 transition-colors">
+            <Link href="/login" className="w-full inline-flex items-center justify-center gap-2 bg-strategic-teal text-white py-2 rounded-lg text-[10px] font-bold tracking-widest hover:bg-strategic-teal/90 transition-colors">
               無料でアカウントを作成して実行する <ArrowRight size={14} />
-            </a>
+            </Link>
           </div>
         ) 
       }]);

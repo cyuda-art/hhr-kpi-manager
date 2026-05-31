@@ -127,7 +127,7 @@ export async function POST(
         const node = allNodes.find(n => n.id === id);
         if (node && node.isCalculated && node.formula) {
           let formulaStr = node.formula;
-          let canEvaluate = true;
+          const canEvaluate = true;
           
           const matches = formulaStr.match(/#\{([^}]+)\}/g);
           if (matches) {

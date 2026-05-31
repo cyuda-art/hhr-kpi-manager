@@ -93,16 +93,16 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
   };
 
   // モック用の時系列・予測ロジック
-  let isPast = false;
-  let displayLabel = "実績";
+  const isPast = false;
+  const displayLabel = "実績";
   
   // 期間換算（year基準をベースとする）
-  let displayActualRaw = data.actualValue;
-  let displayTargetRaw = data.targetValue;
+  const displayActualRaw = data.actualValue;
+  const displayTargetRaw = data.targetValue;
 
   // kpi-utilsを用いてUI表示用に換算する
-  let displayActual = getDisplayValue(displayActualRaw, data, currentPeriod, 'actualValue');
-  let displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod, 'targetValue');
+  const displayActual = getDisplayValue(displayActualRaw, data, currentPeriod, 'actualValue');
+  const displayTarget = getDisplayValue(displayTargetRaw, data, currentPeriod, 'targetValue');
 
   let displayAchievementRate = 0;
   if (displayTarget > 0) {

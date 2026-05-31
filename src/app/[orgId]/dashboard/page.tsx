@@ -258,7 +258,7 @@ export default function WorkspacePage() {
       });
 
       const textResponse = await res.text();
-      let cleanText = textResponse.replace(new RegExp('\`\`\`json', 'g'), '').replace(new RegExp('\`\`\`', 'g'), '').trim();
+      const cleanText = textResponse.replace(new RegExp('\`\`\`json', 'g'), '').replace(new RegExp('\`\`\`', 'g'), '').trim();
       let data: any;
       try {
         data = JSON.parse(cleanText);

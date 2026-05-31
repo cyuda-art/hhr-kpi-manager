@@ -12,11 +12,13 @@ interface AiLoadingOverlayProps {
 export const AiLoadingOverlay: React.FC<AiLoadingOverlayProps> = ({ isVisible, statusText = 'AIが処理を行っています...', subText = 'しばらくお待ちください' }) => {
   const [shouldRender, setShouldRender] = useState(isVisible);
 
+  if (isVisible && !shouldRender) {
+    setShouldRender(true);
+  }
+
   // マウント/アンマウントのフェードアニメーション制御
   useEffect(() => {
-    if (isVisible) {
-      setShouldRender(true);
-    } else {
+    if (!isVisible) {
       const timer = setTimeout(() => setShouldRender(false), 500); // フェードアウトの時間と合わせる
       return () => clearTimeout(timer);
     }

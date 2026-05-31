@@ -294,7 +294,7 @@ export const ActionPanel = () => {
       }
     }
 
-    let formulaElements = children.map(c => `#{${c.id}}`);
+    const formulaElements = children.map(c => `#{${c.id}}`);
 
     if (needsDummyNode) {
       const dummyId = `kpi_dummy_${Date.now()}`;

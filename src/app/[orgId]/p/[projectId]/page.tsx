@@ -13,7 +13,7 @@ export default function DashboardPage() {
   // Executive Summary Calculations
   const summary = useMemo(() => {
     let kgiNode: any = null;
-    let statusCounts = { good: 0, warning: 0, danger: 0 };
+    const statusCounts = { good: 0, warning: 0, danger: 0 };
     
     Object.values(kpiData).forEach(node => {
       if (node.type === 'KGI') kgiNode = node;
@@ -125,8 +125,8 @@ export default function DashboardPage() {
       const isPast = month < cp;
       const isCurrent = month === cp;
 
-      let t = mData.targetValue || 0;
-      let a = mData.actualValue || 0;
+      const t = mData.targetValue || 0;
+      const a = mData.actualValue || 0;
       return {
         month,
         originalTarget: t,

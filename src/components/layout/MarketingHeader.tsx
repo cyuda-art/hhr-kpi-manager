@@ -36,15 +36,13 @@ export const MarketingHeader = () => {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-4">
-            <>
-              <a href="/login" className="text-sm font-bold font-poppins text-slate-800 dark:text-slate-200 hover:text-strategic-teal dark:hover:text-strategic-teal transition-colors">
-                ログイン
-              </a>
-              <a href="/login" className="text-xs font-bold font-poppins tracking-wider bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm">
-                無料トライアル
-              </a>
-            </>
+        <div className="hidden md:flex items-center space-x-6">
+          <Link href="/login" className="text-sm font-bold font-poppins text-slate-800 dark:text-slate-200 hover:text-strategic-teal dark:hover:text-strategic-teal transition-colors">
+            Sign In
+          </Link>
+          <Link href="/login" className="text-xs font-bold font-poppins tracking-wider bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm">
+            TRY DEMO
+          </Link>
         </div>
       </div>
     </header>

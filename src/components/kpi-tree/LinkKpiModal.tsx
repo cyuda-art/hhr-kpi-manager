@@ -17,13 +17,14 @@ export const LinkKpiModal = ({ isOpen, onClose, targetParentId }: LinkKpiModalPr
   const { user } = useAuthStore();
   
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [targetNodes, setTargetNodes] = useState<any[]>([]);
+  const [targetNodes, setTargetNodes] = useState<import('@/types').KpiNodeData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   // プロジェクトが選択されたらそのプロジェクトのKPI一覧を取得
   useEffect(() => {
     if (!selectedProjectId || !currentOrgId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTargetNodes([]);
       return;
     }
@@ -64,10 +65,11 @@ export const LinkKpiModal = ({ isOpen, onClose, targetParentId }: LinkKpiModalPr
     (node.qualitativeName && node.qualitativeName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleLinkNode = (node: any) => {
+  const handleLinkNode = (node: import('@/types').KpiNodeData) => {
     if (!parentNode) return;
 
-    const newKpiId = `kpi_link_${Math.random().toString(36).substr(2, 9)}`;
+    // eslint-disable-next-line react-hooks/purity
+    const newKpiId = `kpi_link_${Date.now().toString(36)}_${crypto.randomUUID ? crypto.randomUUID().split('-')[0] : Math.floor(Math.random()*1000)}`;
     
     addKpiNode({
       id: newKpiId,

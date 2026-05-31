@@ -12,7 +12,11 @@ type Phase = 'gnu' | 'gnuuu' | 'gnuuuuu' | 'chaos';
 
 export const MarketingHeroSequence = ({ onComplete }: MarketingHeroSequenceProps) => {
   const [phase, setPhase] = useState<Phase>('gnu');
-  const [particles, setParticles] = useState<{ id: number; x: number; y: number; delay: number; icon: number }[]>([]);
+  const [particles, setParticles] = useState<{ 
+    id: number; x: number; y: number; delay: number; icon: number;
+    targetX: number; targetY: number; targetScale: number; targetRotate: number;
+    duration: number; iconSize: number;
+  }[]>([]);
 
   useEffect(() => {
     // タイムライン制御
@@ -22,13 +26,19 @@ export const MarketingHeroSequence = ({ onComplete }: MarketingHeroSequenceProps
       setTimeout(() => {
         setPhase('chaos');
         
-        // ヌーの大群（パーティクル）を生成
+        // ヌーの大群（パーティクル）を生成し、ランダム値を事前計算
         const newParticles = Array.from({ length: 300 }).map((_, i) => ({
           id: i,
           x: (Math.random() - 0.5) * 2000,
           y: (Math.random() - 0.5) * 1500,
           delay: Math.random() * 1.5,
-          icon: Math.floor(Math.random() * 5)
+          icon: Math.floor(Math.random() * 5),
+          targetX: (Math.random() > 0.5 ? 800 : -800),
+          targetY: (Math.random() > 0.5 ? 800 : -800),
+          targetScale: Math.random() * 3 + 1,
+          targetRotate: Math.random() * 720 - 360,
+          duration: 2 + Math.random() * 2,
+          iconSize: 16 + Math.random() * 48
         }));
         setParticles(newParticles);
       }, 5500),
@@ -53,20 +63,20 @@ export const MarketingHeroSequence = ({ onComplete }: MarketingHeroSequenceProps
               initial={{ opacity: 0, x: 0, y: 0, scale: 0, rotate: 0 }}
               animate={{ 
                 opacity: [0, 1, 0],
-                x: p.x + (Math.random() > 0.5 ? 800 : -800), 
-                y: p.y + (Math.random() > 0.5 ? 800 : -800),
-                scale: [0, Math.random() * 3 + 1, 0.5],
-                rotate: Math.random() * 720 - 360
+                x: p.x + p.targetX, 
+                y: p.y + p.targetY,
+                scale: [0, p.targetScale, 0.5],
+                rotate: p.targetRotate
               }}
               transition={{ 
-                duration: 2 + Math.random() * 2, 
+                duration: p.duration, 
                 delay: p.delay,
                 ease: "circOut"
               }}
               className="absolute text-strategic-teal/50 dark:text-strategic-teal/30"
               style={{ left: '50%', top: '50%' }}
             >
-              <Icon size={16 + Math.random() * 48} />
+              <Icon size={p.iconSize} />
             </motion.div>
           );
         })}

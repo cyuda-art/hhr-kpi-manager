@@ -69,7 +69,7 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
       localOrgs.push(newOrg);
       localStorage.setItem('hhr_mock_orgs', JSON.stringify(localOrgs));
-      set((state) => ({ organizations: localOrgs, currentOrgId: newOrg.id }));
+      set(() => ({ organizations: localOrgs, currentOrgId: newOrg.id }));
       return newOrg.id;
     }
   },
@@ -106,7 +106,7 @@ export const useOrgStore = create<OrgStore>((set, get) => ({
       // 🚨 LocalStorage fallback for mock orgs
       if (orgId.startsWith('mock-org-')) {
         const localOrgs = JSON.parse(localStorage.getItem('hhr_mock_orgs') || '[]');
-        const updatedLocalOrgs = localOrgs.map((org: any) => 
+        const updatedLocalOrgs = localOrgs.map((org: Organization) => 
           org.id === orgId ? { ...org, ...data } : org
         );
         localStorage.setItem('hhr_mock_orgs', JSON.stringify(updatedLocalOrgs));

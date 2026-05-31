@@ -138,6 +138,6 @@ export interface KpiChatMessage {
   role: 'user' | 'model';
   content: string;
   timestamp: number;
-  toolCalls?: any[]; // For Function Calling
+  toolCalls?: unknown[]; // For Function Calling
 }
 
