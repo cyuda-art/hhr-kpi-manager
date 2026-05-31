@@ -152,29 +152,7 @@ export default function KpiTreePage() {
         </div>
       </div>
 
-      {/* ボトムドック（ナビゲーション） */}
-      <div className="hidden lg:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-        <div className="flex items-center bg-white/20 dark:bg-black/30 backdrop-blur-xl p-1.5 rounded-full border border-white/40 dark:border-white/10 shadow-2xl">
-          <Link href={`/${orgId}/p/${projectId}`} title="ダッシュボード" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
-            <LayoutDashboard size={16} /> <span className="hidden xl:inline">ダッシュボード</span>
-          </Link>
-          <Link href={`/${orgId}/p/${projectId}/kpi-tree`} title="KPIツリー" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm transition-all">
-            <Activity size={16} /> <span className="hidden xl:inline">KPIツリー</span>
-          </Link>
-          <Link href={`/${orgId}/p/${projectId}/manifesto`} title="マニフェスト" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
-            <Sparkles size={16} /> <span className="hidden xl:inline">マニフェスト</span>
-          </Link>
-          <Link href={`/${orgId}/p/${projectId}/report`} title="戦略レポート" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
-            <Printer size={16} /> <span className="hidden xl:inline">レポート</span>
-          </Link>
-          <Link href={`/${orgId}/p/${projectId}/data-entry`} title="シートエディタ" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
-            <Database size={16} /> <span className="hidden xl:inline">エディタ</span>
-          </Link>
-          <Link href={`/${orgId}/p/${projectId}/my-tasks`} title="マイタスク" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all">
-            <CheckSquare size={16} /> <span className="hidden xl:inline">タスク</span>
-          </Link>
-        </div>
-      </div>
+      {/* ボトムドック（ナビゲーション） - REMOVED */}
 
       {/* 右リサイズ用ハンドル */}
       {!isActionPanelCollapsed && selectedNodeId && (
