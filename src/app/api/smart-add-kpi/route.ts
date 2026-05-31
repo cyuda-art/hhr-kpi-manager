@@ -44,6 +44,7 @@ ${JSON.stringify(simplifiedTree, null, 2)}
 8. 以下のJSONフォーマット（"updatedParent" と "newNodes"）で出力してください。
 9. markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
 10. 新しく生成するノードのIDは、"kpi_smart_1", "kpi_smart_2" のように一意なものにしてください。
+11. 【BtoB特化】本システムはBtoBビジネスに特化しています。生成するKPIは、BtoC向け（来店者数など）ではなく、BtoB向け（リード数、商談数、受注率、LTV、CAC、人件費、原価など）の実践的な指標を展開してください。
 
 【出力JSONフォーマット】
 {

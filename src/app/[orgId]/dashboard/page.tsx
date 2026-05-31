@@ -591,13 +591,25 @@ export default function WorkspacePage() {
             
             {/* Create New Project Card (Dashed) */}
             <button 
-              onClick={() => {
+              onClick={async () => {
                 if (hasReachedProjectLimit) {
                   alert('無料プラン（FREE）では作成できるプロジェクトは1つまでです。新しいプロジェクトを作成するにはアップグレードしてください。');
                   router.push('/pricing');
                   return;
                 }
-                setWizardStep('chat_onboarding');
+                setIsProcessing('new');
+                try {
+                  const projName = `新規事業計画 (${new Date().toLocaleDateString()})`;
+                  const newId = await createProject(projName, '', user?.uid || '', currentOrgId!, {
+                    kgiType: '営業利益'
+                  });
+                  router.push(`/${currentOrgId}/p/${newId}/kpi-tree`);
+                } catch (e) {
+                  console.error(e);
+                  alert('プロジェクトの作成に失敗しました');
+                } finally {
+                  setIsProcessing(null);
+                }
               }}
               className="bg-transparent hover:bg-white/40 dark:bg-black/40 backdrop-blur-xl border-2 border-dashed border-slate-300 dark:border-[#5f6368] hover:border-strategic-teal dark:border-[#8ab4f8] rounded-[8px] h-[190px] flex flex-col items-center justify-center text-center transition-all group relative"
             >
@@ -605,7 +617,7 @@ export default function WorkspacePage() {
                 <Plus size={24} />
               </div>
               <span className="text-[16px] font-medium text-strategic-teal dark:text-[#8ab4f8]">
-                AIでKGI/KPIを生成
+                新規ツリーを作成
               </span>
               {hasReachedProjectLimit && (
                 <div className="absolute top-2 right-2 bg-rose-100 text-rose-600 text-[10px] px-2 py-0.5 rounded font-bold">
