@@ -226,105 +226,41 @@ export const KpiNodeComponent = ({ data }: NodeProps) => {
       
       {/* MID & MICRO VIEW: メインコンテンツ */}
       <div 
-        className="relative z-10 flex justify-between items-start mb-2 transition-all duration-700 ease-out"
+        className="relative z-10 flex justify-between items-center mb-1 transition-all duration-700 ease-out"
         style={{ transform: getZDepth(15) }}
       >
         <div className="flex flex-col flex-1 min-w-0 pr-2">
-          <div className="flex items-center gap-1.5 mb-2 flex-wrap font-poppins">
-            <span className="text-[9px] font-bold text-strategic-teal uppercase tracking-widest">{data.businessUnit}</span>
-            {data.linkedSource && (
-              <span className="text-[8px] bg-logic-slate/10 dark:bg-slate-700 text-logic-slate dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 flex items-center gap-0.5 tracking-wider">
-                <Link2 size={10} /> LINKED
-              </span>
-            )}
-            {data.warning && (
-              <span className="text-[8px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 animate-pulse tracking-wider">
-                ⚠️ RESET
-              </span>
-            )}
-            {hasShortfall && (
-              <span className="text-[8px] bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 animate-pulse tracking-wider border border-red-200 dark:border-red-800" title="前月までの累計未達分">
-                ⚠️ 累計 {formatDisplayValue(shortfall, data.unit)} {data.unit}
-              </span>
-            )}
-            <span className="text-[8px] bg-logic-slate/5 dark:bg-slate-700 text-logic-slate dark:text-slate-300 px-1.5 py-0.5 rounded-[2px] font-bold flex-shrink-0 tracking-wider">
-              {data.type === 'KGI' ? 'GOAL / KGI' : level === 1 ? 'KSF / KPI' : 'PROCESS / KPI'}
-            </span>
-          </div>
-          
-          <div className="flex flex-col gap-2.5">
-            {/* 定性（Goal/KSF）部分 */}
-            {(data.qualitativeName || data.type === 'KGI') && (
-              <div>
-                <p className={cn(
-                  "text-[9px] font-bold mb-0.5 flex items-center gap-1 font-poppins tracking-wider uppercase",
-                  data.isKsf ? "text-strategic-teal" : "text-logic-slate dark:text-slate-300/70 dark:text-slate-400"
-                )}>
-                  <Target size={10} /> 
-                  {data.isKsf ? "Key Success Factor" : getQualitativeLabel()}
-                </p>
-                <p className={cn(
-                  "font-black text-[14px] leading-snug break-words font-sans",
-                  data.isKsf ? "text-oxford-navy dark:text-slate-100" : "text-oxford-navy dark:text-slate-100"
-                )}>
-                  {(data.qualitativeName || '未設定').replace(/^(KSF|プロセス|Goal|Process)[:：\s]*/i, '')}
-                </p>
-              </div>
-            )}
-            
-            {/* 定量（KGI/KPI）部分 */}
-            <div>
-              <p className="text-[9px] text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold mb-0.5 flex items-center gap-1 font-poppins tracking-wider uppercase"><BarChart2 size={10} /> {data.type === 'KGI' ? 'Quantitative KGI' : 'Quantitative KPI'}</p>
-              <p className="font-black text-oxford-navy dark:text-slate-100 text-[14px] leading-snug break-words font-sans">{data.name}</p>
-            </div>
-          </div>
+          <p className="font-black text-oxford-navy dark:text-slate-100 text-[15px] leading-snug break-words font-sans line-clamp-2">
+            {data.name}
+          </p>
         </div>
         <div className="flex flex-col items-end gap-1">
           {!isQualitative && (
-            <>
-              <div className={cn("px-2.5 py-1 rounded-[6px] text-[13px] font-black tracking-wide text-[#202124] shadow-sm", getStatusBg(displayStatus))}>
-                {displayAchievementRate.toFixed(1)}%
-              </div>
-              {displayTarget > 0 && (displayActual - displayTarget) < 0 && (
-                <div className="text-[10px] font-bold text-[#f43f5e] bg-[#f43f5e]/10 px-1.5 py-0.5 rounded">
-                  不足: {formatDisplayValue(displayActual - displayTarget, data.unit)}
-                </div>
-              )}
-            </>
+            <div className={cn("px-2 py-1 rounded-[6px] text-[13px] font-black tracking-wide text-[#202124] shadow-sm", getStatusBg(displayStatus))}>
+              {displayAchievementRate.toFixed(1)}%
+            </div>
           )}
         </div>
       </div>
 
-      {/* MICRO VIEW のみ: 詳細な数値と計算式 */}
+      {/* MICRO VIEW のみ: 詳細な数値 */}
       {!isQualitative && (
         <div 
-          className="relative z-10 space-y-1.5 mt-4 pt-3 border-t border-slate-200 dark:border-[#3c4043] transition-all duration-700 ease-out"
+          className="relative z-10 mt-2 transition-all duration-700 ease-out"
           style={{ transform: getZDepth(30) }}
         >
-            <div className="flex justify-between text-[12px] items-center font-lato">
-              <span className="flex items-center gap-1 text-logic-slate dark:text-slate-300 font-bold">
-                {data.isCalculated && <span title="自動計算項目"><Calculator size={11} className="text-strategic-teal" /></span>}
-                {displayLabel}
-              </span>
-              <span className="font-black text-oxford-navy dark:text-slate-100 text-[13px]">
-                {formatDisplayValue(displayActual, data.unit)} <span className="text-[10px] font-bold text-logic-slate dark:text-slate-400">{data.unit}</span>
-              </span>
-            </div>
-            <div className="flex justify-between text-[12px] font-lato">
-              <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">目標</span>
-              <span className="text-logic-slate dark:text-slate-300/70 dark:text-slate-400 font-bold">{formatDisplayValue(displayTarget, data.unit)} <span className="text-[10px]">{data.unit}</span></span>
-            </div>
-
-            {readableFormula && (
-              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-                <div className="text-[10px] bg-clean-canvas dark:bg-slate-900 p-1.5 rounded-md border border-slate-100 dark:border-slate-700 break-words font-formula italic text-logic-slate dark:text-slate-300">
-                  {readableFormula}
-                </div>
-              </div>
-            )}
+          <div className="flex items-end gap-2 text-[12px] font-lato">
+            <span className="font-black text-oxford-navy dark:text-slate-100 text-[15px]">
+              {formatDisplayValue(displayActual, data.unit)}
+            </span>
+            <span className="text-logic-slate dark:text-slate-300/70 font-bold mb-[2px]">
+              / {formatDisplayValue(displayTarget, data.unit)} <span className="text-[10px]">{data.unit}</span>
+            </span>
           </div>
+        </div>
       )}
-      
+
+
       {data.hasChildren ? (
         <button
           onClick={(e) => {
