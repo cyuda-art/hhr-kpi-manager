@@ -15,10 +15,6 @@ export async function POST(req: Request) {
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-    const actionsContext = actions && actions.length > 0 
-      ? actions.map((a: any) => `- [${a.status === 'done' ? '完了' : '未完了'}] ${a.title} (ID: ${a.id})`).join('\n')
-      : '現在登録されているToDoはありません。';
-
     const childContext = childKpis && childKpis.length > 0
       ? childKpis.map((c: any) => `- ${c.name} (ID: ${c.id}): 目標 ${c.targetValue}${c.unit} / 実績 ${c.actualValue}${c.unit} (達成率: ${Math.round(c.achievementRate || 0)}%)`).join('\n')
       : '子要素はありません。';
@@ -36,31 +32,22 @@ ${projectInfo?.manifesto ? `【現在実行中の経営作戦（Manifesto）】\
 目標値: ${kpiContext.targetValue} ${kpiContext.unit} / 現在の実績: ${kpiContext.actualValue} ${kpiContext.unit}
 自動計算: ${kpiContext.isCalculated ? 'はい（直接実績を編集不可）' : 'いいえ'}
 
-${kpiContext.isCalculated ? `[子要素のデータ]
-${childContext}` : ''}
-
-[現在の未完了ToDo一覧]
-${actionsContext}
+${kpiContext.isCalculated ? `[子要素のデータ]\n${childContext}` : ''}
 ---
 
 【重要ルール】
 1. **上記の「裏設定データ」の箇条書きやID、システム情報をそのままチャットに出力することは絶対にやめてください。（「対象のKPI情報」などのオウム返しは厳禁です）**
 2. あなたのペルソナは「極めて有能でロジカルな実務アシスタント」です。絵文字は一切使用せず、端的でスマートなプロフェッショナルなトーン（〜です、〜ます等）で回答してください。無駄な感情表現や装飾は避け、具体的かつアクション指向の簡潔な提案のみを行います。
-${kpiContext.isCalculated ? `3. このKPIは自動計算されるため、実績値（UPDATE_VALUE）は更新できません。どの子要素がボトルネックかを分析し、**子要素に対して**具体的なアクション（ToDo）を追加するよう提案してください。` : ''}
-4. **【重要】過去の会話で既に実行したシステム操作（タスク追加など）を再度出力しないでください。また、同じタイトルの未完了タスクが既にある場合は、絶対に重複してタスクを追加（ADD_TODO）しないでください。**
-5. ユーザーから「重複している」「このタスクを消して」と指示された場合は、該当タスクのIDを指定して\`DELETE_TODO\`を実行してください。
+${kpiContext.isCalculated ? `3. このKPIは自動計算されるため、実績値（UPDATE_VALUE）は更新できません。どの子要素がボトルネックかを分析し、提案してください。` : ''}
 
 【システム操作（JSON出力）】
-会話の中で「実績が変化した（自動計算ノード以外）」「新しいToDoを追加する」「ToDoが完了した」「ToDoを削除する」と判断した場合、必ず回答の「一番最後」に以下のJSONブロックを含めてください。システムがこれを検知して自動更新します。
+会話の中で「実績が変化した（自動計算ノード以外）」と判断した場合、必ず回答の「一番最後」に以下のJSONブロックを含めてください。システムがこれを検知して自動更新します。
 （操作が不要な場合はJSONは含めないでください）
 
 \`\`\`json
 {
   "systemActions": [
-    { "type": "UPDATE_VALUE", "newValue": 150, "reason": "50件完了の報告" },
-    { "type": "ADD_TODO", "title": "次回フォロー", "priority": "urgent_important", "targetKpiId": "kpi_xxxx" },
-    { "type": "COMPLETE_TODO", "actionId": "タスクID", "reason": "完了報告" },
-    { "type": "DELETE_TODO", "actionId": "タスクID", "reason": "重複登録の削除指示" }
+    { "type": "UPDATE_VALUE", "newValue": 150, "reason": "50件完了の報告" }
   ]
 }
 \`\`\`

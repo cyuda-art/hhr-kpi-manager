@@ -149,19 +149,6 @@ export const KpiExecutionPanel = () => {
         data.systemActions.forEach((action: any) => {
           if (action.type === 'UPDATE_VALUE') {
             useKpiStore.getState().updateKpiNode(selectedKpi.id, { actualValue: action.newValue });
-          } else if (action.type === 'ADD_TODO') {
-            const targetKpiId = action.targetKpiId || selectedKpi.id;
-            const existingTasks = useKpiStore.getState().actions;
-            if (!existingTasks.some(a => a.kpiId === targetKpiId && a.title === action.title && a.status === 'todo')) {
-              useKpiStore.getState().addAction({
-                kpiId: targetKpiId, title: action.title, status: 'todo', dueDate: new Date().toISOString().split('T')[0], priority: action.priority || 'not_urgent_important', owner: user?.displayName || 'Guest'
-              });
-            }
-          } else if (action.type === 'DELETE_TODO') {
-            useKpiStore.getState().deleteAction(action.actionId);
-          } else if (action.type === 'COMPLETE_TODO') {
-            useKpiStore.getState().updateAction(action.actionId, { status: 'done' });
-            triggerCelebration();
           }
         });
       }
@@ -357,67 +344,7 @@ export const KpiExecutionPanel = () => {
         </AnimatePresence>
       </div>
 
-      {/* ToDoリストエリア (How/Do) */}
-      <div className="bg-white/10 dark:bg-black/10 border-b border-white/20 dark:border-white/5 shrink-0 relative z-20">
-        <button 
-          onClick={() => setIsTasksOpen(!isTasksOpen)}
-          className="w-full flex items-center justify-between px-5 py-3 hover:bg-white/30 dark:hover:bg-black/20 transition-colors"
-        >
-          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <CheckSquare size={14} className="text-slate-400" /> 進行中のタスク
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] bg-slate-200/50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded-full">
-              {useKpiStore.getState().actions.filter(a => (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId)))).length}
-            </span>
-            {isTasksOpen ? <ChevronDown size={14} className="text-slate-400"/> : <ChevronRight size={14} className="text-slate-400"/>}
-          </div>
-        </button>
-        
-        <AnimatePresence>
-          {isTasksOpen && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-              <div className="px-5 pb-4 max-h-48 overflow-y-auto custom-scrollbar">
-                {useKpiStore.getState().actions.filter(a => (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId)))).length === 0 ? (
-                  <div className="text-[11px] text-slate-400 text-center py-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm rounded-lg border border-slate-200/50 dark:border-slate-800/50 border-dashed">
-                    進行中のタスクはありません。
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <AnimatePresence initial={false}>
-                      {useKpiStore.getState().actions
-                        .filter(a => (a.kpiId === selectedKpi.id || (isComputed && childKpis.some(c => c.id === a.kpiId))))
-                        .sort((a, b) => a.status === 'done' ? 1 : b.status === 'done' ? -1 : 0)
-                        .map(action => (
-                          <motion.div key={action.id} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className={`group flex items-start gap-3 p-2.5 rounded-lg border transition-all ${action.status === 'done' ? 'bg-white/10 border-white/20 dark:bg-black/10 dark:border-white/5 opacity-50' : 'bg-white/40 border-white/30 dark:bg-black/30 dark:border-white/10 shadow-sm hover:shadow-md'}`}
-                          >
-                            <button onClick={() => { const isCompleting = action.status !== 'done'; useKpiStore.getState().toggleActionStatus(action.id); if (isCompleting) triggerCelebration(); }} className={`mt-0.5 shrink-0 transition-colors ${action.status === 'done' ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>
-                              {action.status === 'done' ? <CheckCircle2 size={16} /> : <Circle size={16} />}
-                            </button>
-                            <div className="flex flex-col min-w-0 flex-1 mt-0.5">
-                              <span className={`text-xs font-medium leading-tight ${action.status === 'done' ? 'line-through text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>
-                                {action.title}
-                              </span>
-                            </div>
-                            {action.status !== 'done' && (
-                              <button onClick={(e) => { e.stopPropagation(); setExecutingActionId(action.id); }} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-all ml-auto shrink-0">
-                                <Zap size={14} />
-                              </button>
-                            )}
-                            <button onClick={(e) => { e.stopPropagation(); useKpiStore.getState().deleteAction(action.id); }} className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-md transition-all shrink-0">
-                              <Trash2 size={14} />
-                            </button>
-                          </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* ToDoリストエリア (How/Do) - REMOVED */}
 
       {/* チャットエリア (Execution Engine) - 背景で呼吸するメッシュグラデーション */}
       <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5 custom-scrollbar relative pb-40">
@@ -495,17 +422,11 @@ export const KpiExecutionPanel = () => {
         
         {/* 3. グラスモーフィズムのサジェストチップ */}
         <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-1 pointer-events-auto">
-          <button onClick={() => executeChatCommand('現状の数値を分析し、不足分を補うための次のアクションを3つ提案・追加してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
-            アクション生成
-          </button>
           {!isComputed && (
             <button onClick={() => executeChatCommand('今日の実績として、〇〇件完了しました。数値を更新してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
               実績の更新
             </button>
           )}
-          <button onClick={() => executeChatCommand('重複しているタスクや、不要になった古いタスクを整理・削除してください。')} disabled={isProcessing} className="shrink-0 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-800/90 disabled:opacity-50 text-[11px] font-bold text-slate-700 dark:text-slate-300 rounded-full transition-all border border-white/50 dark:border-slate-700/50 shadow-sm">
-            タスク整理
-          </button>
         </div>
 
         {/* フローティング・カプセル */}
