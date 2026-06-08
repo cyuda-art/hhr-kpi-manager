@@ -149,6 +149,24 @@ export const KpiExecutionPanel = () => {
         data.systemActions.forEach((action: any) => {
           if (action.type === 'UPDATE_VALUE') {
             useKpiStore.getState().updateKpiNode(selectedKpi.id, { actualValue: action.newValue });
+          } else if (action.type === 'UPDATE_NODE' && action.nodeId && action.updates) {
+            useKpiStore.getState().updateKpiNode(action.nodeId, action.updates);
+          } else if (action.type === 'ADD_CHILD_NODE' && action.parentId && action.node) {
+            const newNodeId = 'kpi_' + Date.now() + Math.floor(Math.random() * 1000);
+            useKpiStore.getState().addKpiNode({
+              id: newNodeId,
+              parentId: action.parentId,
+              name: action.node.name,
+              qualitativeName: action.node.qualitativeName || '',
+              type: 'KPI',
+              targetValue: action.node.targetValue || 0,
+              actualValue: action.node.actualValue || 0,
+              unit: action.node.unit || selectedKpi.unit,
+              businessUnit: selectedKpi.businessUnit || 'company',
+              isCalculated: false,
+              formula: '',
+              addedAt: Date.now()
+            });
           }
         });
       }

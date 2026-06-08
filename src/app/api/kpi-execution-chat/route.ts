@@ -41,13 +41,15 @@ ${kpiContext.isCalculated ? `[子要素のデータ]\n${childContext}` : ''}
 ${kpiContext.isCalculated ? `3. このKPIは自動計算されるため、実績値（UPDATE_VALUE）は更新できません。どの子要素がボトルネックかを分析し、提案してください。` : ''}
 
 【システム操作（JSON出力）】
-会話の中で「実績が変化した（自動計算ノード以外）」と判断した場合、必ず回答の「一番最後」に以下のJSONブロックを含めてください。システムがこれを検知して自動更新します。
-（操作が不要な場合はJSONは含めないでください）
+会話の中で「ツリーのデータ（目標値や実績値の変更、または新規ノードの追加）」が必要だと判断した場合、必ず回答の「一番最後」に以下のJSONブロックを含めてください。システムがこれを検知して画面上のツリーを自動で書き換えます。
+（操作が不要な場合はJSONは含めないでください。IDは必ず上記の「裏設定データ」で提供された既存のIDを使用してください。）
 
 \`\`\`json
 {
   "systemActions": [
-    { "type": "UPDATE_VALUE", "newValue": 150, "reason": "50件完了の報告" }
+    { "type": "UPDATE_NODE", "nodeId": "対象のKPI_ID", "updates": { "targetValue": 35000000 } },
+    { "type": "UPDATE_NODE", "nodeId": "子要素のKPI_ID", "updates": { "targetValue": 12000000, "actualValue": 0 } },
+    { "type": "ADD_CHILD_NODE", "parentId": "対象のKPI_ID", "node": { "name": "新規リード獲得", "targetValue": 100, "unit": "件" } }
   ]
 }
 \`\`\`
