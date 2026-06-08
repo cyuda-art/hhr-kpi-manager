@@ -1,5 +1,22 @@
 import { create } from 'zustand';
 import { Project } from '@/types/project';
+import { auth } from '@/lib/firebase';
+
+const getHeaders = async (orgId?: string) => {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (orgId) headers['x-organization-id'] = orgId;
+  if (auth.currentUser) {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    } catch {
+      headers['Authorization'] = `Bearer mock_${auth.currentUser.uid}`;
+    }
+  } else {
+    headers['Authorization'] = `Bearer mock_guest`;
+  }
+  return headers;
+};
 
 interface ProjectStore {
   projects: Project[];
@@ -27,9 +44,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     const fetchProjects = async () => {
       try {
         const res = await fetch('/api/projects', {
-          headers: {
-            'x-organization-id': orgId
-          }
+          headers: await getHeaders(orgId)
         });
         const data = await res.json();
         if (res.ok && data.projects) {
@@ -63,7 +78,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getHeaders(orgId),
         body: JSON.stringify({ name, description, organizationId: orgId })
       });
       
@@ -94,6 +109,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
       const res = await fetch(`/api/projects/${projectId}`, {
         method: 'DELETE',
+        headers: await getHeaders(orgId),
       });
 
       if (!res.ok) {
@@ -130,7 +146,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       );
 
       // 3. 元のKPIデータとタスクデータを取得
-      const resNodes = await fetch(`/api/projects/${projectId}/nodes`);
+      const resNodes = await fetch(`/api/projects/${projectId}/nodes`, { headers: await getHeaders(orgId) });
       if (resNodes.ok) {
         const data = await resNodes.json();
         // 取得したデータを新しいプロジェクトID配下で保存
@@ -163,9 +179,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
           // コピー先プロジェクトに保存
           await fetch(`/api/projects/${newProjectId}/kpi-data`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
+            headers: await getHeaders(orgId),
             body: JSON.stringify({
               kpiData: newKpiData,
               actions: newActions
@@ -192,9 +206,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
       const res = await fetch(`/api/projects/${projectId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: await getHeaders(orgId),
         body: JSON.stringify({
           name: data.name,
           description: data.description

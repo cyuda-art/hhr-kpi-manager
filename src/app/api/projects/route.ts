@@ -1,17 +1,32 @@
 import { NextResponse } from 'next/server';
+import { authenticateRequest, hasPermission } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    // 実際の運用ではヘッダーのトークン等から organizationId を取得します
-    // 今回はモックとしてヘッダーから渡されるか、ダミーIDを使用します
+    const { user, error } = await authenticateRequest(request);
+    if (error || !user) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const organizationId = request.headers.get('x-organization-id') || 'dummy-org-id';
+    
+    // 他組織のデータへのアクセス防止
+    if (organizationId !== 'dummy-org-id' && user.organizationId !== organizationId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // READ権限の確認
+    if (!hasPermission(user, 'READ')) {
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+
     const { prisma } = await import('@/lib/prisma');
 
     const projects = await prisma.project.findMany({
       where: {
-        organizationId: organizationId,
+        organizationId: user.organizationId, // 常に自身の組織IDで上書き
       },
       orderBy: {
         updatedAt: 'desc',
@@ -27,12 +42,28 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const { user, error } = await authenticateRequest(request);
+    if (error || !user) {
+      return NextResponse.json({ error: error || 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { name, description, organizationId } = body;
 
     if (!name || !organizationId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // 他組織への書き込み防止
+    if (user.organizationId !== organizationId && organizationId !== 'dummy-org-id') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // WRITE権限（作成権限）の確認
+    if (!hasPermission(user, 'WRITE')) {
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions to create project' }, { status: 403 });
+    }
+
     const { prisma } = await import('@/lib/prisma');
 
     // プロジェクト作成前に、紐づくOrganizationが存在するか確認し、なければ自動生成する（外部キーエラー回避）

@@ -17,7 +17,7 @@ import { AICopilotFeed } from '@/components/dashboard/AICopilotFeed';
 export default function WorkspacePage() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const { projects, isLoading, initializeProjects, setCurrentProjectId, createProject, duplicateProject, deleteProject } = useProjectStore();
+  const { projects, isLoading, initializeProjects, setCurrentProjectId, createProject, duplicateProject, deleteProject, updateProject } = useProjectStore();
   const { organizations, currentOrgId } = useOrgStore();
 
   const currentOrg = organizations.find(o => o.id === currentOrgId);
@@ -536,13 +536,35 @@ export default function WorkspacePage() {
       try {
         if (!currentOrgId) throw new Error("No organization selected");
         await deleteProject(projectId, currentOrgId);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to delete", error);
-        alert("削除に失敗しました");
+        alert(`削除に失敗しました: ${error.message || '権限がありません'}`);
       } finally {
         setIsProcessing(null);
         setMenuOpenId(null);
       }
+    }
+  };
+
+  const handleEdit = async (e: React.MouseEvent, project: any) => {
+    e.stopPropagation();
+    const newName = window.prompt('新しいプロジェクト名を入力してください', project.name);
+    if (!newName || newName === project.name) {
+      setMenuOpenId(null);
+      return;
+    }
+    const newDesc = window.prompt('新しい説明を入力してください（空でも可）', project.description || '');
+    
+    setIsProcessing(project.id);
+    try {
+      if (!currentOrgId) throw new Error("No organization selected");
+      await updateProject(project.id, currentOrgId, { name: newName, description: newDesc || '' });
+    } catch (error: any) {
+      console.error("Failed to edit", error);
+      alert(`更新に失敗しました: ${error.message || '権限がありません'}`);
+    } finally {
+      setIsProcessing(null);
+      setMenuOpenId(null);
     }
   };
 
@@ -678,6 +700,12 @@ export default function WorkspacePage() {
                         className="w-full text-left px-4 py-2 text-[13px] text-slate-800 dark:text-[#e8eaed] hover:bg-slate-200 dark:bg-[#3c4043] flex items-center gap-2"
                       >
                         <Copy size={14} /> 複製する
+                      </button>
+                      <button 
+                        onMouseDown={(e) => { e.preventDefault(); handleEdit(e, project); }}
+                        className="w-full text-left px-4 py-2 text-[13px] text-slate-800 dark:text-[#e8eaed] hover:bg-slate-200 dark:bg-[#3c4043] flex items-center gap-2"
+                      >
+                        <Sparkles size={14} /> 編集する
                       </button>
                       <button 
                         onMouseDown={(e) => { e.preventDefault(); handleDelete(e, project.id, project.name); }}
