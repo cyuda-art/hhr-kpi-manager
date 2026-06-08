@@ -9,16 +9,13 @@ AIはこのファイルを読み込むことで、過去の文脈を失わずに
 * **技術スタック**: Next.js (App Router), TypeScript, Tailwind CSS, Zustand, Recharts, Stripe (Mock), Google Generative AI (Gemini)
 
 ## 2. 現在の最優先目標 (Current Top Priority)
-**「Vercelの本番環境（Production）への正常なデプロイを再開させること」**
-* ユーザーは常に本番環境のアップデートを想定しています。
-* 現在、コードベース内に深刻なTypeScriptエラーが存在するため、Vercelのビルド（`npm run build`）が失敗し、Pushしても本番環境が更新されない状態に陥っています。
-* **直近のアクション**: `npx tsc --noEmit` で発生している型エラー（主に `useKpiStore` や `KpiTree` 周辺）を全て解消すること。
+**「次の機能開発または改修タスクの待機中」**
+* 以前発生していた重大なTypeScriptの型エラーは全て解消され、ローカルでのビルド（`npm run build`）および型チェック（`npx tsc --noEmit`）は正常に通過する状態になっています。
+* ワーキングツリーはクリーンであり、新しいタスクの開始を待っています。
 
 ## 3. 既知の問題・未完了タスク (Known Issues / Pending Tasks)
-* **🚨 重大なビルドエラー (Type Errors)**:
-  * `useKpiStore.ts`: `KpiStore` 型に存在しない `isPredictionMode` へのアクセスエラー、`fetchAuditLogs` 等の `any` 型エラー。
-  * `useLayoutStore.ts`: 型定義に存在しない `showMiniMap` プロパティの使用。
-  * `KpiTree.tsx`, `SimulationPanel.tsx`: `unknown` や `any` による型エラー。
+* **✅ 重大なビルドエラーは解消済み**
+  * `useKpiStore.ts`, `useLayoutStore.ts`, `KpiTree.tsx` などで発生していた型エラーは全て修正されました。
 * **🚧 仮実装（Mock）の残存**:
   * 組織（Organization）やプロジェクト（Project）のデータ保存が `localStorage` に依存している（`hhr_mock_orgs` など）。
   * Stripe決済処理がモック実装（`price_starter_mock` など）のまま。
