@@ -45,9 +45,9 @@ ${userPrompt}
 6. 計算式（formula）がある場合は、依存関係（#{nodeId}）が正しく機能するようにすること。（名前にせずIDを使う）
 7. 出力は、書き換え後の \`kpiData\` オブジェクトのみを格納した厳密なJSON形式で出力すること。`;
 
-    // Gemini 1.5 Proによる高精度推論（複雑なJSONツリーの改変を伴うため）
+    // Gemini 2.5 Flashによる高精度・高速推論
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-pro',
+      model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
       config: {
         responseMimeType: 'application/json',
