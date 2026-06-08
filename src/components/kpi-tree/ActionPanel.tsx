@@ -329,7 +329,7 @@ export const ActionPanel = () => {
   };
 
   const handleAiReconstruct = async () => {
-    if (!aiPrompt.trim() || !currentProject) return;
+    if (!aiPrompt.trim() || !currentProject || !selectedKpi) return;
     if (!consumeAiCredits('AIツリー再構築（Neural Generation）', 100)) return;
     
     setIsAiProcessing(true);
@@ -339,6 +339,8 @@ export const ActionPanel = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: aiPrompt,
+          selectedKpiId: selectedKpi.id,
+          selectedKpiName: selectedKpi.name,
           kpiData: kpiData,
           manifesto: currentProject.manifesto,
           swot: currentProject.swot,

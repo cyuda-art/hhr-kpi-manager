@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     apiKey: process.env.GEMINI_API_KEY || 'dummy_key',
   });
   try {
-    const { prompt: userPrompt, kpiData, manifesto, swot, crossSwot } = await req.json();
+    const { prompt: userPrompt, selectedKpiId, selectedKpiName, kpiData, manifesto, swot, crossSwot } = await req.json();
 
     const systemPrompt = `あなたは戦略コンサルタント兼KPIアーキテクトです。
 現在、ユーザーは以下の「戦略マニフェスト」と「SWOT分析」に基づいて構成されたKPIツリーを運用しています。
@@ -26,19 +26,28 @@ ${crossSwot || '未設定'}
 【現在のkpiData】
 ${JSON.stringify(kpiData, null, 2)}
 
+【コンテキスト（ユーザーの操作対象）】
+ユーザーは現在、以下のKPIを画面上で選択しながら指示を出しています：
+- 選択中のノードID: ${selectedKpiId || '不明'}
+- 選択中のノード名: ${selectedKpiName || '不明'}
+「このKPIの数値を〜にして」等の指示は、上記ノードの targetValue などを指します。
+「この下に〜を追加して」等の指示は、上記ノードを parentId とする新しいノードを追加することを指します。
+
 【ユーザーの指示】
 ${userPrompt}
 
 【出力要件】
 1. ユーザー指示の意図を汲み取り、ツリーの論理構造（KGI -> KSF -> KPI -> Process）が破綻しないこと。
 2. ツリーは必ず親ノード（parentId）と子ノードを持つDAGであること。
-3. 1つの親に対して1つの子しか持たない（1対1の紐付け）状態は計算式が無意味なため絶対に避けること。
-4. 計算式（formula）がある場合は、依存関係（#{nodeId}）が正しく機能するようにすること。（名前にせずIDを使う）
-5. 出力は、書き換え後の \`kpiData\` オブジェクトのみを格納した厳密なJSON形式で出力すること。`;
+3. 目標数値の変更を指示された場合は、対象ノードの targetValue を更新すること。もし対象ノードが計算式（isCalculated: true）を持つ場合でも、必要に応じて計算式や子ノードの数値を調整して整合性を保つこと。
+4. 新規追加を指示された場合は、parentId を適切に設定してノードを追加すること。
+5. 1つの親に対して1つの子しか持たない（1対1の紐付け）状態は計算式が無意味なため絶対に避けること。
+6. 計算式（formula）がある場合は、依存関係（#{nodeId}）が正しく機能するようにすること。（名前にせずIDを使う）
+7. 出力は、書き換え後の \`kpiData\` オブジェクトのみを格納した厳密なJSON形式で出力すること。`;
 
-    // Gemini 1.5 Flashによる高速推論
+    // Gemini 1.5 Proによる高精度推論（複雑なJSONツリーの改変を伴うため）
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-1.5-pro',
       contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
       config: {
         responseMimeType: 'application/json',
