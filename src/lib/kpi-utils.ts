@@ -29,7 +29,15 @@ export const shouldScaleWithPeriod = (node: Partial<KpiNodeData>): boolean => {
   if (name.includes('率') || name.includes('割合') || name.includes('レート') || name.includes('rate')) return false;
 
   // スケールしない（単価、LTVなど）
-  if (unit === '円' && (name.includes('単価') || name.includes('LTV') || name.includes('コスト') || name.includes('原価'))) return false;
+  if (unit === '円' && (
+      name.includes('単価') || 
+      name.includes('LTV') || 
+      name.includes('CAC') || 
+      name.includes('CPA') || 
+      name.includes('一人当たり') || 
+      name.includes('1件') || 
+      (name.includes('コスト') && name.includes('獲得'))
+  )) return false;
 
   // それ以外（売上高、件数、人数、回数などはスケールする）
   return true;
