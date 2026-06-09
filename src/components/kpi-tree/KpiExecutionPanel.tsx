@@ -161,6 +161,8 @@ export const KpiExecutionPanel = () => {
               type: 'KPI',
               targetValue: action.node.targetValue || 0,
               actualValue: action.node.actualValue || 0,
+              previousValue: 0,
+              description: '',
               unit: action.node.unit || selectedKpi.unit,
               businessUnit: selectedKpi.businessUnit || 'company',
               isCalculated: false,
