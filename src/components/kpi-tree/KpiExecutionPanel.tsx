@@ -50,7 +50,7 @@ export const KpiExecutionPanel = () => {
   const [editTargetValue, setEditTargetValue] = useState('');
   const [editName, setEditName] = useState('');
   const [editQualitativeName, setEditQualitativeName] = useState('');
-  const [editUpdateFrequency, setEditUpdateFrequency] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  const [editUpdateFrequency, setEditUpdateFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   const [editIsCalculated, setEditIsCalculated] = useState(false);
   const [editFormula, setEditFormula] = useState('');
 
@@ -252,14 +252,23 @@ export const KpiExecutionPanel = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">目標値 ({selectedKpi.unit})</label>
-                  <input type="number" value={editTargetValue} onChange={e => setEditTargetValue(e.target.value)} disabled={editIsCalculated} className="w-full text-sm px-3 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50" />
+                  <input type="number" value={editTargetValue} onChange={e => setEditTargetValue(e.target.value)} disabled={editIsCalculated} className="w-full text-sm px-3 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed" />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {editIsCalculated ? "※子KPIから自動計算されるため手入力できません" : "※直接入力またはAIへの指示で管理します"}
+                  </p>
+                  {editUpdateFrequency === 'yearly' && editTargetValue && !editIsCalculated && (
+                    <p className="text-[10px] text-blue-500 font-bold mt-1">
+                      (月次目標目安: {Math.floor(Number(editTargetValue) / 12).toLocaleString()} {selectedKpi.unit})
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">更新頻度</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">目標の期間単位</label>
                   <select value={editUpdateFrequency} onChange={e => setEditUpdateFrequency(e.target.value as any)} className="w-full text-sm px-3 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
-                    <option value="daily">日次 (Daily)</option>
-                    <option value="weekly">週次 (Weekly)</option>
+                    <option value="yearly">年次 (Yearly)</option>
                     <option value="monthly">月次 (Monthly)</option>
+                    <option value="weekly">週次 (Weekly)</option>
+                    <option value="daily">日次 (Daily)</option>
                   </select>
                 </div>
               </div>

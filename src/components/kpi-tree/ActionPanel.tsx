@@ -160,7 +160,7 @@ export const ActionPanel = () => {
   const [editActualValue, setEditActualValue] = useState('');
   const [editName, setEditName] = useState('');
   const [editQualitativeName, setEditQualitativeName] = useState('');
-  const [editUpdateFrequency, setEditUpdateFrequency] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  const [editUpdateFrequency, setEditUpdateFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   const [editCalculationFormula, setEditCalculationFormula] = useState('');
   const [editIsCalculated, setEditIsCalculated] = useState(false);
   const [editFormula, setEditFormula] = useState('');
@@ -598,20 +598,30 @@ export const ActionPanel = () => {
                           onChange={(e) => setEditTargetValue(e.target.value)}
                           onBlur={handleSaveValues}
                           disabled={editIsCalculated || !!selectedKpi.linkedSource}
-                          className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-strategic-teal outline-none transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-800"
+                          className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-strategic-teal outline-none transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
                         />
+                        <p className="text-[9px] text-slate-400 mt-0.5 leading-tight">
+                          {editIsCalculated ? "※自動計算のため手入力不可" : "※直接入力またはAI指示で管理"}
+                        </p>
+                        {editUpdateFrequency === 'yearly' && editTargetValue && !editIsCalculated && (
+                          <p className="text-[9px] text-blue-500 font-bold mt-0.5 leading-tight">
+                            (月次目安: {Math.floor(Number(editTargetValue) / 12).toLocaleString()}{selectedKpi.unit})
+                          </p>
+                        )}
                       </div>
                     )}
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500">更新頻度</label>
+                      <label className="text-[10px] font-bold text-slate-500">目標の期間単位</label>
                       <select
                         value={editUpdateFrequency}
                         onChange={(e) => setEditUpdateFrequency(e.target.value as any)}
+                        onBlur={handleSaveValues}
                         className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 focus:border-strategic-teal outline-none transition-colors"
                       >
-                        <option value="daily">日次 (Daily)</option>
-                        <option value="weekly">週次 (Weekly)</option>
+                        <option value="yearly">年次 (Yearly)</option>
                         <option value="monthly">月次 (Monthly)</option>
+                        <option value="weekly">週次 (Weekly)</option>
+                        <option value="daily">日次 (Daily)</option>
                       </select>
                     </div>
                   </div>

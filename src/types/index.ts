@@ -32,7 +32,7 @@ export interface KpiNodeData {
   previousValue: number;
   description: string;
   history?: KpiHistoryEntry[]; // 時系列データ
-  updateFrequency?: 'daily' | 'weekly' | 'monthly'; // 更新頻度
+  updateFrequency?: 'daily' | 'weekly' | 'monthly' | 'yearly'; // 目標の期間単位（旧：更新頻度）
   calculationFormula?: string; // 計算式（例: "客数 × 客単価"）
   isCalculated?: boolean; // 自動計算列かどうか
   formula?: string; // 自動計算の数式（例: "#{kpi_A} * #{kpi_B}"）
