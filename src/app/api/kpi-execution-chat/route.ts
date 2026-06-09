@@ -36,63 +36,64 @@ ${kpiContext.isCalculated ? `[子要素のデータ]\n${childContext}` : ''}
 ---
 
 【重要ルール】
-1. **上記の「裏設定データ」の箇条書きやID、システム情報をそのままチャットに出力することは絶対にやめてください。（「対象のKPI情報」などのオウム返しは厳禁です）**
-2. あなたのペルソナは「極めて有能でロジカルな実務アシスタント」です。絵文字は一切使用せず、端的でスマートなプロフェッショナルなトーン（〜です、〜ます等）で回答してください。無駄な感情表現や装飾は避け、具体的かつアクション指向の簡潔な提案のみを行います。
-${kpiContext.isCalculated ? `3. このKPIは自動計算されるため、実績値（UPDATE_VALUE）は更新できません。どの子要素がボトルネックかを分析し、提案してください。` : ''}
+1. あなたのペルソナは「極めて有能でロジカルな実務アシスタント」です。
+2. 絵文字は一切使用せず、端的でスマートなトーンで回答してください。
+3. このKPIは自動計算される場合、実績値は更新できません。
+4. 【最重要】ユーザーから「〇〇と〇〇を追加して自動計算にして」のように複数の子KPI追加を指示された場合、必ず追加する子ノードにあなた自身でID（例: "child_1", "child_2" など）を割り当ててください。そして、同時に親ノードの \`isCalculated\` を true にし、割り当てた子ノードのIDを用いた数式（例: "#{child_1} + #{child_2}" または "#{child_1} - #{child_2}" 等）を親の \`formula\` に設定してください。
 
-【システム操作（JSON出力）】
-会話の中で「ツリーのデータ（目標値や実績値の変更、または新規ノードの追加）」が必要だと判断した場合、必ず回答の「一番最後」に以下のJSONブロックを含めてください。システムがこれを検知して画面上のツリーを自動で書き換えます。
-（操作が不要な場合はJSONは含めないでください。IDは必ず上記の「裏設定データ」で提供された既存のIDを使用してください。）
+【システム操作】
+会話の中で「ツリーのデータ（目標値や実績値の変更、または新規ノードの追加）」が必要だと判断した場合、必ず \`systemActions\` 配列に変更指示を含めてください。
+既存の要素を変更する場合は必ず上記の「裏設定データ」で提供されたIDを使用してください。
 
-\`\`\`json
+【出力要件（厳守）】
+あなたはシステムAPIとして動作しています。必ず以下のJSON形式でのみ出力してください。
 {
+  "replyText": "ユーザーへの返答メッセージ（システムID等は含めないでください）",
   "systemActions": [
-    { "type": "UPDATE_NODE", "nodeId": "対象のKPI_ID", "updates": { "targetValue": 35000000 } },
-    { "type": "UPDATE_NODE", "nodeId": "子要素のKPI_ID", "updates": { "targetValue": 12000000, "actualValue": 0 } },
-    { "type": "ADD_CHILD_NODE", "parentId": "対象のKPI_ID", "node": { "name": "新規リード獲得", "targetValue": 100, "unit": "件" } }
+    { "type": "UPDATE_NODE", "nodeId": "対象のKPI_ID", "updates": { "targetValue": 35000000, "isCalculated": true, "formula": "#{child_1} + #{child_2}" } },
+    { "type": "ADD_CHILD_NODE", "parentId": "対象のKPI_ID", "node": { "id": "child_1", "name": "新規要素A", "targetValue": 20000000, "unit": "円" } },
+    { "type": "ADD_CHILD_NODE", "parentId": "対象のKPI_ID", "node": { "id": "child_2", "name": "新規要素B", "targetValue": 15000000, "unit": "円" } }
   ]
 }
-\`\`\`
 `;
 
-    // 過去の履歴をGeminiの形式にマッピング
     const formattedHistory = [
       { role: 'user', parts: [{ text: systemPrompt }] },
-      { role: 'model', parts: [{ text: '理解しました。有能な戦略パートナーとして、無駄のないスマートな対話と的確なシステム操作を実行します。' }] }
+      { role: 'model', parts: [{ text: '{"replyText": "理解しました。有能な戦略パートナーとして、無駄のないスマートな対話と的確なシステム操作をJSON形式で実行します。", "systemActions": []}' }] }
     ];
 
     if (history && history.length > 0) {
       history.forEach((msg: any) => {
         formattedHistory.push({
           role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
+          parts: [{ text: msg.role === 'model' ? JSON.stringify({ replyText: msg.content, systemActions: [] }) : msg.content }]
         });
       });
     }
 
     const chat = model.startChat({
       history: formattedHistory,
-      generationConfig: { temperature: 0.7 }
+      generationConfig: { 
+        temperature: 0.2,
+        responseMimeType: 'application/json'
+      }
     });
 
     const result = await chat.sendMessage([{ text: message }]);
     const responseText = result.response.text();
 
-    // JSONブロックを抽出
+    let cleanText = '応答がありませんでした';
     let systemActions = [];
-    let cleanText = responseText;
-    const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/);
-    if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[1]);
-        if (parsed.systemActions && Array.isArray(parsed.systemActions)) {
-          systemActions = parsed.systemActions;
-        }
-        // テキストからJSONブロックを取り除き、チャット画面に表示するテキストをきれいにする
-        cleanText = responseText.replace(/```json\n([\s\S]*?)\n```/, '').trim();
-      } catch (e) {
-        console.warn('Failed to parse systemActions JSON', e);
+    
+    try {
+      const parsed = JSON.parse(responseText);
+      cleanText = parsed.replyText || '';
+      if (parsed.systemActions && Array.isArray(parsed.systemActions)) {
+        systemActions = parsed.systemActions;
       }
+    } catch (e) {
+      console.error('Failed to parse AI response as JSON:', responseText);
+      cleanText = responseText;
     }
 
     return NextResponse.json({ text: cleanText, systemActions });

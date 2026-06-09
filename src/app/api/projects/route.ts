@@ -84,10 +84,8 @@ export async function POST(request: Request) {
       },
     });
 
-    // 初期KPIツリー（KGI: 営業利益、KPI: 売上高・原価）の生成
+    // 初期KPIツリー（KGI: 営業利益 のみ）の生成
     const kgiId = `node_${Date.now()}_kgi`;
-    const salesId = `node_${Date.now()}_sales`;
-    const costId = `node_${Date.now()}_cost`;
 
     await prisma.kpiNode.create({
       data: {
@@ -97,38 +95,11 @@ export async function POST(request: Request) {
         type: 'KGI',
         unit: '円',
         targetValue: 10000000,
-        isCalculated: true,
-        formula: `#{${salesId}} - #{${costId}}`,
+        isCalculated: false,
+        formula: '',
         positionX: 500,
         positionY: 100,
       }
-    });
-
-    await prisma.kpiNode.createMany({
-      data: [
-        {
-          id: salesId,
-          projectId: project.id,
-          name: '売上高',
-          type: 'KPI',
-          unit: '円',
-          parentId: kgiId,
-          targetValue: 30000000,
-          positionX: 250,
-          positionY: 400,
-        },
-        {
-          id: costId,
-          projectId: project.id,
-          name: '原価',
-          type: 'KPI',
-          unit: '円',
-          parentId: kgiId,
-          targetValue: 20000000,
-          positionX: 750,
-          positionY: 400,
-        }
-      ]
     });
 
     return NextResponse.json({ project }, { status: 201 });

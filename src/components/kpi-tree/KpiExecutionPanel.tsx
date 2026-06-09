@@ -152,7 +152,7 @@ export const KpiExecutionPanel = () => {
           } else if (action.type === 'UPDATE_NODE' && action.nodeId && action.updates) {
             useKpiStore.getState().updateKpiNode(action.nodeId, action.updates);
           } else if (action.type === 'ADD_CHILD_NODE' && action.parentId && action.node) {
-            const newNodeId = 'kpi_' + Date.now() + Math.floor(Math.random() * 1000);
+            const newNodeId = action.node.id || ('kpi_' + Date.now() + Math.floor(Math.random() * 1000));
             useKpiStore.getState().addKpiNode({
               id: newNodeId,
               parentId: action.parentId,
