@@ -472,6 +472,9 @@ export const useKpiStore = create<KpiStore>()(
 
             // 各ノードの computed 値と履歴の初期化
             Object.keys(kpiData).forEach(id => {
+              if (kpiData[id].type === 'KGI' && !kpiData[id].updateFrequency) {
+                kpiData[id].updateFrequency = 'yearly';
+              }
               kpiData[id] = calculateComputed(kpiData[id]);
             });
 
@@ -499,11 +502,12 @@ export const useKpiStore = create<KpiStore>()(
                   name: node.name,
                   qualitativeName: node.qualitativeName,
                   businessUnit: node.businessUnit,
-                  type: node.type,
+                  type: node.type || 'KPI',
                   parentId: node.parentId,
-                  targetValue: node.targetValue,
-                  actualValue: node.actualValue,
-                  unit: node.unit,
+                  targetValue: node.targetValue || 0,
+                  actualValue: node.actualValue || 0,
+                  updateFrequency: node.updateFrequency || (node.type === 'KGI' ? 'yearly' : 'monthly'),
+                  unit: node.unit || '円',
                   previousValue: node.previousValue,
                   description: node.description,
                   isCalculated: node.isCalculated,
@@ -567,6 +571,7 @@ export const useKpiStore = create<KpiStore>()(
                 targetValue: 10000000,
                 actualValue: 0,
                 unit: '円',
+                updateFrequency: 'yearly',
                 previousValue: 0,
                 description: projectDesc || pData.projectInfo?.description || 'Goalを数値化した組織全体の最終利益目標'
               })

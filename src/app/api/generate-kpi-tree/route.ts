@@ -76,7 +76,7 @@ ${selectedManifesto ? `タイトル: ${selectedManifesto.title}\n内容: ${selec
 - markdownのコードブロック表記 (\`\`\`json ... \`\`\`) は絶対に含めず、純粋なJSONテキストのみを出力してください。
 - "nodes" 配列内のノードは合計で4個〜7個程度作成してください。今回は「全体像（構造）」を作るフェーズです。
 - 階層構造と数式に関する【絶対ルール】（MECEとロジックツリーの完全連動）:
-  - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main"、nameは "${kgiType}"、targetValueは ${kgiTargetValue || 100000000} としてください。
+  - 1つの頂点ノード (type: "KGI", parentId: null) を必ず作成し、IDは "kgi_main"、nameは "${kgiType}"、targetValueは ${kgiTargetValue || 100000000}、updateFrequencyは "yearly" としてください。
   - 【必須の階層構造】ツリーは「経営理念 → 企業理念 → マニフェスト → ゴール → KGI → KSF → 各種KPI」の立て付けを前提とします。ここではKGIを頂点とし、その下にKSF、さらにその下に各種KPIを展開してください。
   - 【数式の絶対ルール】末端のノード（最下層のKPI）を除き、ツリーの中間・上位ノードは必ず**2つ以上のKPI（子ノード）を用いた四則演算**によって計算・算出される必要があります。
   - 【禁止事項】「月次数値を30で割って日次に変換する（例: #{A} / 30）」や「単一の指標をそのまま引き継ぐ（例: #{A} * 1）」のような、単位変換や単一ノードの継承による数式は絶対に禁止です。必ず「A + B」や「A * B」のように2つ以上の要素に分解してください。
@@ -114,7 +114,7 @@ ${selectedManifesto ? `タイトル: ${selectedManifesto.title}\n内容: ${selec
       "type": "KGI",
       "parentId": null,
       "targetValue": 100000000,
-      "actualValue": 80000000,
+      "actualValue": 0,
       "unit": "円",
       "previousValue": 75000000,
       "description": "KGIの詳細説明",
