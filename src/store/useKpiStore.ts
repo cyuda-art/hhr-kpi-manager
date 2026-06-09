@@ -1,7 +1,27 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { KpiNodeData, KpiNodeWithComputed, Status, Action, AiWorkflow } from '@/types';
+import { ProjectInfo, KpiNodeData, KpiNodeWithComputed, Action, MonthlyData, Status, AiWorkflow } from '@/types';
 
+import { shouldScaleWithPeriod } from '@/lib/kpi-utils';
+
+const generateDefaultMonthlyData = (node: Partial<KpiNodeData>, targetValue: number, actualValue: number) => {
+  const monthlyData: Record<string, MonthlyData> = {};
+  const currentYear = new Date().getFullYear();
+  const isScale = shouldScaleWithPeriod(node);
+  
+  // 4月から翌年3月までの12ヶ月分を作成
+  for (let month = 4; month <= 15; month++) {
+    const actualMonth = month > 12 ? month - 12 : month;
+    const actualYear = month > 12 ? currentYear + 1 : currentYear;
+    const monthStr = `${actualYear}-${String(actualMonth).padStart(2, '0')}`;
+    monthlyData[monthStr] = {
+      month: monthStr,
+      targetValue: isScale ? targetValue / 12 : targetValue,
+      actualValue: isScale ? actualValue / 12 : actualValue,
+    };
+  }
+  return monthlyData;
+};
 
 export interface KpiNodeWithComputedAndInit extends KpiNodeWithComputed {
   initialActualValue: number;
@@ -648,6 +668,7 @@ export const useKpiStore = create<KpiStore>()(
     });
   },
 
+
   // simulated updating functions removed
 
   commitBulkUpdate: (updates) => {
@@ -677,6 +698,10 @@ export const useKpiStore = create<KpiStore>()(
       const draft = { ...state.kpiData };
       draft[node.id] = calculateComputed({ ...node, initialActualValue: node.actualValue });
       
+      if (!draft[node.id].monthlyData || Object.keys(draft[node.id].monthlyData!).length === 0) {
+        draft[node.id].monthlyData = generateDefaultMonthlyData(draft[node.id], node.targetValue || 0, node.actualValue || 0);
+      }
+      
       syncToDB(state.currentProjectId, state.currentOrgId, { kpiData: draft, actions: state.actions, projectInfo: state.currentProjectInfo });
       return { kpiData: draft, projectData: saveToProjectData({ ...state, kpiData: draft }) };
     });
@@ -695,13 +720,37 @@ export const useKpiStore = create<KpiStore>()(
 
           // 実績値が更新された場合
           if (data.actualValue !== undefined && data.actualValue !== oldActual) {
+            // 月次データの同期
+            if (draft[id].monthlyData && Object.keys(draft[id].monthlyData!).length > 0) {
+              const isScale = shouldScaleWithPeriod(draft[id]);
+              const ratio = (isScale && oldActual > 0) ? data.actualValue / oldActual : 1;
+              Object.keys(draft[id].monthlyData!).forEach(monthKey => {
+                draft[id].monthlyData![monthKey].actualValue = isScale && oldActual > 0
+                  ? draft[id].monthlyData![monthKey].actualValue * ratio
+                  : (isScale ? (data.actualValue || 0) / 12 : (data.actualValue || 0));
+              });
+            } else {
+              draft[id].monthlyData = generateDefaultMonthlyData(draft[id], draft[id].targetValue, data.actualValue);
+            }
             // 動的計算エンジンによる再計算（実績値）
             recalculateTree(draft, 'actualValue', state.currentPeriod);
             valueChanged = true;
           }
 
           // 目標値が更新された場合
-          if (data.targetValue !== undefined && oldTarget > 0 && data.targetValue !== oldTarget) {
+          if (data.targetValue !== undefined && data.targetValue !== oldTarget) {
+            // 月次データの同期
+            if (draft[id].monthlyData && Object.keys(draft[id].monthlyData!).length > 0) {
+              const isScale = shouldScaleWithPeriod(draft[id]);
+              const ratio = (isScale && oldTarget > 0) ? data.targetValue / oldTarget : 1;
+              Object.keys(draft[id].monthlyData!).forEach(monthKey => {
+                draft[id].monthlyData![monthKey].targetValue = isScale && oldTarget > 0
+                  ? draft[id].monthlyData![monthKey].targetValue * ratio
+                  : (isScale ? (data.targetValue || 0) / 12 : (data.targetValue || 0));
+              });
+            } else {
+              draft[id].monthlyData = generateDefaultMonthlyData(draft[id], data.targetValue, draft[id].actualValue);
+            }
             // 動的計算エンジンによる再計算（目標値）
             recalculateTree(draft, 'targetValue', state.currentPeriod);
             valueChanged = true;

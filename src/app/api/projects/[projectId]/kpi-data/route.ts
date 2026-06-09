@@ -10,8 +10,19 @@ export async function POST(
     const { projectId } = await params;
     const body = await request.json();
     const { kpiData, actions } = body as {
-      kpiData: Record<string, KpiNodeData>;
+      kpiData: Record<string, KpiNodeData & { monthlyData?: Record<string, ClientMonthlyData> }>;
       actions: Action[];
+    };
+
+    // Helper: shouldScaleWithPeriod logic simplified for backend since it's already in kpiData.unit/name
+    const shouldScaleWithPeriod = (node: Partial<KpiNodeData>): boolean => {
+      if (!node) return true;
+      const name = node.name || '';
+      const unit = node.unit || '';
+      if (unit === '%' || unit === '％' || unit === 'pt' || unit === 'ポイント') return false;
+      if (name.includes('率') || name.includes('割合') || name.includes('レート') || name.includes('rate')) return false;
+      if (unit === '円' && (name.includes('単価') || name.includes('LTV') || name.includes('コスト') || name.includes('原価'))) return false;
+      return true;
     };
 
     if (!kpiData) {
@@ -116,9 +127,32 @@ export async function POST(
           where: { nodeId: nodeId },
         });
 
+        let effectiveMonthlyData: Record<string, ClientMonthlyData> = {};
         if (node.monthlyData && Object.keys(node.monthlyData).length > 0) {
-          const createData = Object.keys(node.monthlyData).map(monthKey => {
-            const md = node.monthlyData![monthKey];
+          effectiveMonthlyData = node.monthlyData;
+        } else {
+          // フロントエンドで生成されていない場合のフォールバック（新規作成時など）
+          effectiveMonthlyData = {};
+          const currentYear = new Date().getFullYear();
+          const targetValue = node.targetValue || 0;
+          const actualValue = node.actualValue || 0;
+          const isScale = shouldScaleWithPeriod(node);
+          
+          for (let month = 4; month <= 15; month++) {
+            const actualMonth = month > 12 ? month - 12 : month;
+            const actualYear = month > 12 ? currentYear + 1 : currentYear;
+            const monthStr = `${actualYear}-${String(actualMonth).padStart(2, '0')}`;
+            effectiveMonthlyData[monthStr] = {
+              month: monthStr,
+              targetValue: isScale ? targetValue / 12 : targetValue,
+              actualValue: isScale ? actualValue / 12 : actualValue,
+            } as any;
+          }
+        }
+
+        if (Object.keys(effectiveMonthlyData).length > 0) {
+          const createData = Object.keys(effectiveMonthlyData).map(monthKey => {
+            const md = effectiveMonthlyData![monthKey];
             // "2026-04" -> 202604
             const periodInt = parseInt(monthKey.replace('-', ''));
             return {
@@ -137,8 +171,8 @@ export async function POST(
           // PostgreSQLの ON CONFLICT を利用して、既存の実績値(actualValue)を保護しつつ目標値(targetValue)を日割りで更新する
           const dailyValues: string[] = [];
           
-          for (const monthKey of Object.keys(node.monthlyData)) {
-            const md = node.monthlyData[monthKey];
+          for (const monthKey of Object.keys(effectiveMonthlyData)) {
+            const md = effectiveMonthlyData[monthKey];
             const targetVal = md.targetValue || 0;
             const [yearStr, monthStr] = monthKey.split('-');
             const year = parseInt(yearStr);
